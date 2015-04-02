@@ -1,2 +1,4 @@
-# dd-Data3.0
-The scripts used to populate DDDB2015Apr
+dd-Data2.0
+==========
+
+Scripts used for the new Database.

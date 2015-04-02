@@ -58,7 +58,7 @@ CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 CREATE TABLE IF NOT EXISTS Committee (
    cid    INTEGER(3),
-   house  ENUM('Assembly', 'Senate') NOT NULL,
+   house  ENUM('Assembly', 'Senate', 'Joint') NOT NULL,
    name   VARCHAR(200) NOT NULL,
 
    PRIMARY KEY (cid)
@@ -261,6 +261,7 @@ CREATE TABLE IF NOT EXISTS Utterance (
    finalized BOOLEAN NOT NULL,
    type   ENUM('Author', 'Testimony', 'Discussion'),
    alignment ENUM('For', 'Against', 'For_if_amend', 'Against_unless_amend', 'Neutral', 'Indeterminate'),
+   dataFlag INTEGER DEFAULT 0,
 
    PRIMARY KEY (uid, current),
    UNIQUE KEY (uid, vid, pid, current, time),
@@ -341,6 +342,7 @@ ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 CREATE TABLE IF NOT EXISTS Gift (
+	RecordId INTEGER AUTO_INCREMENT,
 	pid INTEGER,
 	schedule ENUM('D', 'E'),
 	sourceName VARCHAR(50),
@@ -354,7 +356,7 @@ CREATE TABLE IF NOT EXISTS Gift (
 	speechFlag TINYINT(1) DEFAULT 0,
 	description VARCHAR(80),
 	
-	PRIMARY KEY(pid, giftDate, sourceName, activity),
+	PRIMARY KEY(RecordId),
 	FOREIGN KEY (pid) REFERENCES Person(pid)
 )
 ENGINE = INNODB
@@ -362,10 +364,11 @@ CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 CREATE TABLE IF NOT EXISTS District (
 	state VARCHAR(2),
-	house VARCHAR(10),
+	house ENUM('lower', 'upper'),
 	did INTEGER,
 	note VARCHAR(40) DEFAULT '',
 	year INTEGER,
+	region TEXT,
 	geoData MEDIUMTEXT,
 	
 	PRIMARY KEY(state, house, did, year)
@@ -525,10 +528,11 @@ CREATE TABLE IF NOT EXISTS LobbyistRepresentation(
 CREATE TABLE IF NOT EXISTS GeneralPublic(
    pid INTEGER,   -- added
    affiliation VARCHAR(256),
-   position VARCHAR(100),  
+   position VARCHAR(100),
+   RecordId INTEGER AUTO_INCREMENT,  
    hid   INTEGER,						-- added
 
-   PRIMARY KEY (pid, hid),
+   PRIMARY KEY (RecordId),
    FOREIGN KEY (pid) REFERENCES Person(pid),
    FOREIGN KEY (hid) REFERENCES Hearing(hid)
 );
@@ -562,8 +566,7 @@ CREATE TABLE IF NOT EXISTS LegislativeStaffRepresentation(
 );
 
 CREATE TABLE IF NOT EXISTS LegAnalystOffice(
-   pid INTEGER REFERENCES Person(pid),   -- added  
-   hid   INTEGER,   					-- added
+   pid INTEGER REFERENCES Person(pid), 
 
    PRIMARY KEY (pid),                    -- added
    FOREIGN KEY (pid) REFERENCES Person(pid)

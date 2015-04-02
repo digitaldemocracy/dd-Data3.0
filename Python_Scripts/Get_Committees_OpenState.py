@@ -7,7 +7,7 @@ from urllib import urlopen
 
 query_insert_committee = "INSERT INTO Committee (cid, house, name) VALUES (%s, %s, %s);"
 
-db = mysql.connector.connect(user = 'root', db = 'DDDB2015Test', password = '')
+db = mysql.connector.connect(user = 'root', db = 'DDDB2015', password = '')
 dd = db.cursor(buffered = True)
 
 def insert_Committee(cursor, cid, house, name):

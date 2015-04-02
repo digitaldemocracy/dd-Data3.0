@@ -1,9 +1,6 @@
 #!/bin/sh
 DB=$1
 echo $DB
-echo "remaking tables!"
-mysql -uroot DDDB2015AprTest < DB-clear.sql
-mysql -uroot DDDB2015AprTest < DB-create.sql
 echo "Updating tables..."
 echo "Repopulating capublic..."
 cd
@@ -37,4 +34,10 @@ echo "Populating Motion Table..."
 python Motion_Extract.py
 echo "Getting Votes..."
 python Vote_Extract.py
+echo "Getting Districts..."
+python Get_Districts.py
+echo "Getting Gifts..."
+python insert_Gifts.py
+echo "Getting Contributions..."
+python insert_Contributions.py
 echo "Finished!"

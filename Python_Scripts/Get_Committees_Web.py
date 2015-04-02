@@ -13,8 +13,62 @@ from urllib import urlopen
 query_insert_committee = "INSERT INTO Committee (cid, house, name) VALUES (%s, %s, %s);"
 query_insert_serveson = "INSERT INTO servesOn (pid, year, district, house, cid) VALUES(%s, %s, %s, %s, %s);"
 
-db = mysql.connector.connect(user = 'root', db = 'DDDB2015AprTest', password = '')
+db = mysql.connector.connect(user = 'root', db = 'DDDB2015Apr', password = '')
 dd = db.cursor(buffered = True)
+
+db2 = mysql.connector.connect(user = 'root', db = 'DDDB2015Apr', password = '')
+dd2 = db2.cursor(buffered = True)
+
+
+def insertFloorMembers(cursor, cid, house):
+	select_stmt = "SELECT * FROM Term WHERE house = %(house)s;"
+	cursor.execute(select_stmt, {'house':house})
+	print cursor.rowcount
+	for i in range(0, cursor.rowcount):
+		print 'inserting another'
+		temp = cursor.fetchone()
+		pid = temp[0]
+		year = 2015
+		district = temp[2]
+		print 'servesOn pid = {0}, house = {1}, cid = {2}, district = {3}'.format(pid, house, cid, district)
+		insert_serveson(dd, pid, year, district, house, cid)
+
+def insertSenateFloor(cursor):
+	#insert the senate floor
+	name = "Senate Floor"
+	house = "Senate"
+	select_stmt = "SELECT * from Committee where house = %(house)s AND name = %(name)s;"
+	cursor.execute(select_stmt, {'house':house,'name':name})
+	print 'rowcount'
+	print cursor.rowcount
+	if cursor.rowcount == 0:
+		select_stmt = "SELECT cid from Committee ORDER BY cid DESC LIMIT 1"
+		cursor.execute(select_stmt)
+		cid = cursor.fetchone()[0]
+		cid = cid + 1
+		insert_Committee(cursor, cid, house, name)
+	else:
+		temp = cursor.fetchone()
+		cid = temp[0]
+	insertFloorMembers(dd2, cid, house) 
+
+def insertAssemblyFloor(cursor):
+	#insert the assembly floor
+	name = "Assembly Floor"
+	house = "Assembly"
+	select_stmt = "SELECT * from Committee where house = %(house)s AND name = %(name)s;"
+	cursor.execute(select_stmt, {'house':house,'name':name})
+	if cursor.rowcount == 0:
+		select_stmt = "SELECT count(*) from Committee"
+		cursor.execute(select_stmt)
+		cid = cursor.fetchone()[0]
+		insert_Committee(cursor, cid, house, name)
+	else:
+		temp = cursor.fetchone()
+		cid = temp[0]
+	insertFloorMembers(dd2, cid, house) 
+		
+	
 
 def find_district(cursor, pid, year, house):
 	select_stmt = "SELECT district FROM Term where pid = %(pid)s AND house = %(house)s AND year = %(year)s;"
@@ -28,14 +82,15 @@ def insert_serveson(cursor, pid, year, district, house, cid):
 	select_stmt = "SELECT * FROM servesOn where pid = %(pid)s AND house = %(house)s AND year = %(year)s AND cid = %(cid)s AND district = %(district)s;"
 	cursor.execute(select_stmt, {'pid':pid, 'house':house, 'year':year, 'cid':cid, 'district':district})
 	if(cursor.rowcount == 0):
-		#print 'insert'
-		#print pid
-		#print year
-		#print district
-		#print house
-		#print cid
+		print 'insert'
+		print pid
+		print year
+		print district
+		print house
+		print cid
 		print 'inserting {0}'.format(pid)
 		cursor.execute(query_insert_serveson, (pid, year, district, house, cid))
+		print 'inserted!'
 	else:
 		#print 'servesOn pid = {0}, house = {1}, cid = {2}, district = {3} exists'.format(pid, house, cid, district)
 		pass
@@ -169,9 +224,11 @@ try:
 		if "Joint" in imp[1]:
 			house = "Joint"
 		print "Committee: {0}".format(imp[1])
+		print house
 		cid = find_Committee(dd, house, imp[1])
 		house = "Assembly"
         	i = i + get_members_assembly(imp[0], cid, house)
+	insertAssemblyFloor(dd)
 	db.commit()
 
 except:
@@ -201,6 +258,7 @@ try:
 		house = "Senate"
         	print imp[1]
         	i = i + get_members_senate(imp[0], cid, house, joint)
+	insertSenateFloor(dd)
 	db.commit()
 
 except:

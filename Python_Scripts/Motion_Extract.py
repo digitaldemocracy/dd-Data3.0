@@ -10,7 +10,7 @@ query_insert_Motion = "INSERT INTO Motion (mid, date, text) VALUES (%s, %s, %s)"
 db = mysql.connector.connect(user = 'root', db = 'capublic', password = '')
 conn = db.cursor(buffered = True)
 
-db2 = mysql.connector.connect(user = 'root', db = 'DDDB2015AprTest', password = '')
+db2 = mysql.connector.connect(user = 'root', db = 'DDDB2015Apr', password = '')
 conn2 = db2.cursor(buffered = True)
 
 def insert_Motion(cursor, mid, date, text):

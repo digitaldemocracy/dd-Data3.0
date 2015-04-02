@@ -36,7 +36,7 @@ def check_name(cursor, last, first):
 conn = mysql.connector.connect(user="root", database="capublic", password="")
 capublic = conn.cursor(buffered=True)
 
-conn2 = mysql.connector.connect(user="root", database="DDDB2015AprTest", password="")
+conn2 = mysql.connector.connect(user="root", database="DDDB2015Apr", password="")
 dd = conn2.cursor(buffered=True)
 result = check_pid(dd, query_legislator, 1)
 print (result)

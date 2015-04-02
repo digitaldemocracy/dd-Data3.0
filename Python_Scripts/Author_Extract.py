@@ -9,7 +9,7 @@ query_insert_author = "INSERT INTO authors (pid, bid, vid, contribution) VALUES 
 db = mysql.connector.connect(user = 'root', db = 'capublic', password = '')
 conn = db.cursor(buffered = True)
 
-db2 = mysql.connector.connect(user = 'root', db = 'DDDB2015AprTest', password = '')
+db2 = mysql.connector.connect(user = 'root', db = 'DDDB2015Apr', password = '')
 conn2 = db2.cursor(buffered = True)
 
 def getPerson(cursor, filer_naml):

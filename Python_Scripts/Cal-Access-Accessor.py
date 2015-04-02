@@ -35,7 +35,9 @@ def getPerson(cursor, filer_naml, filer_namf, val):
 	pid = val
 	select_pid = "SELECT pid FROM Person WHERE last = %(filer_naml)s AND first = %(filer_namf)s ORDER BY Person.pid;"
 	cursor.execute(select_pid, {'filer_naml':filer_naml, 'filer_namf':filer_namf})
-	if cursor.rowcount > 0:
+	if cursor.rowcount == 1:
+		pid = cursor.fetchone()[0]
+	elif cursor.rowcount > 1:
 		pid = cursor.fetchone()[0]
 	else:
 		cursor.execute(query_insert_person, (filer_naml, filer_namf))
@@ -107,7 +109,7 @@ def find_lobbyist_employment(cursor, index):
 			cursor.execute(query_insert_lobbyist_direct_employment, (Lobbyist[index][0], Lobbyist[index][1], Lobbyist[index][2], Lobbyist[index][3], Lobbyist[index][4]))
 				
 
-db = mysql.connector.connect(user = 'root', db = 'DDDB2015AprTest', password = '')
+db = mysql.connector.connect(user = 'root', db = 'DDDB2015Apr', password = '')
 dd = db.cursor(buffered = True)
 
 try:

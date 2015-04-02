@@ -71,7 +71,7 @@ def insert_serveson(cursor, pid, year, district, house, cid):
 		#print cid
 		cursor.execute(query_insert_serveson, (pid, year, district, house, cid))
 
-db = mysql.connector.connect(user = 'root', db = 'DDDB2015Test', password = '')
+db = mysql.connector.connect(user = 'root', db = 'DDDB2015Apr', password = '')
 dd = db.cursor(buffered = True)
 de = db.cursor(buffered = True)
 

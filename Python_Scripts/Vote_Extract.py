@@ -10,8 +10,47 @@ query_insert_BillVoteDetail = "INSERT INTO BillVoteDetail (pid, voteId, result) 
 db = mysql.connector.connect(user = 'root', db = 'capublic', password = '')
 conn = db.cursor(buffered = True)
 
-db2 = mysql.connector.connect(user = 'root', db = 'DDDB2015AprTest', password = '')
+db2 = mysql.connector.connect(user = 'root', db = 'DDDB2015Apr', password = '')
 conn2 = db2.cursor(buffered = True)
+
+db3 = mysql.connector.connect(user = 'root', db = 'capublic', password = '')
+conn3 = db.cursor(buffered = True)
+
+def findCommittee(cursor, name, house):
+	select_stmt = "SELECT cid FROM Committee WHERE name = %(name)s AND house = %(house)s;"
+	cursor.execute(select_stmt, {'name':name, 'house':house})
+	if(cursor.rowcount == 1):
+		return cursor.fetchone()[0]
+	elif(cursor.rowcount > 1):
+		return -1
+	else:
+		return -1
+
+def getCommittee(cursor, location_code):
+	select_stmt = "SELECT description, long_description FROM location_code_tbl WHERE location_code = %(location_code)s;"
+	cursor.execute(select_stmt, {'location_code':location_code})
+	if(cursor.rowcount > 0):
+		print "found committee"
+		temp = cursor.fetchone()
+		name = temp[0]
+		nam = temp[1]
+		cid = 0
+		print name
+		print nam
+		if "Water, Parks" in nam:
+			nam = "Water, Parks, and Wildlife"
+		if "Asm" in name or 'Assembly' in name:
+			print "ASM"
+			house = "Assembly"
+			cid = findCommittee(conn2, nam, house) 
+		elif "Sen" in name:
+			house = "Senate"
+			cid = findCommittee(conn2, nam, house) 
+		else:
+			house = "Joint"
+			cid = findCommittee(conn2, nam, house)
+	return cid 
+		
 
 def cleanName(name):
 	#for de Leon
@@ -68,14 +107,15 @@ def getVoteId(cursor, bid, mid, VoteDate):
 		temp = cursor.fetchone()
 		return temp[0]
 	else:
-		print "No such BillVoteSummary found"
+		#print "No such BillVoteSummary found"
 		return -1;
 
 def insert_BillVoteSummary(cursor, bid, mid, cid, VoteDate, ayes, naes, abstain, result):
 	select_pid = "SELECT bid, mid, VoteDate FROM BillVoteSummary WHERE bid = %(bid)s AND mid = %(mid)s AND VoteDate = %(VoteDate)s;"
 	cursor.execute(select_pid, {'bid':bid, 'mid':mid, 'VoteDate':VoteDate})
 	if cursor.rowcount == 0:
-		#print "inserting..."
+		print "inserting..."
+		print cid
 		cursor.execute(query_insert_BillVoteSummary, (bid, mid, cid, VoteDate, ayes, naes, abstain, result))
 	else:
 		#print "already in"
@@ -87,8 +127,9 @@ def insert_BillVoteDetail(cursor, pid, voteId, result, temp):
 	if cursor.rowcount == 0:
 		cursor.execute(query_insert_BillVoteDetail, (pid, voteId, result))
 	else:
-		print "pid = {0}, voteId = {1}, result = {2} already in".format(pid, voteId, result)
-		print temp
+		#print "pid = {0}, voteId = {1}, result = {2} already in".format(pid, voteId, result)
+		#print temp
+		pass
 
 try:
 	select_count = "SELECT COUNT(*) FROM bill_summary_vote_tbl"
@@ -103,7 +144,8 @@ try:
 		if temp:
 			bid = temp[0]
 			mid = temp[4]
-			cid = 26
+			cid = getCommittee(conn3, temp[1])
+			print cid
 			VoteDate = temp[10]
 			ayes = temp[5]
 			naes = temp[6]
@@ -111,7 +153,6 @@ try:
 			result = temp[8]
 			insert_BillVoteSummary(conn2, bid, mid, cid, VoteDate, ayes, naes, abstain, result)
 
-	db2.commit()
 
 except:
 	db2.rollback()
@@ -135,8 +176,9 @@ try:
 			if(voteId != -1 and pid != -1):
 				insert_BillVoteDetail(conn2, pid, voteId, result, temp)
 			else:
-				print temp
-	db2.commit()
+				#print temp
+				pass
+
 
 except:
 	db2.rollback()

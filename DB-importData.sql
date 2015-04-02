@@ -1,133 +1,155 @@
-INSERT INTO DDDBTest.Person(pid, last, first)
-SELECT pid, last, first
-FROM digitaldemocracy.Person;
+INSERT INTO DDDB2015Apr.Person(pid, last, first, image)
+SELECT pid, last, first, image
+FROM DDDB2015.Person;
 
-INSERT INTO DDDBTest.Legislator
-SELECT Legislator.pid, Person.description
-FROM digitaldemocracy.Person JOIN digitaldemocracy.Legislator
-WHERE Legislator.pid = Person.pid;
+INSERT INTO DDDB2015Apr.Legislator(pid, description, twitter_handle, capitol_phone, website_url, room_number, email_form_link)
+SELECT pid, description, twitter_handle, capitol_phone, website_url, room_number, email_form_link
+FROM DDDB2015.Legislator;
 
-INSERT INTO DDDBTest.Term(pid, year, district, house, party, start, end)
+INSERT INTO DDDB2015Apr.Term(pid, year, district, house, party, start, end)
 SELECT pid, year, district, house, party, start, end
-FROM digitaldemocracy.Term;
+FROM DDDB2015.Term;
 
-INSERT INTO DDDBTest.Committee(cid, house, name)
+INSERT INTO DDDB2015Apr.Committee(cid, house, name)
 SELECT cid, house, name
-FROM digitaldemocracy.Committee;
+FROM DDDB2015.Committee;
 
-INSERT INTO DDDBTest.servesOn(pid, year, district, house, cid)
+INSERT INTO DDDB2015Apr.servesOn(pid, year, district, house, cid)
 SELECT pid, year, district, house, cid
-FROM digitaldemocracy.servesOn;
+FROM DDDB2015.servesOn;
 
-INSERT INTO DDDBTest.Bill(bid, type, number, state, status, house, session)
+INSERT INTO DDDB2015Apr.Bill(bid, type, number, state, status, house, session)
 SELECT bid, type, number, state, status, house, session
-FROM digitaldemocracy.Bill;
+FROM DDDB2015.Bill;
 
-INSERT INTO DDDBTest.Hearing(hid, date, cid)
-SELECT hid, date, cid
-FROM digitaldemocracy.Hearing;
+INSERT INTO DDDB2015Apr.Hearing(hid, date)
+SELECT hid, date
+FROM DDDB2015.Hearing;
 
-INSERT INTO DDDBTest.JobSnapshot(pid, hid, role, employer, client)
+INSERT INTO DDDB2015Apr.CommitteeHearings(cid, hid)
+SELECT cid, hid
+FROM DDDB2015.CommitteeHearings;
+
+INSERT INTO DDDB2015Apr.JobSnapshot(pid, hid, role, employer, client)
 SELECT pid, hid, role, employer, client
-FROM digitaldemocracy.JobSnapshot;
+FROM DDDB2015.JobSnapshot;
 
-INSERT INTO DDDBTest.Action(bid, date, text)
+INSERT INTO DDDB2015Apr.Action(bid, date, text)
 SELECT bid, date, text
-FROM digitaldemocracy.Action;
+FROM DDDB2015.Action;
 
-INSERT INTO DDDBTest.Video(vid, youtubeId, hid, position, startOffset, duration)
+INSERT INTO DDDB2015Apr.Video(vid, youtubeId, hid, position, startOffset, duration)
 SELECT vid, youtubeId, hid, position, startOffset, duration
-FROM digitaldemocracy.Video;
+FROM DDDB2015.Video;
 
-INSERT INTO DDDBTest.Video_ttml(vid, ttml)
+INSERT INTO DDDB2015Apr.Video_ttml(vid, ttml)
 SELECT vid, ttml
-FROM digitaldemocracy.Video_ttml;
+FROM DDDB2015.Video_ttml;
 
 SELECT 'BillDiscussion' AS '';
 
-INSERT INTO DDDBTest.BillDiscussion(bid, hid, startVideo, startTime, endVideo, endTime, numVideos)
+INSERT INTO DDDB2015Apr.BillDiscussion(bid, hid, startVideo, startTime, endVideo, endTime, numVideos)
 SELECT bid, hid, startVideo, startTime, endVideo, endTime, numVideos
-FROM digitaldemocracy.BillDiscussion;
+FROM DDDB2015.BillDiscussion;
 
-INSERT INTO DDDBTest.Motion(mid, bid, date, text)
-SELECT mid, bid, date, text
-FROM digitaldemocracy.Motion;
+INSERT INTO DDDB2015Apr.Motion(mid, date, text)
+SELECT mid, date, text
+FROM DDDB2015.Motion;
 
-INSERT INTO DDDBTest.votesOn(pid, mid, vote)
+INSERT INTO DDDB2015Apr.votesOn(pid, mid, vote)
 SELECT pid, mid, vote
-FROM digitaldemocracy.votesOn;
+FROM DDDB2015.votesOn;
 
-INSERT INTO DDDBTest.BillVersion(vid, bid, date, state, subject, appropriation, substantive_changes, title, digest, text)
+INSERT INTO DDDB2015Apr.BillVersion(vid, bid, date, state, subject, appropriation, substantive_changes, title, digest, text)
 SELECT vid, bid, date, state, subject, appropriation, substantive_changes, title, digest, text
-FROM digitaldemocracy.BillVersion;
+FROM DDDB2015.BillVersion;
 
-INSERT INTO DDDBTest.authors(pid, bid, vid, contribution)
+INSERT INTO DDDB2015Apr.authors(pid, bid, vid, contribution)
 SELECT pid, bid, vid, contribution
-FROM digitaldemocracy.authors;
+FROM DDDB2015.authors;
 
-INSERT INTO DDDBTest.attends(pid, hid)
+INSERT INTO DDDB2015Apr.attends(pid, hid)
 SELECT pid, hid
-FROM digitaldemocracy.attends;
+FROM DDDB2015.attends;
 
 SELECT 'Utterance Issues' AS '';
 
-INSERT INTO DDDBTest.Utterance(uid, vid, pid, time, endTime, text, type, alignment)
-SELECT uid, vid, pid, time, endTime, text, type, alignment 
-FROM digitaldemocracy.currentUtterance
+INSERT INTO DDDB2015Apr.Utterance(uid, vid, pid, time, endTime, text, type, alignment, dataFlag)
+SELECT uid, vid, pid, time, endTime, text, type, alignment, dataFlag
+FROM DDDB2015.currentUtterance
 WHERE NOT EXISTS (
-	SELECT 1 FROM DDDBTest.Utterance AS e
+	SELECT 1 FROM DDDB2015Apr.Utterance AS e
 	WHERE e.vid = vid 
 	AND e.pid = pid 
 	AND e.time = time);
 
-UPDATE DDDBTest.Utterance
-SEt current = 1, finalized = 1;
+UPDATE DDDB2015Apr.Utterance
+SET current = 1, finalized = 1;
 
-INSERT INTO DDDBTest.tag(tid, tag)
-SELECT uid, tag
-FROM digitaldemocracy.tag
+INSERT INTO DDDB2015Apr.tag(uid, tag)
+SELECT tid, tag
+FROM DDDB2015.tag
 ON DUPLICATE KEY UPDATE tid = tid + 2;
 
-INSERT INTO DDDBTest.Mention(uid, pid)
-SELECT uid, pid
-FROM digitaldemocracy.Mention;
+INSERT INTO DDDB2015Apr.Mention(mid, pid)
+SELECT mid, pid
+FROM DDDB2015.Mention;
 
-INSERT INTO DDDBTest.TT_Editor(id, username, password, created, active, role)
+INSERT INTO DDDB2015Apr.TT_Editor(id, username, password, created, active, role)
 SELECT id, username, password, created, active, role
-FROM digitaldemocracy.TT_Editor;
+FROM DDDB2015.TT_Editor;
 
 -- empty
-INSERT INTO DDDBTest.TT_Task(tid, hid, did, editor_id, name, vid, startTime, endTime, created, assigned, completed)
+INSERT INTO DDDB2015Apr.TT_Task(tid, hid, did, editor_id, name, vid, startTime, endTime, created, assigned, completed)
 SELECT tid, hid, did, editor_id, name, vid, startTime, endTime, created, assigned, completed
-FROM digitaldemocracy.TT_Task;
+FROM DDDB2015.TT_Task;
 
-INSERT INTO DDDBTest.TT_TaskCompletion(tcid, tid, completion)
+INSERT INTO DDDB2015Apr.TT_TaskCompletion(tcid, tid, completion)
 SELECT tcid, tid, completion
-FROM digitaldemocracy.TT_TaskCompletion;
+FROM DDDB2015.TT_TaskCompletion;
 
-INSERT INTO DDDBTest.LobbyingFirm(filer_id, filer_naml, rpt_date, ls_beg_yr, ls_end_yr)
+INSERT INTO DDDB2015Apr.Lobbyist(pid, filer_id)
+SELECT pid, filer_id
+FROM DDDB2015.Lobbyist;
+
+INSERT INTO DDDB2015Apr.LobbyingFirm(filer_id, filer_naml, rpt_date, ls_beg_yr, ls_end_yr)
 SELECT filer_id, filer_naml, rpt_date, ls_beg_yr, ls_end_yr
-FROM digitaldemocracy.LOBBYING_FIRMS;
+FROM DDDB2015.LobbyingFirm;
 
-INSERT INTO DDDBTest.GeneralPublic(pid, hid, affiliation)
-SELECT pid, hid, employer
-FROM digitaldemocracy.JobSnapshot
-WHERE role = 'General_public'
-ON DUPLICATE KEY UPDATE pid = JobSnapshot.pid;
+INSERT INTO DDDB2015Apr.GeneralPublic(pid, affiliation, position, hid)
+SELECT pid, affiliation, position, hid
+FROM DDDB2015.GeneralPublic;
 
-INSERT INTO DDDBTest.LegAnalystOffice(pid, hid)
-SELECT DISTINCT pid, hid
-FROM digitaldemocracy.JobSnapshot
-WHERE role = 'Legislative_analyst'
-ON DUPLICATE KEY UPDATE pid = JobSnapshot.pid;
+INSERT INTO DDDB2015Apr.StateAgencyRepRepresentation(pid, employer, position, hid)
+SELECT pid, employer, position, hid
+FROM DDDB2015.StateAgencyRep;
 
-INSERT INTO DDDBTest.StateAgencyRep(pid, hid, employer)
-SELECT DISTINCT pid, hid, employer
-FROM digitaldemocracy.JobSnapshot
-WHERE role = 'State_agency_rep'
-ON DUPLICATE KEY UPDATE pid = JobSnapshot.pid;
+INSERT INTO DDDB2015Apr.StateAgencyRep(pid, employer, position)
+SELECT DISTINCT pid, employer, position
+FROM DDDB2015.StateAgencyRep;
 
--- No Legislative Staff Committee
--- No Legislative Staff Author
--- These two have been combined into Legislative Staff
+INSERT INTO DDDB2015Apr.LegAnalystOfficeRepresentation(pid, hid)
+SELECT pid, employer, position, hid
+FROM DDDB2015.StateAgencyRep;
+
+INSERT INTO DDDB2015Apr.LegAnalystOffice(pid)
+SELECT DISTINCT pid
+FROM DDDB2015.LegAnalystOffice;
+
+INSERT INTO DDDB2015Apr.LegislativeStaffRepresentation(pid, flag, legislator, committee, hid)
+SELECT pid, flag, legislator, committee, hid
+FROM DDDB2015.LegislativeStaff;
+
+INSERT INTO DDDB2015Apr.LegislativeStaff(pid, flag, legislator, committee)
+SELECT DISTINCT pid, flag, legislator, committee
+FROM DDDB2015.LegislativeStaff;
+
+INSERT INTO DDDB2015Apr.StateConstOfficeRepresentation(pid, office, position, hid)
+SELECT pid, office, position, hid
+FROM DDDB2015.StateConstOffice;
+
+INSERT INTO DDDB2015Apr.StateConstOffice(pid, office, position)
+SELECT DISTINCT pid, office, position
+FROM DDDB2015.StateConstOffice;
+
 
