@@ -7,6 +7,8 @@ import re
 import sys
 import csv
 import datetime
+import Person_Name_Fix
+import Lobbying_Firm_Name_Fix
 
 #Querys used to Insert into the Database
 query_insert_lobbying_firm = "INSERT INTO LobbyingFirm (filer_naml, filer_id, rpt_date, ls_beg_yr, ls_end_yr) VALUES(%s, %s, %s, %s, %s);"
@@ -31,8 +33,16 @@ def format_date(str):
 	return temp
 	
 #Finds the pid of the Person (returns val if none is found)
-def getPerson(cursor, filer_naml, filer_namf, val):
+def getPerson(cursor, filer_id, filer_naml, filer_namf, val):
+	select_stmt = "SELECT pid, filer_id FROM Lobbyist WHERE filer_id = %(filer_id)s ORDER BY pid"
+	cursor.execute(select_stmt, {'filer_id':filer_id})
+	if(cursor.rowcount == 1):
+		return cursor.fetchone()[0]
 	pid = val
+	name = Person_Name_Fix.clean_name(filer_namf, filer_naml)
+	name = name.split(' <Split> ')
+	filer_naml = name[1]
+	filer_namf = name[0]
 	select_pid = "SELECT pid FROM Person WHERE last = %(filer_naml)s AND first = %(filer_namf)s ORDER BY Person.pid;"
 	cursor.execute(select_pid, {'filer_naml':filer_naml, 'filer_namf':filer_namf})
 	if cursor.rowcount == 1:
@@ -51,6 +61,7 @@ def insert_lobbyist_employer(cursor, filer_naml, filer_id, coalition):
 	select_stmt = "SELECT filer_id FROM LobbyistEmployer WHERE filer_id = %(filer_id)s"
 	cursor.execute(select_stmt, {'filer_id':filer_id})
 	if(cursor.rowcount == 0):
+		filer_naml = Lobbying_Firm_Name_Fix.clean_name(filer_naml)
 		cursor.execute(query_insert_lobbyist_employer, (filer_naml, filer_id, coalition))	
 
 #inserts into lobbying firm
@@ -58,6 +69,7 @@ def insert_lobbying_firm(cursor, filer_naml, filer_id, rpt_date, ls_beg_yr, ls_e
 	select_stmt = "SELECT filer_id FROM LobbyingFirm WHERE filer_id = %(filer_id)s"
 	cursor.execute(select_stmt, {'filer_id':filer_id})
 	if(cursor.rowcount == 0):
+		filer_naml = Lobbying_Firm_Name_Fix.clean_name(filer_naml)
 		cursor.execute(query_insert_lobbying_firm, (filer_naml, filer_id, rpt_date, ls_beg_yr, ls_end_yr))
 		
 #inserts into lobbyist
@@ -72,20 +84,20 @@ def insert_lobbyist(cursor, pid, filer_id):
 		cursor.execute(query_insert_lobbyist, (pid, filer_id))
 
 def insert_lobbyist_employment(cursor, pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr):
-	select_stmt = "SELECT sender_id, rpt_date, ls_beg_yr FROM LobbyistEmployment WHERE sender_id = %(sender_id)s"
-	cursor.execute(select_stmt, {'sender_id':sender_id})
+	select_stmt = "SELECT sender_id, rpt_date, ls_beg_yr FROM LobbyistEmployment WHERE sender_id = %(sender_id)s AND pid = %(pid)s AND ls_beg_yr = %(ls_beg_yr)s AND ls_end_yr = %(ls_end_yr)s;"
+	cursor.execute(select_stmt, {'sender_id':sender_id,'pid':pid,'ls_beg_yr':ls_beg_yr,'ls_end_yr':ls_end_yr})
 	if(cursor.rowcount == 0):
 		cursor.execute(query_insert_lobbyist_employment, (pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr))
 		
 def insert_lobbyist_direct_employment(cursor, pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr):
-	select_stmt = "SELECT sender_id, rpt_date, ls_beg_yr FROM LobbyistDirectEmployment WHERE sender_id = %(sender_id)s"
-	cursor.execute(select_stmt, {'sender_id':sender_id})
+	select_stmt = "SELECT sender_id, rpt_date, ls_beg_yr FROM LobbyistDirectEmployment WHERE sender_id = %(sender_id)s AND pid = %(pid)s AND ls_beg_yr = %(ls_beg_yr)s AND ls_end_yr = %(ls_end_yr)s;"
+	cursor.execute(select_stmt, {'sender_id':sender_id,'pid':pid,'ls_beg_yr':ls_beg_yr,'ls_end_yr':ls_end_yr})
 	if(cursor.rowcount == 0):
 		cursor.execute(query_insert_lobbyist_direct_employment, (pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr))
 		
 def insert_lobbyist_contracts(cursor, filer_id, sender_id, rpt_date, ls_beg_yr, ls_end_yr):
-	select_stmt = "SELECT filer_id, sender_id, rpt_date FROM LobbyingContracts WHERE filer_id = %(filer_id)s"
-	cursor.execute(select_stmt, {'filer_id':filer_id})
+	select_stmt = "SELECT filer_id, sender_id, rpt_date FROM LobbyingContracts WHERE filer_id = %(filer_id)s AND sender_id = %(sender_id)s AND rpt_date = %(rpt_date)s"
+	cursor.execute(select_stmt, {'filer_id':filer_id,'sender_id':sender_id,'rpt_date':rpt_date})
 	if(cursor.rowcount == 0):
 		cursor.execute(query_insert_lobbyist_contracts, (filer_id, sender_id, rpt_date, ls_beg_yr, ls_end_yr))
 	
@@ -128,7 +140,7 @@ try:
 			val = val + 1
 			print val
 			#case 1
-			if form == "F601" and entity_cd == "FRM" and sender_id[:1] == 'F': 
+			if form == "F601" and entity_cd == "FRM" and (sender_id[:1] == 'F' or sender_id[:1].isdigit()) and sender_id == row[5]: 
 				filer_naml = row[7]
 				filer_id = row[5]
 				rpt_date = row[12]
@@ -149,7 +161,7 @@ try:
 				rpt_date = format_date(rpt_date)
 				ls_beg_yr = row[13]
 				ls_end_yr = row[14]
-				pid = getPerson(dd, filer_naml, filer_namf, val)
+				pid = getPerson(dd, filer_id, filer_naml, filer_namf, val)
 				print "filer_id = {0}\n".format(filer_id)
 				print "sender_id = {0}, rpt_date = {1}, ls_beg_yr = {2}, ls_end_yr = {3}\n".format(sender_id, rpt_date, ls_beg_yr, ls_end_yr)
 				insert_lobbyist(dd, pid, filer_id)
@@ -165,7 +177,7 @@ try:
 				rpt_date = format_date(rpt_date)
 				ls_beg_yr = row[13]
 				ls_end_yr = row[14]
-				pid = getPerson(dd, filer_naml, filer_namf, val)
+				pid = getPerson(dd, filer_id, filer_naml, filer_namf, val)
 				print "filer_id = {0}\n".format(filer_id)
 				print "sender_id = {0}, rpt_date = {1}, ls_beg_yr = {2}, ls_end_yr = {3}\n".format(sender_id, rpt_date, ls_beg_yr, ls_end_yr)
 				insert_lobbyist(dd, pid, filer_id)
@@ -183,7 +195,7 @@ try:
 				ls_end_yr = row[14]
 				firm_name = row[61]
 				print "filer_id = {0}\n".format(filer_id)
-				pid = getPerson(dd, filer_naml, filer_namf, val)
+				pid = getPerson(dd, filer_id, filer_naml, filer_namf, val)
 				insert_lobbyist(dd, pid, filer_id)
 				print "inserting Lobbyist into index {0}\n".format(index)
 				#insert the lobbyist into the array for later

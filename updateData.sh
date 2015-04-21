@@ -11,7 +11,6 @@ do for i in `echo 'show tables ' |mysql -uroot $j \
 |grep -v 'Tables_in'`; do mysql -uroot $j -e "truncate $i"; done; done
 echo "Populating capublic..."
 echo dmangin221 | sudo -S sh opengov_load.sh pubinfo_2015
-echo dmangin221 | sudo python get_Bill_Version_xml_data.py
 cd
 echo "capublic repopulated!"
 echo "Going to scripts!"

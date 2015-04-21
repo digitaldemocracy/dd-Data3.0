@@ -14,9 +14,10 @@ db2 = mysql.connector.connect(user = 'root', db = 'DDDB2015Apr', password = '')
 conn2 = db2.cursor(buffered = True)
 
 def addBill(cursor, bid, type, number, state, status, house, session):
-	select_stmt = "SELECT bid from Bill where bid = %(bid)s"
-	cursor.execute(select_stmt, {'bid':bid})
+	select_stmt = "SELECT bid from Bill where bid = %(bid)s AND number = %(number)s"
+	cursor.execute(select_stmt, {'bid':bid,'number':number})
 	if(cursor.rowcount == 0):
+		print "adding Bill {0}".format(bid)
 		cursor.execute(query_insert_Bill, (bid, type, number, state, status, house, session))
 
 def addBillVersion(cursor, vid, bid, date, state, subject, appropriation, substantive_changes):
@@ -45,15 +46,14 @@ try:
 	conn.execute(select_stmt)
 	for i in range(0, a):
 		temp = conn.fetchone()
-		if i:
-			bid = temp[0]
-			number = temp[4]
-			status = temp[17]
-			session = temp[2]
-			type = temp[3]
-			house = temp[16]
-			state = temp[5]
-			addBill(conn2, bid, type, number, state, status, house, session)
+		bid = temp[0]
+		number = temp[4]
+		status = temp[17]
+		session = temp[2]
+		type = temp[3]
+		house = temp[16]
+		state = temp[5]
+		addBill(conn2, bid, type, number, state, status, house, session)
 	db2.commit()
 	
 except:

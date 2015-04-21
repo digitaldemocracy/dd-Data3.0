@@ -92,7 +92,7 @@ def getPerson(cursor, filer_naml, floor):
 				pid = cursor.fetchone()[0]
 	else:
 		filer_naml = '%' + filer_naml + '%'
-		select_pid = "SELECT pid, last, first FROM Person WHERE last LIKE %(filer_naml)s AND pid < 130 ORDER BY Person.pid;"
+		select_pid = "SELECT pid, last, first FROM Person WHERE last LIKE %(filer_naml)s ORDER BY Person.pid;"
 		cursor.execute(select_pid, {'filer_naml':filer_naml, 'filer_namf':filer_namf})
 		if(cursor.rowcount > 0):
 			pid = cursor.fetchone()[0]
@@ -151,7 +151,9 @@ try:
 			naes = temp[6]
 			abstain = temp[7]
 			result = temp[8]
-			insert_BillVoteSummary(conn2, bid, mid, cid, VoteDate, ayes, naes, abstain, result)
+			if(cid != -1):
+				insert_BillVoteSummary(conn2, bid, mid, cid, VoteDate, ayes, naes, abstain, result)
+	db2.commit()
 
 
 except:
@@ -178,6 +180,7 @@ try:
 			else:
 				#print temp
 				pass
+	db2.commit()
 
 
 except:

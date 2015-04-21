@@ -1,6 +1,7 @@
 import mysql.connector
 from lxml import etree 
 import re
+import binascii
 
 def traverse(root):
    for node in root:
@@ -18,20 +19,27 @@ def billparse():
    print "got here"
    get.execute("SELECT bill_version_id, bill_xml FROM capublic.bill_version_tbl")
    for (vid, xml) in get:
-      try:	
-	 xml = ''.join('{:02x}'.format(x) for x in xml.strip())
-	 xml = xml.decode("hex")
-	 #print "got here1"
-         xml = re.sub(r'<\?xm-(insertion|deletion)_mark\?>', r'', xml, flags=re.DOTALL)
-         xml = re.sub(r'<\?xm-(insertion|deletion)_mark (?:data="(.*?)")\?>', r'<span class="\1">\2</span>', xml, flags=re.DOTALL)
-
-         xml = re.sub(r'<\?xm-(insertion|deletion)_mark_start\?>', r'<span class="\1">', xml, flags=re.DOTALL)
-         xml = re.sub(r'<\?xm-(insertion|deletion)_mark_end\?>', r'</span>', xml, flags=re.DOTALL)
-
+      try:
+         temp = ""
+         for x in xml.strip():
+            temp = temp + chr(x)
+         xml = temp
+         flags=re.DOTALL
+         xml = re.sub(r'<\?xm-(insertion|deletion)_mark\?>', r'', xml, flags)
+	 
+         xml = re.sub(r'<\?xm-(insertion|deletion)_mark (?:data="(.*?)")\?>', r'<span class="\1">\2</span>', xml, flags)
+         
+         xml = re.sub(r'<\?xm-(insertion|deletion)_mark_start\?>', r'<span class="\1">', xml, flags)
+         
+         xml = re.sub(r'<\?xm-(insertion|deletion)_mark_end\?>', r'</span>', xml, flags)
+         
+         
          root = etree.fromstring(xml)
-         namespace = {'caml': 'http://lc.ca.gov/legalservices/schemas/caml.1#'}
+         
 
-	 #print vid
+         namespace = {'caml': 'http://lc.ca.gov/legalservices/schemas/caml.1#'}
+         
+
 	 #print "creating title"
          title = root.xpath('//caml:Title', namespaces=namespace)[0]
 
@@ -45,13 +53,28 @@ def billparse():
 	 body = ""
 	 if (len(root.xpath('//caml:Bill', namespaces=namespace)) > 0):
             body = root.xpath('//caml:Bill', namespaces=namespace)[0]
-            traverse(body)
-	    body = etree.tostring(body)
+            #traverse(body)
+            body = etree.tostring(body)
+         elif (len(root.xpath('//caml:Content', namespaces=namespace)) > 0):
+            temp = ""
+            for x in range(0, len(root.xpath('//caml:Content', namespaces=namespace))):
+               temp2 = root.xpath('//caml:Content', namespaces=namespace)[x]
+               body = body + etree.tostring(temp2)
+         else:
+            print vid
+            print root.xpath('//caml:Bill', namespaces=namespace)
+         #print body
+	 
 
+         if("201520160ACA1" in vid):
+            print vid
+            print digest
+            print body
 
          put.execute("UPDATE BillVersion SET title = %s, digest= %s, text = %s WHERE vid = %s", (title.text, digest, body, vid))
       except Exception as e:
          print(e)
+         print vid
          #print"problems/" + vid + ".err", "w"
 
    conn.commit()

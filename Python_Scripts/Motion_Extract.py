@@ -19,7 +19,8 @@ def insert_Motion(cursor, mid, date, text):
 	if(cursor.rowcount == 0):
 		cursor.execute(query_insert_Motion, (mid, date, text))	
 	else:
-		print "Motion mid = {0}, date = {1}, text = {2} Already Exists!".format(mid, date, text)
+		#print "Motion mid = {0}, date = {1}, text = {2} Already Exists!".format(mid, date, text)
+		pass
 
 try:
 	select_count = "SELECT COUNT(*) FROM bill_motion_tbl"
