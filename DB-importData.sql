@@ -1,4 +1,4 @@
-INSERT INTO DDDB2015Apr.Person(pid, last, first, image)
+INSERT INTO DDDB2015AprTest.Person(pid, last, first, image)
 SELECT pid, last, first, image
 FROM DDDB2015.Person;
 

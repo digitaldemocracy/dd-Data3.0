@@ -156,7 +156,7 @@ CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 CREATE TABLE IF NOT EXISTS Video_ttml (
    vid INTEGER,
-   ttml TEXT,
+   ttml MEDIUMTEXT,
 
    FOREIGN KEY (vid) REFERENCES Video(vid)
 )
@@ -377,13 +377,16 @@ ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 CREATE TABLE IF NOT EXISTS Contribution (
+	RecordId INTEGER AUTO_INCREMENT,
 	pid INTEGER,
+	law_eid INTEGER,
+	d_id INTEGER,
 	year INTEGER,
 	house VARCHAR(10),
 	contributor VARCHAR(50),
 	amount DOUBLE,
 	
-	PRIMARY KEY(pid, year, contributor),
+	PRIMARY KEY(RecordId),
 	FOREIGN KEY (pid) REFERENCES Person(pid)
 )	
 ENGINE = INNODB

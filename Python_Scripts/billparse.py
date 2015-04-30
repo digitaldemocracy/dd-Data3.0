@@ -42,6 +42,8 @@ def billparse():
 
 	 #print "creating title"
          title = root.xpath('//caml:Title', namespaces=namespace)[0]
+         titleText = re.sub(r'<.+?>', r'', etree.tostring(title), flags)
+         
 
 	 #print "creating digest"
 	 digest = ""
@@ -71,7 +73,7 @@ def billparse():
             print digest
             print body
 
-         put.execute("UPDATE BillVersion SET title = %s, digest= %s, text = %s WHERE vid = %s", (title.text, digest, body, vid))
+         put.execute("UPDATE BillVersion SET title = %s, digest= %s, text = %s WHERE vid = %s", (titleText, digest, body, vid))
       except Exception as e:
          print(e)
          print vid

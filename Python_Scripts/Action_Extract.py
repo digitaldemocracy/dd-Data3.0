@@ -35,7 +35,7 @@ for i in range(0, a):
 		if temp:
 			bid = temp[0];
 			date = temp[2];
-			text = temp[4];
+			text = temp[3];
 			if(bid):
 				insert_Action(conn2, bid, date, text)
 		db2.commit()
