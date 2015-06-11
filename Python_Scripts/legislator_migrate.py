@@ -2,6 +2,7 @@ import mysql.connector
 from lxml import etree 
 import re
 import sys
+import exceptions
 
 query = 'SELECT last_name, first_name, SUBSTRING(session_year, 1, 4), CONVERT(SUBSTRING(district, -2), UNSIGNED), house_type, party, active_legislator FROM legislator_tbl'
 query_person = 'SELECT pid FROM Person WHERE last = %s AND first = %s'
@@ -28,15 +29,18 @@ def check_term(cursor, pid, year, district, house):
    return pid
 
 def check_name(cursor, last, first):
-   print 'here'
-   result = cursor.execute(query_person, (last, first))
-   print 'there'
+   print "checking"
+   name = clean_name_legislator_migrate(last, first).split("<SPLIT>")
+   first = name[0]
+   last = name[1]
+   cursor.execute(query_person, (last, first))
+   print "done"
    return cursor.fetchone()
 
 conn = mysql.connector.connect(user="root", database="capublic", password="")
 capublic = conn.cursor(buffered=True)
 
-conn2 = mysql.connector.connect(user="root", database="DDDB2015Apr", password="")
+conn2 = mysql.connector.connect(user="root", database="DDDB2015AprTest", password="")
 dd = conn2.cursor(buffered=True)
 result = check_pid(dd, query_legislator, 1)
 print (result)

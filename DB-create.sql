@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS Legislator (
    website_url    VARCHAR(200),
    room_number    INTEGER,
    email_form_link VARCHAR(200),
+   OfficialBio TEXT,
    
    PRIMARY KEY (pid),
    FOREIGN KEY (pid) REFERENCES Person(pid)
@@ -51,7 +52,7 @@ CREATE TABLE IF NOT EXISTS Term (
    end      DATE,
    
    PRIMARY KEY (pid, year, district, house),
-   FOREIGN KEY (pid) REFERENCES Legislator(pid)
+   FOREIGN KEY (pid) REFERENCES Legislator(pid) -- change to Person
 )
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
@@ -60,6 +61,7 @@ CREATE TABLE IF NOT EXISTS Committee (
    cid    INTEGER(3),
    house  ENUM('Assembly', 'Senate', 'Joint') NOT NULL,
    name   VARCHAR(200) NOT NULL,
+   Type   ENUM('Standing','Select','Budget Subcommittee','Joint'),
 
    PRIMARY KEY (cid)
 )
@@ -232,7 +234,7 @@ CREATE TABLE IF NOT EXISTS authors (
    contribution ENUM('Lead Author', 'Principal Coauthor', 'Coauthor') DEFAULT 'Coauthor',
 
    PRIMARY KEY (pid, bid, vid),
-   FOREIGN KEY (pid) REFERENCES Legislator(pid),
+   FOREIGN KEY (pid) REFERENCES Legislator(pid), -- change to Person
    FOREIGN KEY (bid, vid) REFERENCES BillVersion(bid, vid)
 )
 ENGINE = INNODB
@@ -243,7 +245,7 @@ CREATE TABLE IF NOT EXISTS attends (
    hid    INTEGER,
 
    PRIMARY KEY (pid, hid),
-   FOREIGN KEY (pid) REFERENCES Legislator(pid),
+   FOREIGN KEY (pid) REFERENCES Legislator(pid), -- Person
    FOREIGN KEY (hid) REFERENCES Hearing(hid)
 )
 ENGINE = INNODB
@@ -344,7 +346,7 @@ CHARACTER SET utf8 COLLATE utf8_general_ci;
 CREATE TABLE IF NOT EXISTS Gift (
 	RecordId INTEGER AUTO_INCREMENT,
 	pid INTEGER,
-	schedule ENUM('D', 'E'),
+	schedule ENUM('D', 'E'), -- D is a normal gift whereas E is a travel gift
 	sourceName VARCHAR(50),
 	activity VARCHAR(40),
 	city VARCHAR(30),
@@ -623,3 +625,31 @@ CREATE TABLE IF NOT EXISTS StateConstOfficeRepresentation(
    FOREIGN KEY (pid) REFERENCES Person(pid),
    FOREIGN KEY (hid) REFERENCES Hearing(hid)
 );
+
+CREATE TABLE IF NOT EXISTS BillDisRepresentation(
+	did INTEGER,
+	pid INTEGER,
+	le_id INTEGER,
+	hid INTEGER,
+	
+	PRIMARY KEY (did, pid, le_id, hid),
+	FOREIGN KEY (did) REFERENCES BillDiscussion(did),
+	FOREIGN KEY (pid) REFERENCES Person(pid),
+	FOREIGN KEY (le_id) REFERENCES LobbyistEmployer(le_id),
+	FOREIGN KEY (hid) REFERENCES Hearing(hid)
+)
+ENGINE = INNODB
+CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS CommitteeAuthors(
+	cid INTEGER,
+	bid VARCHAR(20),
+	vid VARCHAR(30),
+	
+	PRIMARY KEY(cid, bid, vid),
+	FOREIGN KEY (bid) REFERENCES Bill(bid),
+	FOREIGN KEY (cid) REFERENCES Committee(cid),
+	FOREIGN KEY (vid) REFERENCES BillVersion(vid)
+)
+ENGINE = INNODB
+CHARACTER SET utf8 COLLATE utf8_general_ci;

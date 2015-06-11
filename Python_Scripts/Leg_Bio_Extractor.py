@@ -24,11 +24,13 @@ def cleanName(name):
 def getPerson(cursor, filer_naml, floor):
 	pid = -1
 	filer_naml = cleanName(filer_naml)
+	filer_naml = filer_naml.split(',')[0]
 	temp = filer_naml.split(' ')
-	if(floor == 'ASSEMBLY'):
-		floor = "Assembly"
-	else:
-		floor = "Senate"
+	for i in range(0, len(temp) - 1):
+		print i
+		if "." in temp[i]:
+			del temp[i]
+	print temp
 	filer_namf = ''
 	if(len(temp) > 1):
 		filer_naml = temp[len(temp)-1]
@@ -46,7 +48,7 @@ def getPerson(cursor, filer_naml, floor):
 			temp = cursor.fetchone()
 			a.append(temp[0])
 		for j in range(0, cursor.rowcount):
-			select_term = "SELECT pid, house FROM Term WHERE pid = %(pid)s AND house = %(house)s;"
+			select_term = "SELECT pid, house FROM Term WHERE pid = %(pid)s AND house = %(house)s ORDER BY Term.pid;"
 			cursor.execute(select_term, {'pid':a[j],'house':floor})
 			if(cursor.rowcount == 1):
 				pid = cursor.fetchone()[0]
@@ -63,7 +65,7 @@ def getPerson(cursor, filer_naml, floor):
 db = mysql.connector.connect(user = 'root', db = 'DDDB2015Apr', password = '')
 conn = db.cursor(buffered = True)
 
-with open('biographies.csv', 'rb') as tsvin:
+with open('Senate_and_Assembly_Biographies.csv', 'rb') as tsvin:
 		tsvin = csv.reader(tsvin, delimiter=',')
 		
 		val = 0
@@ -71,8 +73,14 @@ with open('biographies.csv', 'rb') as tsvin:
 
 		for row in tsvin:
 			try:
-				house = "Senate"
-				pid = getPerson(conn, row[1], house)
+				house = ""
+				if(row[0] == "Senator"):
+					house = "Senate"
+				else:
+					house = "Assembly"
+				name = row[1]
+				print name
+				pid = getPerson(conn, name, house)
 				text = row[2]
 				print pid
 				update_Bio(conn, pid, text)	
@@ -82,24 +90,6 @@ with open('biographies.csv', 'rb') as tsvin:
 		db.commit()
 		print val
 
-with open('Assembly_Biography.csv', 'rb') as tsvin:
-		tsvin = csv.reader(tsvin, delimiter=',')
-		
-		val = 0
-		index = 0
-
-		for row in tsvin:
-			try:
-				house = "Assembly"
-				pid = getPerson(conn, row[1], house)
-				text = row[2]
-				print pid
-				update_Bio(conn, pid, text)	
-			except:
-				db.rollback()
-				print 'error!', sys.exc_info()[0], sys.exc_info()[1]
-		db.commit()
-		print val
 db.close()
 
 

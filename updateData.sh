@@ -1,18 +1,6 @@
 #!/bin/sh
 DB=$1
 echo $DB
-echo "Updating tables..."
-echo "Repopulating capublic..."
-cd
-cd dd-Play/data/leginfo/
-echo "Deleting capublic data..."
-for j in capublic; \
-do for i in `echo 'show tables ' |mysql -uroot $j \
-|grep -v 'Tables_in'`; do mysql -uroot $j -e "truncate $i"; done; done
-echo "Populating capublic..."
-echo dmangin221 | sudo -S sh opengov_load.sh pubinfo_2015
-cd
-echo "capublic repopulated!"
 echo "Going to scripts!"
 cd
 cd dd-Data3.0/Python_Scripts/
@@ -35,8 +23,6 @@ echo "Getting Votes..."
 python Vote_Extract.py
 echo "Getting Districts..."
 python Get_Districts.py
-echo "Getting Gifts..."
-python insert_Gifts.py
-echo "Getting Contributions..."
-python insert_Contributions.py
+echo "Getting Actions..."
+python Action_Extract.py
 echo "Finished!"
