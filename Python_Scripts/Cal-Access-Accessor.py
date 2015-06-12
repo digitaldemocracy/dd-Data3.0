@@ -158,7 +158,7 @@ def main():
 				entity_cd = row[6]
 				val = val + 1
 				print val
-				#case 1
+				#case 1 - Lobbying Firm
 				if form == "F601" and entity_cd == "FRM" and (sender_id[:1] == 'F' or sender_id[:1].isdigit()) and sender_id == row[5]: 
 					filer_naml = row[7]
 					filer_id = row[5]
@@ -169,7 +169,7 @@ def main():
 					ls_end_yr = row[14]
 					print "naml = {0}, id = {1}, date = {2}, beg = {3}, end = {4}\n".format(filer_naml, filer_id, rpt_date, ls_beg_yr, ls_end_yr)
 					insert_lobbying_firm(dd, filer_naml, filer_id, rpt_date, ls_beg_yr, ls_end_yr)
-				#case 2
+				#case 2 - Lobbyist and their employer
 				elif form == "F604" and entity_cd == "LBY" and sender_id[:1] == 'F':
 					filer_naml = row[7]
 					filer_namf = row[8]
@@ -185,7 +185,7 @@ def main():
 					print "sender_id = {0}, rpt_date = {1}, ls_beg_yr = {2}, ls_end_yr = {3}\n".format(sender_id, rpt_date, ls_beg_yr, ls_end_yr)
 					insert_lobbyist(dd, pid, filer_id)
 					insert_lobbyist_employment(dd, pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr)
-				#case 3
+				#case 3 - lobbyist and their direct employment under a lobbying firm
 				elif form == "F604" and entity_cd == "LBY" and sender_id[:1] == 'E':
 					filer_naml = row[7]
 					filer_namf = row[8]
@@ -201,7 +201,7 @@ def main():
 					print "sender_id = {0}, rpt_date = {1}, ls_beg_yr = {2}, ls_end_yr = {3}\n".format(sender_id, rpt_date, ls_beg_yr, ls_end_yr)
 					insert_lobbyist(dd, pid, filer_id)
 					insert_lobbyist_direct_employment(dd, pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr)
-				#case 4
+				#case 4 - found a lobbyist, but must determine later if they are under a firm or an employer
 				elif form == "F604" and entity_cd == "LBY" and sender_id.isdigit():
 					filer_naml = row[7]
 					filer_namf = row[8]
@@ -224,7 +224,7 @@ def main():
 					Lobbyist[index][3] = ls_beg_yr
 					Lobbyist[index][4] = ls_end_yr
 					index += 1
-				#case 5
+				#case 5 - Found an employer who is under a contract
 				elif form == "F602" and entity_cd == "LEM":
 					filer_naml = row[7]
 					filer_namf = row[8]
@@ -239,7 +239,7 @@ def main():
 					print "filer_naml = {0}, filer_id = {1}, coalition = {2}\n".format(filer_naml, filer_id, coalition)
 					insert_lobbyist_employer(dd, filer_naml, filer_id, coalition)
 					insert_lobbyist_contracts(dd, filer_id, sender_id, rpt_date, ls_beg_yr, ls_end_yr)
-				#case 6
+				#case 6 - Lobbyist EMployer
 				elif form == "F603" and entity_cd == "LEM":
 					ind_cb = row[39]
 					bus_cb = row[40]
@@ -259,10 +259,10 @@ def main():
 						insert_lobbyist_employer(dd, filer_naml + filer_namf, filer_id, coalition)
 					else:
 						insert_lobbyist_employer(dd, filer_naml, filer_id,  coalition)
-				#case 7
+				#case 7 - IGNORE
 				elif form == "F606":
 					print 'case 7'
-				#case 8
+				#case 8 - IGNORE
 				elif form == "F607" and entity_cd == "LEM":
 					print 'case 8'
 				#just to catch those that dont fit at all

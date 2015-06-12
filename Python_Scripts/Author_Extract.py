@@ -107,11 +107,14 @@ def cleanName(name):
 
 #Finds the Person using a combined name
 def getPerson(cursor, filer_naml, floor):
+	#use -1 as a null value
 	pid = -1
+	#Cleans the name beforehand
 	filer_naml = cleanName(filer_naml)
 	temp = filer_naml.split(' ')
 	filer_namf = ""
 	floor = floor.title()
+	#Checks if there is a first and last name or just a first
 	if(len(temp) > 1):
 		filer_naml = temp[len(temp)-1]
 		filer_namf = temp[0]
@@ -120,18 +123,23 @@ def getPerson(cursor, filer_naml, floor):
 	else:
 		select_pid = "SELECT Person.pid, last, first FROM Person, Legislator WHERE Legislator.pid = Person.pid AND last = %(filer_naml)s ORDER BY Person.pid;"
 		cursor.execute(select_pid, {'filer_naml':filer_naml, 'filer_namf':filer_namf})
+	#If it finds a match of the exact name, use that
 	if cursor.rowcount == 1:
 		pid = cursor.fetchone()[0]
+	#If there is more than one, have to use the house
 	elif cursor.rowcount > 1:
 		a = []
+		#get all of the people who returned
 		for j in range(0, cursor.rowcount):
 			temp = cursor.fetchone()
 			a.append(temp[0])
+		#Find which person it is using their term
 		for j in range(0, cursor.rowcount):
 			select_term = "SELECT pid, house FROM Term WHERE pid = %(pid)s AND house = %(house)s ORDER BY Term.pid;"
 			cursor.execute(select_term, {'pid':a[j],'house':floor})
 			if(cursor.rowcount == 1):
 				pid = cursor.fetchone()[0]
+	#If none were found, loosen the search up a bit and just look for last name
 	else:
 		filer_naml = '%' + filer_naml + '%'
 		select_pid = "SELECT Person.pid, last, first FROM Person, Legislator WHERE Legislator.pid = Person.pid AND last LIKE %(filer_naml)s ORDER BY Person.pid;"
@@ -140,6 +148,7 @@ def getPerson(cursor, filer_naml, floor):
 			pid = cursor.fetchone()[0]
 		else:
 			pass
+	#return whatever I found
 	return pid
 
 #Finds the billVersion for the author
@@ -177,26 +186,32 @@ def getAuthors():
 			temp = conn.fetchone()
 			if temp:
 				cid = -1
+				#Try to find a person of that name
 				pid = getPerson(conn2, temp[3], temp[2])
+				#If no person is found, it might be a committee
 				if(pid == -1):
 					cid = findCommittee(conn2, temp[3], temp[2])
 				vid = temp[0]
 				bid = findBill(conn2, vid)
+				#We only want Lead Authors. None is a null value
 				contribution = "none"
 				if temp[4] == "LEAD_AUTHOR":
 					contribution = "Lead Author"
-				#print contribution
+				#Is it a person?
 				if pid != -1 and vid is not 'none' and contribution is not 'none' and bid is not 'none':
+					#Used for primary author flag
 					if temp[9] == 'Y':
 						#print "adding author {0}".format(pid)
 						j = j + addAuthor(conn2, pid, bid, vid, contribution)
+				#is it a committee?
 				elif cid != -1:
+					#Used for primary author flag
 					if temp[9] == 'Y':
 						addCommitteeAuthor(conn2, cid, bid, vid)
+				#Could not find either a committee or a person
 				elif pid == -1 and cid == -1:
 					print "Could not find {0}".format(temp[3])
 					
-		print j
 		db2.commit()
 	
 	except:

@@ -3,6 +3,15 @@ dd-Data3.0
 
 Scripts used for the database DDDB2015Apr.
 
+Leginfo:  ftp://www.leginfo.ca.gov/pub/bill/
+Cal-Access: 
+Documentation: http://campaignfinance.cdn.sos.ca.gov/calaccess-documentation.zip
+Files: http://campaignfinance.cdn.sos.ca.gov/dbwebexport.zip
+Assembly Website: assembly.ca.gov/
+Senate Website: senate.ca.gov/
+Openstate: https://sunlightlabs.github.io/openstates-api/districts.html
+Maplight: http://maplight.org/data/get/california-money-and-politics-dataset
+
 updateData.sh
 author: Daniel Mangin
 date: 6/11/2015

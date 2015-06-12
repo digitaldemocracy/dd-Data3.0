@@ -29,16 +29,18 @@ import mysql.connector
 from pprint import pprint
 from urllib import urlopen
 
+#Database Queries used
 query_insert_committee = "INSERT INTO Committee (cid, house, name) VALUES (%s, %s, %s);"
 query_insert_serveson = "INSERT INTO servesOn (pid, year, district, house, cid) VALUES(%s, %s, %s, %s, %s);"
 
+#Database Connections
 db = mysql.connector.connect(user = 'root', db = 'DDDB2015Apr', password = '')
 dd = db.cursor(buffered = True)
 
 db2 = mysql.connector.connect(user = 'root', db = 'DDDB2015Apr', password = '')
 dd2 = db2.cursor(buffered = True)
 
-
+#Inserts the floor members after we find their terms
 def insertFloorMembers(cursor, cid, house):
 	select_stmt = "SELECT * FROM Term WHERE house = %(house)s;"
 	cursor.execute(select_stmt, {'house':house})
@@ -52,6 +54,7 @@ def insertFloorMembers(cursor, cid, house):
 		print 'servesOn pid = {0}, house = {1}, cid = {2}, district = {3}'.format(pid, house, cid, district)
 		insert_serveson(dd, pid, year, district, house, cid)
 
+#inserts the COmmittee Senate Floor
 def insertSenateFloor(cursor):
 	#insert the senate floor
 	name = "Senate Floor"
@@ -71,6 +74,7 @@ def insertSenateFloor(cursor):
 		cid = temp[0]
 	insertFloorMembers(dd2, cid, house) 
 
+#inserts the Committee Assembly Floor
 def insertAssemblyFloor(cursor):
 	#insert the assembly floor
 	name = "Assembly Floor"
@@ -87,8 +91,7 @@ def insertAssemblyFloor(cursor):
 		cid = temp[0]
 	insertFloorMembers(dd2, cid, house) 
 		
-	
-
+# Finds the district that a legislator serves using Term
 def find_district(cursor, pid, year, house):
 	select_stmt = "SELECT district FROM Term where pid = %(pid)s AND house = %(house)s AND year = %(year)s;"
 	cursor.execute(select_stmt, {'pid':pid, 'house':house, 'year':year})
@@ -97,23 +100,18 @@ def find_district(cursor, pid, year, house):
 		return temp[0]
 	return 999
 
+#checks if the legislator is already in database, otherwise input them in servesOn
 def insert_serveson(cursor, pid, year, district, house, cid):
 	select_stmt = "SELECT * FROM servesOn where pid = %(pid)s AND house = %(house)s AND year = %(year)s AND cid = %(cid)s AND district = %(district)s;"
 	cursor.execute(select_stmt, {'pid':pid, 'house':house, 'year':year, 'cid':cid, 'district':district})
 	if(cursor.rowcount == 0):
-		print 'insert'
-		print pid
-		print year
-		print district
-		print house
-		print cid
 		print 'inserting {0}'.format(pid)
 		cursor.execute(query_insert_serveson, (pid, year, district, house, cid))
-		print 'inserted!'
 	else:
 		#print 'servesOn pid = {0}, house = {1}, cid = {2}, district = {3} exists'.format(pid, house, cid, district)
 		pass
 
+#Finds the person
 def getPerson(cursor, filer_naml, filer_namf):
 	pid = -1
 	#print filer_naml
@@ -127,7 +125,8 @@ def getPerson(cursor, filer_naml, filer_namf):
 	else:
 		print "couldn't find {0} {1}".format(filer_namf, filer_naml)
 	return pid
-	
+
+#Creates all the data needed for the servesOn insertion
 def create_servesOn(cursor, name, house, cid):
 	year = 2015
 	name = name.split(' ')

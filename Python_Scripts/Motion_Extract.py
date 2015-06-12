@@ -47,29 +47,38 @@ def insert_Motion(cursor, mid, date, text):
 		#print "Motion mid = {0}, date = {1}, text = {2} Already Exists!".format(mid, date, text)
 		pass
 
-try:
-	select_count = "SELECT COUNT(*) FROM bill_motion_tbl"
-	conn.execute(select_count)
-	temp = conn.fetchone()
-	a = temp[0]
-	print a
-	select_stmt = "SELECT * FROM bill_motion_tbl"
-	conn.execute(select_stmt)
-	for i in range(0, a):
+def getMotions():
+	try:
+		select_count = "SELECT COUNT(*) FROM bill_motion_tbl"
+		conn.execute(select_count)
 		temp = conn.fetchone()
-		if temp:
-			mid = temp[0];
-			date = temp[3];
-			date = date.strftime('%Y-%m-%d %H:%M:%S')
-			text = temp[1];
-			if(date):
-				insert_Motion(conn2, mid, date, text)
-	db2.commit()
+		a = temp[0]
+		print a
+		select_stmt = "SELECT * FROM bill_motion_tbl"
+		conn.execute(select_stmt)
+		for i in range(0, a):
+			temp = conn.fetchone()
+			if temp:
+				mid = temp[0];
+				date = temp[3];
+				date = date.strftime('%Y-%m-%d %H:%M:%S')
+				text = temp[1];
+				if(date):
+					insert_Motion(conn2, mid, date, text)
+		db2.commit()
 
-except:
-	db2.rollback()
-	print 'error!', sys.exc_info()[0], sys.exc_info()[1]
-	exit()
+	except:
+		db2.rollback()
+		print 'error!', sys.exc_info()[0], sys.exc_info()[1]
+		exit()
 
-db.close();
-db2.close();
+	db.close();
+	db2.close();
+
+def main():
+	getMotions()
+	db.close();
+	db2.close();
+
+if __name__ == "__main__":
+	main()	

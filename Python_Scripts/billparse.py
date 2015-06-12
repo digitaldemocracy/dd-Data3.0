@@ -91,12 +91,6 @@ def billparse():
             print vid
             print root.xpath('//caml:Bill', namespaces=namespace)
          #print body
-	 
-
-         if("201520160ACA1" in vid):
-            print vid
-            print digest
-            print body
 
          put.execute("UPDATE BillVersion SET title = %s, digest= %s, text = %s WHERE vid = %s", (titleText, digest, body, vid))
       except Exception as e:
