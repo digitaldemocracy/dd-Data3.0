@@ -1,3 +1,9 @@
+-- file: DB-setup.sql
+-- author: Daniel Mangin
+-- date: 6/11/2015
+-- Description: Used to create all of the tables for Digital Democracy
+-- note: this will only work on the currently used database
+
 CREATE TABLE IF NOT EXISTS Person (
    pid    INTEGER AUTO_INCREMENT,
    last   VARCHAR(50) NOT NULL,

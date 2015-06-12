@@ -1,3 +1,13 @@
+'''
+File: Lobbying_Firm_Name_Fix.py
+Author: Daniel Mangin
+Date: 6/11/2015
+
+Description:
+- Used to correct names of Lobbying Firms gathered during the Lobbying Info
+- Used as an import to the Cal-Access-Accessor.py to clean Lobbying Firm Names
+'''
+
 import re
 import sys
 import string

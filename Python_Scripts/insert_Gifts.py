@@ -1,3 +1,19 @@
+'''
+File: insert_Gifts.py
+Author: Daniel Mangin
+Date: 6/11/2015
+
+Description:
+- Gathers Gift Data and puts it into DDDB2015.Gift
+- Used once for the Insertion of all the Gifts
+- Fills table:
+	Gift (pid, schedule, sourceName, activity, city, cityState, value, giftDate, reimbursed, giftIncomeFlag, speechFlag, description)
+
+Source:
+- Gifts.txt
+
+'''
+
 import re
 import sys
 import mysql.connector

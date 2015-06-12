@@ -1,3 +1,14 @@
+'''
+File: Person_Name_Fix.py
+Author: Daniel Mangin
+Date: 6/11/2015
+
+Description:
+- Cleans the all capitalized names in the Person table and revertes them to their proper titling
+- Included in Cal-Access-Accessor.py to clean up Lobbyist Names
+
+'''
+
 import re
 import sys
 import string

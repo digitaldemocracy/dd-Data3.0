@@ -1,3 +1,20 @@
+'''
+DEPRECIATED SCRIPT, Use insert_Contributions_CSV.py
+File: insert_Contributions.py
+Author: Daniel Mangin
+Date: 6/11/2015
+
+Description:
+- Gathers Contribution Data and puts it into DDDB2015.Contributions
+- Used once for the Contributions.json
+- Fills table:
+	Contribution (pid, year, house, contributor, amount)
+
+Source
+- Contributions.json
+
+'''
+
 import json
 import urllib2
 import re

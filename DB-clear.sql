@@ -1,3 +1,9 @@
+-- file: DB-clear.sql
+-- author: Daniel Mangin
+-- date: 6/11/2015
+-- Description: Used to drop all of the tables in the current database
+-- note: this will only work on the currently used database
+
 SET foreign_key_checks = 0;
 
 DROP TABLE servesOn;

@@ -1,3 +1,20 @@
+'''
+DEPRECIATED SCRIPT. We use Get_Committees_Web.py instead
+File: Committee_CSV_Extract.py
+Author: Daniel Mangin
+Date: 6/11/2015
+
+Description:
+- Gathers JSON data from OpenState and fills DDDB2015Apr.Committee
+- used for daily update of DDDB2015Apr
+- Fills table:
+	Committee (cid, house, name)
+
+Sources
+- OpenState
+
+'''
+
 import json
 import re
 import sys

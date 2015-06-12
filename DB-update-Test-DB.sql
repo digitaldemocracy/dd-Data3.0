@@ -1,3 +1,8 @@
+-- file: DB-update-Test-DB.sql
+-- author: Daniel Mangin
+-- date: 6/11/2015
+-- Description: Used to turn DDDB2015AprTest into an exact copy of DDDB2015Apr
+
 use DDDB2015AprTest;
 
 source DB-clear.sql;

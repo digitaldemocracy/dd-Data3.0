@@ -1,3 +1,22 @@
+'''
+File: Get_Committees_Web.py
+Author: Daniel Mangin
+Date: 6/11/2015
+
+Description:
+- Scrapes the Assembly and Senate Websites to gather current Committees and Membership and place them into
+	DDDB2015Apr.Committee and DDDB2015Apr.servesOn
+- Used for daily update Script
+- Fills table:
+	Committee (cid, house, name)
+	servesOn (pid, year, district, house, cid)
+
+Sources
+- California Assembly Website
+- California Senate Website
+
+'''
+
 #Grabs the Committees and their memberships from the SOS Assembly and Senate sites
 #Fills the tables Committee and servesOn
 #Relies on data from Person and Term
@@ -211,61 +230,68 @@ def get_members_senate(imp, cid, house, joint):
 		print 'error!', sys.exc_info()[0], sys.exc_info()[1]
 		return 0
 
-response = urllib2.urlopen('http://assembly.ca.gov/committees')
-html = response.read()
-matches = re.findall('<span class="field-content">.+',html)
-i = 0
-try:
-	for match in matches:
-        #print match
-        	parts = match.split('<')
-        	imp = parts[2].split('>')
-		house = "Assembly"
-		if "Joint" in imp[1]:
-			house = "Joint"
-		print "Committee: {0}".format(imp[1])
-		print house
-		cid = find_Committee(dd, house, imp[1])
-		house = "Assembly"
-        	i = i + get_members_assembly(imp[0], cid, house)
-	insertAssemblyFloor(dd)
-	db.commit()
+def getAssemblyInformation():
+	response = urllib2.urlopen('http://assembly.ca.gov/committees')
+	html = response.read()
+	matches = re.findall('<span class="field-content">.+',html)
+	try:
+		for match in matches:
+			#print match
+			parts = match.split('<')
+			imp = parts[2].split('>')
+			house = "Assembly"
+			if "Joint" in imp[1]:
+				house = "Joint"
+			print "Committee: {0}".format(imp[1])
+			print house
+			cid = find_Committee(dd, house, imp[1])
+			house = "Assembly"
+			get_members_assembly(imp[0], cid, house)
+		insertAssemblyFloor(dd)
+		db.commit()
 
-except:
-	db.rollback()
-	print 'error!', sys.exc_info()[0], sys.exc_info()[1]
-	exit()
+	except:
+		db.rollback()
+		print 'error!', sys.exc_info()[0], sys.exc_info()[1]
+		exit()
 
-response = urllib2.urlopen('http://senate.ca.gov/committees')
-html = response.read()
-#print html
-matches = re.findall('<div class="views-field views-field-title">.+\n.+',html)
-f = open('committees.txt','a')
-try:
-	for match in matches:
-        	match = match.split('\n')[1]
-        	#print match
-        	parts = match.split('<')
-        	#print parts[1]
-        	imp = parts[1].split('>')
-		house = "Senate"
-		joint = ""
-		print "Committee: {0}".format(imp[1])
-		if "Joint" in imp[1]:
-			house = "Joint"
-			joint = "Yes"
-		cid = find_Committee(dd, house, imp[1])
-		house = "Senate"
-        	print imp[1]
-        	i = i + get_members_senate(imp[0], cid, house, joint)
-	insertSenateFloor(dd)
-	db.commit()
+def getSenateInformation():
+	response = urllib2.urlopen('http://senate.ca.gov/committees')
+	html = response.read()
+	#print html
+	matches = re.findall('<div class="views-field views-field-title">.+\n.+',html)
+	f = open('committees.txt','a')
+	try:
+		for match in matches:
+			match = match.split('\n')[1]
+			#print match
+			parts = match.split('<')
+			#print parts[1]
+			imp = parts[1].split('>')
+			house = "Senate"
+			joint = ""
+			print "Committee: {0}".format(imp[1])
+			if "Joint" in imp[1]:
+				house = "Joint"
+				joint = "Yes"
+			cid = find_Committee(dd, house, imp[1])
+			house = "Senate"
+			get_members_senate(imp[0], cid, house, joint)
+		insertSenateFloor(dd)
+		db.commit()
 
-except:
-	db.rollback()
-	print 'error!', sys.exc_info()[0], sys.exc_info()[1]
-	exit()
+	except:
+		db.rollback()
+		print 'error!', sys.exc_info()[0], sys.exc_info()[1]
+		exit()
 
-print "There are {0} entries in servesOn".format(i)
+def main():
+	getAssemblyInformation()
+	getSenateInformation()
+	db.close()
+	db2.close()
 
-db.close()
+if __name__ == "__main__":
+   main()
+
+

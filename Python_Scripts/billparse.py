@@ -1,3 +1,28 @@
+'''
+File: billparse.py
+Author: ???
+Date: 6/11/2015
+
+Description:
+- Takes the bill_xml column from the capublic.bill_version_tbl and inserts it into the appropriate columns in DDDB2015Apr.BillVersion
+- This script runs under the update script
+- Fills table:
+	BillVersion (title, digest, text)
+
+Sources:
+- Leginfo (capublic)
+	- Pubinfo_2015.zip
+	- Pubinfo_Mon.zip
+	- Pubinfo_Tue.zip
+	- Pubinfo_Wed.zip
+	- Pubinfo_Thu.zip
+	- Pubinfo_Fri.zip
+	- Pubinfo_Sat.zip
+
+- capublic
+	- bill_version_tbl
+'''
+
 import mysql.connector
 from lxml import etree 
 import re

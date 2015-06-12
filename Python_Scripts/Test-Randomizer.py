@@ -1,3 +1,13 @@
+'''
+File: Test-Randomizer.py
+Author: Daniel Mangin
+Date: 6/11/2015
+
+Description:
+- Used to grab 25% of random values form DDDB2015Apr
+- Used for testing reasons on Drupal
+'''
+
 import mysql.connector
 import re
 import sys

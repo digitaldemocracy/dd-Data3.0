@@ -1,3 +1,19 @@
+'''
+File: Leg_Bio_Extractor.py
+Author: Daniel Mangin
+Date: 6/11/2015
+
+Description:
+- Gathers Senate and Assembly Biographies and puts it into DDDB2015.Legislator.Bio
+- Used once for the Insertion of all OfficialBios
+- Fills table:
+	Legislator (OfficialBio)
+
+Sources:
+- Senate_and_Assembly_Biographies.csv
+
+'''
+
 import json
 import urllib2
 import re

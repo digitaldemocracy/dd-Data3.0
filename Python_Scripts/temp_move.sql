@@ -1,3 +1,6 @@
+-- used to add committeehearings
+-- do not need to use or worry about
+
 CREATE TABLE IF NOT EXISTS CommitteeHearings (
 	cid INTEGER,
 	hid INTEGER,

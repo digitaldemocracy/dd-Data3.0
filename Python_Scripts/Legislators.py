@@ -1,3 +1,13 @@
+'''
+File: Legislators.py
+Author: Daniel Mangin
+Date: 6/11/2015
+
+Description:
+- Gets a list of random Legislators and outputs them to a text file
+- Only used for providing names for testing reasons
+'''
+
 import mysql.connector
 import re
 import sys

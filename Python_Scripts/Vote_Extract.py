@@ -1,3 +1,32 @@
+'''
+File: Vote_Extract.py
+Author: Daniel Mangin
+Date: 6/11/2015
+
+Description:
+- Gets the Vote Data from capublic.bill_summary_vote into DDDB2015Apr.BillVoteSummary and capublic.bill_detail_vote into DDDB2015Apr.BillVoteDetail
+- Used in daily update of DDDB2015Apr
+- Fills Tables:
+	BillVoteSummary (bid, mid, cid, VoteDate, ayes, naes, abstain, result)
+	BillVoteDetail (pid, voteId, result)
+
+Sources:
+- Leginfo (capublic)
+	- Pubinfo_2015.zip
+	- Pubinfo_Mon.zip
+	- Pubinfo_Tue.zip
+	- Pubinfo_Wed.zip
+	- Pubinfo_Thu.zip
+	- Pubinfo_Fri.zip
+	- Pubinfo_Sat.zip
+
+-capublic
+	- bill_summary_vote_tbl
+	- bill_detail_vote_tbl
+
+'''
+
+
 import re
 import sys
 import mysql.connector
@@ -131,62 +160,70 @@ def insert_BillVoteDetail(cursor, pid, voteId, result, temp):
 		#print temp
 		pass
 
-try:
-	select_count = "SELECT COUNT(*) FROM bill_summary_vote_tbl"
-	conn.execute(select_count)
-	temp = conn.fetchone()
-	a = temp[0]
-	print a
-	select_stmt = "Select * from bill_summary_vote_tbl"
-	conn.execute(select_stmt);
-	for i in range(0, a):
+def getSummaryVotes():
+	try:
+		select_count = "SELECT COUNT(*) FROM bill_summary_vote_tbl"
+		conn.execute(select_count)
 		temp = conn.fetchone()
-		if temp:
-			bid = temp[0]
-			mid = temp[4]
-			cid = getCommittee(conn3, temp[1])
-			print cid
-			VoteDate = temp[10]
-			ayes = temp[5]
-			naes = temp[6]
-			abstain = temp[7]
-			result = temp[8]
-			if(cid != -1):
-				insert_BillVoteSummary(conn2, bid, mid, cid, VoteDate, ayes, naes, abstain, result)
-	db2.commit()
+		a = temp[0]
+		print a
+		select_stmt = "Select * from bill_summary_vote_tbl"
+		conn.execute(select_stmt);
+		for i in range(0, a):
+			temp = conn.fetchone()
+			if temp:
+				bid = temp[0]
+				mid = temp[4]
+				cid = getCommittee(conn3, temp[1])
+				print cid
+				VoteDate = temp[10]
+				ayes = temp[5]
+				naes = temp[6]
+				abstain = temp[7]
+				result = temp[8]
+				if(cid != -1):
+					insert_BillVoteSummary(conn2, bid, mid, cid, VoteDate, ayes, naes, abstain, result)
+		db2.commit()
 
 
-except:
-	db2.rollback()
-	print 'error!', sys.exc_info()[0], sys.exc_info()[1]
-	exit()
+	except:
+		db2.rollback()
+		print 'error!', sys.exc_info()[0], sys.exc_info()[1]
+		exit()
 
-try:
-	select_count = "SELECT COUNT(*) FROM bill_detail_vote_tbl"
-	conn.execute(select_count)
-	temp = conn.fetchone()
-	a = temp[0]
-	select_stmt = "Select * from bill_detail_vote_tbl"
-	conn.execute(select_stmt);
-	for i in range(0, a):
+def getDetailVotes():
+	try:
+		select_count = "SELECT COUNT(*) FROM bill_detail_vote_tbl"
+		conn.execute(select_count)
 		temp = conn.fetchone()
-		if temp:
-			date = temp[8].strftime('%Y-%m-%d')
-			pid = getPerson(conn2, temp[2], temp[1])
-			voteId = getVoteId(conn2, temp[0], temp[6], date)
-			result = temp[5]
-			if(voteId != -1 and pid != -1):
-				insert_BillVoteDetail(conn2, pid, voteId, result, temp)
-			else:
-				#print temp
-				pass
-	db2.commit()
+		a = temp[0]
+		select_stmt = "Select * from bill_detail_vote_tbl"
+		conn.execute(select_stmt);
+		for i in range(0, a):
+			temp = conn.fetchone()
+			if temp:
+				date = temp[8].strftime('%Y-%m-%d')
+				pid = getPerson(conn2, temp[2], temp[1])
+				voteId = getVoteId(conn2, temp[0], temp[6], date)
+				result = temp[5]
+				if(voteId != -1 and pid != -1):
+					insert_BillVoteDetail(conn2, pid, voteId, result, temp)
+				else:
+					#print temp
+					pass
+		db2.commit()
 
 
-except:
-	db2.rollback()
-	print 'error!', sys.exc_info()[0], sys.exc_info()[1]
-	exit()
+	except:
+		db2.rollback()
+		print 'error!', sys.exc_info()[0], sys.exc_info()[1]
+		exit()
 
-db.close()
-db2.close()
+def main():
+	getSummaryVotes()
+	getDetailVotes()
+	db.close()
+	db2.close()
+
+if __name__ == "__main__":
+	main()

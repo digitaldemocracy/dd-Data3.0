@@ -1,8 +1,15 @@
 #!/bin/sh
 DB=$1
 echo $DB
-echo "Going to scripts!"
+echo "Going to Main Directory!"
 cd
+echo "creating backup!"
+cd DDDB2015AprDump
+today=$(date +%Y-%m-%d)
+mysqldump -uroot --databases DDDB2015Apr > DDDB2015Apr-$today.sql
+echo "back up created!"
+cd
+echo "running python scripts"
 cd dd-Data3.0/Python_Scripts/
 echo "Populating tables Person, Legislator, and Term..."
 python legislator_migrate.py

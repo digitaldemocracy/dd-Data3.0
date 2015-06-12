@@ -1,6 +1,24 @@
-# Cal Access Extractor
-# Daniel Mangin
-# 11/13/2014
+'''
+File: Cal-Access-Accessor.py
+Author: Daniel Mangin
+Date: 6/11/2015
+
+Description:
+- Goes through the file CVR_REGISTRATION_CD.TSV and places the data into DDDB2015Apr
+- This script runs under the update script
+- Fills table:
+	LobbyingFirm (filer_naml, filer_id, rpt_date, ls_beg_yr, ls_end_yr)
+	Lobbyist (pid, filer_id)
+	Person (last, first)
+	LobbyistEmployer (filer_naml, filer_id, coalition)
+	LobbyistEmployment (pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr)
+	LobbyistDirectEmployment (pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr)
+	LobbyingContracts (filer_id, sender_id, rpt_date, ls_beg_yr, ls_end_yr)
+
+Sources:
+- db_web_export.zip (California Access)
+	- CVR_REGISTRATION_CD.TSV
+'''
 
 import mysql.connector
 import re
@@ -124,150 +142,152 @@ def find_lobbyist_employment(cursor, index):
 db = mysql.connector.connect(user = 'root', db = 'DDDB2015Apr', password = '')
 dd = db.cursor(buffered = True)
 
-try:
-	refOff = "SET foreign_key_checks = 0"
-	dd.execute(refOff)
-	with open('CVR_REGISTRATION_CD.TSV', 'rb') as tsvin:
-		tsvin = csv.reader(tsvin, delimiter='\t')
-		
-		val = 0
-		index = 0
+def main():
+	try:
+		refOff = "SET foreign_key_checks = 0"
+		dd.execute(refOff)
+		with open('CVR_REGISTRATION_CD.TSV', 'rb') as tsvin:
+			tsvin = csv.reader(tsvin, delimiter='\t')
+			
+			val = 0
+			index = 0
 
-		for row in tsvin:
-			form = row[3]
-			sender_id = row[4]
-			entity_cd = row[6]
-			val = val + 1
-			print val
-			#case 1
-			if form == "F601" and entity_cd == "FRM" and (sender_id[:1] == 'F' or sender_id[:1].isdigit()) and sender_id == row[5]: 
-				filer_naml = row[7]
-				filer_id = row[5]
-				rpt_date = row[12]
-				rpt_date = rpt_date.split(' ')[0]
-				rpt_date = format_date(rpt_date)
-				ls_beg_yr = row[13]
-				ls_end_yr = row[14]
-				print "naml = {0}, id = {1}, date = {2}, beg = {3}, end = {4}\n".format(filer_naml, filer_id, rpt_date, ls_beg_yr, ls_end_yr)
-				insert_lobbying_firm(dd, filer_naml, filer_id, rpt_date, ls_beg_yr, ls_end_yr)
-			#case 2
-			elif form == "F604" and entity_cd == "LBY" and sender_id[:1] == 'F':
-				filer_naml = row[7]
-				filer_namf = row[8]
-				filer_id = row[5]
+			for row in tsvin:
+				form = row[3]
 				sender_id = row[4]
-				rpt_date = row[12]
-				rpt_date = rpt_date.split(' ')[0]
-				rpt_date = format_date(rpt_date)
-				ls_beg_yr = row[13]
-				ls_end_yr = row[14]
-				pid = getPerson(dd, filer_id, filer_naml, filer_namf, val)
-				print "filer_id = {0}\n".format(filer_id)
-				print "sender_id = {0}, rpt_date = {1}, ls_beg_yr = {2}, ls_end_yr = {3}\n".format(sender_id, rpt_date, ls_beg_yr, ls_end_yr)
-				insert_lobbyist(dd, pid, filer_id)
-				insert_lobbyist_employment(dd, pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr)
-			#case 3
-			elif form == "F604" and entity_cd == "LBY" and sender_id[:1] == 'E':
-				filer_naml = row[7]
-				filer_namf = row[8]
-				filer_id = row[5]
-				sender_id = row[4]
-				rpt_date = row[12]
-				rpt_date = rpt_date.split(' ')[0]
-				rpt_date = format_date(rpt_date)
-				ls_beg_yr = row[13]
-				ls_end_yr = row[14]
-				pid = getPerson(dd, filer_id, filer_naml, filer_namf, val)
-				print "filer_id = {0}\n".format(filer_id)
-				print "sender_id = {0}, rpt_date = {1}, ls_beg_yr = {2}, ls_end_yr = {3}\n".format(sender_id, rpt_date, ls_beg_yr, ls_end_yr)
-				insert_lobbyist(dd, pid, filer_id)
-				insert_lobbyist_direct_employment(dd, pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr)
-			#case 4
-			elif form == "F604" and entity_cd == "LBY" and sender_id.isdigit():
-				filer_naml = row[7]
-				filer_namf = row[8]
-				filer_id = row[5]
-				sender_id = row[4]
-				rpt_date = row[12]
-				rpt_date = rpt_date.split(' ')[0]
-				rpt_date = format_date(rpt_date)
-				ls_beg_yr = row[13]
-				ls_end_yr = row[14]
-				firm_name = row[61]
-				print "filer_id = {0}\n".format(filer_id)
-				pid = getPerson(dd, filer_id, filer_naml, filer_namf, val)
-				insert_lobbyist(dd, pid, filer_id)
-				print "inserting Lobbyist into index {0}\n".format(index)
-				#insert the lobbyist into the array for later
-				Lobbyist[index][0] = pid
-				Lobbyist[index][1] = sender_id
-				Lobbyist[index][2] = rpt_date
-				Lobbyist[index][3] = ls_beg_yr
-				Lobbyist[index][4] = ls_end_yr
-				index += 1
-			#case 5
-			elif form == "F602" and entity_cd == "LEM":
-				filer_naml = row[7]
-				filer_namf = row[8]
-				filer_id = row[5]
-				sender_id = row[4]
-				rpt_date = row[12]
-				rpt_date = rpt_date.split(' ')[0]
-				rpt_date = format_date(rpt_date)
-				ls_beg_yr = row[13]
-				ls_end_yr = row[14]
-				coalition = (filer_id[:1] == 'C') * 1
-				print "filer_naml = {0}, filer_id = {1}, coalition = {2}\n".format(filer_naml, filer_id, coalition)
-				insert_lobbyist_employer(dd, filer_naml, filer_id, coalition)
-				insert_lobbyist_contracts(dd, filer_id, sender_id, rpt_date, ls_beg_yr, ls_end_yr)
-			#case 6
-			elif form == "F603" and entity_cd == "LEM":
-				ind_cb = row[39]
-				bus_cb = row[40]
-				trade_cb = row[41]
-				oth_cb = row[42]
-				filer_naml = row[7]
-				filer_namf = row[8]
-				filer_id = row[5]
-				rpt_date = row[12]
-				rpt_date = rpt_date.split(' ')[0]
-				rpt_date = format_date(rpt_date)
-				ls_beg_yr = row[13]
-				ls_end_yr = row[14]
-				coalition = (filer_id[:1] == 'C') * 1
-				print "filer_naml = {0}, filer_id = {1}, coalition = {2}\n".format(filer_naml, filer_id, coalition)
-				if(ind_cb == 'X'):
-					insert_lobbyist_employer(dd, filer_naml + filer_namf, filer_id, coalition)
+				entity_cd = row[6]
+				val = val + 1
+				print val
+				#case 1
+				if form == "F601" and entity_cd == "FRM" and (sender_id[:1] == 'F' or sender_id[:1].isdigit()) and sender_id == row[5]: 
+					filer_naml = row[7]
+					filer_id = row[5]
+					rpt_date = row[12]
+					rpt_date = rpt_date.split(' ')[0]
+					rpt_date = format_date(rpt_date)
+					ls_beg_yr = row[13]
+					ls_end_yr = row[14]
+					print "naml = {0}, id = {1}, date = {2}, beg = {3}, end = {4}\n".format(filer_naml, filer_id, rpt_date, ls_beg_yr, ls_end_yr)
+					insert_lobbying_firm(dd, filer_naml, filer_id, rpt_date, ls_beg_yr, ls_end_yr)
+				#case 2
+				elif form == "F604" and entity_cd == "LBY" and sender_id[:1] == 'F':
+					filer_naml = row[7]
+					filer_namf = row[8]
+					filer_id = row[5]
+					sender_id = row[4]
+					rpt_date = row[12]
+					rpt_date = rpt_date.split(' ')[0]
+					rpt_date = format_date(rpt_date)
+					ls_beg_yr = row[13]
+					ls_end_yr = row[14]
+					pid = getPerson(dd, filer_id, filer_naml, filer_namf, val)
+					print "filer_id = {0}\n".format(filer_id)
+					print "sender_id = {0}, rpt_date = {1}, ls_beg_yr = {2}, ls_end_yr = {3}\n".format(sender_id, rpt_date, ls_beg_yr, ls_end_yr)
+					insert_lobbyist(dd, pid, filer_id)
+					insert_lobbyist_employment(dd, pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr)
+				#case 3
+				elif form == "F604" and entity_cd == "LBY" and sender_id[:1] == 'E':
+					filer_naml = row[7]
+					filer_namf = row[8]
+					filer_id = row[5]
+					sender_id = row[4]
+					rpt_date = row[12]
+					rpt_date = rpt_date.split(' ')[0]
+					rpt_date = format_date(rpt_date)
+					ls_beg_yr = row[13]
+					ls_end_yr = row[14]
+					pid = getPerson(dd, filer_id, filer_naml, filer_namf, val)
+					print "filer_id = {0}\n".format(filer_id)
+					print "sender_id = {0}, rpt_date = {1}, ls_beg_yr = {2}, ls_end_yr = {3}\n".format(sender_id, rpt_date, ls_beg_yr, ls_end_yr)
+					insert_lobbyist(dd, pid, filer_id)
+					insert_lobbyist_direct_employment(dd, pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr)
+				#case 4
+				elif form == "F604" and entity_cd == "LBY" and sender_id.isdigit():
+					filer_naml = row[7]
+					filer_namf = row[8]
+					filer_id = row[5]
+					sender_id = row[4]
+					rpt_date = row[12]
+					rpt_date = rpt_date.split(' ')[0]
+					rpt_date = format_date(rpt_date)
+					ls_beg_yr = row[13]
+					ls_end_yr = row[14]
+					firm_name = row[61]
+					print "filer_id = {0}\n".format(filer_id)
+					pid = getPerson(dd, filer_id, filer_naml, filer_namf, val)
+					insert_lobbyist(dd, pid, filer_id)
+					print "inserting Lobbyist into index {0}\n".format(index)
+					#insert the lobbyist into the array for later
+					Lobbyist[index][0] = pid
+					Lobbyist[index][1] = sender_id
+					Lobbyist[index][2] = rpt_date
+					Lobbyist[index][3] = ls_beg_yr
+					Lobbyist[index][4] = ls_end_yr
+					index += 1
+				#case 5
+				elif form == "F602" and entity_cd == "LEM":
+					filer_naml = row[7]
+					filer_namf = row[8]
+					filer_id = row[5]
+					sender_id = row[4]
+					rpt_date = row[12]
+					rpt_date = rpt_date.split(' ')[0]
+					rpt_date = format_date(rpt_date)
+					ls_beg_yr = row[13]
+					ls_end_yr = row[14]
+					coalition = (filer_id[:1] == 'C') * 1
+					print "filer_naml = {0}, filer_id = {1}, coalition = {2}\n".format(filer_naml, filer_id, coalition)
+					insert_lobbyist_employer(dd, filer_naml, filer_id, coalition)
+					insert_lobbyist_contracts(dd, filer_id, sender_id, rpt_date, ls_beg_yr, ls_end_yr)
+				#case 6
+				elif form == "F603" and entity_cd == "LEM":
+					ind_cb = row[39]
+					bus_cb = row[40]
+					trade_cb = row[41]
+					oth_cb = row[42]
+					filer_naml = row[7]
+					filer_namf = row[8]
+					filer_id = row[5]
+					rpt_date = row[12]
+					rpt_date = rpt_date.split(' ')[0]
+					rpt_date = format_date(rpt_date)
+					ls_beg_yr = row[13]
+					ls_end_yr = row[14]
+					coalition = (filer_id[:1] == 'C') * 1
+					print "filer_naml = {0}, filer_id = {1}, coalition = {2}\n".format(filer_naml, filer_id, coalition)
+					if(ind_cb == 'X'):
+						insert_lobbyist_employer(dd, filer_naml + filer_namf, filer_id, coalition)
+					else:
+						insert_lobbyist_employer(dd, filer_naml, filer_id,  coalition)
+				#case 7
+				elif form == "F606":
+					print 'case 7'
+				#case 8
+				elif form == "F607" and entity_cd == "LEM":
+					print 'case 8'
+				#just to catch those that dont fit at all
 				else:
-					insert_lobbyist_employer(dd, filer_naml, filer_id,  coalition)
-			#case 7
-			elif form == "F606":
-				print 'case 7'
-			#case 8
-			elif form == "F607" and entity_cd == "LEM":
-				print 'case 8'
-			#just to catch those that dont fit at all
-			else:
-				print 'Does not match any case!'
+					print 'Does not match any case!'
+					
+			#Goes through the Lobbyist table and finds employment
+			#Continuation of case 4
+			while index:
+				index -= 1
+				print "checking lobbyist {0}\n".format(index)
+				find_lobbyist_employment(dd, index)
 				
-		#Goes through the Lobbyist table and finds employment
-		#Continuation of case 4
-		while index:
-			index -= 1
-			print "checking lobbyist {0}\n".format(index)
-			find_lobbyist_employment(dd, index)
+			db.commit()
+		refOn = "Set foreign_key_checks = 1"
+		dd.execute(refOn)		
 			
-		db.commit()
-	refOn = "Set foreign_key_checks = 1"
-	dd.execute(refOn)		
+	#If there is an issue, will print it and rollback the Database
+	except:
+		db.rollback()
+		print 'error!', sys.exc_info()[0], sys.exc_info()[1]
+		exit()
 		
-#If there is an issue, will print it and rollback the Database
-except:
-	db.rollback()
-	print 'error!', sys.exc_info()[0], sys.exc_info()[1]
-	exit()
-	
-#close all connections
-db.close()
+	#close all connections
+	db.close()
 			
-		
+if __name__ == "__main__":
+	main()	

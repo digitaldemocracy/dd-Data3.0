@@ -1,0 +1,72 @@
+Comparing: old/cleanup.bat new/cleanup.bat
+
+Comparing: old/create_capublic.bat new/create_capublic.bat
+
+Comparing: old/capublic.sql new/capublic.sql
+11a12,13
+> --  2012-05-09  Rudy-H.    Added new table veto_message_tbl.
+> --
+360a363,374
+>
+> DROP TABLE IF EXISTS `capublic.veto_message_tbl`;
+> CREATE TABLE `capublic.veto_message_tbl` (
+>   `bill_id`                     varchar(20)     BINARY  NULL,
+>   `veto_date`                   datetime                NULL,
+>   `message`                     longblob,
+>   `trans_uid`                   varchar(20)     BINARY  NULL,
+>   `trans_update`                datetime                NULL,
+> )
+> ENGINE = INNODB
+> CHARACTER SET utf8 COLLATE utf8_general_ci;
+>
+
+Comparing: old/truncateAll.bat new/truncateAll.bat
+
+Comparing: old/truncateAll.sql new/truncateAll.sql
+18a19
+> Truncate Table capublic.veto_message_tbl;
+
+Comparing: old/deleteSession.bat new/deleteSession.bat
+18a19
+> echo Delete From capublic.veto_message_tbl          Where bill_id like '%sey%%%';         >> deleteSession.sql
+
+Comparing: old/loadData.bat new/loadData.bat
+
+Comparing: old/tables_lc.lst new/tables_lc.lst
+
+Comparing: old/tables_uc.lst new/tables_uc.lst
+
+Comparing: old/bill_analysis_tbl.sql new/bill_analysis_tbl.sql
+
+Comparing: old/bill_detail_vote_tbl.sql new/bill_detail_vote_tbl.sql
+
+Comparing: old/bill_history_tbl.sql new/bill_history_tbl.sql
+
+Comparing: old/bill_motion_tbl.sql new/bill_motion_tbl.sql
+
+Comparing: old/bill_summary_vote_tbl.sql new/bill_summary_vote_tbl.sql
+
+Comparing: old/bill_tbl.sql new/bill_tbl.sql
+
+Comparing: old/bill_version_authors_tbl.sql new/bill_version_authors_tbl.sql
+
+Comparing: old/bill_version_tbl.sql new/bill_version_tbl.sql
+
+Comparing: old/codes_tbl.sql new/codes_tbl.sql
+
+Comparing: old/committee_hearing_tbl.sql new/committee_hearing_tbl.sql
+
+Comparing: old/daily_file_tbl.sql new/daily_file_tbl.sql
+
+Comparing: old/law_section_tbl.sql new/law_section_tbl.sql
+
+Comparing: old/law_toc_sections_tbl.sql new/law_toc_sections_tbl.sql
+
+Comparing: old/law_toc_tbl.sql new/law_toc_tbl.sql
+
+Comparing: old/legislator_tbl.sql new/legislator_tbl.sql
+
+Comparing: old/location_code_tbl.sql new/location_code_tbl.sql
+
+Comparing: old/veto_message_tbl.sql new/veto_message_tbl.sql
+diff: old/veto_message_tbl.sql: No such file or directory

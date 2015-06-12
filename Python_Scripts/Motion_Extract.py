@@ -1,3 +1,28 @@
+'''
+File: Motion_Extract.py
+Author: Daniel Mangin
+Date: 6/11/2015
+
+Description:
+- Gathers the Motions from capublic.bill_motion_tbl and inserts the Motions into DDDB2015Apr.Motion
+- Used in the daily update of DDDB2015Apr
+- Fills table:
+	Motion (mid, date, text)
+
+Sources:
+- Leginfo (capublic)
+	- Pubinfo_2015.zip
+	- Pubinfo_Mon.zip
+	- Pubinfo_Tue.zip
+	- Pubinfo_Wed.zip
+	- Pubinfo_Thu.zip
+	- Pubinfo_Fri.zip
+	- Pubinfo_Sat.zip
+
+-capublic
+	- bill_motion_tbl
+'''
+
 import re
 import sys
 import time
