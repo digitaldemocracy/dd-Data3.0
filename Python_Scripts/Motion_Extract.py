@@ -49,14 +49,9 @@ def insert_Motion(cursor, mid, date, text):
 
 def getMotions():
 	try:
-		select_count = "SELECT COUNT(*) FROM bill_motion_tbl"
-		conn.execute(select_count)
-		temp = conn.fetchone()
-		a = temp[0]
-		print a
 		select_stmt = "SELECT * FROM bill_motion_tbl"
 		conn.execute(select_stmt)
-		for i in range(0, a):
+		for i in range(0, conn.rowcount):
 			temp = conn.fetchone()
 			if temp:
 				mid = temp[0];

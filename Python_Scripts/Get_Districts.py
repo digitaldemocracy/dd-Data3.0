@@ -41,7 +41,6 @@ def getRegion(region):
 def formatToString(geoData):
 	geoData = geoData[0][0]
 	dataString = '{'
-	print len(geoData)
 	for i in range (0, len(geoData)):
 		dataString = dataString + '{' + str(geoData[i][0]) + ',' + str(geoData[i][1]) + '}'
 		if i != len(geoData)-1:

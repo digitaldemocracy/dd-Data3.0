@@ -59,13 +59,10 @@ def getCommittee(cursor, location_code):
 	select_stmt = "SELECT description, long_description FROM location_code_tbl WHERE location_code = %(location_code)s;"
 	cursor.execute(select_stmt, {'location_code':location_code})
 	if(cursor.rowcount > 0):
-		print "found committee"
 		temp = cursor.fetchone()
 		name = temp[0]
 		nam = temp[1]
 		cid = 0
-		print name
-		print nam
 		if "Water, Parks" in nam:
 			nam = "Water, Parks, and Wildlife"
 		if "Asm" in name or 'Assembly' in name:
@@ -143,8 +140,6 @@ def insert_BillVoteSummary(cursor, bid, mid, cid, VoteDate, ayes, naes, abstain,
 	select_pid = "SELECT bid, mid, VoteDate FROM BillVoteSummary WHERE bid = %(bid)s AND mid = %(mid)s AND VoteDate = %(VoteDate)s;"
 	cursor.execute(select_pid, {'bid':bid, 'mid':mid, 'VoteDate':VoteDate})
 	if cursor.rowcount == 0:
-		print "inserting..."
-		print cid
 		cursor.execute(query_insert_BillVoteSummary, (bid, mid, cid, VoteDate, ayes, naes, abstain, result))
 	else:
 		#print "already in"
@@ -161,21 +156,16 @@ def insert_BillVoteDetail(cursor, pid, voteId, result, temp):
 		pass
 
 def getSummaryVotes():
+	print "Getting Summaries"
 	try:
-		select_count = "SELECT COUNT(*) FROM bill_summary_vote_tbl"
-		conn.execute(select_count)
-		temp = conn.fetchone()
-		a = temp[0]
-		print a
 		select_stmt = "Select * from bill_summary_vote_tbl"
 		conn.execute(select_stmt);
-		for i in range(0, a):
+		for i in range(0, conn.rowcount):
 			temp = conn.fetchone()
 			if temp:
 				bid = temp[0]
 				mid = temp[4]
 				cid = getCommittee(conn3, temp[1])
-				print cid
 				VoteDate = temp[10]
 				ayes = temp[5]
 				naes = temp[6]
@@ -192,14 +182,11 @@ def getSummaryVotes():
 		exit()
 
 def getDetailVotes():
+	print "Getting Details"
 	try:
-		select_count = "SELECT COUNT(*) FROM bill_detail_vote_tbl"
-		conn.execute(select_count)
-		temp = conn.fetchone()
-		a = temp[0]
 		select_stmt = "Select * from bill_detail_vote_tbl"
 		conn.execute(select_stmt);
-		for i in range(0, a):
+		for i in range(0, conn.rowcount):
 			temp = conn.fetchone()
 			if temp:
 				date = temp[8].strftime('%Y-%m-%d')
