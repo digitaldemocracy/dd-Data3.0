@@ -1,0 +1,66 @@
+Tables:
+
+Action
+
+Filled by
+
+LegAnalystOffice
+Filled by
+
+Bill
+- has a bill id, a bill type, a bill number, the state of the bill, status of the bill, the house the bill is under, and if the bill is in session
+- bid, type, number, state, status, house, session
+- Populated from
+
+BillDiscussion
+Filled by LegInfo
+
+BillVersion
+Filled By LegInfo
+
+Committee
+
+
+CommitteeStaff
+
+GeneralPublic
+
+Hearing
+
+JobSnapshot
+
+LegislativeAuthorStaff
+
+Legislator
+- Contains a person id (which references the person table) and a description
+- pid, description
+- Populated from leginfo
+
+LobbyingContracts
+LobbyingFirm
+Lobbyist
+LobbyistDirectEmployment
+LobbyistEmployer
+LobbyistEmployment
+LobbyistRepresentation
+Mention
+Motion
+Person
+Contains a person id, a first name, and a last name
+Populated from 
+StateAgencyRep
+TT_Editor
+TT_Task
+TT_TaskCompletion
+Term
+Utternce
+Video
+Video_ttml
+attends
+authors
+currentUtterance
+join_utrtag
+servesOn
+tag
+user
+votesOn
