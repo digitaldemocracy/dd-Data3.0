@@ -1,13 +1,13 @@
 -- file: DB-setup.sql
--- author: Daniel Mangin & Mandy Chan
--- Start Date: 6/18/2015
--- End Date: 
+-- author: Daniel Mangin
+-- date: 6/11/2015
+-- End Usage: 6/18/2015
 -- Description: Used to create all of the tables for Digital Democracy
 -- note: this will only work on the currently used database
 --
--- Change Log: Added DepricatedPersons table
--- 
--- Explanation: We need to create new table called DeprecatedPerson. The table 
+-- Change Log: Add DeprecatedPersons table
+--
+-- Description: We need to create new table called DeprecatedPerson. The table 
 -- shall contain Pids of Person records that are no longer considered active.
 --
 -- Person deprecation happens when we discover duplicate records. When person 
@@ -667,15 +667,6 @@ CREATE TABLE IF NOT EXISTS CommitteeAuthors(
 	FOREIGN KEY (bid) REFERENCES Bill(bid),
 	FOREIGN KEY (cid) REFERENCES Committee(cid),
 	FOREIGN KEY (vid) REFERENCES BillVersion(vid)
-)
-ENGINE = INNODB
-CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-CREATE TABLE IF NOT EXISTS DeprecatedPerson(
-	pid INTEGER,
-	
-	PRIMARY KEY(pid),
-	FOREIGN KEY (pid) REFERENCES Person(pid)
 )
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
