@@ -1,14 +1,19 @@
 -- file: DB-setup.sql
 -- author: Daniel Mangin & Mandy Chan
 -- Start Date: 6/18/2015
--- End Usage: 
+-- End Usage: 6/18/2015
 -- Description: Used to create all of the tables for Digital Democracy
 -- note: this will only work on the currently used database
 --
--- Change Log: Added 'version' to Video_ttml for TT group.
+-- Change Log: Added DepricatedPersons table
 -- 
--- Explanation: The Transcription Tool group would like to keep track of video 
--- .ttml versions. Therefore, we have created an attribute for them.
+-- Explanation: We need to create new table called DeprecatedPerson. The table 
+-- shall contain Pids of Person records that are no longer considered active.
+--
+-- Person deprecation happens when we discover duplicate records. When person 
+-- merge happens, one of the records assumes the "powers" of the two duplicate 
+-- records, the other gets deprecated. The Pid for this record will be inserted 
+-- (by the Transcription tool) into the DeprecatedPerson record.
 
 CREATE TABLE IF NOT EXISTS Person (
    pid    INTEGER AUTO_INCREMENT,
@@ -170,7 +175,6 @@ CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 CREATE TABLE IF NOT EXISTS Video_ttml (
    vid INTEGER,
-   version INTEGER DEFAULT 0,
    ttml MEDIUMTEXT,
 
    FOREIGN KEY (vid) REFERENCES Video(vid)
