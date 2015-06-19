@@ -674,8 +674,7 @@ CHARACTER SET utf8 COLLATE utf8_general_ci;
 CREATE TABLE IF NOT EXISTS DeprecatedPerson(
 	pid INTEGER,
 	
-	PRIMARY KEY(pid),
-	FOREIGN KEY (pid) REFERENCES Person(pid)
+	PRIMARY KEY(pid)
 )
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
