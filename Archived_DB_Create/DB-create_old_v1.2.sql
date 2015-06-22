@@ -1,15 +1,14 @@
 -- file: DB-setup.sql
 -- author: Daniel Mangin & Mandy Chan
--- Start Date: 6/22/2015
--- End Usage: 
+-- Start Date: 6/18/2015
+-- End Usage: 6/22/2015
 -- Description: Used to create all of the tables for Digital Democracy
 -- note: this will only work on the currently used database
 --
--- Change Log: Added 'diarizationTag' into Utterance
+-- Change Log: Added 'version' to Video_ttml for TT group.
 -- 
--- Explanation: The Transcription Tool group would like to have a tag that 
--- would indicate that this utterance is spoken by this person (ex: Anonymous1).
--- Therefore, we have created a field in Utterance for it.
+-- Explanation: The Transcription Tool group would like to keep track of video 
+-- .ttml versions. Therefore, we have created an attribute for them.
 
 CREATE TABLE IF NOT EXISTS Person (
    pid    INTEGER AUTO_INCREMENT,
@@ -278,7 +277,6 @@ CREATE TABLE IF NOT EXISTS Utterance (
    type   ENUM('Author', 'Testimony', 'Discussion'),
    alignment ENUM('For', 'Against', 'For_if_amend', 'Against_unless_amend', 'Neutral', 'Indeterminate'),
    dataFlag INTEGER DEFAULT 0,
-   diarizationTag VARCHAR(5) DEFAULT '',
 
    PRIMARY KEY (uid, current),
    UNIQUE KEY (uid, vid, pid, current, time),
