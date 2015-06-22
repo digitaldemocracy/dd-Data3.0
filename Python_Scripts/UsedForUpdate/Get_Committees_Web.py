@@ -168,6 +168,7 @@ def clean_name(name):
 	return name.lstrip().rstrip()
 
 def find_Committee(cursor, house, name):
+	name = clean_name(name)
 	select_stmt = "SELECT * from Committee where house = %(house)s AND name = %(name)s;"
 	cursor.execute(select_stmt, {'house':house,'name':name})
 	if cursor.rowcount == 0:
