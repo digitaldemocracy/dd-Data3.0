@@ -155,6 +155,8 @@ def clean_name(name):
 		name = ''.join(''.join(name.split('&')).split("acute;"))
 	if "&#39;" in name:
 		name = "'".join(name.split('&#39;'))
+	if "&#039;" in name:
+		name = "'".join(name.split('&#039;'))
 	if "&nsbp;" in name:
 		name = name.split('&nsbp;')[0]
 	if "&nbsp;" in name:
