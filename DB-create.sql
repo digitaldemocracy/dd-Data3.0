@@ -5,11 +5,15 @@
 -- Description: Used to create all of the tables for Digital Democracy
 -- note: this will only work on the currently used database
 --
--- Change Log: Added 'diarizationTag' into Utterance
+-- Change Log:
+--       - Added 'diarizationTag' into Utterance
+--       - Added 'source' into Video_ttml
 -- 
 -- Explanation: The Transcription Tool group would like to have a tag that 
 -- would indicate that this utterance is spoken by this person (ex: Anonymous1).
--- Therefore, we have created a field in Utterance for it.
+--
+-- The Transcription Tool group would also like to have a source tag which 
+-- would indicate where the Video TTML is sourced from.
 
 CREATE TABLE IF NOT EXISTS Person (
    pid    INTEGER AUTO_INCREMENT,
