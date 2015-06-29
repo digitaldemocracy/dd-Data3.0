@@ -165,6 +165,8 @@ def clean_name(name):
 		name = name.split('nbsp;')[0]
 	if "&rsquo;" in name:
 		name = name.split('&rsquo;')[0]
+   if "–" in name:
+      name = name.join(name.split('–'))
 	if "." in name:
 		name = ' '.join(name.split('.'))
 	return name.lstrip().rstrip()
