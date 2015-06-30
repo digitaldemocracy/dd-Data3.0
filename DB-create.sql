@@ -398,16 +398,16 @@ ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 CREATE TABLE IF NOT EXISTS Contribution (
-	RecordId INTEGER AUTO_INCREMENT,
+	id VARCHAR(20),
 	pid INTEGER,
-	law_eid INTEGER,
-	d_id INTEGER,
-	year INTEGER,
-	house VARCHAR(10),
-	contributor VARCHAR(50),
+   year INTEGER,
+   date DATETIME,
+	house VARCHAR(200),
+   donorName VARCHAR(255),
+   donorOrg VARCHAR(255),
 	amount DOUBLE,
 	
-	PRIMARY KEY(RecordId),
+	PRIMARY KEY(id),
 	FOREIGN KEY (pid) REFERENCES Person(pid)
 )	
 ENGINE = INNODB
