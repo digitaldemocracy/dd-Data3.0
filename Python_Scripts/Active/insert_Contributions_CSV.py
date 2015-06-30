@@ -41,6 +41,12 @@ def checkLegislator(cursor, pid):
 	else:
 		return -1
 
+def getHouse(cursor, pid):
+	select_pid = "SELECT house FROM Legislator, Term WHERE Legislator.pid = Term.pid AND Legislator.pid = %(pid)s;"
+	cursor.execute(select_pid, {'pid':pid})
+	if cursor.rowcount == 1:
+		return cursor.fetchone()[0]
+
 def getPerson(cursor, first, last, floor):
 	pid = -1
 	#print "{0} {1}".format(first, last)
@@ -92,9 +98,13 @@ def getContributions(file):
 			
 			val = 0
 			index = 0
+                        row_in_csv = 0
 
 			for row in tsvin:
 				print index
+                                print row_in_csv
+                                row_in_csv += 1
+
 				try:
 					year = row[1]
 					id = row[4]
@@ -102,7 +112,7 @@ def getContributions(file):
 					amount = row[6]
 					house = row[13]
 					name = row[9]
-					first = name.split(', ')[1]
+                                        first = name.split(', ')[1]
 					first = first.title()
 					temp = first.split(' ')
 					temp2 = []
@@ -128,14 +138,22 @@ def getContributions(file):
 					donorName = row[15]
 					donorOrg = row[21]
 					pid = getPerson(conn, first, last, house)
-					if house != "null" and pid != -1:
+					
+                                        if pid != -1:
+                                                house = getHouse(conn, pid)
+
+                                        if house != "null" and pid != -1:
 						insert_Contributor(conn, id, pid, year, date, house, donorName, donorOrg, amount)
 						index = index + 1
 						db.commit()
 					else:
 						val = val + 1
 						#print 'did not go in successfully'
+                                                print "house: {0} pid: {1}".format(house, pid)
 				except:
+                                        '''
+                                        If it says 'list index out of range', it's probably an empty name (row 9) and is ignored
+                                        '''
 					print 'error!', sys.exc_info()[0], sys.exc_info()[1]
 			print val
 			print index
@@ -148,7 +166,7 @@ def main():
 	#getContributions('cand_2009.csv')
 	#getContributions('cand_2011.csv')
 	#getContributions('cand_2013.csv')
-	getContributions('cand_2015.csv')
+	getContributions('../../../Contribution_Data/cand_2015_windows.csv')
 	db.close()
 
 if __name__ == "__main__":
