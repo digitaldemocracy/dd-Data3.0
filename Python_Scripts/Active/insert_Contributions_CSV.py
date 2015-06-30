@@ -1,6 +1,6 @@
 '''
 File: insert_Contributions_CSV.py
-Author: Daniel Mangin
+Author: Daniel Mangin & Mandy Chan
 Date: 6/11/2015
 
 Description:
@@ -98,12 +98,12 @@ def getContributions(file):
 			
 			val = 0
 			index = 0
-                        row_in_csv = 0
+         row_in_csv = 0
 
 			for row in tsvin:
 				print index
-                                print row_in_csv
-                                row_in_csv += 1
+            print row_in_csv
+            row_in_csv += 1
 
 				try:
 					year = row[1]
@@ -112,7 +112,7 @@ def getContributions(file):
 					amount = row[6]
 					house = row[13]
 					name = row[9]
-                                        first = name.split(', ')[1]
+               first = name.split(', ')[1]
 					first = first.title()
 					temp = first.split(' ')
 					temp2 = []
@@ -139,21 +139,21 @@ def getContributions(file):
 					donorOrg = row[21]
 					pid = getPerson(conn, first, last, house)
 					
-                                        if pid != -1:
-                                                house = getHouse(conn, pid)
+               if house = "null" and pid != -1:
+                  house = getHouse(conn, pid)
 
-                                        if house != "null" and pid != -1:
+               if house != "null" and pid != -1:
 						insert_Contributor(conn, id, pid, year, date, house, donorName, donorOrg, amount)
 						index = index + 1
 						db.commit()
 					else:
 						val = val + 1
 						#print 'did not go in successfully'
-                                                print "house: {0} pid: {1}".format(house, pid)
+                  print "house: {0} pid: {1}".format(house, pid)
 				except:
-                                        '''
-                                        If it says 'list index out of range', it's probably an empty name (row 9) and is ignored
-                                        '''
+               '''
+               If it says 'list index out of range', it's probably an empty name (row 9) and is ignored
+               '''
 					print 'error!', sys.exc_info()[0], sys.exc_info()[1]
 			print val
 			print index
