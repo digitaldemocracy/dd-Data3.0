@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*- 
 '''
 File: Get_Committees_Web.py
 Author: Daniel Mangin
@@ -165,8 +166,8 @@ def clean_name(name):
 		name = name.split('nbsp;')[0]
 	if "&rsquo;" in name:
 		name = name.split('&rsquo;')[0]
-   if "–" in name:
-      name = name.join(name.split('–'))
+	if "–" in name:
+		name = '-'.join(name.split('–'))
 	if "." in name:
 		name = ' '.join(name.split('.'))
 	return name.lstrip().rstrip()
@@ -247,7 +248,7 @@ def getAssemblyInformation():
 			if "Joint" in imp[1]:
 				house = "Joint"
 			print "Committee: {0}".format(imp[1])
-			print house
+			#print house
 			cid = find_Committee(dd, house, imp[1])
 			house = "Assembly"
 			get_members_assembly(imp[0], cid, house)
