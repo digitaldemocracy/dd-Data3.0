@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DATA=/home/dmangin/dd-Data3.0/updateScripts/leginfo_load
+DATA=/home/mchan18/dd-Data3.0/updateScripts/leginfo_load
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 echo "Deleting capublic data..."

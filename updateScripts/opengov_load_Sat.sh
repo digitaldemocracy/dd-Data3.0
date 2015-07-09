@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DATA=/home/dmangin/dd-Data3.0/updateScripts/leginfo_sat
+DATA=/home/mchan18/dd-Data3.0/updateScripts/leginfo_sat
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 mkdir $DATA 2> /dev/null
