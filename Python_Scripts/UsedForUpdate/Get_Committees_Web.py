@@ -150,7 +150,7 @@ def create_servesOn(cursor, name, house, cid):
 		pass
 
 def clean_name(name):
-	name = name.split(',')[0]
+	#name = name.split(',')[0]
 	if "acute;" in name:
 		print 'getting rid of acute character'
 		name = ''.join(''.join(name.split('&')).split("acute;"))
@@ -158,8 +158,8 @@ def clean_name(name):
 		name = "'".join(name.split('&#39;'))
 	if "&#039;" in name:
 		name = "'".join(name.split('&#039;'))
-	if "&nsbp;" in name:
-		name = name.split('&nsbp;')[0]
+#	if "&nsbp;" in name:
+#		name = name.split('&nsbp;')[0]
 	if "&nbsp;" in name:
 		name = name.split('&nbsp;')[0]
 	if "nbsp;" in name:
@@ -168,9 +168,10 @@ def clean_name(name):
 		name = name.split('&rsquo;')[0]
 	if "–" in name:
 		name = '-'.join(name.split('–'))
-	if "." in name:
-		name = ' '.join(name.split('.'))
-	return name.lstrip().rstrip()
+#	if "." in name:
+#		name = ' '.join(name.split('.'))
+	#return name.lstrip().rstrip()
+        return name.strip()
 
 def find_Committee(cursor, house, name):
 	name = clean_name(name)
