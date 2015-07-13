@@ -25,5 +25,5 @@ LOAD DATA LOCAL
   ,TRANS_UID
   ,TRANS_UPDATE
 )
-SET BILL_XML=LOAD_FILE(concat('/home/dmangin/dd-Play/data/leginfo/leginfo_load/',@var1))
+SET BILL_XML=LOAD_FILE(concat('/home/mchan18/dd-Data3.0/updateScripts/leginfo_load/',@var1))
 

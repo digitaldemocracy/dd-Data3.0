@@ -39,7 +39,7 @@ query_insert_Bill_Version = "INSERT INTO BillVersion (vid, bid, date, state, sub
 db = mysql.connector.connect(user = 'root', db = 'capublic', password = '')
 conn = db.cursor(buffered = True)
 
-db2 = mysql.connector.connect(user = 'root', db = 'DDDB2015Apr', password = '')
+db2 = mysql.connector.connect(user = 'root', db = 'DDDB2015AprTest', password = '')
 conn2 = db2.cursor(buffered = True)
 
 #Checks if bill exists, if not, adds the bill
@@ -95,14 +95,14 @@ def getBillVersions():
 	try:
 		select_stmt = "SELECT * FROM bill_version_tbl"
 		conn.execute(select_stmt)
-		print 'versions'
+		print 'versions', conn.rowcount
 		for i in range(0, conn.rowcount):
 			temp = conn.fetchone()
 			if temp:
 				vid = temp[0]
 				bid = temp[1]
 				date = temp[3]
-				state = findState(conn2, bid)
+				state = temp[4]
 				subject = temp[6]
 				appropriation = temp[8]
 				substantive_changes = temp[11]

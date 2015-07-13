@@ -37,12 +37,13 @@ def traverse(root):
 
 def billparse():
    print "got here"
-   conn = mysql.connector.connect(user="root", database="DDDB2015Apr", password="", buffered=True)
+   conn = mysql.connector.connect(user="root", database="DDDB2015AprTest", password="", buffered=True)
    get = conn.cursor()
    put = conn.cursor()
 
    print "got here"
-   get.execute("SELECT bill_version_id, bill_xml FROM capublic.bill_version_tbl")
+   get.execute("SELECT bill_version_id, bill_xml FROM capublic.bill_version_tbl;")
+   print "executed select query"
    for (vid, xml) in get:
       try:
          temp = ""
@@ -92,7 +93,7 @@ def billparse():
             print root.xpath('//caml:Bill', namespaces=namespace)
          #print body
 
-         put.execute("UPDATE BillVersion SET title = %s, digest= %s, text = %s WHERE vid = %s", (titleText, digest, body, vid))
+         put.execute("UPDATE BillVersion SET title = %s, digest= %s, text = %s WHERE vid = %s;", (titleText, digest, body, vid))
       except Exception as e:
          print(e)
          print vid
