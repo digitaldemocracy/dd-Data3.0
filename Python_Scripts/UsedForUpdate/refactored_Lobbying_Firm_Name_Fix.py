@@ -16,17 +16,19 @@ import mysql.connector
 import loggingdb
 
 def clean_name(name):
-	flag = 0;
-	if findRoman(name.split(' ')[len(name.split(' ')) - 1]) != 0:
-		flag = 1;
-	name = name.split(' ')
-	count = lambda l1,l2: sum([1 for x in l1 if x in l2])
-	for x in range(0, len(name) - flag):
-		if (sum(1 for c in name[x] if c.isupper()) == len(name[x]) - count(name[x], string.punctuation)) or (sum(1 for c in name[x] if c.isupper()) == 0):
-			if name[x] != "LLC" and name[x] != "LLP" and name[x] != "LP":
-				name[x] = name[x].title()
-	name = ' '.join(name)
-	return name
+  if not name:
+    name = ' '
+  flag = 0;
+  if findRoman(name.split(' ')[len(name.split(' ')) - 1]) != 0:
+    flag = 1;
+  name = name.split(' ')
+  count = lambda l1,l2: sum([1 for x in l1 if x in l2])
+  for x in range(0, len(name) - flag):
+    if (sum(1 for c in name[x] if c.isupper()) == len(name[x]) - count(name[x], string.punctuation)) or (sum(1 for c in name[x] if c.isupper()) == 0):
+      if name[x] != "LLC" and name[x] != "LLP" and name[x] != "LP":
+        name[x] = name[x].title()
+  name = ' '.join(name)
+  return name
 
 romanNumeralMap = (('M',  1000),
                    ('CM', 900),
@@ -56,29 +58,29 @@ romanNumeralPattern = re.compile("""
     """ ,re.VERBOSE)
 
 def findRoman(s):
-    """convert Roman numeral to integer"""
-    flag = 0
-    if not s:
-        print "invalid"
-    if romanNumeralPattern.search(s):
-	print "found a roman numeral"
-        flag = 1
-	pass
+  """convert Roman numeral to integer"""
+  flag = 0
+  if not s:
+    print "invalid"
+  if romanNumeralPattern.search(s):
+    print "found a roman numeral"
+    flag = 1
+  pass
 
-    result = 0
-    index = 0
-    if(flag != 0):
-    	for numeral, integer in romanNumeralMap:
-        	while s[index:index+len(numeral)] == numeral:
-            		result += integer
-            		index += len(numeral)
-    return result
+  result = 0
+  index = 0
+  if(flag != 0):
+    for numeral, integer in romanNumeralMap:
+      while s[index:index+len(numeral)] == numeral:
+        result += integer
+        index += len(numeral)
+  return result
 
 #These two functions could be 1? Lost of code repetition
 def cleanNamesLobFirm():
   with loggingdb.connect(host='transcription.digitaldemocracy.org',
                        user='monty',
-                       db='DDDB2015July',
+                       db='DDDB2015JulyTest',
                        passwd='python') as dd_cursor:
     dd_cursor.execute("SELECT * from LobbyingFirm;")
     for x in range(0, dd_cursor.rowcount):
@@ -99,25 +101,46 @@ def cleanNamesLobFirm():
 def cleanNamesLobEmp():
   with loggingdb.connect(host='transcription.digitaldemocracy.org',
                        user='monty',
-                       db='DDDB2015July',
+                       db='DDDB2015JulyTest',
                        passwd='python') as dd_cursor:
-    dd_cursor.execute("SELECT * from LobbyistEmployer;")
+    dd_cursor.execute("SELECT oid, name FROM Organizations;")
+    '''
     for x in xrange(0, dd_cursor.rowcount):
       try:
         temp = dd_cursor.fetchone()
-        name = clean_name(temp[0])
-        le_id = temp[2]
-        if(temp[0] != name):
-          print temp[0]
+        if temp is None:
+          print("NoneType on X #" + str(x))
+          temp_name = ' '
+          temp_oid = ' '
+        else:
+          temp_name = temp[1]
+          temp_oid = temp[0]
+        name = clean_name(temp_name)
+        oid = temp_oid
+        if(temp_name != name):
+          print temp_name
           print name
           print x
-          dd_cursor.execute("UPDATE LobbyistEmployer SET filer_naml = %s WHERE le_id = %s;", (name, le_id))
+          dd_cursor.execute("UPDATE Organizations SET name = %s WHERE oid = %s;", (oid, name))
           print "Row(s) were updated :" +  str(dd_cursor.rowcount)
       except:
         print 'error!', sys.exc_info()[0], sys.exc_info()[1]
         raise
+    '''
+    rows = dd_cursor.fetchall()
+
+    for row in rows:
+      try:
+        name = clean_name(row[1])
+        oid = row[0]
+        if(row[1] != name):
+          print row[1]
+          print name
+          dd_cursor.execute("UPDATE Organizations SET name = %s WHERE oid = %s;", (oid, name))
+      except:
+        raise
 
 if __name__ == "__main__":
-	cleanNamesLobFirm()
-	cleanNamesLobEmp()
+  cleanNamesLobFirm()
+  cleanNamesLobEmp()
 

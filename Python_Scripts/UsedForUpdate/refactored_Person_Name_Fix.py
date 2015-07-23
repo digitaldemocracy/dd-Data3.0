@@ -78,7 +78,7 @@ def findRoman(s):
 def cleanNames():
   with loggingdb.connect(host='transcription.digitaldemocracy.org',
                        user='monty',
-                       db='DDDB2015July',
+                       db='DDDB2015JulyTest',
                        passwd='python') as dd_cursor:
     dd_cursor.execute("SELECT * from Person;")
     for x in xrange(0, dd_cursor.rowcount):
