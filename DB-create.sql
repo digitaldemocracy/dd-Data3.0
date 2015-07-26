@@ -5,15 +5,11 @@
 -- Description: Used to create all of the tables for Digital Democracy
 -- note: this will only work on the currently used database
 --
--- Change Log:
---       - Added 'diarizationTag' into Utterance
---       - Added 'source' into Video_ttml
+-- Change Log: Added 'diarizationTag' into Utterance
 -- 
 -- Explanation: The Transcription Tool group would like to have a tag that 
 -- would indicate that this utterance is spoken by this person (ex: Anonymous1).
---
--- The Transcription Tool group would also like to have a source tag which 
--- would indicate where the Video TTML is sourced from.
+-- Therefore, we have created a field in Utterance for it.
 
 CREATE TABLE IF NOT EXISTS Person (
    pid    INTEGER AUTO_INCREMENT,
@@ -30,7 +26,7 @@ CHARACTER SET utf8 COLLATE utf8_general_ci;
 -- we can probably remove this table and roll into a "role" field in Person
 -- alternatively, make it a (pid, jobhistory) and put term for the hearing in here
 CREATE TABLE IF NOT EXISTS Legislator (
-   pid         INTEGER AUTO_INCREMENT,
+   pid         INTEGER,
    description VARCHAR(1000),
    twitter_handle VARCHAR(100),
    capitol_phone  VARCHAR(30),
@@ -125,12 +121,12 @@ ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 CREATE TABLE IF NOT EXISTS CommitteeHearings (
-	cid INTEGER,
-	hid INTEGER,
+    cid INTEGER,
+    hid INTEGER,
 
-	PRIMARY KEY (cid, hid),
-	FOREIGN KEY (cid) REFERENCES Committee(cid),
-	FOREIGN KEY (hid) REFERENCES Hearing(hid)
+    PRIMARY KEY (cid, hid),
+    FOREIGN KEY (cid) REFERENCES Committee(cid),
+    FOREIGN KEY (hid) REFERENCES Hearing(hid)
 )
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
@@ -166,6 +162,7 @@ CREATE TABLE IF NOT EXISTS Video (
    position INTEGER,
    startOffset INTEGER,
    duration INTEGER,
+   srtFlag TINYINT(1) DEFAULT 0,
 
    PRIMARY KEY (vid),
    FOREIGN KEY (hid) REFERENCES Hearing(hid)
@@ -280,7 +277,7 @@ CREATE TABLE IF NOT EXISTS Utterance (
    current BOOLEAN NOT NULL,
    finalized BOOLEAN NOT NULL,
    type   ENUM('Author', 'Testimony', 'Discussion'),
-   alignment ENUM('For', 'Against', 'For_if_amend', 'Against_unless_amend', 'Neutral', 'Indeterminate'),
+   alignment ENUM('For', 'Against', 'For_if_amend', 'Against_unless_amend', 'Neutral', 'Indeterminate', 'NA'),
    dataFlag INTEGER DEFAULT 0,
    diarizationTag VARCHAR(5) DEFAULT '',
 
@@ -314,7 +311,8 @@ CREATE TABLE IF NOT EXISTS join_utrtag (
    tid INTEGER,
 
    PRIMARY KEY (uid, tid),
-   FOREIGN KEY (tid) REFERENCES tag(tid)
+   FOREIGN KEY (tid) REFERENCES tag(tid),
+   FOREIGN KEY (uid) REFERENCES Utterance(uid)
 )
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
@@ -333,83 +331,83 @@ ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 CREATE TABLE IF NOT EXISTS BillVoteSummary (
-	voteId 		INTEGER	AUTO_INCREMENT,
-	bid		VARCHAR(20),
-	mid		INTEGER(20),
-	cid		INTEGER, 
-	VoteDate	DATETIME,
-	ayes		INTEGER,
-	naes		INTEGER,
-	abstain		INTEGER,
-	result		VARCHAR(20),
-	
-	PRIMARY KEY(voteId),
-	FOREIGN KEY (mid) REFERENCES Motion(mid),
-	FOREIGN KEY (bid) REFERENCES Bill(bid),
-	FOREIGN KEY (cid) REFERENCES Committee(cid)
+    voteId      INTEGER AUTO_INCREMENT,
+    bid     VARCHAR(20),
+    mid     INTEGER(20),
+    cid     INTEGER, 
+    VoteDate    DATETIME,
+    ayes        INTEGER,
+    naes        INTEGER,
+    abstain     INTEGER,
+    result      VARCHAR(20),
+    
+    PRIMARY KEY(voteId),
+    FOREIGN KEY (mid) REFERENCES Motion(mid),
+    FOREIGN KEY (bid) REFERENCES Bill(bid),
+    FOREIGN KEY (cid) REFERENCES Committee(cid)
 )
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 CREATE TABLE IF NOT EXISTS BillVoteDetail (
-	pid 	INTEGER,
-	voteId 	INTEGER,
-	result	VARCHAR(20),
-	
-	PRIMARY KEY(pid, voteId),
-	FOREIGN KEY (voteId) REFERENCES BillVoteSummary(voteId)
+    pid     INTEGER,
+    voteId  INTEGER,
+    result  VARCHAR(20),
+    
+    PRIMARY KEY(pid, voteId),
+    FOREIGN KEY (voteId) REFERENCES BillVoteSummary(voteId)
 )
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 CREATE TABLE IF NOT EXISTS Gift (
-	RecordId INTEGER AUTO_INCREMENT,
-	pid INTEGER,
-	schedule ENUM('D', 'E'), -- D is a normal gift whereas E is a travel gift
-	sourceName VARCHAR(50),
-	activity VARCHAR(40),
-	city VARCHAR(30),
-	cityState VARCHAR(10),
-	value DOUBLE,
-	giftDate DATE,
-	reimbursed TINYINT(1),
-	giftIncomeFlag TINYINT(1) DEFAULT 0,
-	speechFlag TINYINT(1) DEFAULT 0,
-	description VARCHAR(80),
-	
-	PRIMARY KEY(RecordId),
-	FOREIGN KEY (pid) REFERENCES Person(pid)
+    RecordId INTEGER AUTO_INCREMENT,
+    pid INTEGER,
+    schedule ENUM('D', 'E'), -- D is a normal gift whereas E is a travel gift
+    sourceName VARCHAR(50),
+    activity VARCHAR(40),
+    city VARCHAR(30),
+    cityState VARCHAR(10),
+    value DOUBLE,
+    giftDate DATE,
+    reimbursed TINYINT(1),
+    giftIncomeFlag TINYINT(1) DEFAULT 0,
+    speechFlag TINYINT(1) DEFAULT 0,
+    description VARCHAR(80),
+    
+    PRIMARY KEY(RecordId),
+    FOREIGN KEY (pid) REFERENCES Person(pid)
 )
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 CREATE TABLE IF NOT EXISTS District (
-	state VARCHAR(2),
-	house ENUM('lower', 'upper'),
-	did INTEGER,
-	note VARCHAR(40) DEFAULT '',
-	year INTEGER,
-	region TEXT,
-	geoData MEDIUMTEXT,
-	
-	PRIMARY KEY(state, house, did, year)
+    state VARCHAR(2),
+    house ENUM('lower', 'upper'),
+    did INTEGER,
+    note VARCHAR(40) DEFAULT '',
+    year INTEGER,
+    region TEXT,
+    geoData MEDIUMTEXT,
+    
+    PRIMARY KEY(state, house, did, year)
 )
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 CREATE TABLE IF NOT EXISTS Contribution (
-	id VARCHAR(20),
-	pid INTEGER,
-   year INTEGER,
-   date DATETIME,
-	house VARCHAR(200),
-   donorName VARCHAR(255),
-   donorOrg VARCHAR(255),
-	amount DOUBLE,
-	
-	PRIMARY KEY(id),
-	FOREIGN KEY (pid) REFERENCES Person(pid)
-)	
+    RecordId INTEGER AUTO_INCREMENT,
+    pid INTEGER,
+    law_eid INTEGER,
+    d_id INTEGER,
+    year INTEGER,
+    house VARCHAR(10),
+    contributor VARCHAR(50),
+    amount DOUBLE,
+    
+    PRIMARY KEY(RecordId),
+    FOREIGN KEY (pid) REFERENCES Person(pid)
+)   
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
@@ -430,7 +428,7 @@ CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 CREATE TABLE IF NOT EXISTS TT_Task (
    tid INTEGER AUTO_INCREMENT ,
-   hid INTEGER ,	-- added
+   hid INTEGER ,    -- added
    did INTEGER , 
    editor_id INTEGER ,
    name VARCHAR(255) NOT NULL , 
@@ -491,12 +489,11 @@ CREATE TABLE IF NOT EXISTS Lobbyist(
 );
 
 CREATE TABLE IF NOT EXISTS LobbyistEmployer(
-   filer_naml VARCHAR(200),
    filer_id VARCHAR(9),  -- modified (PK)
-   le_id INTEGER AUTO_INCREMENT,
+   oid INTEGER,
    coalition TINYINT(1),
    
-   PRIMARY KEY (le_id)
+   PRIMARY KEY (oid)
 );
 
 -- LOBBYIST_EMPLOYED_BY_LOBBYING_FIRM
@@ -540,25 +537,30 @@ CREATE TABLE IF NOT EXISTS LobbyingContracts(
 
 CREATE TABLE IF NOT EXISTS LobbyistRepresentation(
    pid INTEGER REFERENCES Person(pid),                  -- modified
-   le_id INTEGER, -- modified (renamed)
+   oid INTEGER, -- modified (renamed)
    hearing_date DATE,                                       -- modified (renamed)
    hid INTEGER,              -- added
+   did INTEGER,
 
-   PRIMARY KEY(pid, le_id, hid),                 -- added
+   PRIMARY KEY(pid, oid, hid, did),                 -- added
    FOREIGN KEY (hid) REFERENCES Hearing(hid),
-   FOREIGN KEY (le_id) REFERENCES LobbyistEmployer(le_id)
+   FOREIGN KEY (oid) REFERENCES LobbyistEmpoyer(oid),
+   FOREIGN KEY (did) REFERENCES BillDiscussion
 );
 
 CREATE TABLE IF NOT EXISTS GeneralPublic(
    pid INTEGER,   -- added
-   affiliation VARCHAR(256),
    position VARCHAR(100),
    RecordId INTEGER AUTO_INCREMENT,  
-   hid   INTEGER,						-- added
+   hid   INTEGER,                       -- added
+   did INTEGER,
+   oid INTEGER, 
 
    PRIMARY KEY (RecordId),
    FOREIGN KEY (pid) REFERENCES Person(pid),
-   FOREIGN KEY (hid) REFERENCES Hearing(hid)
+   FOREIGN KEY (hid) REFERENCES Hearing(hid),
+   FOREIGN KEY (did) REFERENCES BillDiscussion(did),
+   FOREIGN KEY (oid) REFERENCES Organizations(oid)
 );
 
 CREATE TABLE IF NOT EXISTS LegislativeStaff(
@@ -579,7 +581,7 @@ CREATE TABLE IF NOT EXISTS LegislativeStaffRepresentation(
    flag TINYINT(1),  -- if flag is 0, there must be a legislator; if flag is 1, there must be a committee
    legislator INTEGER, -- this is the legislator 
    committee INTEGER,
-   hid   INTEGER,						-- added
+   hid   INTEGER,                       -- added
 
    PRIMARY KEY (pid, hid),                    -- added
    FOREIGN KEY (pid) REFERENCES Person(pid),
@@ -598,7 +600,7 @@ CREATE TABLE IF NOT EXISTS LegAnalystOffice(
 
 CREATE TABLE IF NOT EXISTS LegAnalystOfficeRepresentation(
    pid INTEGER REFERENCES Person(pid),   -- added  
-   hid   INTEGER,   					-- added
+   hid   INTEGER,                       -- added
 
    PRIMARY KEY (pid, hid),                    -- added
    FOREIGN KEY (pid) REFERENCES Person(pid),
@@ -618,7 +620,7 @@ CREATE TABLE IF NOT EXISTS StateAgencyRepRepresentation(
    pid INTEGER,   -- added
    employer VARCHAR(256),
    position VARCHAR(100),   
-   hid   INTEGER,						-- added
+   hid   INTEGER,                       -- added
 
    PRIMARY KEY (pid, hid),                    -- added
    FOREIGN KEY (pid) REFERENCES Person(pid),
@@ -646,37 +648,78 @@ CREATE TABLE IF NOT EXISTS StateConstOfficeRepresentation(
 );
 
 CREATE TABLE IF NOT EXISTS BillDisRepresentation(
-	did INTEGER,
-	pid INTEGER,
-	le_id INTEGER,
-	hid INTEGER,
-	
-	PRIMARY KEY (did, pid, le_id, hid),
-	FOREIGN KEY (did) REFERENCES BillDiscussion(did),
-	FOREIGN KEY (pid) REFERENCES Person(pid),
-	FOREIGN KEY (le_id) REFERENCES LobbyistEmployer(le_id),
-	FOREIGN KEY (hid) REFERENCES Hearing(hid)
+    did INTEGER,
+    pid INTEGER,
+    oid INTEGER,
+    hid INTEGER,
+    
+    PRIMARY KEY (did, pid, oid, hid),
+    FOREIGN KEY (did) REFERENCES BillDiscussion(did),
+    FOREIGN KEY (pid) REFERENCES Person(pid),
+    FOREIGN KEY (oid) REFERENCES LobbyistEmployer(oid),
+    FOREIGN KEY (hid) REFERENCES Hearing(hid)
 )
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 CREATE TABLE IF NOT EXISTS CommitteeAuthors(
-	cid INTEGER,
-	bid VARCHAR(20),
-	vid VARCHAR(30),
-	
-	PRIMARY KEY(cid, bid, vid),
-	FOREIGN KEY (bid) REFERENCES Bill(bid),
-	FOREIGN KEY (cid) REFERENCES Committee(cid),
-	FOREIGN KEY (vid) REFERENCES BillVersion(vid)
+    cid INTEGER,
+    bid VARCHAR(20),
+    vid VARCHAR(30),
+    
+    PRIMARY KEY(cid, bid, vid),
+    FOREIGN KEY (bid) REFERENCES Bill(bid),
+    FOREIGN KEY (cid) REFERENCES Committee(cid),
+    FOREIGN KEY (vid) REFERENCES BillVersion(vid)
 )
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 CREATE TABLE IF NOT EXISTS DeprecatedPerson(
-	pid INTEGER,
-	
-	PRIMARY KEY(pid)
+    pid INTEGER,
+    
+    PRIMARY KEY(pid)
+)
+ENGINE = INNODB
+CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS Organizations(
+    oid INTEGER AUTO_INCREMENT,
+    name VARCHAR(200),
+    type INTEGER DEFAULT 0, 
+    city VARCHAR(200),
+    state VARCHAR(2),
+
+    PRIMARY KEY(oid)
+)
+ENGINE = INNODB
+CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS Payors(
+    prid INT AUTO_INCREMENT,
+    name VARCHAR(200),
+    city VARCHAR(50),
+    state VARCHAR(2),
+
+    PRIMARY KEY(prid)
+)
+ENGINE = INNODB
+CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS Behests(
+    official INT,
+    datePaid DATE,
+    payor INT,
+    amount INT,
+    payee INT,
+    description TEXT,
+    purpose VARCHAR(200), -- eg Charitable
+    noticeReceieved DATE, -- When filed, I think
+    
+    PRIMARY KEY(official, payor, payee, datePaid),
+    FOREIGN KEY(official) REFERENCES Person(pid), 
+    FOREIGN KEY(payor) REFERENCES Payors(prid),
+    FOREIGN KEY(payee) REFERENCES Organizations(oid)
 )
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
