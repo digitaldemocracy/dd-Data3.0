@@ -82,7 +82,7 @@ try:
       if exist is None:
          print 'new member'
          result = dd.execute(query_insert_person, (last, first))
-         print 'inserting Person {0} {1}".format(first, last)
+         print 'inserting Person {0} {1}'.format(first, last)
          new_members.append((last,first,year,district,house,party,active))
       else:
          pid = exist[0]
@@ -104,9 +104,9 @@ try:
       print 'getting pid for {0}, {1}'.format(last, first)
       pid = check_name(dd, last, first)
       if pid is not None and active == "Y":
-         print 'inserting Legislator {0}".format(pid)
+         print 'inserting Legislator {0}'.format(pid)
          dd.execute(query_insert_legislator, {'pid':pid[0]})
-         print 'inserting Term {0} {1} {2} {3} {4}".format(pid, year, district, house, party)
+         print 'inserting Term {0} {1} {2} {3} {4}'.format(pid, year, district, house, party)
          dd.execute(query_insert_term, (year, district, house, party, pid[0]))
       else:
          print 'this person exists!? pid={0}'.format(pid[0])

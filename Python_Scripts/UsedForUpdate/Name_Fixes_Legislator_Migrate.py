@@ -12,7 +12,7 @@ Description:
 import re
 import sys
 
-#In legislator migrate, if the name changes, place the name here and change it to the correct one
+# If the name changes, place the name here and change it to the correct one
 def clean_name_legislator_migrate(last, first):
 	if(first == "Franklin" and last == "Bigelow"):
 		first = "Frank"
@@ -22,7 +22,3 @@ def clean_name_legislator_migrate(last, first):
 		first = "Steve"
 	name = first + "<SPLIT>" + last
 	return name
-	
-
-if __name__ == "__main__":
-	clean_name_legislator_migrate("blah", "blah")
