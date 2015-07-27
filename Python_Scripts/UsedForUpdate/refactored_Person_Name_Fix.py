@@ -10,41 +10,12 @@ Description:
 
 '''
 
+import loggingdb
 import re
 import sys
-import string
-import mysql.connector
-import loggingdb
 
-def clean_name(first, last):
-	name = first + ' <Split> ' + last
-	flag = 0;
-	if findRoman(name.split(' ')[len(name.split(' ')) - 1]) != 0:
-		flag = 1;
-	name = name.split(' ')
-	count = lambda l1,l2: sum([1 for x in l1 if x in l2])
-	for x in range(0, len(name) - flag):
-		if (sum(1 for c in name[x] if c.isupper()) == len(name[x]) - count(name[x], string.punctuation)) or (sum(1 for c in name[x] if c.isupper()) == 0):
-				name[x] = name[x].title()
-	name = ' '.join(name)
-	return name
-
-romanNumeralMap = (('M',  1000),
-                   ('CM', 900),
-                   ('D',  500),
-                   ('CD', 400),
-                   ('C',  100),
-                   ('XC', 90),
-                   ('L',  50),
-                   ('XL', 40),
-                   ('X',  10),
-                   ('IX', 9),
-                   ('V',  5),
-                   ('IV', 4),
-                   ('I',  1))
-
-#Define pattern to detect valid Roman numerals
-romanNumeralPattern = re.compile("""
+# Define pattern to detect valid Roman numerals
+roman_numeral_pat = re.compile('''
     ^                   # beginning of string
     M{0,4}              # thousands - 0 to 4 M's
     (CM|CD|D?C{0,3})    # hundreds - 900 (CM), 400 (CD), 0-300 (0 to 3 C's),
@@ -54,52 +25,44 @@ romanNumeralPattern = re.compile("""
     (IX|IV|V?I{0,3})    # ones - 9 (IX), 4 (IV), 0-3 (0 to 3 I's),
                         #        or 5-8 (V, followed by 0 to 3 I's)
     $                   # end of string
-    """ ,re.VERBOSE)
+    ''', re.VERBOSE)
 
-def findRoman(s):
-    """convert Roman numeral to integer"""
-    flag = 0
-    if not s:
-        print "invalid"
-    if romanNumeralPattern.search(s):
-	print "found a roman numeral"
-        flag = 1
-	pass
-
-    result = 0
-    index = 0
-    if(flag != 0):
-    	for numeral, integer in romanNumeralMap:
-        	while s[index:index+len(numeral)] == numeral:
-            		result += integer
-            		index += len(numeral)
-    return result
-
-def cleanNames():
+def clean_name(first, last):
+  '''Returns a properly cased first and last name,
+  e.g., MIKE => Mike, bill => Bill, etc.
+  '''
+  roman_numeral = ''
+  first_words = first.split(' ')
+  last_words = last.split(' ')
+  # Check if the name has a Roman numeral at the end (e.g., Mark James II).
+  if len(last_words[-1]) > 0 and roman_numeral_pat.search(last_words[-1]):
+    roman_numeral = last_words[-1]
+    # Remove the Roman numeral from the list so that it remains uppercase.
+    last_words = last_words[:-1]
+  title = lambda l: ' '.join(map(lambda s: s.title(), l))
+  return (title(first_words).strip(),
+          ('%s %s' % (title(last_words), roman_numeral)).strip())
+	
+def clean_names():
   with loggingdb.connect(host='transcription.digitaldemocracy.org',
-                       user='monty',
-                       db='DDDB2015JulyTest',
-                       passwd='python') as dd_cursor:
-    dd_cursor.execute("SELECT * from Person;")
-    for x in xrange(0, dd_cursor.rowcount):
-      try:
-        temp = dd_cursor.fetchone()
-        if not temp:
-          temp = [' ',' ',' ']
-        name = clean_name(temp[2], temp[1])
-        name = name.split(' <Split> ')
-        last = name[1]
-        first = name[0]
-        if(temp[1] != last or temp[2] != first):
-          print temp[2] + " " + temp[1]
-          print first + " " + last
-          print x
-          dd_cursor.execute("UPDATE Person SET first = %s, last = %s WHERE first = %s AND last = %s;", (first, last, temp[2], temp[1]))
-          print "Row(s) were updated :" +  str(dd_cursor.rowcount)
-      except:
-        print 'error!', sys.exc_info()[0], sys.exc_info()[1]
-        raise
+                         user='monty',
+                         db='DDDB2015JulyTest',
+                         passwd='python') as dd_cursor:
+    dd_cursor.execute('SELECT * from Person;')
+    persons = dd_cursor.fetchall()
+    for (pid, last, first, image) in persons:
+      clean_first, clean_last = clean_name(first, last)
+      if(clean_first == first and clean_last == last):
+        # Name was already clean.
+        continue
+
+      dd_cursor.execute('''UPDATE Person
+                           SET first = %s, last = %s
+                           WHERE first = %s AND last = %s;''',
+                        (clean_first, clean_last, first, last))
+      print('pid: %s, Orignal: %s %s, Clean: %s %s' %
+            (pid, first, last, clean_first, clean_last))
+      print '%s row(s) updated' % str(dd_cursor.rowcount)
 
 if __name__ == "__main__":
-  cleanNames()
-  
+  clean_names()
