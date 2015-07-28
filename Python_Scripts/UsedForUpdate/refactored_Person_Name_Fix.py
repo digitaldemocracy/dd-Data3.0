@@ -1,4 +1,5 @@
 #!/usr/bin/env python2.6
+#! -*- coding: utf-8 -*-
 '''
 File: Person_Name_Fix.py
 Author: Daniel Mangin
@@ -12,7 +13,8 @@ Description:
 
 import loggingdb
 import re
-import sys
+
+from clean_name import clean_name
 
 # Define pattern to detect valid Roman numerals
 roman_numeral_pat = re.compile('''
@@ -27,22 +29,24 @@ roman_numeral_pat = re.compile('''
     $                   # end of string
     ''', re.VERBOSE)
 
-def clean_name(first, last):
-  '''Returns a properly cased first and last name,
-  e.g., MIKE => Mike, bill => Bill, etc.
-  '''
-  roman_numeral = ''
-  first_words = first.split(' ')
-  last_words = last.split(' ')
+def name_clean(index, name):
   # Check if the name has a Roman numeral at the end (e.g., Mark James II).
-  if len(last_words[-1]) > 0 and roman_numeral_pat.search(last_words[-1]):
-    roman_numeral = last_words[-1]
-    # Remove the Roman numeral from the list so that it remains uppercase.
-    last_words = last_words[:-1]
-  title = lambda l: ' '.join(map(lambda s: s.title(), l))
-  return (title(first_words).strip(),
-          ('%s %s' % (title(last_words), roman_numeral)).strip())
-	
+  if len(name) > 0 and roman_numeral_pat.search(name):
+    return name
+
+  if name.lower() in ['de', 'la', 'van', 'del', 'da']:
+    if index == 0:
+      # Preserve case for names like La Shon.
+      return name.title()
+    # Don't capitalize in the middle of a name, e.g. Melissa de Leon.
+    return name.lower()
+
+  clean_name = name.title()
+  if clean_name.startswith('Mc'):
+    # Preserve multiple uppercase letters, e.g. Mike McCarthy.
+    clean_name = 'Mc%s' % clean_name[2:].title()
+  return clean_name
+
 def clean_names():
   with loggingdb.connect(host='transcription.digitaldemocracy.org',
                          user='monty',
@@ -51,7 +55,12 @@ def clean_names():
     dd_cursor.execute('SELECT * from Person;')
     persons = dd_cursor.fetchall()
     for (pid, last, first, image) in persons:
-      clean_first, clean_last = clean_name(first, last)
+      # The number of words in the first name.
+      split_index = len(first.split(' '))
+      cleaned_name = clean_name('%s %s' % (first, last), name_clean).split(' ')
+      clean_first = ' '.join(cleaned_name[:split_index]).strip()
+      clean_last = ' '.join(cleaned_name[split_index:]).strip()
+
       if(clean_first == first and clean_last == last):
         # Name was already clean.
         continue
