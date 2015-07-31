@@ -30,6 +30,7 @@ Populates:
 
 import re
 import sys
+import loggingdb
 import MySQLdb
 from pprint import pprint
 from urllib import urlopen
@@ -160,7 +161,7 @@ def getBillVersions(ca_cursor, dd_cursor):
   '''
 
 def main():
-  with MySQLdb.connect(host='transcription.digitaldemocracy.org',
+  with loggingdb.connect(host='transcription.digitaldemocracy.org',
                        user='monty',
                        db='DDDB2015July',
                        passwd='python') as dd_cursor:

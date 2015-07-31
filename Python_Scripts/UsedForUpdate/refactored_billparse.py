@@ -27,7 +27,7 @@ Populates:
   - BillVersion (title, digest, text)
 '''
 
-import MySQLdb
+import loggingdb
 from lxml import etree 
 import re
 import binascii
@@ -41,7 +41,7 @@ def traverse(root):
 
 def billparse():
    # MUST SPECIFY charset='utf8' OR BAD THINGS WILL HAPPEN.
-   with MySQLdb.connect(host='transcription.digitaldemocracy.org',
+   with loggingdb.connect(host='transcription.digitaldemocracy.org',
                         user='monty',
                         db='DDDB2015July',
                         passwd='python',

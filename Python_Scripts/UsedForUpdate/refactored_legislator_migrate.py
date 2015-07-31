@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 '''
 File: legislator_migrate.py
 Author: ???
@@ -31,6 +32,7 @@ Populates:
 
 import re
 import sys
+import loggingdb
 import MySQLdb
 from lxml import etree 
 import Name_Fixes_Legislator_Migrate
@@ -144,7 +146,7 @@ def main():
                        db='capublic',
                        user='monty',
                        passwd='python') as ca_cursor:
-    with MySQLdb.connect(host='transcription.digitaldemocracy.org',
+    with loggingdb.connect(host='transcription.digitaldemocracy.org',
                          db='DDDB2015JulyTest',
                          user='monty',
                          passwd='python') as dd_cursor:

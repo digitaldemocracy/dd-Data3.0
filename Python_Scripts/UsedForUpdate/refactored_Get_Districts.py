@@ -19,7 +19,7 @@ Populates:
 '''
 
 import json
-import MySQLdb
+import loggingdb
 import re
 import sys
 from pprint import pprint
@@ -103,7 +103,7 @@ def get_districts(dd_cursor):
     insert_district(dd_cursor, state, house, did, note, year, region, geodata)
 
 def main():
-  with MySQLdb.connect(host='transcription.digitaldemocracy.org',
+  with loggingdb.connect(host='transcription.digitaldemocracy.org',
                        db='DDDB2015JulyTest',
                        user='monty',
                        passwd='python') as dd_cursor:

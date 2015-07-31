@@ -21,7 +21,7 @@ Sources:
   - CVR_REGISTRATION_CD.TSV
 '''
 
-import MySQLdb
+import loggingdb
 import re
 import sys
 import csv
@@ -145,13 +145,13 @@ def find_lobbyist_employment(cursor, index):
       cursor.execute(query_insert_lobbyist_direct_employment, (Lobbyist[index][0], Lobbyist[index][1], Lobbyist[index][2], Lobbyist[index][3], Lobbyist[index][4]))
         
 def main():
-  with MySQLdb.connect(host='transcription.digitaldemocracy.org',
+  with loggingdb.connect(host='transcription.digitaldemocracy.org',
                        db='DDDB2015JulyTest',
                        user='monty',
                        passwd='python') as cursor:
     refOff = "SET foreign_key_checks = 0"
     cursor.execute(refOff)
-    with open('CVR_REGISTRATION_CD.TSV', 'rb') as tsvin:
+    with open('/home/data_warehouse_common/scripts/CVR_REGISTRATION_CD.TSV', 'rb') as tsvin:
       tsvin = csv.reader(tsvin, delimiter='\t')
       
       val = 0

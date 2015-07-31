@@ -144,7 +144,7 @@ def get_person(cursor, filer_naml, house):
     pid = cursor.fetchone()[0]
   # If there is more than one, have to use the house
   elif cursor.rowcount > 1:
-    a = cursor.fetchall()
+    a = [t[0] for t in cursor.fetchall()]
     end = cursor.rowcount
     # Find which person it is using their term
     for j in range(0, end):
@@ -183,7 +183,9 @@ def find_bill(cursor, vid):
                   WHERE vid = %(vid)s;
                '''
   cursor.execute(select_pid, {'vid':vid})
-  return cursor.fetchone()[0]
+  if cursor.rowcount > 0:
+	  return cursor.fetchone()[0]
+  return None
 
 '''
 If the author for this bill is not in DDDB, add author. Otherwise, skip.
