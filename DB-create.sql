@@ -174,6 +174,7 @@ CREATE TABLE IF NOT EXISTS Video_ttml (
    vid INTEGER,
    version INTEGER DEFAULT 0,
    ttml MEDIUMTEXT,
+   source VARCHAR(4) DEFAULT 0,
 
    FOREIGN KEY (vid) REFERENCES Video(vid)
 )
