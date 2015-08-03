@@ -37,7 +37,7 @@ def traverse(root):
 
 def billparse():
    print "got here"
-   conn = mysql.connector.connect(user="root", database="DDDB2015AprTest", password="", buffered=True)
+   conn = mysql.connector.connect(user="root", database="DDDB2015Apr", password="", buffered=True)
    get = conn.cursor()
    put = conn.cursor()
 

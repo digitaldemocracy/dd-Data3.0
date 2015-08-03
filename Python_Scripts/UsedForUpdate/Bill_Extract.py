@@ -39,7 +39,7 @@ query_insert_Bill_Version = "INSERT INTO BillVersion (vid, bid, date, state, sub
 db = mysql.connector.connect(user = 'root', db = 'capublic', password = '')
 conn = db.cursor(buffered = True)
 
-db2 = mysql.connector.connect(user = 'root', db = 'DDDB2015AprTest', password = '')
+db2 = mysql.connector.connect(user = 'root', db = 'DDDB2015Apr', password = '')
 conn2 = db2.cursor(buffered = True)
 
 #Checks if bill exists, if not, adds the bill
