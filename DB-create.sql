@@ -514,7 +514,8 @@ CREATE TABLE IF NOT EXISTS LobbyistEmployer(
    oid INTEGER,
    coalition TINYINT(1),
    
-   PRIMARY KEY (oid)
+   PRIMARY KEY (oid),
+   FOREIGN KEY (oid) REFERENCES Organizations(oid)
 );
 
 -- LOBBYIST_EMPLOYED_BY_LOBBYING_FIRM
