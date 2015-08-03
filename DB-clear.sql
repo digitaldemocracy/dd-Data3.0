@@ -6,6 +6,10 @@
 
 SET foreign_key_checks = 0;
 
+DROP TABLE Behests;
+DROP TABLE Payors;
+DROP TABLE Organizations;
+DROP TABLE DeprecatedPerson;
 DROP TABLE servesOn;
 DROP TABLE Bill; 
 DROP TABLE Hearing; 

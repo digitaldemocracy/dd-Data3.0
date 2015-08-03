@@ -1,39 +1,67 @@
--- file: DB-setup.sql
--- author: Daniel Mangin & Mandy Chan
--- Start Date: 6/22/2015
--- End Usage: 
--- Description: Used to create all of the tables for Digital Democracy
--- note: this will only work on the currently used database
---
--- Change Log: Added 'diarizationTag' into Utterance
--- 
--- Explanation: The Transcription Tool group would like to have a tag that 
--- would indicate that this utterance is spoken by this person (ex: Anonymous1).
--- Therefore, we have created a field in Utterance for it.
+/*
+file: DB-setup.sql
+authors: Daniel Mangin, Mandy Chan, Andrew Voorhees
 
+Start Date: 6/26/2015
+End Usage: 
+
+Description: Used to create all of the tables for Digital Democracy
+note: this will only work on the currently used database
+
+Change Log: DDDB2015July Initial Schema
+   Added:
+      - Behests Table
+      - Payors  Table
+      - Organizations Table
+
+   Modified:
+      - LobbyistEmployer
+         - filer_naml & le_id -> Organizations(oid)
+      - LobbyistRepresentation
+         - le_id -> Organizations(oid)
+         - Added column: did
+      - GeneralPublic
+         - affiliation -> Organizations(oid)
+         - Added column: did
+
+Explanation:
+      - Added Behest data into DDDB
+      - Added Organization table and modified several tables to 
+         point to that table
+      - Modified Lobbyist and General Public Representations to 
+         be by bill discussion and not by hearing
+*/
+
+/*****************************************************************************/
+
+/* Entity::Person
+
+   Describes any person. Can be a Legislator, GeneralPublic, Lobbyist, etc.
+*/
 CREATE TABLE IF NOT EXISTS Person (
-   pid    INTEGER AUTO_INCREMENT,
-   last   VARCHAR(50) NOT NULL,
-   first  VARCHAR(50) NOT NULL,
-   image VARCHAR(256),
-   -- description VARCHAR(1000), deprecated, moved to legislator profile
+   pid    INTEGER AUTO_INCREMENT,   -- Person id
+   last   VARCHAR(50) NOT NULL,     -- last name
+   first  VARCHAR(50) NOT NULL,     -- first name
+   image VARCHAR(256),              -- path to image (if exists)
 
    PRIMARY KEY (pid)
 )
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
--- we can probably remove this table and roll into a "role" field in Person
--- alternatively, make it a (pid, jobhistory) and put term for the hearing in here
+/* Entity:: Legislator
+
+   A legislator has a description and bio and several contact information.
+*/
 CREATE TABLE IF NOT EXISTS Legislator (
-   pid         INTEGER,
-   description VARCHAR(1000),
-   twitter_handle VARCHAR(100),
-   capitol_phone  VARCHAR(30),
-   website_url    VARCHAR(200),
-   room_number    INTEGER,
-   email_form_link VARCHAR(200),
-   OfficialBio TEXT,
+   pid         INTEGER,          -- Person id (ref. Person.pid)
+   description VARCHAR(1000),    -- description
+   twitter_handle VARCHAR(100),  -- twitter handle (ex: @example)
+   capitol_phone  VARCHAR(30),   -- phone number (format: (xxx) xxx-xxxx)
+   website_url    VARCHAR(200),  -- url
+   room_number    INTEGER,       -- room number
+   email_form_link VARCHAR(200), -- email link
+   OfficialBio TEXT,             -- bio
    
    PRIMARY KEY (pid),
    FOREIGN KEY (pid) REFERENCES Person(pid)
@@ -41,29 +69,21 @@ CREATE TABLE IF NOT EXISTS Legislator (
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
--- we can probably remove this table and roll into a "role" field in Person
--- alternatively, we can make it (pid, jobhistory) and put client information here
+/* Weak Entity::Term
 
--- CREATE TABLE IF NOT EXISTS Lobbyist (
---   pid    INTEGER,
-
---   PRIMARY KEY (pid),
---   FOREIGN KEY (pid) REFERENCES Person(pid)
--- )
-
--- ENGINE = INNODB
--- CHARACTER SET utf8 COLLATE utf8_general_ci;
-
--- only Legislators have Terms
+   Legislators have Terms. For each term a legislator serves, keep track of 
+   what district, house, and party they are associated with because legislators 
+   can change those every term.
+*/
 CREATE TABLE IF NOT EXISTS Term (
-   pid      INTEGER,
-   year     YEAR,
-   district INTEGER(3),
+   pid      INTEGER,    -- Person id (ref. Person.pid)
+   year     YEAR,       -- year served
+   district INTEGER(3), -- district legislator served in
    house    ENUM('Assembly', 'Senate') NOT NULL,
    party    ENUM('Republican', 'Democrat', 'Other') NOT NULL,
-   start    DATE,
-   end      DATE,
-   
+   start    DATE,       -- start date of term
+   end      DATE,       -- end date of term
+
    PRIMARY KEY (pid, year, district, house),
    FOREIGN KEY (pid) REFERENCES Legislator(pid) -- change to Person
 )
@@ -676,46 +696,69 @@ CREATE TABLE IF NOT EXISTS CommitteeAuthors(
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+/* Entity::DeprecatedPerson
+
+   This is used for tracking what people are deprecated and will flush them 
+   out at a set time.
+
+   Used by: Toshi
+*/
 CREATE TABLE IF NOT EXISTS DeprecatedPerson(
-    pid INTEGER,
+    pid INTEGER,     -- Person id (ref. Person.pid)
     
     PRIMARY KEY(pid)
 )
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+/* Entity::Organizations
+
+   Organizations are companies or organizations.
+*/
 CREATE TABLE IF NOT EXISTS Organizations(
-    oid INTEGER AUTO_INCREMENT,
-    name VARCHAR(200),
-    type INTEGER DEFAULT 0, 
-    city VARCHAR(200),
-    state VARCHAR(2),
+    oid INTEGER AUTO_INCREMENT,  -- Organization id
+    name VARCHAR(200),           -- name
+    type INTEGER DEFAULT 0,      -- type (not fleshed out yet)
+    city VARCHAR(200),           -- city
+    state VARCHAR(2),            -- U.S. state
 
     PRIMARY KEY(oid)
 )
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+/* Entity::Payors
+
+   Payors are persons or organizations that pay for another organization 
+   on the behest of a legislator.
+*/
 CREATE TABLE IF NOT EXISTS Payors(
-    prid INT AUTO_INCREMENT,
-    name VARCHAR(200),
-    city VARCHAR(50),
-    state VARCHAR(2),
+    prid INT AUTO_INCREMENT,  -- Payor id
+    name VARCHAR(200),        -- name
+    city VARCHAR(50),         -- city
+    state VARCHAR(2),         -- U.S. state
 
     PRIMARY KEY(prid)
 )
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+/* Entity::Behests
+
+   Behests are when a legislator asks someone (can be an Organization or a 
+   Person) to pay for another organization. Essentially, the legislator gets 
+   good publicity for helping the payee. Later on, the payor can influence 
+   the legislator on certain bills because they helped out before.
+*/
 CREATE TABLE IF NOT EXISTS Behests(
-    official INT,
-    datePaid DATE,
-    payor INT,
-    amount INT,
-    payee INT,
-    description TEXT,
-    purpose VARCHAR(200), -- eg Charitable
-    noticeReceieved DATE, -- When filed, I think
+    official INT,          -- legislator (ref. Legislator.pid)
+    datePaid DATE,         -- date the payor paid
+    payor INT,             -- organization/person that paid (ref. Payors.pid)
+    amount INT,            -- amount given to payee in USD
+    payee INT,             -- organization that was paid (ref. Organizations.oid)
+    description TEXT,      -- description of the exchange
+    purpose VARCHAR(200),  -- purpose of behest (ex. Charitable)
+    noticeReceieved DATE,  -- when the behest was filed
     
     PRIMARY KEY(official, payor, payee, datePaid),
     FOREIGN KEY(official) REFERENCES Person(pid), 
