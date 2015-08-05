@@ -334,12 +334,14 @@ def main():
   #Database Connections
   with loggingdb.connect(host='transcription.digitaldemocracy.org',
                          user='monty',
-                         db='DDDB2015July',
-                         passwd='python') as dd:
+                         db='DDDB2015JulyTest',
+                         passwd='python',
+                         charset='utf8') as dd:
     with loggingdb.connect(host='transcription.digitaldemocracy.org',
                            user='monty',
-                           db='DDDB2015July',
-                           passwd='python') as dd2:
+                           db='DDDB2015JulyTest',
+                           passwd='python',
+                           charset='utf8') as dd2:
       #dd = dd.connection.cursor(MySQLdb.cursors.SSCursor)
       #dd2 = dd2.connection.cursor(MySQLdb.cursors.SSCursor)
       getAssemblyInformation(dd, dd2)
