@@ -13,6 +13,7 @@ Change Log: DDDB2015July Initial Schema
       - Behests Table
       - Payors  Table
       - Organizations Table
+      - DeprecatedOrganizations Table
 
    Modified:
       - LobbyistEmployer
@@ -708,6 +709,20 @@ CREATE TABLE IF NOT EXISTS DeprecatedPerson(
     pid INTEGER,     -- Person id (ref. Person.pid)
     
     PRIMARY KEY(pid)
+)
+ENGINE = INNODB
+CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+/* Entity::DeprecatedOrganizations
+
+   This is used for tracking what Organizations are deprecated
+
+   Used by: Toshi
+*/
+CREATE TABLE IF NOT EXISTS DeprecatedOrganization(
+   oid INTEGER,      -- Organization id (ref. Organization.oid)
+
+   PRIMARY KEY(oid)
 )
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
