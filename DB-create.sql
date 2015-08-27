@@ -462,8 +462,9 @@ CREATE TABLE IF NOT EXISTS TT_Task (
    created DATE,
    assigned DATE, 
    completed DATE,
+   priority INT,
    
-   PRIMARY KEY (tid) ,
+   PRIMARY KEY (tid),
    FOREIGN KEY (did) REFERENCES BillDiscussion(did),
    FOREIGN KEY (editor_id) REFERENCES TT_Editor(id),
    FOREIGN KEY (vid) REFERENCES Video(vid),
