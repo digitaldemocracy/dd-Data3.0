@@ -338,11 +338,13 @@ CREATE TABLE IF NOT EXISTS Utterance (
    alignment ENUM('For', 'Against', 'For_if_amend', 'Against_unless_amend', 'Neutral', 'Indeterminate', 'NA'),
    dataFlag INTEGER DEFAULT 0,
    diarizationTag VARCHAR(5) DEFAULT '',
+   did INT,
 
    PRIMARY KEY (uid, current),
    UNIQUE KEY (uid, vid, pid, current, time),
    FOREIGN KEY (pid) REFERENCES Person(pid),
-   FOREIGN KEY (vid) REFERENCES Video(vid)
+   FOREIGN KEY (vid) REFERENCES Video(vid),
+   FOREIGN KEY (did) REFERENCES BillDiscussion(did)
 )
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
@@ -496,8 +498,9 @@ CREATE TABLE IF NOT EXISTS TT_Task (
    created DATE,
    assigned DATE, 
    completed DATE,
+   priority INT,
    
-   PRIMARY KEY (tid) ,
+   PRIMARY KEY (tid),
    FOREIGN KEY (did) REFERENCES BillDiscussion(did),
    FOREIGN KEY (editor_id) REFERENCES TT_Editor(id),
    FOREIGN KEY (vid) REFERENCES Video(vid),
@@ -545,6 +548,22 @@ CREATE TABLE IF NOT EXISTS Lobbyist(
    PRIMARY KEY (pid),                    -- added
    FOREIGN KEY (pid) REFERENCES Person(pid)
 );
+
+/* Entity::Organizations
+
+   Organizations are companies or organizations.
+*/
+CREATE TABLE IF NOT EXISTS Organizations(
+    oid INTEGER AUTO_INCREMENT,  -- Organization id
+    name VARCHAR(200),           -- name
+    type INTEGER DEFAULT 0,      -- type (not fleshed out yet)
+    city VARCHAR(200),           -- city
+    state VARCHAR(2),            -- U.S. state
+
+    PRIMARY KEY(oid)
+)
+ENGINE = INNODB
+CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 CREATE TABLE IF NOT EXISTS LobbyistEmployer(
    filer_id VARCHAR(9),  -- modified (PK)
@@ -603,8 +622,8 @@ CREATE TABLE IF NOT EXISTS LobbyistRepresentation(
 
    PRIMARY KEY(pid, oid, hid, did),                 -- added
    FOREIGN KEY (hid) REFERENCES Hearing(hid),
-   FOREIGN KEY (oid) REFERENCES LobbyistEmpoyer(oid),
-   FOREIGN KEY (did) REFERENCES BillDiscussion
+   FOREIGN KEY (oid) REFERENCES LobbyistEmployer(oid),
+   FOREIGN KEY (did) REFERENCES BillDiscussion(did)
 );
 
 CREATE TABLE IF NOT EXISTS GeneralPublic(
@@ -763,21 +782,6 @@ CREATE TABLE IF NOT EXISTS DeprecatedOrganization(
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
-/* Entity::Organizations
-
-   Organizations are companies or organizations.
-*/
-CREATE TABLE IF NOT EXISTS Organizations(
-    oid INTEGER AUTO_INCREMENT,  -- Organization id
-    name VARCHAR(200),           -- name
-    type INTEGER DEFAULT 0,      -- type (not fleshed out yet)
-    city VARCHAR(200),           -- city
-    state VARCHAR(2),            -- U.S. state
-
-    PRIMARY KEY(oid)
-)
-ENGINE = INNODB
-CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Entity::Payors
 
