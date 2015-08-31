@@ -194,6 +194,7 @@ def get_summary_votes(ca_cursor, dd_cursor):
     cid = get_committee(ca_cursor, dd_cursor, loc_code)
 
     if(cid != -1):
+      print str(cid) + ' ' + str(bid)
       insert_bill_vote_summary(
           dd_cursor, bid, mid, cid, vote_date, ayes, noes, abstain, result)
 
@@ -223,10 +224,11 @@ def main():
                        db='capublic',
                        user='monty',
                        passwd='python') as ca_cursor:
-    with loggingdb.connect(host='transcription.digitaldemocracy.org',
-                         db='DDDB2015JulyTest',
-                         user='monty',
-                         passwd='python') as dd_cursor:
+    with loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+                         port=3306,
+                         db='DDDB2015July',
+                         user='awsDB',
+                         passwd='digitaldemocracy789') as dd_cursor:
       get_summary_votes(ca_cursor, dd_cursor)
       get_detail_votes(ca_cursor, dd_cursor)
 

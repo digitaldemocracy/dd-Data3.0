@@ -41,10 +41,11 @@ def traverse(root):
 
 def billparse():
    # MUST SPECIFY charset='utf8' OR BAD THINGS WILL HAPPEN.
-   with loggingdb.connect(host='transcription.digitaldemocracy.org',
-                        user='monty',
+   with loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+                        port=3306,
                         db='DDDB2015July',
-                        passwd='python',
+                        user='awsDB'
+                        passwd='digitaldemocracy789',
                         charset='utf8') as dd_cursor:
      print('Opened connection')
      dd_cursor.execute('''SELECT bill_version_id, bill_xml

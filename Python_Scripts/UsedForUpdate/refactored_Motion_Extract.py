@@ -48,10 +48,11 @@ def getMotions():
                        db='capublic',
                        user='monty',
                        passwd='python') as ca_cursor:
-    with loggingdb.connect(host='transcription.digitaldemocracy.org',
-                         db='DDDB2015JulyTest',
-                         user='monty',
-                         passwd='python') as dddb_cursor:
+    with loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+                         port=3306,
+                         db='DDDB2015July',
+                         user='awsDB',
+                         passwd='digitaldemocracy789') as dddb_cursor:
       ca_cursor.execute('''SELECT motion_id, motion_text, trans_update
                            FROM bill_motion_tbl''')
       rows = ca_cursor.fetchall()

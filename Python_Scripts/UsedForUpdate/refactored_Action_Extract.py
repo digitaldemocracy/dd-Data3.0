@@ -56,25 +56,26 @@ def insert_Action(cursor, bid, date, text):
 Loops through all Actions from capublic and adds them as necessary
 '''
 def main():
-  with loggingdb.connect(host='transcription.digitaldemocracy.org',
-                       user='monty',
-                       db='DDDB2015JulyTest',
-                       passwd='python') as dd_cursor:
+  with loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+                       port=3306,
+                       db='DDDB2015July',
+                       user='awsDB',
+                       passwd='digitaldemocracy789') as dd_cursor:
     with MySQLdb.connect(host='transcription.digitaldemocracy.org',
                        user='monty',
                        db='capublic',
                        passwd='python') as ca_cursor:
 
       # Get all of the Actions from capublic
-      select_stmt = '''SELECT bill_id, bill_history_id, action_date
+      select_stmt = '''SELECT bill_id, action_date, action
                        FROM bill_history_tbl'''
       ca_cursor.execute(select_stmt)
       for i in range(0, ca_cursor.rowcount):
           tuple = ca_cursor.fetchone()
           if tuple:
             bid = tuple[0];
-            date = tuple[2];
-            text = tuple[3];
+            date = tuple[1];
+            text = tuple[2];
             if(bid):
               insert_Action(dd_cursor, bid, date, text)
 

@@ -145,10 +145,11 @@ def find_lobbyist_employment(cursor, index):
       cursor.execute(query_insert_lobbyist_direct_employment, (Lobbyist[index][0], Lobbyist[index][1], Lobbyist[index][2], Lobbyist[index][3], Lobbyist[index][4]))
         
 def main():
-  with loggingdb.connect(host='transcription.digitaldemocracy.org',
-                       db='DDDB2015JulyTest',
-                       user='monty',
-                       passwd='python') as cursor:
+  with loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+                       port=3306,
+                       db='DDDB2015July',
+                       user='awsDB',
+                       passwd='digitaldemocracy789') as cursor:
     refOff = "SET foreign_key_checks = 0"
     cursor.execute(refOff)
     with open('/home/data_warehouse_common/scripts/CVR_REGISTRATION_CD.TSV', 'rb') as tsvin:

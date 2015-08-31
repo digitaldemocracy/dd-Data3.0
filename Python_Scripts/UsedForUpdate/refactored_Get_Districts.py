@@ -34,7 +34,7 @@ query_insert_district = '''INSERT INTO District
 # URL String
 url_string = ('http://openstates.org/api/v1//districts/boundary/ocd-division' +
               '/country:us/state:ca/sld%(chamber)s:%(district_num)s' +
-              '/?apikey=c12c4c7e02c04976865f3fe95c3275b')
+              '/?apikey=c12c4c7e02c04976865f3f9e95c3275b')
 
 # Constants
 _NUM_LOWER_DISTRICTS = 81
@@ -45,32 +45,32 @@ Turns the region JSON into a string
 '''
 def get_region(region):
   regionString = '{lon_delta: ' + str(region['lon_delta']) + ','
-	regionString = regionString + 'center_lon: ' + str(region['center_lon']) + ','
-	regionString = regionString + 'lat_delta: ' + str(region['lat_delta']) + ','
-	regionString = regionString + 'center_lat: ' + str(region['center_lat']) + '}'
-	return regionString
+  regionString = regionString + 'center_lon: ' + str(region['center_lon']) + ','
+  regionString = regionString + 'lat_delta: ' + str(region['lat_delta']) + ','
+  regionString = regionString + 'center_lat: ' + str(region['center_lat']) + '}'
+  return regionString
 
 '''
 Turns the geo_data JSON into a string
 '''
 def format_to_string(geo_data):
-	geo_data = geo_data[0][0]
-	data_str = '{'
-	for i in xrange (0, len(geo_data)):
-		data_str = data_str + '{' + str(geo_data[i][0]) + ',' + str(geo_data[i][1]) + '}'
-		if i != len(geo_data)-1:
-			data_str = data_str + ','
-	data_str = data_str + '}'
-	return data_str
+  geo_data = geo_data[0][0]
+  data_str = '{'
+  for i in xrange (0, len(geo_data)):
+    data_str = data_str + '{' + str(geo_data[i][0]) + ',' + str(geo_data[i][1]) + '}'
+    if i != len(geo_data)-1:
+      data_str = data_str + ','
+  data_str = data_str + '}'
+  return data_str
 
 '''
 If district is not in DDDB, add. Otherwise, skip.
 '''
 def insert_district(cursor, state, house, did, note, year, region, geodata):
-	select_stmt = "SELECT * FROM District WHERE did = %(did)s AND house = %(house)s;"
-	cursor.execute(select_stmt, {'did':did, 'house':house})
-	if(cursor.rowcount == 0):
-		cursor.execute(query_insert_district, (state, house, did, note, year, geodata, region))
+  select_stmt = "SELECT * FROM District WHERE did = %(did)s AND house = %(house)s;"
+  cursor.execute(select_stmt, {'did':did, 'house':house})
+  if(cursor.rowcount == 0):
+    cursor.execute(query_insert_district, (state, house, did, note, year, geodata, region))
 
 '''
 Gets all districts and inserts them into DDDB
@@ -103,12 +103,13 @@ def get_districts(dd_cursor):
     insert_district(dd_cursor, state, house, did, note, year, region, geodata)
 
 def main():
-  with loggingdb.connect(host='transcription.digitaldemocracy.org',
-                       db='DDDB2015JulyTest',
-                       user='monty',
-                       passwd='python') as dd_cursor:
+  with loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+                       port=3306,
+                       db='DDDB2015July',
+                       user='awsDB',
+                       passwd='digitaldemocracy789') as dd_cursor:
                        
     get_districts(dd_cursor)
 
 if __name__ == "__main__":
-	main()
+  main()

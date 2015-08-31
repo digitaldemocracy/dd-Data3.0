@@ -43,15 +43,6 @@ insert_billversion_stmt = '''INSERT INTO BillVersion (vid, bid, date,
                              state, subject, appropriation, substantive_changes)
                              VALUES (%s, %s, %s, %s, %s, %s, %s);'''
 
-'''
-#connections to database
-db = mysql.connector.connect(user = 'root', db = 'capublic', password = '')
-conn = db.cursor(buffered = True)
-
-db2 = mysql.connector.connect(user = 'root', db = 'DDDB2015AprTest', password = '')
-conn2 = db2.cursor(buffered = True)
-'''
-
 # Checks if bill exists, if not, adds the bill
 def addBill(cursor, bid, type, number, state, status, house, session):
   select_stmt = "SELECT bid from Bill where bid = %(bid)s AND number = %(number)s"
@@ -90,33 +81,12 @@ def getBills(ca_cursor, dd_cursor):
     session = temp[2]
     type = temp[3]
 
-    if (session != 0):
-      type = type = 'X' + str(session)
+    if (session != '0'):
+      type = type + 'X' + session
 
     house = temp[16]
     state = temp[5]
     addBill(dd_cursor, bid, type, number, state, status, house, session)
-  '''
-  try:
-    select_stmt = "SELECT * FROM bill_tbl"
-    conn.execute(select_stmt)
-    for i in range(0, conn.rowcount):
-      temp = conn.fetchone()
-      bid = temp[0]
-      number = temp[4]
-      status = temp[17]
-      session = temp[2]
-      type = temp[3]
-      house = temp[16]
-      state = temp[5]
-      addBill(conn2, bid, type, number, state, status, house, session)
-    db2.commit()
-    
-  except:
-    db2.rollback()
-    print 'error!', sys.exc_info()[0], sys.exc_info()[1]
-    exit()
-  '''
 
 # Gets all of the BillVersions then adds them as necessary
 def getBillVersions(ca_cursor, dd_cursor):
@@ -135,36 +105,13 @@ def getBillVersions(ca_cursor, dd_cursor):
       substantive_changes = temp[11]
       if state != 0:
         addBillVersion(dd_cursor, vid, bid, date, state, subject, appropriation, substantive_changes)
-  '''
-  try:
-    select_stmt = "SELECT * FROM bill_version_tbl"
-    conn.execute(select_stmt)
-    print 'versions', conn.rowcount
-    for i in range(0, conn.rowcount):
-      temp = conn.fetchone()
-      if temp:
-        vid = temp[0]
-        bid = temp[1]
-        date = temp[3]
-        state = temp[4]
-        subject = temp[6]
-        appropriation = temp[8]
-        substantive_changes = temp[11]
-        if state != 0:
-          addBillVersion(conn2, vid, bid, date, state, subject, appropriation, substantive_changes)
-    db2.commit()
-  except:
-    print "Something happened!"
-    db2.rollback()
-    print 'error!', sys.exc_info()[0], sys.exc_info()[1]
-    exit()
-  '''
 
 def main():
-  with loggingdb.connect(host='transcription.digitaldemocracy.org',
-                       user='monty',
+  with loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+                       port=3306,
                        db='DDDB2015July',
-                       passwd='python') as dd_cursor:
+                       user='awsDB'
+                       passwd='digitaldemocracy789') as dd_cursor:
     with MySQLdb.connect(host='transcription.digitaldemocracy.org',
                          user='monty',
                          db='capublic',
@@ -174,8 +121,6 @@ def main():
       print "getting Bill Versions"
       getBillVersions(ca_cursor, dd_cursor)
       print "Closing Database Connections"
-  #db.close()
-  #db2.close()
 
 if __name__ == "__main__":
   main()
