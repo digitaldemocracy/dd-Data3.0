@@ -36,6 +36,7 @@ import re
 import sys
 import csv
 import loggingdb
+import MySQLdb
 from pprint import pprint
 from datetime import datetime
 
@@ -52,9 +53,24 @@ COL = {
 
 # Dictionary of problematic legislator names. Add as necessary.
 NAME_EXCEPTIONS = {
+    "Achadjian, Katcho":"Achadjian, K.H. \"Katcho\"",
     "Allen, Ben":"Allen, Benjamin",
+    "Bonilla, Susan A.":"Bonilla, Susan",
+    "Calderon, Charles":"Calderon, Ian Charles",
+    "Calderon, Ian":"Calderon, Ian Charles",
+    "Chau, Edwin":"Chau, Ed",
+    "DeLeon, Kevin":"De Leon, Kevin",
+    "Eggman, Susan":"Eggman, Susan Talamantes",
+    "Frazier, James":"Frazier, Jim",
+    "Hall, Isadore III":"Hall, Isadore",
     "Jackson, Hanna- Beth":"Jackson, Hannah-Beth",
+    "Jones-Sawyer, Reginald Byron":"Jones-Sawyer, Reginald",
+    "Perea, Henry T.":"Perea, Henry",
+    "Rodriquez, Freddie":"Rodriguez, Freddie",
     "Stone, Jeffrey":"Stone, Jeff",
+    "Thomas-Ridley, Sebastian":"Ridley-Thomas, Sebastian",
+    "Ting, Phil":"Ting, Philip",
+    "Vidak, James Andy":"Vidak, Andy",
 }
 
 '''
@@ -121,10 +137,10 @@ def create_payor(dd_cursor, payor, city, state):
 
 '''
 Finds payor from the payor name, city, and state. If found, returns the payor's
-'paid'. Otherwise, create a payor row and return the newly created 'paid'.
+'prid'. Otherwise, create a payor row and return the newly created 'prid'.
 '''
 def find_payor(dd_cursor, payor, city, state):
-  select_stmt = '''SELECT paid
+  select_stmt = '''SELECT prid
                    FROM Payors
                    WHERE name = %(name)s
                     AND city = %(city)s
@@ -208,13 +224,26 @@ def parse_row(dd_cursor, attribs, official):
       attribs[COL['payee_state']].strip())
 
   # Rest of variables
-  date_paid = (datetime.strptime(attribs[COL['pay_date']], '%m/%d/%y').
-      strftime('%Y-%m-%d'))
+  date_paid = attribs[COL['pay_date']]
   amount = attribs[COL['amount']].replace(',', '')
   descr = attribs[COL['descr']]
   purpose = attribs[COL['purpose']]
-  notice_rec = (datetime.strptime(attribs[COL['notice_rec']], '%m/%d/%y').
+  notice_rec = None if attribs[COL['notice_rec']] == 'No date' else (
+      datetime.strptime(attribs[COL['notice_rec']], '%m/%d/%y').
       strftime('%Y-%m-%d'))
+
+  # Format dates correctly
+  try:
+    date_paid = (datetime.strptime(date_paid, '%m/%d/%y').
+        strftime('%Y-%m-%d'))
+  except ValueError:
+    pattern = '\d{1,2}/\d{1,2}-\d{1,2}/\d{1,2}/\d{2}'
+    if re.match(pattern, date_paid):
+      date_paid = date_paid.split('-')[1]
+      date_paid = (datetime.strptime(date_paid, '%m/%d/%y').
+        strftime('%Y-%m-%d'))
+    else:
+      print('Incorrect date format! %s' % date_paid)
 
   create_behest(dd_cursor, pid, date_paid, payor_id, amount, payee_id, descr, 
       purpose, notice_rec)
@@ -226,9 +255,10 @@ Check the arguments passed in for any initial errors and raise an error if so
 def check_args(args):
   # Check number of arguments
   if len(args) != NUM_ARGS:
-    print('usage: python insert_Behests2015.py [file_name.csv] [header_line_num]')
-    print('Ex: python insert_Behests2015.py 2015-Senate.csv 6')
+    print('usage: python insert_Behests.py [file_name.csv]')
+    print('Ex: python insert_Behests.py 2015-Senate.csv')
     raise Exception('Bad arguments')
+
   # Check if file is .csv
   elif (os.path.basename(args[1])).split('.')[1] != 'csv':
     print('Please use .csv file')
@@ -241,13 +271,13 @@ def main():
   # Check arguments
   check_args(sys.argv)
   file_name = sys.argv[1]
-  #start_line = int(sys.argv[2])
 
   # Opening db connection
-  with loggingdb.connect(host='transcription.digitaldemocracy.org',
-                       user='monty',
+  with loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+                       port=3306,
                        db='DDDB2015July',
-                       passwd='python') as dd_cursor:
+                       user='awsDB',
+                       passwd='digitaldemocracy789') as dd_cursor:
 
     # Opening file and start at the header_line number
     with open(file_name, 'r') as f:
