@@ -34,9 +34,9 @@ def name_clean(index, name):
   if len(name) > 0 and roman_numeral_pat.search(name):
     return name
 
-  if name.lower() in ['de', 'la', 'van', 'del', 'da']:
+  if name.lower() in ['de', 'la', 'van', 'del', 'da', 'der']:
     if index == 0:
-      # Preserve case for names like La Shon.
+      # Always capitalize first name.
       return name.title()
     # Don't capitalize in the middle of a name, e.g. Melissa de Leon.
     return name.lower()

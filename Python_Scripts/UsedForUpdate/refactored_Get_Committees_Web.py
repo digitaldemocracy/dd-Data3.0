@@ -239,7 +239,6 @@ def getSenateInformation(dd, dd2):
   response = urllib2.urlopen('http://senate.ca.gov/committees')
   html = response.read()
   matches = re.findall('<div class="views-field views-field-title">.+\n.+',html)
-  f = open('committees.txt','a')
   for match in matches:
     match = match.split('\n')[1]
     parts = match.split('<')
