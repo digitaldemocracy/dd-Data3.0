@@ -34,7 +34,7 @@ do
    chmod -R 777 $DATA
    chmod -R 777 $DATA/*.lob
 
-   for TBL in opengov_load/*
+   for TBL in ~/dd-Data3.0/updateScripts/opengov_load/*
    do
       echo "   Loading ${TBL%.*}..."
       (cd $fold && mysql -uroot --local-infile=1 -Dcapublic -f -v < $DIR/$TBL)
