@@ -265,7 +265,7 @@ def main():
     with loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                            port=3306,
                            db='DDDB2015July',
-                           user='awsDB'
+                           user='awsDB',
                            passwd='digitaldemocracy789',
                            charset='utf8') as dd2:
       getAssemblyInformation(dd, dd2)
