@@ -32,18 +32,28 @@ import MySQLdb
 from pprint import pprint
 from urllib import urlopen
 
-query_insert_Motion = "INSERT INTO Motion (mid, date, text) VALUES (%s, %s, %s)";
+query_insert_Motion = '''INSERT INTO Motion (mid, date, text, doPass) 
+                         VALUES (%s, %s, %s %s)'''
 
-def insert_Motion(cursor, mid, date, text):
-	select_stmt = "SELECT mid from Motion where mid = %(mid)s AND date = %(date)s"
+# Returns 1 if it is a 'do pass' motion. Otherwise, return 0
+def do_pass(motion):
+  if 'do pass' in motion.lower():
+    return 1
+  return 0
+
+# Insert the Motion row into DDDB if none is found
+def insert_motion(cursor, mid, date, text):
+	select_stmt = '''SELECT mid
+                   FROM Motion 
+                   WHERE mid = %(mid)s 
+                    AND date = %(date)s
+                '''
 	cursor.execute(select_stmt, {'mid':mid, 'date':date})
 	if(cursor.rowcount == 0):
-		cursor.execute(query_insert_Motion, (mid, date, text))	
-	else:
-		#print "Motion mid = {0}, date = {1}, text = {2} Already Exists!".format(mid, date, text)
-		pass
+    do_pass_flag = do_pass(text)
+		cursor.execute(query_insert_Motion, (mid, date, text, do_pass_flag))	
 
-def getMotions():
+def get_motions():
   with MySQLdb.connect(host='transcription.digitaldemocracy.org',
                        db='capublic',
                        user='monty',
@@ -59,7 +69,7 @@ def getMotions():
       for (mid, text, update) in rows:
         date = update.strftime('%Y-%m-%d %H:%M:%S')
         if(date):
-          insert_Motion(dddb_cursor, mid, date, text)
+          insert_motion(dddb_cursor, mid, date, text)
 
 if __name__ == "__main__":
-	getMotions()	
+	get_motions()	
