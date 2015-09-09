@@ -8,20 +8,20 @@ Description:
 - Gathers the Motions from capublic.bill_motion_tbl and inserts the Motions into DDDB2015Apr.Motion
 - Used in the daily update of DDDB2015Apr
 - Fills table:
-	Motion (mid, date, text)
+  Motion (mid, date, text)
 
 Sources:
 - Leginfo (capublic)
-	- Pubinfo_2015.zip
-	- Pubinfo_Mon.zip
-	- Pubinfo_Tue.zip
-	- Pubinfo_Wed.zip
-	- Pubinfo_Thu.zip
-	- Pubinfo_Fri.zip
-	- Pubinfo_Sat.zip
+  - Pubinfo_2015.zip
+  - Pubinfo_Mon.zip
+  - Pubinfo_Tue.zip
+  - Pubinfo_Wed.zip
+  - Pubinfo_Thu.zip
+  - Pubinfo_Fri.zip
+  - Pubinfo_Sat.zip
 
 -capublic
-	- bill_motion_tbl
+  - bill_motion_tbl
 '''
 
 import re
@@ -43,15 +43,15 @@ def do_pass(motion):
 
 # Insert the Motion row into DDDB if none is found
 def insert_motion(cursor, mid, date, text):
-	select_stmt = '''SELECT mid
+  select_stmt = '''SELECT mid
                    FROM Motion 
                    WHERE mid = %(mid)s 
                     AND date = %(date)s
                 '''
-	cursor.execute(select_stmt, {'mid':mid, 'date':date})
-	if(cursor.rowcount == 0):
+  cursor.execute(select_stmt, {'mid':mid, 'date':date})
+  if(cursor.rowcount == 0):
     do_pass_flag = do_pass(text)
-		cursor.execute(query_insert_Motion, (mid, date, text, do_pass_flag))	
+    cursor.execute(query_insert_Motion, (mid, date, text, do_pass_flag))  
 
 def get_motions():
   with MySQLdb.connect(host='transcription.digitaldemocracy.org',
@@ -72,4 +72,4 @@ def get_motions():
           insert_motion(dddb_cursor, mid, date, text)
 
 if __name__ == "__main__":
-	get_motions()	
+  get_motions() 
