@@ -33,7 +33,7 @@ from pprint import pprint
 from urllib import urlopen
 
 query_insert_Motion = '''INSERT INTO Motion (mid, date, text, doPass) 
-                         VALUES (%s, %s, %s %s)'''
+                         VALUES (%s, %s, %s, %s)'''
 
 # Returns 1 if it is a 'do pass' motion. Otherwise, return 0
 def do_pass(motion):
