@@ -227,6 +227,7 @@ CREATE TABLE IF NOT EXISTS Motion (
    mid    INTEGER(20),
    date   DATETIME,
    text   TEXT,
+   doPass TINYINT(1)
 
    PRIMARY KEY (mid, date)
 )
