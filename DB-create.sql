@@ -1,6 +1,8 @@
 /*
 file: DB-setup.sql
-authors: Daniel Mangin, Mandy Chan, Andrew Voorhees
+authors: Daniel Mangin
+         Mandy Chan
+         Andrew Voorhees
 
 Start Date: 6/26/2015
 End Usage: 
@@ -13,7 +15,7 @@ Change Log: DDDB2015July Initial Schema
       - Behests Table
       - Payors  Table
       - Organizations Table
-      - DeprecatedOrganizations Table
+      - DeprecatedOrganization Table
 
    Modified:
       - LobbyistEmployer
@@ -50,7 +52,7 @@ CREATE TABLE IF NOT EXISTS Person (
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
-/* Entity:: Legislator
+/* Entity::Legislator
 
    A legislator has a description and bio and several contact information.
 */
@@ -91,10 +93,19 @@ CREATE TABLE IF NOT EXISTS Term (
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+/* Entity::Committee
+
+   When a bill is introduced in either the Senate or the House, it is sent to a
+   standing committee for study and to receive public comment. The committee 
+   makes an initial determination if the proposal should go forward in the 
+   legislature. If it votes to do so, the committee can suggest amendments to 
+   the bill, approve it for further action by the full Senate or House, or 
+   disapprove it.
+*/
 CREATE TABLE IF NOT EXISTS Committee (
-   cid    INTEGER(3),
+   cid    INTEGER(3),               -- Committee id
    house  ENUM('Assembly', 'Senate', 'Joint') NOT NULL,
-   name   VARCHAR(200) NOT NULL,
+   name   VARCHAR(200) NOT NULL,    -- committee name
    Type   ENUM('Standing','Select','Budget Subcommittee','Joint'),
 
    PRIMARY KEY (cid)
@@ -102,12 +113,16 @@ CREATE TABLE IF NOT EXISTS Committee (
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+/* Relationship::servesOn(many-to-many) << [Committee, Term]
+
+   A legislator (in a specific term) can serve on one or more committees.
+*/
 CREATE TABLE IF NOT EXISTS servesOn (
-   pid      INTEGER,
-   year     YEAR,
-   district INTEGER(3),
-   house    ENUM('Assembly', 'Senate') NOT NULL,
-   cid      INTEGER(3),
+   pid      INTEGER,                               -- Person id (ref. Person.pid)
+   year     YEAR,                                  -- year served
+   district INTEGER(3),                            -- district served
+   house    ENUM('Assembly', 'Senate') NOT NULL,   -- house served
+   cid      INTEGER(3),                            -- Committee id (ref. Committee.cid)
 
    PRIMARY KEY (pid, year, district, house, cid),
    FOREIGN KEY (pid, year, district, house) REFERENCES Term(pid, year, district, house),
@@ -116,15 +131,22 @@ CREATE TABLE IF NOT EXISTS servesOn (
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+/* Entity::Bill
+
+   A legislator (Senator/Assembly Member) or Committee can author a bill. It 
+   goes through the legislative process and changes states and versions multiple 
+   times. The house is where the bill was introduced in. The session indicates
+   what legislative session was occurring when the bill was introduced.
+*/
 CREATE TABLE IF NOT EXISTS Bill (
-   bid     VARCHAR(20),
-   type    VARCHAR(3) NOT NULL,
-   number  INTEGER NOT NULL,
+   bid     VARCHAR(20),          -- Bill id (concat of years+session+type+number)
+   type    VARCHAR(3) NOT NULL,  -- bill type abbreviation
+   number  INTEGER NOT NULL,     -- bill number
    state   ENUM('Chaptered', 'Introduced', 'Amended Assembly', 'Amended Senate', 'Enrolled',
       'Proposed', 'Amended', 'Vetoed') NOT NULL,
-   status  VARCHAR(60),
+   status  VARCHAR(60),          -- current bill status
    house   ENUM('Assembly', 'Senate', 'Secretary of State', 'Governor', 'Legislature'),
-   session INTEGER(1),
+   session INTEGER(1),           -- 0: Normal session, 1: Special session
 
    PRIMARY KEY (bid),
    INDEX name (type, number)
@@ -132,18 +154,32 @@ CREATE TABLE IF NOT EXISTS Bill (
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+/* Entity::Hearing
+
+   There are many hearings per day. A bill is presented during a hearing and 
+   testimonies may be heard in support or opposition to the bill. During the 
+   hearing, a committee will vote on the bill.
+*/
 CREATE TABLE IF NOT EXISTS Hearing (
-   hid    INTEGER AUTO_INCREMENT,
-   date   DATE,
+   hid    INTEGER AUTO_INCREMENT,      -- Hearing id
+   date   DATE,                        -- date of hearing
 
    PRIMARY KEY (hid)
 )
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+/* Relationship::CommitteeHearings(many-to-many) << [Committee, Hearing]
+
+   After the bill is introduced, a bill is assigned a policy committee according
+   to subject area. During the committee hearing, the author presents the bill to 
+   the committee. Testimonies may be heard in support or opposition to the bill. 
+   The committee then votes on whether to pass the bill out of the committee, or 
+   that it be passed as amended.
+*/
 CREATE TABLE IF NOT EXISTS CommitteeHearings (
-    cid INTEGER,
-    hid INTEGER,
+    cid INTEGER,  -- Committee id (ref. Committee.cid)
+    hid INTEGER,  -- Hearing id (ref. Hearing.hid)
 
     PRIMARY KEY (cid, hid),
     FOREIGN KEY (cid) REFERENCES Committee(cid),
