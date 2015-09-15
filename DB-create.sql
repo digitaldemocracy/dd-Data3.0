@@ -824,3 +824,23 @@ CREATE TABLE IF NOT EXISTS Behests(
 )
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS BillAnalysis(
+    analysis_id DECIMAL(22, 0),
+    bill_id VARCHAR(20),
+    house VARCHAR(1),
+    analysis_type VARCHAR(100),
+    committee_code VARCHAR(6),
+    committee_name VARCHAR(200),
+    amendment_author VARCHAR(100),
+    analysis_date DATETIME,
+    amendment_date DATETIME,
+    page_num DECIMAL(22, 0),
+    source_doc LONGBLOG,
+    released_floor VARCHAR(1),
+    active_flg VARCHAR(1),
+    trans_uid VARCHAR(20),
+    trans_update DATETIME,
+
+    PRIMARY KEY(analysis_id)
+);
