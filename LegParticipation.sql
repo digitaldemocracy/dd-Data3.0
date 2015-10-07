@@ -6,8 +6,13 @@ DROP VIEW IF EXISTS LegHidWord;
 DROP VIEW IF EXISTS HearingWord;
 DROP VIEW IF EXISTS LegHidWordPer;
 DROP VIEW IF EXISTS LegWordAvg;
+DROP VIEW IF EXISTS TalkingLegs;
+DROP VIEW IF EXISTS ProperLegs;
 DROP VIEW IF EXISTS AllLegs;
+DROP VIEW IF EXISTS AllLegsInfo;
 DROP TABLE IF EXISTS LegParticipation;
+DROP VIEW IF EXISTS LegHearingParticipation;
+DROP TABLE IF EXISTS LegAvgPercentParticipation;
 
 -- Creates view with the word counts for every utterance
 CREATE VIEW UtterInfo
@@ -16,7 +21,9 @@ SELECT u.uid, u.pid, v.hid, u.did, GetWordCount(u.text)
     AS WordCount, u.endTime - u.time AS Time
 FROM currentUtterance u
     JOIN Video v
-    ON u.vid = v.vid;
+    ON u.vid = v.vid
+    JOIN Legislator l
+    ON l.pid = u.pid;
 
 -- Gives the word counts for each legislator based on a
 -- hearing. Also their percentages talking.
@@ -25,6 +32,7 @@ AS
 SELECT u.did, u.pid, SUM(u.WordCount) AS 
     WordCount, SUM(u.Time) AS Time
 FROM UtterInfo u
+WHERE u.did IS NOT NULL
 GROUP BY u.pid, u.did;
 
 -- Gives the word count for a bill discussion
@@ -34,6 +42,7 @@ AS
 SELECT did, SUM(WordCount) AS WordCount, SUM(Time)
     AS Time
 FROM LegDidWord
+WHERE did IS NOT NULL
 GROUP BY did;
 
 -- give the percentage talking as well
@@ -83,26 +92,49 @@ SELECT pid, SUM(WordCount) / COUNT(*) AS AvgWords
 FROM LegHidWord 
 GROUP BY pid;
 
--- Collects everybody who should be present at a given 
--- did
-CREATE VIEW AllLegs
-AS
-SELECT DISTINCT ch.hid, bd.did, s.pid, p.first, p.last,
-    t.party
+-- All the legislators that should be a specific hearings
+CREATE VIEW ProperLegs
+AS 
+SELECT DISTINCT ch.hid, s.pid
 FROM CommitteeHearings ch
     JOIN servesOn s
-    ON s.cid = ch.cid
-    JOIN BillDiscussion bd 
-    ON bd.hid = ch.hid 
+    ON s.cid = ch.cid;
+
+-- All the legislators that talked at specific hearings
+CREATE VIEW TalkingLegs
+AS
+SELECT DISTINCT hid, pid
+FROM UtterInfo;
+
+-- Combines the prior two tables to get all the legs at a 
+-- hearing, as well as all the legs that should have been
+-- there
+CREATE VIEW AllLegs
+AS 
+    (SELECT hid, pid
+    FROM ProperLegs)
+UNION
+    (SELECT hid, pid
+    FROM TalkingLegs);
+
+-- Collects everybody who should be present at a given 
+-- did
+CREATE VIEW AllLegsInfo
+AS
+SELECT DISTINCT al.hid, bd.did, bd.bid, al.pid, p.first, p.last,
+    t.party
+FROM AllLegs al
+    LEFT JOIN BillDiscussion bd 
+    ON bd.hid = al.hid 
     JOIN Person p
-    ON s.pid = p.pid
+    ON al.pid = p.pid
     JOIN Term t 
     ON p.pid = t.pid;
 
 -- Creates the necessary view for Leg participation
 CREATE TABLE LegParticipation
 AS
-SELECT bdw.did, bd.bid, al.pid, al.first, al.last,
+SELECT al.hid, al.did, al.bid, al.pid, al.first, al.last,
     al.party,
     IFNULL(ldw.WordCount, 0) AS LegBillWordCount,
     IFNULL(ldw.Time, 0) AS LegBillTime,
@@ -115,7 +147,7 @@ SELECT bdw.did, bd.bid, al.pid, al.first, al.last,
     IFNULL(lwa.AvgWords, 0) AS LegHearingAvg,
     IFNULL(bdw.WordCount, 0) AS BillWordCount,
     IFNULL(hw.WordCount, 0) AS HearingWordCount
-FROM AllLegs al 
+FROM AllLegsInfo al 
     LEFT JOIN LegDidWordPer ldw
     ON al.pid = ldw.pid
         AND al.did = ldw.did
@@ -127,10 +159,25 @@ FROM AllLegs al
     LEFT JOIN DidWord bdw 
     ON al.did = bdw.did
     LEFT JOIN HearingWord hw 
-    ON al.hid = hw.hid
-    JOIN BillDiscussion bd 
-    ON bdw.did = bd.did;
+    ON al.hid = hw.hid;
 
+-- Used to help you get the Avg Participation
+CREATE VIEW LegHearingParticipation
+AS
+SELECT DISTINCT pid, hid, first, last, LegHearingWordCount,
+    HearingWordCount
+FROM LegParticipation;
+
+
+-- Gets the average percent participation for each leg
+CREATE TABLE LegAvgPercentParticipation
+AS
+SELECT pid, first, last, SUM(LegHearingWordCount) / 
+    SUM(HearingWordCount) AS AvgPercentParticipation
+FROM LegParticipation
+GROUP BY pid;
+
+    
 DROP VIEW UtterInfo;
 DROP VIEW LegDidWord;
 DROP VIEW DidWord;
@@ -139,4 +186,8 @@ DROP VIEW LegHidWord;
 DROP VIEW HearingWord;
 DROP VIEW LegHidWordPer;
 DROP VIEW LegWordAvg;
+DROP VIEW TalkingLegs;
+DROP VIEW ProperLegs;
 DROP VIEW AllLegs;
+DROP VIEW AllLegsInfo;
+DROP VIEW LegHearingParticipation;
