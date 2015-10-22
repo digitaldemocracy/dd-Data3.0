@@ -92,7 +92,7 @@ CREATE TABLE IF NOT EXISTS Legislator (
    twitter_handle VARCHAR(100),  -- twitter handle (ex: @example)
    capitol_phone  VARCHAR(30),   -- phone number (format: (xxx) xxx-xxxx)
    website_url    VARCHAR(200),  -- url
-   room_number    INTEGER,       -- room number
+   room_number    VARCHAR(10),       -- room number
    email_form_link VARCHAR(200), -- email link
    OfficialBio TEXT,             -- bio
    lastTouched DATETIME DEFAULT NOW(),
