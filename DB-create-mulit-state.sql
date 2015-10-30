@@ -921,8 +921,10 @@ CREATE TABLE IF NOT EXISTS TT_Editor (
    created TIMESTAMP NOT NULL , 
    active BOOLEAN NOT NULL , 
    role VARCHAR(15) NOT NULL , 
+   state VARCHAR(2),
    
    PRIMARY KEY (id),
+   FOREIGN KEY (state) REFERENCES State(abbrev),
    UNIQUE KEY (username)
 )
 ENGINE = INNODB

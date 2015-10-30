@@ -113,6 +113,7 @@ FROM OrgAMUtter oamu
 
 -- Gets all the alignments neatly into a table. This is what
 -- Toshi sees
+DROP TABLE IF EXISTS OrgAlignments;
 CREATE TABLE OrgAlignments 
 AS
     SELECT oid, bid, alignment 
