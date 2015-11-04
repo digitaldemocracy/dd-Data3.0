@@ -95,10 +95,12 @@ CREATE TABLE IF NOT EXISTS Legislator (
    room_number    VARCHAR(10),       -- room number
    email_form_link VARCHAR(200), -- email link
    OfficialBio TEXT,             -- bio
+   state    VARCHAR(2), -- state where term was served
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
    
-   PRIMARY KEY (pid),
-   FOREIGN KEY (pid) REFERENCES Person(pid)
+   PRIMARY KEY (pid, state),
+   FOREIGN KEY (pid) REFERENCES Person(pid), 
+   FOREIGN KEY (state) REFERENCES State(abbrev)
 )
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
@@ -142,7 +144,7 @@ CREATE TABLE IF NOT EXISTS Committee (
    cid    INTEGER(3),               -- Committee id
    house  VARCHAR(100) NOT NULL,
    name   VARCHAR(200) NOT NULL,    -- committee name
-   Type   ENUM('Standing','Select','Budget Subcommittee','Joint'),
+   Type   VARCHAR(100),
    state VARCHAR(2),
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
 
@@ -240,7 +242,7 @@ CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 
 CREATE TABLE IF NOT EXISTS Action (
-   bid    VARCHAR(20),
+   bid    VARCHAR(23),
    date   DATE,
    text   TEXT,
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
@@ -308,6 +310,7 @@ CREATE TABLE IF NOT EXISTS Motion (
    date   DATETIME,
    text   TEXT,
    doPass TINYINT(1),
+   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
 
    PRIMARY KEY (mid, date)
 )
@@ -324,6 +327,7 @@ CREATE TABLE IF NOT EXISTS BillVoteSummary (
     naes        INTEGER,
     abstain     INTEGER,
     result      VARCHAR(20),
+    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
     
     PRIMARY KEY(voteId),
     FOREIGN KEY (mid) REFERENCES Motion(mid),
@@ -358,8 +362,8 @@ CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 CREATE TABLE IF NOT EXISTS authors (
    pid          INTEGER,
-   bid          VARCHAR(20),
-   vid          VARCHAR(30),
+   bid          VARCHAR(23),
+   vid          VARCHAR(33),
    contribution ENUM('Lead Author', 'Principal Coauthor', 'Coauthor') DEFAULT 'Coauthor',
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
 
@@ -372,8 +376,8 @@ CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 CREATE TABLE IF NOT EXISTS CommitteeAuthors(
     cid INTEGER,
-    bid VARCHAR(20),
-    vid VARCHAR(30),
+    bid VARCHAR(23),
+    vid VARCHAR(33),
     state VARCHAR(2),
     lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
     
@@ -514,7 +518,7 @@ CREATE TABLE IF NOT EXISTS Lobbyist(
    pid INTEGER,   -- added
    -- FILER_NAML VARCHAR(50),               modified, needs to be same as Person.last
    -- FILER_NAMF VARCHAR(50),               modified, needs to be same as Person.first  
-   filer_id VARCHAR(12) UNIQUE,         -- modified, start with state prefix   
+   filer_id VARCHAR(9) UNIQUE,         -- modified, start with state prefix   
    state VARCHAR(2), 
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
 

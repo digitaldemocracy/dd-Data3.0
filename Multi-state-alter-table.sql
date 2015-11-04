@@ -38,7 +38,12 @@ ALTER TABLE Person
   ADD lastTouched DATETIME DEFAULT NOW();
 
 ALTER TABLE Legislator
+  CHANGE room_number room_number VARCHAR(10),
+  ADD state VARCHAR(2) REFERENCES State(abbrev),
   ADD lastTouched DATETIME DEFAULT NOW();
+
+UPDATE Legislator
+  SET state = "CA";
 
 ALTER TABLE servesOn
     DROP FOREIGN KEY servesOn_ibfk_1,
@@ -120,6 +125,8 @@ ALTER TABLE CommitteeHearings
 
 
 ALTER TABLE Action
+  CHANGE bid bid VARCHAR(23),
+  ADD FOREIGN KEY (bid) REFERENCES Bill(bid),
   ADD lastTouched DATETIME DEFAULT NOW();
 
 
@@ -162,10 +169,16 @@ UPDATE BillVersion
 
 
 ALTER TABLE authors
+  CHANGE bid bid VARCHAR(23),
+  CHANGE vid vid  VARCHAR(33),
+  ADD FOREIGN KEY (bid, vid) REFERENCES BillVersion(bid, vid),
   ADD lastTouched DATETIME DEFAULT NOW();
 
   
 ALTER TABLE CommitteeAuthors
+  CHANGE bid bid VARCHAR(23),
+  CHANGE vid vid  VARCHAR(33),
+  ADD FOREIGN KEY (bid, vid) REFERENCES BillVersion(bid, vid),
   ADD state VARCHAR(2),
   ADD CONSTRAINT CommitteeAuthors_ibfk_4
     FOREIGN KEY (state) REFERENCES State(abbrev),
@@ -239,7 +252,6 @@ ALTER TABLE Organizations
 ALTER TABLE Lobbyist
   ENGINE = INNODB,
   CHARACTER SET utf8 COLLATE utf8_general_ci,
-  CHANGE filer_id filer_id VARCHAR(12) UNIQUE,
   ADD state VARCHAR(2),
   DROP PRIMARY KEY,
   ADD PRIMARY KEY (pid, state),
@@ -515,9 +527,50 @@ FROM Lobbyist l
 WHERE u.did IS NOT NULL
 GROUP BY l.pid, u.alignment, u.did;
 
-DROP TABLE JobSnapShot; 
+ALTER TABLE TT_Editor
+  ADD state VARCHAR(2),
+  ADD FOREIGN KEY (state) REFERENCES State(abbrev);
+
+ALTER TABLE Motion
+  ADD lastTouched DATETIME DEFAULT NOW();
+
+
+ALTER TABLE BillVoteSummary
+  ADD lastTouched DATETIME DEFAULT NOW();
+
+SET FOREIGN_KEY_CHECKS = 0;
+
+UPDATE Bill b1
+SET b1.bid = CONCAT("CA_", b1.bid);
+
+
+UPDATE Action
+SET bid = CONCAT("CA_", bid);
+
+UPDATE BillDiscussion
+SET bid = CONCAT("CA_", bid);
+
+UPDATE BillVoteSummary
+SET bid = CONCAT("CA_", bid);
+
+UPDATE BillVersion
+SET bid = CONCAT("CA_", bid),
+  vid = CONCAT("CA_", vid);
+
+UPDATE authors
+SET bid = CONCAT("CA_", bid),
+  vid = CONCAT("CA_", vid);
+
+UPDATE CommitteeAuthors
+SET bid = CONCAT("CA_", bid),
+  vid = CONCAT("CA_", vid);
+
+
+
+
+-- DROP TABLE JobSnapShot; 
 DROP TABLE attends;
-DROP TABLE Tag;
+DROP TABLE tag;
 DROP TABLE Mention;
 DROP TABLE user;
 DROP TABLE BillDisRepresentation;
