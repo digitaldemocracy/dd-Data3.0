@@ -116,7 +116,7 @@ def clean_name(name):
 '''
 Find the Person using a combined name
 '''
-def get_person(cursor, filer_naml, house):
+def get_person(cursor, filer_naml, house, state):
   pid = -1                              # Default NULL value
   filer_naml = clean_name(filer_naml)   # Clean name
   temp = filer_naml.split(' ')
@@ -156,10 +156,11 @@ def get_person(cursor, filer_naml, house):
       select_term = '''SELECT pid, house 
                        FROM Term 
                        WHERE pid = %(pid)s 
-                        AND house = %(house)s 
+                        AND house = %(house)s
+                        AND state = %(state)s 
                        ORDER BY Term.pid;
                     '''
-      cursor.execute(select_term, {'pid':a[j],'house':house})
+      cursor.execute(select_term, {'pid':a[j],'house':house,'state':state})
       if(cursor.rowcount == 1):
         pid = cursor.fetchone()[0]
 
@@ -182,12 +183,13 @@ def get_person(cursor, filer_naml, house):
 Finds the bill id associated with the bill version. If bill is found, return the 
 row. Otherwise, return None.
 '''
-def find_bill(cursor, vid):
+def find_bill(cursor, vid, state):
   select_pid = '''SELECT bid 
                   FROM BillVersion 
-                  WHERE vid = %(vid)s;
+                  WHERE vid = %(vid)s
+                   AND state = %(state)s;
                '''
-  cursor.execute(select_pid, {'vid':vid})
+  cursor.execute(select_pid, {'vid':vid,'state':state})
   if cursor.rowcount > 0:
 	  return cursor.fetchone()[0]
   return None
@@ -222,28 +224,28 @@ def get_authors(ca_cursor, dd_cursor):
 
   # Iterate over each bill author row in capublic
   for (vid, author_type, house, name, contrib, prim_author_flg) in rows:
-    bid = find_bill(dd_cursor, vid)
+    bid = find_bill(dd_cursor, vid, state)
 
     # Check if the bill is in DDDB. Otherwise, skip
     if bid is not None and prim_author_flg == 'Y':
 
       # Legislator Authors
       if author_type == 'Legislator':
-        pid = get_person(dd_cursor, name, house)
+        pid = get_person(dd_cursor, name, house, state)
         if pid != -1:
           add_author(dd_cursor, pid, bid, vid, contrib.title())
         else:
-          print('Could not find Legislator Author "%s" for bill version %s, skipping' %
-              (name, vid))
+          print('Could not find Legislator Author "%s" for bill version %s in state %s, skipping' %
+              (name, vid, state))
 
       # Committee Authors
       elif author_type == 'Committee':
-        cid = find_committee(dd_cursor, name, house)
+        cid = find_committee(dd_cursor, name, house, state)
         if cid != -1:
-          add_committee_author(dd_cursor, cid, bid, vid)
+          add_committee_author(dd_cursor, cid, bid, vid, state)
         else:
-          print('Could not find Committee Author "%s" for bill version %s, skipping' % 
-              (name, vid))
+          print('Could not find Committee Author "%s" for bill version %s in state %s, skipping' % 
+              (name, vid, state))
 
 def main():
   with loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
