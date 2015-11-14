@@ -103,7 +103,7 @@ def clean_name(name):
 
   return name
 
-def get_person(cursor, filer_naml, floor):
+def get_person(cursor, filer_naml, floor, state):
 	pid = -1
 	filer_naml = clean_name(filer_naml)
 	temp = filer_naml.split(' ')
@@ -128,8 +128,8 @@ def get_person(cursor, filer_naml, floor):
 			temp = cursor.fetchone()
 			a.append(temp[0])
 		for j in range(0, cursor.rowcount):
-			select_term = "SELECT pid, house FROM Term WHERE pid = %(pid)s AND house = %(house)s;"
-			cursor.execute(select_term, {'pid':a[j],'house':floor})
+			select_term = "SELECT pid, house FROM Term WHERE pid = %(pid)s AND house = %(house)s AND state = %(state)s;"
+			cursor.execute(select_term, {'pid':a[j],'house':floor,'state':state})
 			if(cursor.rowcount == 1):
 				pid = cursor.fetchone()[0]
 	else:
@@ -215,9 +215,9 @@ def get_detail_votes(ca_cursor, dd_cursor):
                     ''')
   rows = ca_cursor.fetchall()
 
-  for (bid, loc_code, legislator, vote_code, mid, trans_update) in rows:
+  for (bid, loc_code, legislator, vote_code, mid, trans_update, state) in rows:
     date = trans_update.strftime('%Y-%m-%d')
-    pid = get_person(dd_cursor, legislator, loc_code)
+    pid = get_person(dd_cursor, legislator, loc_code, state)
     vote_id = get_vote_id(dd_cursor, bid, mid)
     result = vote_code
 
