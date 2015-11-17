@@ -33,6 +33,9 @@ import MySQLdb
 import re
 import binascii
 
+# U.S. State
+state = 'CA'
+
 def traverse(root):
    for node in root:
       traverse(node)
@@ -99,8 +102,8 @@ def billparse():
            #print body
 
            dd_cursor.execute('''UPDATE BillVersion
-                                SET title = %s, digest= %s, text = %s
-                                WHERE vid = %s;''', (titleText, digest, body, vid))
+                                SET title = %s, digest= %s, text = %s, state = %s
+                                WHERE vid = %s;''', (titleText, digest, body, vid, state))
            '''
            except Exception as e:
             print(e)
