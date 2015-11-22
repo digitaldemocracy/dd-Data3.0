@@ -3,9 +3,9 @@
 '''
 File: Get_Committees_Web.py
 Author: Daniel Mangin
-Modified By: Mandy Chan
+Modified By: Mandy Chan and Freddy Hernandez
 Date: 6/11/2015
-Last Changed: 11/17/2015
+Last Changed: 11/22/2015
 
 Description:
 - Scrapes the Assembly and Senate websites to gather committees and memberships
@@ -114,32 +114,6 @@ def insert_floor_committee(cursor, house, name):
   insert_floor_members(cursor, cid, house)
 
 '''
-Inserts the Committee Senate Floor
-
-|dd_cursor|: DDDB database cursor
-'''
-def insert_senate_floor(dd_cursor):
-  house = 'Senate'
-  name = 'Senate Floor'
-
-  com = get_committee(dd_cursor, house, name)
-  cid = insert_committee(dd_cursor, house, name) if com is None else com[0]
-  insert_floor_members(dd_cursor, cid, house)
-  
-'''
-Inserts the Committee Assembly Floor
-
-|dd_cursor|: DDDB database cursor
-'''
-def insert_assembly_floor(dd_cursor):
-  name = 'Assembly Floor'
-  house = 'Assembly'
-
-  com = get_committee(dd_cursor, house, name)
-  cid = insert_committee(dd_cursor, house, name) if com is None else com[0]
-  insert_floor_members(dd_cursor, cid, house)
-      
-'''
 Finds the district that a legislator serves using Term
 
 |dd_cursor|: DDDB database cursor
@@ -175,39 +149,47 @@ def insert_serveson(cursor, pid, year, district, house, cid):
     cursor.execute(qi_serveson, (pid, year, district, house, cid))
 
 '''
-Finds the person
+Finds the id of a person.
+
+|cursor|: database cursor
+|name|: name of person to look for
+
+Returns the id, or None if the person is not in the database.
 '''
-def get_person(cursor, filer_naml, filer_namf):
-  pid = -1
-  filer_naml = '%' + filer_naml + '%'
-  filer_namf = '%' + filer_namf + '%'
-  select_pid = 'SELECT pid FROM Person WHERE last LIKE %(filer_naml)s AND first LIKE %(filer_namf)s ORDER BY Person.pid;'
-  cursor.execute(select_pid, {'filer_naml':filer_naml, 'filer_namf':filer_namf})
+def get_person_id(cursor, name):
+  names = name.split(' ')
+  first = ''.join(name[0].split(' '))
+  last = ''.join(name[len(name) - 1].split(' '))
+  select_pid = '''SELECT pid
+                  FROM Person
+                  WHERE last LIKE %%%s%%
+                   AND first LIKE %%%s%%
+                  ORDER BY Person.pid'''
+  cursor.execute(select_pid, (last, first))
   if cursor.rowcount > 0:
-    pid = cursor.fetchone()[0]
-  else:
-    print "couldn't find {0} {1}".format(filer_namf, filer_naml)
-  return pid
+    return cursor.fetchone()[0]
+  return None
 
 '''
-Creates all the data needed for the servesOn insertion
+Updates the database to show that a house member is a member of
+a given committee.
+
+|cursor|: database cursor
+|cid|: The committee id
+|member_name|: name of the house member
+|house|: political house (Assembly or Senate)
 '''
-def create_servesOn(cursor, name, house, cid):
+def update_committee_membership(cursor, cid, member_name, house):
   year = 2015
-  name = name.split(' ')
-  first = ''.join(name[0].split(' '))
-  last = ''.join(name[len(name)-1].split(' '))
-  pid = -1;
-  if len(first) > 0 and len(last) > 0:
-    pid = get_person(cursor, last, first)
-  else:
-    print 'Missing first or last name';
-  if pid != -1:
+  pid = get_person_id(cursor, member_name)
+  if pid is not None:
     district = find_district(cursor, pid, year, house)
     if district is not None:
       insert_serveson(cursor, pid, year, district, house, cid)
     else:
-      print 'District not found'
+      print('District not found')
+  else:
+    print('%s not found' % member_name)
 
 '''
 Cleans committee names
@@ -234,15 +216,6 @@ def clean_name(name):
     name = '-'.join(name.split('–'))
   return name.strip()
 
-def find_committee(cursor, house, name):
-  name = clean_name(name)
-  select_stmt = 'SELECT * from Committee where house = %(house)s AND name = %(name)s;'
-  cursor.execute(select_stmt, {'house':house,'name':name})
-  if cursor.rowcount == 0:
-    return insert_committee(cursor, house, name)
-  else:
-    return cursor.fetchone()[0]
-
 '''
 Inserts committee 
 
@@ -260,100 +233,65 @@ def insert_committee(cursor, house, name):
   return cid
 
 '''
-Get each member of the given assembly committee. If the member is not recorded
-in DDDB, add.
+Scrapes a committee members page website and returns the
+names of the members.
 
-|dd|: database cursor
-|imp|: link to committee members page
-|cid|: committee id
-|house|: house (assembly or senate)
+|url|: The url of the committee members page
+|house|: political house of committee (Assembly or Senate)
+
+Generates member names.
 '''
-def get_members_assembly(dd, imp, cid, house):
-  link = imp.split('"')[1]
-  if(imp.count('/') == 1):
-    link = 'http://assembly.ca.gov' + link;
-  if len(link.split('/')) == 3:
-    link = link + '/membersstaff'
-  page = urllib2.urlopen(link)
-  html = page.read()
-  matches = re.findall('<td>\n.+<.+</td>',html)
+def get_committee_members(url, house):
+  html = urllib2.urlopen(url).read()
+  if house == 'Assembly':
+    member_pat = '<td>\s*<a.*?>(.*?)</a>.*?</td>'
+  else:
+    member_pat = '<a.*?>Senator\s*(.*?)</a>'
 
-  for match in matches:
-    name = match.split('>')[2].split('<')[0].split('(')[0]
-    name = clean_name(name)
-    create_servesOn(dd, name, house, cid)
+  for match in re.finditer(member_pat, html):
+    # Some names look like "John Doe (Chair)". Remove the (Chair) part.
+    yield clean_name(match.group(1).split('('))
 
 '''
-Get each member of the given senate committee. If the member is not recorded
-in DDDB, add.
+A generator that returns committees for a given house.
 
-|dd|: database cursor
-|imp|: link to committee members page
-|cid|: committee id
-|house|: house (assembly or senate)
+|house|: political house (Assembly or Senate)
+
+Generates tuples of <committee members page url>, <committee name>
 '''
-def get_members_senate(dd, imp, cid, house):
-  link = imp.split('"')[1]
-  page = urllib2.urlopen(link)
-  html = page.read()
-  matches = re.findall('<a href=.+>Senator.+',html)
-  ''.join(matches)
+def get_committees(house):
+  host = 'http://%s.ca.gov' % house.lower()
+  html = urllib2.urlopen('http://%s/committees' % host).read()
+  committee_pat = '<span class="field-content">\s*<a href="(.*?)">(.*?)</a>'
 
-  for match in matches:
-    parts = match.split('>')
-    for part in parts:
-      if 'Senator' in part:
-        name = part.split('>')[0].split('(')[0].split('<')[0]
-        name = ' '.join(name.split(' ')[1:])
-        name = clean_name(name)
-        create_servesOn(dd, name, house, cid)
+  for match in re.finditer(committee_pat, html):
+    url = match.group(1)
+    name = clean_name(match.group(2))
 
-'''
-Opens up the assembly committe page and scrapes information about its 
-committees and committee members. If the committee or member is not recorded
-in DDDB, add.
-
-|dd|: database cursor
-'''
-def get_assembly_information(dd):
-  response = urllib2.urlopen('http://assembly.ca.gov/committees')
-  html = response.read()
-  matches = re.findall('<span class="field-content">.+',html)
-  for match in matches:
-    parts = match.split('<')
-    imp = parts[2].split('>')
-    house = 'Assembly'
-    if 'Joint' in imp[1]:
-      house = 'Joint'
-    print 'Committee: {0}'.format(imp[1])
-    cid = find_committee(dd, house, imp[1])
-    house = 'Assembly'
-    get_members_assembly(dd, imp[0], cid, house)
-  insert_assembly_floor(dd)
+    if house == 'Assembly':
+      if(url.count('/') == 1):
+        # |url| is a relative link. Add it to the host.
+        url = '%s/%s' % (host, url)
+      if len(url.split('/')) == 3:
+        # No resource requested in |url|. Add the default one.
+        url += '/membersstaff'
+    yield url, name
 
 '''
-Opens up the senate committee page and scrapes information about its committees
-and committee members. If the committee or member is not recorded in DDDB, add.
+Scrapes committee web pages for committee information and adds it
+to DDDB if it does not already exist.
 
-|dd|: database cursor
+|cursor|: database cursor
+|house|: political house (Assembly or Senate)
 '''
-def get_senate_information(dd):
-  joint = 'Joint'
-  senate = 'Senate'
-
-  response = urllib2.urlopen('http://senate.ca.gov/committees')
-  html = response.read()
-  matches = re.findall('<div class="views-field views-field-title">.+\n.+',html)
-  insert_floor_committee(dd, house, 'Senate Floor')
-
-  for match in matches:
-    match = match.split('\n')[1]
-    parts = match.split('<')
-    imp = parts[1].split('>')
-
-    name = clean_name(imp[1])
-    cid = get_committee_id(dd, joint if joint in name else senate, name)
-    get_members_senate(dd, imp[0], cid, senate)
+def update_committees(cursor, house):
+  insert_floor_committee(cursor, house, '%s Floor' % house)
+  
+  for url, name in get_committees(house):
+    # Joint committees are recorded with a house of 'Joint'.
+    cid = get_committee_id(cursor, 'Joint' if 'Joint' in name else house, name)
+    for member in get_committee_members(url, house):
+      update_committee_membership(cursor, cid, member, house)
 
 def main():
   # Database Connections
@@ -363,8 +301,8 @@ def main():
                        user='awsDB',
                        passwd='digitaldemocracy789',
                        charset='utf8') as dd:
-    get_assembly_information(dd)
-    get_senate_information(dd)
-
+    for house in ['Assembly', 'Senate']:
+      update_committees(dd, house)
+    
 if __name__ == '__main__':
   main()
