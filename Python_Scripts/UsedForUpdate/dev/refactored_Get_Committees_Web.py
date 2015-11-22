@@ -3,95 +3,151 @@
 '''
 File: Get_Committees_Web.py
 Author: Daniel Mangin
+Modified By: Mandy Chan
 Date: 6/11/2015
+Last Changed: 11/17/2015
 
 Description:
-- Scrapes the Assembly and Senate Websites to gather current Committees and Membership and place them into
-  DDDB2015Apr.Committee and DDDB2015Apr.servesOn
-- Used for daily update Script
-- Fills table:
-  Committee (cid, house, name, state)
-  servesOn (pid, year, district, house, cid)
+- Scrapes the Assembly and Senate websites to gather committees and memberships
+- Used for daily update
 
-Sources
-- California Assembly Website
-- California Senate Website
+Sources:
+  - California Assembly Website
+  - California Senate Website
+
+Dependencies:
+  - Person
+  - Term
+
+Populates:
+  - Committee (cid, house, name, state)
+  - servesOn (pid, year, district, house, cid)
 
 '''
 
-# Grabs the Committees and their memberships from the SOS Assembly and Senate sites
-# Fills the tables Committee and servesOn
-# Relies on data from Person and Term
-
 import json
+import MySQLdb
 import re
 import sys
 import urllib2
+
 import loggingdb
-import MySQLdb
+
 from pprint import pprint
 from urllib import urlopen
 
 # U.S. State
 state = 'CA'
 
-# Database Queries used
-query_insert_committee = 'INSERT INTO Committee (cid, house, name, state) VALUES (%s, %s, %s, %s);'
-query_insert_serveson = 'INSERT INTO servesOn (pid, year, district, house, cid) VALUES(%s, %s, %s, %s, %s);'
+# Database Queries
+# INSERTS
+qi_committee = '''INSERT INTO Committee (cid, house, name, state)
+                      VALUES (%s, %s, %s, %s)'''
+qi_serveson = '''INSERT INTO servesOn (pid, year, district, house, cid) 
+                     VALUES (%s, %s, %s, %s, %s)'''
 
-# Inserts the floor members after we find their terms
-def insertFloorMembers(cursor, cid, house, state):
-  select_stmt = 'SELECT * FROM Term WHERE house = %(house)s AND state = %(state)s;'
-  cursor.execute(select_stmt, {'house':house, 'state':state})
-  print cursor.rowcount
-  for i in range(0, cursor.rowcount):
-    print 'inserting another'
-    temp = cursor.fetchone()
-    pid = temp[0]
+# SELECTS
+qs_term = '''SELECT pid, district
+             FROM Term
+             WHERE house = %(house)s
+              AND state = %(state)s'''
+qs_committee = '''SELECT cid
+                  FROM Committee
+                  WHERE house = %s
+                   AND name = %s
+                   AND state = %s'''
+qs_committee_max_cid = '''SELECT cid
+                          FROM Committee
+                          ORDER BY cid DESC
+                          LIMIT 1'''
+
+'''
+Gets a committee.
+
+|cursor|: database cursor
+|house|: political house (assembly/senate)
+|name|: name of the committee
+
+Returns the row found in the database, or None if not found.
+'''
+def get_committee(cursor, house, name):
+  return dd_cursor.execute(qs_committee, (house, name, state)).fetchone()
+
+'''
+Inserts the floor members after finding their terms
+
+|dd_cursor|: DDDB database cursor
+|cid|: committee id
+|house|: political house (assembly/senate)
+'''
+def insert_floor_members(dd_cursor, cid, house):
+  dd_cursor.execute(qs_term, {'house':house, 'state':state})
+
+  for pid, district in dd_cursor.fetchall():
     year = 2015
-    district = temp[2]
-    print 'servesOn pid = {0}, house = {1}, cid = {2}, district = {3}'.format(pid, house, cid, district)
-    insert_serveson(cursor, pid, year, district, house, cid, state)
+    insert_serveson(dd_cursor, pid, year, district, house, cid)
 
-# inserts the Committee Senate Floor
-def insertSenateFloor(cursor):
-  # insert the senate floor
-  name = 'Senate Floor'
+'''
+Gets a committee id given its house and name. If the committee does
+not exist in the database, it is first inserted and its new committee id
+obtained.
+
+|cursor|: database cursor
+|house|: political house (assembly/senate)
+|name|: name of the committee
+
+Returns the committee id.
+'''
+def get_committee_id(cursor, house, name):
+  com = get_committee(cursor, house, name)
+  return insert_committee(cursor, house, name) if com is None else com[0]
+
+'''
+Inserts a committee.
+
+|cursor|: database cursor
+|house|: political house (assembly/senate)
+|name|: name of the committee
+'''
+def insert_floor_committee(cursor, house, name):
+  cid = get_committee_id(cursor, house, name)
+  insert_floor_members(cursor, cid, house)
+
+'''
+Inserts the Committee Senate Floor
+
+|dd_cursor|: DDDB database cursor
+'''
+def insert_senate_floor(dd_cursor):
   house = 'Senate'
+  name = 'Senate Floor'
 
-  select_stmt = 'SELECT * FROM Committee WHERE house = %(house)s AND name = %(name)s AND state = %(state)s;'
-  cursor.execute(select_stmt, {'house':house,'name':name, 'state':state})
+  com = get_committee(dd_cursor, house, name)
+  cid = insert_committee(dd_cursor, house, name) if com is None else com[0]
+  insert_floor_members(dd_cursor, cid, house)
   
-  if cursor.rowcount == 0:
-    select_stmt = 'SELECT cid FROM Committee ORDER BY cid DESC LIMIT 1'
-    cursor.execute(select_stmt)
-    cid = cursor.fetchone()[0]
-    cid = cid + 1
-    insert_Committee(cursor, cid, house, name, state)
-  else:
-    temp = cursor.fetchone()
-    cid = temp[0]
-  insertFloorMembers(cursor, cid, house, state) 
+'''
+Inserts the Committee Assembly Floor
 
-# inserts the Committee Assembly Floor
-def insertAssemblyFloor(cursor):
-  # insert the assembly floor
+|dd_cursor|: DDDB database cursor
+'''
+def insert_assembly_floor(dd_cursor):
   name = 'Assembly Floor'
   house = 'Assembly'
-  select_stmt = 'SELECT * FROM Committee WHERE house = %(house)s AND name = %(name)s AND state = %(state)s;'
-  cursor.execute(select_stmt, {'house':house,'name':name, 'state':state})
-  if cursor.rowcount == 0:
-    select_stmt = 'SELECT COUNT(*) FROM Committee'
-    cursor.execute(select_stmt)
-    cid = cursor.fetchone()[0]
-    insert_Committee(cursor, cid, house, name, state)
-  else:
-    temp = cursor.fetchone()
-    cid = temp[0]
-  insertFloorMembers(cursor, cid, house, state)
-    
-# Finds the district that a legislator serves using Term
-def find_district(cursor, pid, year, house, state):
+
+  com = get_committee(dd_cursor, house, name)
+  cid = insert_committee(dd_cursor, house, name) if com is None else com[0]
+  insert_floor_members(dd_cursor, cid, house)
+      
+'''
+Finds the district that a legislator serves using Term
+
+|dd_cursor|: DDDB database cursor
+|pid|: Person id to find
+|year|: Year to find
+|house|: House (Assembly/Senate) to find
+'''
+def find_district(cursor, pid, year, house):
   select_stmt = '''SELECT district 
                    FROM Term 
                    WHERE pid = %(pid)s 
@@ -105,22 +161,23 @@ def find_district(cursor, pid, year, house, state):
     return temp[0]
   return 999
 
-# Checks if the legislator is already in database, otherwise input them in servesOn
+'''
+Checks if the legislator is already in database, otherwise input them in servesOn
+'''
 def insert_serveson(cursor, pid, year, district, house, cid):
   select_stmt = '''SELECT * FROM servesOn WHERE pid = %(pid)s
                     AND house = %(house)s AND year = %(year)s 
-                    AND cid = %(cid)s AND district = %(district)s;
+                    AND cid = %(cid)s AND district = %(district)s
                 '''
   cursor.execute(select_stmt, {'pid':pid, 'house':house, 'year':year, 'cid':cid, 'district':district})
   if(cursor.rowcount == 0):
     print 'inserting {0}'.format(pid)
-    cursor.execute(query_insert_serveson, (pid, year, district, house, cid))
-  else:
-    # print 'servesOn pid = {0}, house = {1}, cid = {2}, district = {3} exists'.format(pid, house, cid, district)
-    pass
+    cursor.execute(qi_serveson, (pid, year, district, house, cid))
 
-# Finds the person
-def getPerson(cursor, filer_naml, filer_namf):
+'''
+Finds the person
+'''
+def get_person(cursor, filer_naml, filer_namf):
   pid = -1
   filer_naml = '%' + filer_naml + '%'
   filer_namf = '%' + filer_namf + '%'
@@ -132,7 +189,9 @@ def getPerson(cursor, filer_naml, filer_namf):
     print "couldn't find {0} {1}".format(filer_namf, filer_naml)
   return pid
 
-# Creates all the data needed for the servesOn insertion
+'''
+Creates all the data needed for the servesOn insertion
+'''
 def create_servesOn(cursor, name, house, cid):
   year = 2015
   name = name.split(' ')
@@ -140,23 +199,26 @@ def create_servesOn(cursor, name, house, cid):
   last = ''.join(name[len(name)-1].split(' '))
   pid = -1;
   if len(first) > 0 and len(last) > 0:
-    pid = getPerson(cursor, last, first)
+    pid = get_person(cursor, last, first)
   else:
     print 'Missing first or last name';
   if pid != -1:
     district = find_district(cursor, pid, year, house)
-    if district != 999:
+    if district is not None:
       insert_serveson(cursor, pid, year, district, house, cid)
     else:
       print 'District not found'
-      pass
-  else:
-    # print 'Person not Found'
-    pass
 
+'''
+Cleans committee names
+
+|name|: Committee name to clean
+
+Returns the cleaned name
+'''
 def clean_name(name):
   if 'acute;' in name:
-    print 'getting rid of acute character'
+    print('getting rid of acute character')
     name = ''.join(''.join(name.split('&')).split('acute;'))
   if '&#39;' in name:
     name = "'".join(name.split('&#39;'))
@@ -172,26 +234,40 @@ def clean_name(name):
     name = '-'.join(name.split('–'))
   return name.strip()
 
-def find_Committee(cursor, house, name):
+def find_committee(cursor, house, name):
   name = clean_name(name)
   select_stmt = 'SELECT * from Committee where house = %(house)s AND name = %(name)s;'
   cursor.execute(select_stmt, {'house':house,'name':name})
   if cursor.rowcount == 0:
-    select_stmt = 'SELECT count(*) from Committee'
-    cursor.execute(select_stmt)
-    cid = cursor.fetchone()[0]
-    insert_Committee(cursor, cid, house, name)
-    return cid
+    return insert_committee(cursor, house, name)
   else:
     return cursor.fetchone()[0]
 
-def insert_Committee(cursor, cid, house, name):
-  select_stmt = 'SELECT * from Committee where cid = %(cid)s;'
-  cursor.execute(select_stmt, {'cid':cid})
-  if cursor.rowcount == 0:
-    print 'inserting committee {0} called {1}'.format(cid, name)
-    cursor.execute(query_insert_committee, (cid, house, name))
+'''
+Inserts committee 
 
+|dd_cursor|: DDDB database cursor
+|house|: House (Assembly/Senate) for adding
+|name|: Legislator name for adding
+
+Returns the new cid.
+'''
+def insert_committee(cursor, house, name):
+  # Get the next available cid.
+  cursor.execute(qs_committee_max_cid)
+  cid = dd_cursor.fetchone()[0] + 1
+  cursor.execute(qi_committee, (cid, house, name))
+  return cid
+
+'''
+Get each member of the given assembly committee. If the member is not recorded
+in DDDB, add.
+
+|dd|: database cursor
+|imp|: link to committee members page
+|cid|: committee id
+|house|: house (assembly or senate)
+'''
 def get_members_assembly(dd, imp, cid, house):
   link = imp.split('"')[1]
   if(imp.count('/') == 1):
@@ -201,37 +277,45 @@ def get_members_assembly(dd, imp, cid, house):
   page = urllib2.urlopen(link)
   html = page.read()
   matches = re.findall('<td>\n.+<.+</td>',html)
-  i = 0
+
   for match in matches:
-    i = i + 1
     name = match.split('>')[2].split('<')[0].split('(')[0]
     name = clean_name(name)
     create_servesOn(dd, name, house, cid)
-  return i
 
-def get_members_senate(dd, imp, cid, house, joint):
-  try:
-    link = imp.split('"')[1]
-    page = urllib2.urlopen(link)
-    html = page.read()
-    matches = re.findall('<a href=.+>Senator.+',html)
-    ''.join(matches)
-    i = 0
-    for match in matches:
-      i = i + 1
-      parts = match.split('>')
-      for part in parts:
-        if 'Senator' in part:
-          name = part.split('>')[0].split('(')[0].split('<')[0]
-          name = ' '.join(name.split(' ')[1:])
-          name = clean_name(name)
-          create_servesOn(dd, name, house, cid)
-    return i
-  except:
-    print 'error!', sys.exc_info()[0], sys.exc_info()[1]
-    return 0
+'''
+Get each member of the given senate committee. If the member is not recorded
+in DDDB, add.
 
-def getAssemblyInformation(dd, dd2):
+|dd|: database cursor
+|imp|: link to committee members page
+|cid|: committee id
+|house|: house (assembly or senate)
+'''
+def get_members_senate(dd, imp, cid, house):
+  link = imp.split('"')[1]
+  page = urllib2.urlopen(link)
+  html = page.read()
+  matches = re.findall('<a href=.+>Senator.+',html)
+  ''.join(matches)
+
+  for match in matches:
+    parts = match.split('>')
+    for part in parts:
+      if 'Senator' in part:
+        name = part.split('>')[0].split('(')[0].split('<')[0]
+        name = ' '.join(name.split(' ')[1:])
+        name = clean_name(name)
+        create_servesOn(dd, name, house, cid)
+
+'''
+Opens up the assembly committe page and scrapes information about its 
+committees and committee members. If the committee or member is not recorded
+in DDDB, add.
+
+|dd|: database cursor
+'''
+def get_assembly_information(dd):
   response = urllib2.urlopen('http://assembly.ca.gov/committees')
   html = response.read()
   matches = re.findall('<span class="field-content">.+',html)
@@ -242,48 +326,45 @@ def getAssemblyInformation(dd, dd2):
     if 'Joint' in imp[1]:
       house = 'Joint'
     print 'Committee: {0}'.format(imp[1])
-    cid = find_Committee(dd, house, imp[1])
+    cid = find_committee(dd, house, imp[1])
     house = 'Assembly'
     get_members_assembly(dd, imp[0], cid, house)
-  insertAssemblyFloor(dd)
+  insert_assembly_floor(dd)
 
-def getSenateInformation(dd, dd2):
+'''
+Opens up the senate committee page and scrapes information about its committees
+and committee members. If the committee or member is not recorded in DDDB, add.
+
+|dd|: database cursor
+'''
+def get_senate_information(dd):
+  joint = 'Joint'
+  senate = 'Senate'
+
   response = urllib2.urlopen('http://senate.ca.gov/committees')
   html = response.read()
   matches = re.findall('<div class="views-field views-field-title">.+\n.+',html)
+  insert_floor_committee(dd, house, 'Senate Floor')
+
   for match in matches:
     match = match.split('\n')[1]
     parts = match.split('<')
     imp = parts[1].split('>')
-    house = 'Senate'
-    joint = ''
-    print 'Committee: {0}'.format(imp[1])
-    if 'Joint' in imp[1]:
-      house = 'Joint'
-      joint = 'Yes'
-    cid = find_Committee(dd, house, imp[1])
-    house = 'Senate'
-    get_members_senate(dd, imp[0], cid, house, joint)
-  insertSenateFloor(dd)
+
+    name = clean_name(imp[1])
+    cid = get_committee_id(dd, joint if joint in name else senate, name)
+    get_members_senate(dd, imp[0], cid, senate)
 
 def main():
   # Database Connections
   with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-                         port=3306,
-                         db='DDDB2015July',
-                         user='awsDB',
-                         passwd='digitaldemocracy789',
-                         charset='utf8') as dd:
-    with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-                           port=3306,
-                           db='DDDB2015July',
-                           user='awsDB',
-                           passwd='digitaldemocracy789',
-                           charset='utf8') as dd2:
-      getAssemblyInformation(dd, dd2)
-      getSenateInformation(dd, dd2)
+                       port=3306,
+                       db='DDDB2015July',
+                       user='awsDB',
+                       passwd='digitaldemocracy789',
+                       charset='utf8') as dd:
+    get_assembly_information(dd)
+    get_senate_information(dd)
 
 if __name__ == '__main__':
-   main()
-
-
+  main()
