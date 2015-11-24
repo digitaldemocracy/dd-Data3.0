@@ -192,6 +192,7 @@ CREATE TABLE IF NOT EXISTS Bill (
    status  VARCHAR(60),          -- current bill status
    house   VARCHAR(100),
    session INTEGER(1),           -- 0: Normal session, 1: Special session
+   sessionYear YEAR(4), 
    state VARCHAR(2),
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
 
@@ -451,10 +452,12 @@ CREATE TABLE IF NOT EXISTS Gift (
     giftIncomeFlag TINYINT(1) DEFAULT 0,
     speechFlag TINYINT(1) DEFAULT 0,
     description VARCHAR(80),
+    oid INT, -- Just matched from sourceName
     state VARCHAR(2),
     lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
     
     PRIMARY KEY(RecordId),
+    FOREIGN KEY (oid) REFERENCES Organizations(oid),
     FOREIGN KEY (pid) REFERENCES Person(pid),
     FOREIGN KEY (state) REFERENCES State(abbrev)
 )
@@ -485,12 +488,15 @@ CREATE TABLE IF NOT EXISTS Contribution (
     d_id INTEGER,
     year INTEGER,
     house VARCHAR(10),
-    contributor VARCHAR(50),
+    donorName VARCHAR(255),
+    donorOrg VARCHAR(255),
     amount DOUBLE,
+    oid INT, -- just matched from donorOrg
     state VARCHAR(2),
     lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
     
     PRIMARY KEY(RecordId),
+    FOREIGN KEY (oid) REFERENCES Organizations(oid),
     FOREIGN KEY (pid) REFERENCES Person(pid),
     FOREIGN KEY (state) REFERENCES State(abbrev)
 )   
@@ -953,6 +959,18 @@ CREATE TABLE IF NOT EXISTS TT_Task (
    FOREIGN KEY (editor_id) REFERENCES TT_Editor(id),
    FOREIGN KEY (vid) REFERENCES Video(vid),
    FOREIGN KEY (hid) REFERENCES Hearing(hid)
+)
+ENGINE = INNODB
+CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+CREATE TABLE TT_EditorStates (
+  tt_user INT,
+  state VARCHAR(2),
+  priority INT,
+
+  PRIMARY KEY (tt_user, state),
+  FOREIGN KEY (tt_user) REFERENCES TT_Editor(id),
+  FOREIGN KEY (state) REFERENCES State(abbrev)
 )
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;

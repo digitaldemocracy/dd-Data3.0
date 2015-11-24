@@ -40,6 +40,8 @@ ALTER TABLE Person
 ALTER TABLE Legislator
   CHANGE room_number room_number VARCHAR(10),
   ADD state VARCHAR(2) REFERENCES State(abbrev),
+  DROP PRIMARY KEY,
+  ADD PRIMARY KEY (pid, state),
   ADD lastTouched DATETIME DEFAULT NOW();
 
 UPDATE Legislator
@@ -477,6 +479,13 @@ ALTER TABLE StateConstOfficeRep
 UPDATE StateConstOfficeRep
 SET state = "CA";
 
+CREATE TABLE StateConstOffice
+AS
+SELECT DISTINCT office AS name,
+  "CA" AS state,
+  NOW() AS lastTouched
+FROM StateConstOfficeRep;
+
 
 RENAME TABLE StateConstOfficeRepresentation TO 
   StateConstOfficeRepRepresentation;
@@ -566,7 +575,39 @@ SET bid = CONCAT("CA_", bid),
   vid = CONCAT("CA_", vid);
 
 
+CREATE TABLE TT_EditorStates (
+  tt_user INT,
+  state VARCHAR(2),
+  priority INT,
 
+  PRIMARY KEY (tt_user, state),
+  FOREIGN KEY (tt_user) REFERENCES TT_Editor(id),
+  FOREIGN KEY (state) REFERENCES State(abbrev)
+)
+ENGINE = INNODB
+CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+ALTER TABLE Gift 
+  ADD oid INT REFERENCES Organizations(oid);
+
+UPDATE Gift g, 
+  Organizations o
+SET g.oid = o.oid
+WHERE g.sourceName = o.name;
+
+ALTER TABLE Contribution
+  ADD oid INT REFERENCES Organizations(oid);
+
+UPDATE Contribution c, 
+  Organizations o
+SET c.oid = o.oid
+WHERE c.donorOrg = o.name;
+
+ALTER TABLE Bill
+  ADD sessionYear YEAR(4);
+
+UPDATE Bill
+  SET sessionYear = substring(bid, 4, 4);
 
 -- DROP TABLE JobSnapShot; 
 DROP TABLE attends;
