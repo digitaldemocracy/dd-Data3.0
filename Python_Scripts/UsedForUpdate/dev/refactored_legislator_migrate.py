@@ -2,9 +2,9 @@
 '''
 File: legislator_migrate.py
 Author: ???
-Modified By: Mandy Chan
+Modified By: Mandy Chan, Steven Thon
 Created: 6/11/2015
-Last Changed: 7/23/2015
+Last Changed: 11/25/2015
 
 Description:
 - Gathers Legislator Data from capublic.legislator_tbl and inserts the data into
@@ -26,8 +26,8 @@ Sources:
 
 Populates:
   - Person (last, first)
-  - Legislator (pid)
-  - Term (pid, year, district, house, party)
+  - Legislator (pid, state)
+  - Term (pid, year, district, house, party, state)
 '''
 
 import re
@@ -36,6 +36,9 @@ import loggingdb
 import MySQLdb
 from lxml import etree 
 import Name_Fixes_Legislator_Migrate
+
+# U.S. State
+state = 'CA'
 
 # Queries
 query = '''SELECT last_name, first_name, SUBSTRING(session_year, 1, 4), 
@@ -47,14 +50,14 @@ query = '''SELECT last_name, first_name, SUBSTRING(session_year, 1, 4),
 query_insert_person = '''INSERT INTO Person (last, first) 
                          VALUES (%s, %s);'''
 
-query_insert_legislator = '''INSERT INTO Legislator (pid) 
-                             VALUES (%s);'''
+query_insert_legislator = '''INSERT INTO Legislator (pid, state) 
+                             VALUES (%s, %s);'''
 
-query_insert_term = '''INSERT INTO Term (pid, year, district, house, party) 
-                       VALUES (%s, %s, %s, %s, %s);'''
+query_insert_term = '''INSERT INTO Term (pid, year, district, house, party, state) 
+                       VALUES (%s, %s, %s, %s, %s, %s);'''
 
 query_update_term = '''UPDATE Term 
-                       SET year=%s, district=%s, house=%s, party=%s 
+                       SET year=%s, district=%s, house=%s, party=%s, state=%s 
                        WHERE pid=%s;
                     '''
 
@@ -73,23 +76,23 @@ _PARTY = {
 Checks if there's a legislator with this pid
 '''
 def check_legislator_pid(cursor, pid):
-   print 'Checking legislator pid = {0}...'.format(pid)
+   print 'Checking legislator pid = {0} from state = {4}...'.format(pid, state)
    result = cursor.execute('''SELECT pid
                               FROM Legislator
-                              WHERE pid = %s;
-                           ''', (pid))
+                              WHERE pid = %s AND state = %s;
+                           ''', (pid, state))
    return cursor.fetchone()
 
 '''
 Checks if there's a legislator with this term year
 '''
-def check_term(cursor, pid, year, district, house):
-   print 'pid={0},year={1},district={2},house={3}'.format(pid,year,district,house)
+def check_term(cursor, pid, year, district, house, state):
+   print 'pid={0},year={1},district={2},house={3},state={4}'.format(pid,year,district,house,state)
    cursor.execute('''SELECT *
                      FROM Term
                      WHERE pid = %s
-                      AND year = %s;
-                  ''', (pid, year))
+                      AND year = %s AND state = %s;
+                  ''', (pid, year, state))
    return cursor.fetchone()
 
 '''
@@ -126,20 +129,20 @@ def migrate_legislators(ca_cursor, dd_cursor):
       # If this is an active legislator, add them to Legislator and Term too
       if active == 'Y':
         pid = dd_cursor.lastrowid
-        print('Inserting Legislator: %s %s %s %s %s' % (pid, year, district, house, party))
-        dd_cursor.execute(query_insert_legislator, pid)
-        dd_cursor.execute(query_insert_term, (year, district, house, party, pid))
+        print('Inserting Legislator: %s %s %s %s %s %s' % (pid, year, district, house, party, state))
+        dd_cursor.execute(query_insert_legislator, (pid, state))
+        dd_cursor.execute(query_insert_term, (year, district, house, party, pid, state))
 
     # If this legislator is in DDDB, check if they're also in the Legislator 
     # and Term tables if they're active.
     else:
       pid = exist[0]
-      result = check_legislator_pid(dd_cursor, pid)
+      result = check_legislator_pid(dd_cursor, pid, state)
       if result is None and active == 'Y':
-        dd_cursor.execute(query_insert_legislator, pid)
-      result = check_term(dd_cursor, pid, year, district, house)
+        dd_cursor.execute(query_insert_legislator, (pid, state))
+      result = check_term(dd_cursor, pid, year, district, house, state)
       if result is None and active == 'Y':
-        result = dd.execute(query_insert_term, (pid, year, district, house, party))
+        result = dd.execute(query_insert_term, (pid, year, district, house, party, state))
 
 def main():
   with MySQLdb.connect(host='transcription.digitaldemocracy.org',
