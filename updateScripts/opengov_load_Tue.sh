@@ -20,19 +20,19 @@ do
 
    echo "Moving bill version data"
 
-   rm $DATA/* 2> /dev/null
-   cp $fold/* $DATA
+   `rm $DATA/* 2> /dev/null`
+   `cp $fold/* $DATA`
 
    echo "Applying bill version data permissions"
 
    chown -R mysql $DATA
    chmod -R 777 $DATA
-   chmod -R 777 $DATA/*
+   `chmod -R 777 $DATA/*`
 
    for TBL in ~/dd-Data3.0/updateScripts/opengov_load/*
    do
       echo "   Loading ${TBL%.*}..."
-      (cd $fold && mysql -uroot --local-infile=1 -Dcapublic -f -v < $DIR/$TBL)
+      (cd $fold && mysql -uroot --local-infile=1 -Dcapublic -f -v < $TBL)
    done
    rm -rf $fold
 done
