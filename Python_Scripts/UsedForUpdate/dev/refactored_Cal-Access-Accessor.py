@@ -22,10 +22,7 @@ Sources:
 '''
 
 import loggingdb
-import re
-import sys
 import csv
-import datetime
 import refactored_Person_Name_Fix
 import refactored_Lobbying_Firm_Name_Fix
 from clean_name import clean_name
@@ -34,13 +31,26 @@ from clean_name import clean_name
 state = 'CA'
 
 #Querys used to Insert into the Database
-query_insert_lobbying_firm = "INSERT INTO LobbyingFirm (filer_naml, filer_id, rpt_date, ls_beg_yr, ls_end_yr) VALUES(%s, %s, %s, %s, %s);"
-query_insert_lobbyist = "INSERT INTO Lobbyist (pid, filer_id, state) VALUES(%s, %s, %s);"
-query_insert_person = "INSERT INTO Person (last, first) VALUES (%s, %s);"
-query_insert_lobbyist_employer = "INSERT INTO LobbyistEmployer (filer_naml, filer_id, coalition, state) VALUES(%s, %s, %s, %s);"
-query_insert_lobbyist_employment = "INSERT INTO LobbyistEmployment (pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr, state) VALUES(%s, %s, %s, %s, %s, %s);"
-query_insert_lobbyist_direct_employment = "INSERT INTO LobbyistDirectEmployment (pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr, state) VALUES(%s, %s, %s, %s, %s, %s);"
-query_insert_lobbyist_contracts = "INSERT INTO LobbyingContracts (filer_id, sender_id, rpt_date, ls_beg_yr, ls_end_yr, state) VALUES(%s, %s, %s, %s, %s, %s);"
+QI_LOBBYING_FIRM = '''INSERT INTO LobbyingFirm (filer_naml, filer_id, rpt_date,
+                       ls_beg_yr, ls_end_yr)
+                      VALUES (%s, %s, %s, %s, %s)'''
+QI_LOBBYIST = '''INSERT INTO Lobbyist (pid, filer_id, state)
+                 VALUES (%s, %s, %s)'''
+QI_PERSON = '''INSERT INTO Person (last, first)
+               VALUES (%s, %s)'''
+QI_LOBBYIST_EMPLOYER = '''INSERT INTO LobbyistEmployer (filer_naml, filer_id,
+                           coalition, state)
+                          VALUES (%s, %s, %s, %s)'''
+QI_LOBBYIST_EMPLOYMENT = '''INSERT INTO LobbyistEmployment (pid, sender_id,
+                             rpt_date, ls_beg_yr, ls_end_yr, state)
+                            VALUES (%s, %s, %s, %s, %s, %s)'''
+QI_LOBBYIST_DIRECT_EMPLOYMENT = '''INSERT INTO LobbyistDirectEmployment (pid,
+                                    sender_id, rpt_date, ls_beg_yr, ls_end_yr,
+                                    state)
+                                   VALUES (%s, %s, %s, %s, %s, %s)'''
+QI_LOBBYING_CONTRACTS = '''INSERT INTO LobbyingContracts (filer_id, sender_id,
+                            rpt_date, ls_beg_yr, ls_end_yr, state)
+                           VALUES (%s, %s, %s, %s, %s, %s)'''
 
 #Currently a static table that is sized to 10,000
 Lobbyist = [[0 for x in xrange(5)] for x in xrange(10000)]
@@ -77,7 +87,7 @@ def getPerson(cursor, filer_id, filer_naml, filer_namf, val, state):
   elif cursor.rowcount > 1:
     pid = cursor.fetchone()[0]
   else:
-    cursor.execute(query_insert_person, (filer_naml, filer_namf))
+    cursor.execute(QI_PERSON, (filer_naml, filer_namf))
     select_pid = "SELECT pid FROM Person ORDER BY Person.pid DESC limit 1;"
     cursor.execute(select_pid);
     pid = cursor.fetchone()[0];
@@ -89,7 +99,7 @@ def insert_lobbyist_employer(cursor, filer_naml, filer_id, coalition, state):
   cursor.execute(select_stmt, {'filer_id':filer_id, 'state':state})
   if(cursor.rowcount == 0):
     filer_naml = refactored_Lobbying_Firm_Name_Fix.clean_name(filer_naml)
-    cursor.execute(query_insert_lobbyist_employer, (filer_naml, filer_id, coalition, state)) 
+    cursor.execute(QI_LOBBYIST_EMPLOYER, (filer_naml, filer_id, coalition, state)) 
 
 #inserts into lobbying firm
 def insert_lobbying_firm(cursor, filer_naml, filer_id, rpt_date, ls_beg_yr, ls_end_yr): 
@@ -97,7 +107,7 @@ def insert_lobbying_firm(cursor, filer_naml, filer_id, rpt_date, ls_beg_yr, ls_e
   cursor.execute(select_stmt, {'filer_id':filer_id})
   if(cursor.rowcount == 0):
     filer_naml = refactored_Lobbying_Firm_Name_Fix.clean_name(filer_naml)
-    cursor.execute(query_insert_lobbying_firm, (filer_naml, filer_id, rpt_date, ls_beg_yr, ls_end_yr))
+    cursor.execute(QI_LOBBYING_FIRM, (filer_naml, filer_id, rpt_date, ls_beg_yr, ls_end_yr))
     
 #inserts into lobbyist
 def insert_lobbyist(cursor, pid, filer_id, state):
@@ -108,25 +118,25 @@ def insert_lobbyist(cursor, pid, filer_id, state):
   select_stmt = "SELECT filer_id FROM Lobbyist WHERE filer_id = %(filer_id)s ANDstate = %(state)s"
   cursor.execute(select_stmt, {'filer_id':filer_id, 'state':state})
   if(cursor.rowcount == 0):
-    cursor.execute(query_insert_lobbyist, (pid, filer_id, state))
+    cursor.execute(QI_LOBBYIST, (pid, filer_id, state))
 
 def insert_lobbyist_employment(cursor, pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr, state):
   select_stmt = "SELECT sender_id, rpt_date, ls_beg_yr, state FROM LobbyistEmployment WHERE sender_id = %(sender_id)s AND pid = %(pid)s AND ls_beg_yr = %(ls_beg_yr)s AND ls_end_yr = %(ls_end_yr)s AND state = %(state)s;"
   cursor.execute(select_stmt, {'sender_id':sender_id,'pid':pid,'ls_beg_yr':ls_beg_yr,'ls_end_yr':ls_end_yr,'state':state})
   if(cursor.rowcount == 0):
-    cursor.execute(query_insert_lobbyist_employment, (pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr, state))
+    cursor.execute(QI_LOBBYIST_EMPLOYMENT, (pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr, state))
     
 def insert_lobbyist_direct_employment(cursor, pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr, state):
   select_stmt = "SELECT sender_id, rpt_date, ls_beg_yr, state FROM LobbyistDirectEmployment WHERE sender_id = %(sender_id)s AND pid = %(pid)s AND ls_beg_yr = %(ls_beg_yr)s AND ls_end_yr = %(ls_end_yr)s AND state = %(state)s;"
   cursor.execute(select_stmt, {'sender_id':sender_id,'pid':pid,'ls_beg_yr':ls_beg_yr,'ls_end_yr':ls_end_yr,'state':state})
   if(cursor.rowcount == 0):
-    cursor.execute(query_insert_lobbyist_direct_employment, (pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr, state))
+    cursor.execute(QI_LOBBYIST_DIRECT_EMPLOYMENT, (pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr, state))
     
 def insert_lobbyist_contracts(cursor, filer_id, sender_id, rpt_date, ls_beg_yr, ls_end_yr, state):
   select_stmt = "SELECT filer_id, sender_id, rpt_date, state FROM LobbyingContracts WHERE filer_id = %(filer_id)s AND sender_id = %(sender_id)s AND rpt_date = %(rpt_date)s AND state = %(state)s"
   cursor.execute(select_stmt, {'filer_id':filer_id,'sender_id':sender_id,'rpt_date':rpt_date,'state':state})
   if(cursor.rowcount == 0):
-    cursor.execute(query_insert_lobbyist_contracts, (filer_id, sender_id, rpt_date, ls_beg_yr, ls_end_yr, state))
+    cursor.execute(QI_LOBBYING_CONTRACTS, (filer_id, sender_id, rpt_date, ls_beg_yr, ls_end_yr, state))
   
 #For case 4
 #Goes through the lobbyist list and determines if they work for
@@ -138,14 +148,14 @@ def find_lobbyist_employment(cursor, index):
     select_stmt = "SELECT * FROM LobbyistEmployment WHERE pid = %(pid)s AND sender_id = %(sender_id)s AND rpt_date = %(rpt_date)s AND ls_end_yr = %(ls_end_yr)s AND state = %(state)s"
     cursor.execute(select_stmt, {'pid':Lobbyist[index][0], 'sender_id':Lobbyist[index][1], 'rpt_date':Lobbyist[index][2], 'ls_end_yr':Lobbyist[index][4]})
     if(cursor.rowcount == 0):
-      cursor.execute(query_insert_lobbyist_employment, (Lobbyist[index][0], Lobbyist[index][1], Lobbyist[index][2], Lobbyist[index][3], Lobbyist[index][4]))
+      cursor.execute(QI_LOBBYIST_EMPLOYMENT, (Lobbyist[index][0], Lobbyist[index][1], Lobbyist[index][2], Lobbyist[index][3], Lobbyist[index][4]))
   select_stmt = "SELECT filer_id FROM LobbyistEmployer WHERE filer_id = %(sender_id)s"
   cursor.execute(select_stmt, {'sender_id':Lobbyist[index][1]})
   if(cursor.rowcount > 0):
     select_stmt = "SELECT * FROM LobbyistDirectEmployment WHERE pid = %(pid)s AND sender_id = %(sender_id)s AND rpt_date = %(rpt_date)s AND ls_end_yr = %(ls_end_yr)s AND state = %(state)s"
     cursor.execute(select_stmt, {'pid':Lobbyist[index][0], 'sender_id':Lobbyist[index][1], 'rpt_date':Lobbyist[index][2], 'ls_end_yr':Lobbyist[index][4]})
     if(cursor.rowcount == 0):
-      cursor.execute(query_insert_lobbyist_direct_employment, (Lobbyist[index][0], Lobbyist[index][1], Lobbyist[index][2], Lobbyist[index][3], Lobbyist[index][4]))
+      cursor.execute(QI_LOBBYIST_DIRECT_EMPLOYMENT, (Lobbyist[index][0], Lobbyist[index][1], Lobbyist[index][2], Lobbyist[index][3], Lobbyist[index][4]))
         
 def main():
   with loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',

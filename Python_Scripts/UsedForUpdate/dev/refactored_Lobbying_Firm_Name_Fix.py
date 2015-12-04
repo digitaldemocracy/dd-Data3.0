@@ -10,11 +10,19 @@ Description:
 '''
 
 import loggingdb
-import re
-import sys
 
 from clean_name import clean_name
 
+QS_LOBBYING_FIRM = '''SELECT filer_id, filer_naml
+                      FROM LobbyingFirm'''
+QS_ORGANIZATIONS = '''SELECT oid, name
+                      FROM Organizations'''
+QU_LOBBYING_FIRM = '''UPDATE LobbyingFirm
+                      SET filer_naml = %s
+                      WHERE filer_id = %s'''
+QU_ORGAINIZATIONS = '''UPDATE Organizations
+                       SET name = %s
+                       WHERE oid = %s'''
 def clean(index, name):
   if name in ['LLC', 'LLP', 'LP']:
     return name
@@ -27,11 +35,10 @@ def cleanNames(select_query, update_query):
   '''
   with loggingdb.connect(host='transcription.digitaldemocracy.org',
                          user='monty',
-                         db='DDDB2015JulyTest',
+                         db='MultiStateTest',
                          passwd='python') as dd_cursor:
     dd_cursor.execute(select_query)
-    rows = dd_cursor.fetchall()
-    for (id_, name) in rows:
+    for id_, name in dd_cursor.fetchall():
       cleaned_name = clean_name(name, clean)
       if cleaned_name == name:
         # Name was already clean.
@@ -40,11 +47,5 @@ def cleanNames(select_query, update_query):
       dd_cursor.execute(update_query, (id_, cleaned_name))
 
 if __name__ == "__main__":
-  cleanNames('SELECT filer_id, filer_naml from LobbyingFirm',
-             '''UPDATE LobbyingFirm
-                SET filer_naml = %s
-                WHERE filer_id = %s''')
-  cleanNames('SELECT oid, name FROM Organizations',
-             '''UPDATE Organizations
-                SET name = %s
-                WHERE oid = %s''')
+  cleanNames(QS_LOBBYING_FIRM, QU_LOBBYING_FIRM)
+  cleanNames(QS_ORGANIZATIONS, QU_ORGANIZATIONS)

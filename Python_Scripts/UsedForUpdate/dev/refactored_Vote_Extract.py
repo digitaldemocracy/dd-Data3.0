@@ -29,51 +29,83 @@ Populates:
 
 '''
 
-import re
-import sys
 import loggingdb
 import MySQLdb
-from pprint import pprint
-from urllib import urlopen
 
 # U.S. State
-state = 'CA'
+STATE = 'CA'
 
 # Queries
-insert_summary = '''INSERT INTO BillVoteSummary 
-                    (bid, mid, cid, VoteDate, ayes, naes, abstain, result) 
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s);
-                 '''
+QS_BILL_DETAIL = '''SELECT bill_id, location_code, legislator_name, 
+                     vote_code, motion_id, trans_update
+                    FROM bill_detail_vote_tbl'''
+QS_BILL_SUMMARY = '''SELECT bill_id, location_code, motion_id, ayes, noes, 
+                      abstain, vote_result, trans_update
+                     FROM bill_summary_vote_tbl'''
+QS_VOTE_DETAIL = '''SELECT pid, voteId
+                    FROM BillVoteDetail 
+                    WHERE pid = %(pid)s 
+                     AND voteId = %(voteId)s
+                     AND state = %(state)s'''
+QS_VOTE_SUMMARY = '''SELECT bid, mid, VoteDate 
+                     FROM BillVoteSummary 
+                     WHERE bid = %(bid)s 
+                      AND mid = %(mid)s 
+                      AND VoteDate = %(vote_date)s'''   
+QS_VOTE_ID = '''SELECT voteId 
+                FROM BillVoteSummary 
+                WHERE bid = %(bid)s 
+                 AND mid = %(mid)s'''
+QS_PERSON_FL = '''SELECT pid, last, first
+                  FROM Person
+                  WHERE last = %(filer_naml)s
+                   AND first = %(filer_namf)s
+                   AND pid < 130
+                  ORDER BY Person.pid'''
+QS_PERSON_L = '''SELECT pid, last, first
+                  FROM Person
+                  WHERE last = %(filer_naml)s
+                   AND pid < 130
+                  ORDER BY Person.pid'''
+QS_PERSON_LIKE_L = '''SELECT pid, last, first
+                      FROM Person
+                      WHERE last LIKE %(filer_naml)s
+                      ORDER BY Person.pid'''    
+QS_TERM = '''SELECT pid, house
+             FROM Term
+             WHERE pid = %(pid)s
+              AND house = %(house)s
+              AND state = %(state)s'''
+QS_LOCATION_CODE = '''SELECT description, long_description 
+                      FROM location_code_tbl 
+                      WHERE location_code = %(location_code)s'''
+QS_COMMITTEE = '''SELECT cid 
+                  FROM Committee 
+                  WHERE name = %(name)s 
+                   AND house = %(house)s
+                   AND state = %(state)s'''
+QI_SUMMARY = '''INSERT INTO BillVoteSummary
+                 (bid, mid, cid, VoteDate, ayes, naes, abstain, result)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)'''
 
-insert_detail =  '''INSERT INTO BillVoteDetail (pid, voteId, result, state) 
-                    VALUES (%s, %s, %s, %s);
-                 '''
+QI_DETAIL =  '''INSERT INTO BillVoteDetail (pid, voteId, result, state) 
+                VALUES (%s, %s, %s, %s)'''
 
 '''
-If committee is found, return cid. Otherwise, return -1.
+If committee is found, return cid. Otherwise, return None.
 '''
-def find_committee(cursor, name, house, state):
-  select_stmt = '''SELECT cid 
-                   FROM Committee 
-                   WHERE name = %(name)s 
-                    AND house = %(house)s
-                    AND state = %(state)s;
-                '''
-  cursor.execute(select_stmt, {'name':name, 'house':house, 'state':state})
+def find_committee(cursor, name, house):
+  cursor.execute(QS_COMMITTEE, {'name':name, 'house':house, 'state':STATE})
   if(cursor.rowcount == 1):
     return cursor.fetchone()[0]
-  return -1
+  return None
 
 '''
 Parses the committee to find name and house. If committee is found, return cid.
-Otherwise, return -1.
+Otherwise, return None.
 '''
 def get_committee(ca_cursor, dd_cursor, location_code):
-  select_stmt = '''SELECT description, long_description 
-                   FROM location_code_tbl 
-                   WHERE location_code = %(location_code)s;
-                '''
-  ca_cursor.execute(select_stmt, {'location_code':location_code})
+  ca_cursor.execute(QS_LOCATION_CODE, {'location_code':location_code})
   if(ca_cursor.rowcount > 0):
     temp = ca_cursor.fetchone()
     name = temp[0]
@@ -104,7 +136,7 @@ def clean_name(name):
   return name
 
 def get_person(cursor, filer_naml, floor, state):
-	pid = -1
+	pid = None 
 	filer_naml = clean_name(filer_naml)
 	temp = filer_naml.split(' ')
 	if(floor == 'AFLOOR'):
@@ -115,11 +147,9 @@ def get_person(cursor, filer_naml, floor, state):
 	if(len(temp) > 1):
 		filer_naml = temp[len(temp)-1]
 		filer_namf = temp[0]
-		select_pid = "SELECT pid, last, first FROM Person WHERE last = %(filer_naml)s AND first = %(filer_namf)s AND pid < 130 ORDER BY Person.pid;"
-		cursor.execute(select_pid, {'filer_naml':filer_naml, 'filer_namf':filer_namf})
+		cursor.execute(QS_PERSON_FL, {'filer_naml':filer_naml, 'filer_namf':filer_namf})
 	else:
-		select_pid = "SELECT pid, last, first FROM Person WHERE last = %(filer_naml)s AND pid < 130 ORDER BY Person.pid;"
-		cursor.execute(select_pid, {'filer_naml':filer_naml, 'filer_namf':filer_namf})
+		cursor.execute(QS_PERSON_L, {'filer_naml':filer_naml, 'filer_namf':filer_namf})
 	if cursor.rowcount == 1:
 		pid = cursor.fetchone()[0]
 	elif cursor.rowcount > 1:
@@ -128,14 +158,12 @@ def get_person(cursor, filer_naml, floor, state):
 			temp = cursor.fetchone()
 			a.append(temp[0])
 		for j in range(0, cursor.rowcount):
-			select_term = "SELECT pid, house FROM Term WHERE pid = %(pid)s AND house = %(house)s AND state = %(state)s;"
-			cursor.execute(select_term, {'pid':a[j],'house':floor,'state':state})
+			cursor.execute(QS_TERM, {'pid':a[j],'house':floor,'state':state})
 			if(cursor.rowcount == 1):
 				pid = cursor.fetchone()[0]
 	else:
 		filer_naml = '%' + filer_naml + '%'
-		select_pid = "SELECT pid, last, first FROM Person WHERE last LIKE %(filer_naml)s ORDER BY Person.pid;"
-		cursor.execute(select_pid, {'filer_naml':filer_naml, 'filer_namf':filer_namf})
+		cursor.execute(QS_PERSON_LIKE_L, {'filer_naml':filer_naml, 'filer_namf':filer_namf})
 		if(cursor.rowcount > 0):
 			pid = cursor.fetchone()[0]
 		else:
@@ -143,46 +171,29 @@ def get_person(cursor, filer_naml, floor, state):
 	return pid
 
 '''
-If Bill Vote Summary is found, return vote id. Otherwise, return -1.
+If Bill Vote Summary is found, return vote id. Otherwise, return None.
 '''
 def get_vote_id(cursor, bid, mid):
-  select_pid = '''SELECT voteId 
-                  FROM BillVoteSummary 
-                  WHERE bid = %(bid)s 
-                   AND mid = %(mid)s;
-               '''
-  cursor.execute(select_pid, {'bid':bid, 'mid':mid})
+  cursor.execute(QS_VOTE_ID, {'bid':bid, 'mid':mid})
   if cursor.rowcount == 1:
     return cursor.fetchone()[0]
-  return -1;
+  return None;
 
 '''
 If Bill Vote Summary is not in DDDB, add. Otherwise, skip
 '''
 def insert_bill_vote_summary(cursor, bid, mid, cid, vote_date, ayes, naes, abstain, result):
-  select_pid = '''SELECT bid, mid, VoteDate 
-                  FROM BillVoteSummary 
-                  WHERE bid = %(bid)s 
-                   AND mid = %(mid)s 
-                   AND VoteDate = %(vote_date)s;
-               '''
-  cursor.execute(select_pid, {'bid':bid, 'mid':mid, 'vote_date':vote_date})
+  cursor.execute(QS_VOTE_SUMMARY, {'bid':bid, 'mid':mid, 'vote_date':vote_date})
   if cursor.rowcount == 0:
-    cursor.execute(insert_summary, (bid, mid, cid, vote_date, ayes, naes, abstain, result))
+    cursor.execute(QI_SUMMARY, (bid, mid, cid, vote_date, ayes, naes, abstain, result))
 
 '''
 If Bill Vote Detail is not in DDDB, add. Otherwise, skip
 '''
 def insert_bill_vote_detail(cursor, pid, voteId, result, state):
-  select_pid = '''SELECT pid, voteId
-                  FROM BillVoteDetail 
-                  WHERE pid = %(pid)s 
-                   AND voteId = %(voteId)s
-                   AND state = %(state)s;
-               '''
-  cursor.execute(select_pid, {'pid':pid, 'voteId':voteId, 'state':state})
+  cursor.execute(QS_VOTE_DETAIL, {'pid':pid, 'voteId':voteId, 'state':state})
   if cursor.rowcount == 0:
-    cursor.execute(insert_detail, (pid, voteId, result, state))
+    cursor.execute(QI_DETAIL, (pid, voteId, result, state))
 
 '''
 Get Bill Vote Summaries. If bill vote summary isn't found in DDDB, add. 
@@ -190,15 +201,12 @@ Otherwise, skip.
 '''
 def get_summary_votes(ca_cursor, dd_cursor):
   print('Getting Summaries')
-  ca_cursor.execute('''SELECT bill_id, location_code, motion_id, ayes, noes, 
-                        abstain, vote_result, trans_update
-                       FROM bill_summary_vote_tbl;
-                    ''')
+  ca_cursor.execute(QS_BILL_SUMMARY)
   rows = ca_cursor.fetchall()
   for (bid, loc_code, mid, ayes, noes, abstain, result, vote_date) in rows:
     cid = get_committee(ca_cursor, dd_cursor, loc_code)
 
-    if(cid != -1):
+    if cid is not None:
       print str(cid) + ' ' + str(bid)
       insert_bill_vote_summary(
           dd_cursor, bid, mid, cid, vote_date, ayes, noes, abstain, result)
@@ -209,11 +217,9 @@ Otherwise, skip.
 '''
 def get_detail_votes(ca_cursor, dd_cursor):
   print('Getting Details')
-  ca_cursor.execute('''SELECT bill_id, location_code, legislator_name, 
-                        vote_code, motion_id, trans_update
-                       FROM bill_detail_vote_tbl;
-                    ''')
+  ca_cursor.execute(QS_BILL_DETAIL)
   rows = ca_cursor.fetchall()
+  print(len(rows))
 
   for (bid, loc_code, legislator, vote_code, mid, trans_update, state) in rows:
     date = trans_update.strftime('%Y-%m-%d')
@@ -221,7 +227,7 @@ def get_detail_votes(ca_cursor, dd_cursor):
     vote_id = get_vote_id(dd_cursor, bid, mid)
     result = vote_code
 
-    if vote_id != -1 and pid != -1:
+    if vote_id is not None and pid is not None:
       insert_bill_vote_detail(dd_cursor, pid, vote_id, result)
 
 def main():
@@ -229,13 +235,15 @@ def main():
                        db='capublic',
                        user='monty',
                        passwd='python') as ca_cursor:
-    with loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+    with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                          port=3306,
-                         db='DDDB2015July',
+                         db='MultiStateTest',
                          user='awsDB',
                          passwd='digitaldemocracy789') as dd_cursor:
       get_summary_votes(ca_cursor, dd_cursor)
       get_detail_votes(ca_cursor, dd_cursor)
+      # For testing so nothing gets committed to db.
+      raise Exception()
 
 if __name__ == "__main__":
   main()

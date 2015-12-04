@@ -20,16 +20,15 @@ Populates:
 
 import json
 import loggingdb
-import re
-import sys
-from pprint import pprint
 from urllib import urlopen
 
 # Queries
-query_insert_district = '''INSERT INTO District 
+QS_DISTRICT = '''SELECT * FROM District
+                 WHERE did = %(did)s
+                  AND house = %(house)s'''
+QI_DISTRICT = '''INSERT INTO District 
                            (state, house, did, note, year, geodata, region) 
-                           VALUES (%s, %s, %s, %s, %s, %s, %s);
-                        '''
+                           VALUES (%s, %s, %s, %s, %s, %s, %s)'''
 
 # URL String
 url_string = ('http://openstates.org/api/v1//districts/boundary/ocd-division' +
@@ -67,10 +66,9 @@ def format_to_string(geo_data):
 If district is not in DDDB, add. Otherwise, skip.
 '''
 def insert_district(cursor, state, house, did, note, year, region, geodata):
-  select_stmt = "SELECT * FROM District WHERE did = %(did)s AND house = %(house)s;"
-  cursor.execute(select_stmt, {'did':did, 'house':house})
+  cursor.execute(QS_DISTRICT, {'did':did, 'house':house})
   if(cursor.rowcount == 0):
-    cursor.execute(query_insert_district, (state, house, did, note, year, geodata, region))
+    cursor.execute(QI_DISTRICT, (state, house, did, note, year, geodata, region))
 
 '''
 Gets all districts and inserts them into DDDB
@@ -103,12 +101,11 @@ def get_districts(dd_cursor):
     insert_district(dd_cursor, state, house, did, note, year, region, geodata)
 
 def main():
-  with loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                        port=3306,
-                       db='DDDB2015July',
+                       db='MultiStateTest',
                        user='awsDB',
                        passwd='digitaldemocracy789') as dd_cursor:
-                       
     get_districts(dd_cursor)
 
 if __name__ == "__main__":
