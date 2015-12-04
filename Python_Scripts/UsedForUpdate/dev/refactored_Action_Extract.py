@@ -31,40 +31,44 @@ import MySQLdb
 
 import loggingdb
 
-# Queries
+STATE = 'CA'
+
 # INSERTS
-qi_Action = '''INSERT INTO Action (bid, date, text)
+QI_ACTION = '''INSERT INTO Action (bid, date, text)
                VALUES (%s, %s, %s)'''
 
 # SELECTS
-qs_bill_history_tbl = '''SELECT bill_id, action_date, action
+QS_BILL_HISTORY_TBL = '''SELECT bill_id, action_date, action
                          FROM bill_history_tbl'''
-qs_Action_check = '''SELECT bid
+QS_ACTION_CHECK = '''SELECT bid
                      FROM Action
-                     WHERE bid = %(bid)s
-                      AND date = %(date)s'''
+                     WHERE bid = %s
+                      AND date = %s'''
 
 '''
 Checks if the Action is in DDDB. If it isn't, insert it. Otherwise, skip.
 
 |dd_cursor|: DDDB database cursor
-|bid|: Bill id
-|date|: Date of action
-|text|: Text of action
+|values|: Tuple that includes the following (in order):
+  |bid|: Bill id
+  |date|: Date of action
+  |text|: Text of action
 '''
-def insert_Action(dd_cursor, bid, date, text):
+def insert_Action(dd_cursor, values):
+  values[0] = '%s_%s' % (STATE, values[0])
+
   # Check if DDDB already has this action
-  dd_cursor.execute(qs_Action_check, {'bid':bid, 'date':date})
+  dd_cursor.execute(QS_ACTION_CHECK, (values[0], values[1]))
 
   # If Action not in DDDB, add
   if(dd_cursor.rowcount == 0):
-    dd_cursor.execute(qi_Action, (bid, date, text))	
+    dd_cursor.execute(QI_ACTION, values)	
 
 '''
 Loops through all Actions from capublic and adds them as necessary
 '''
 def main():
-  with loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                        port=3306,
                        db='MultiStateTest',
                        user='awsDB',
@@ -75,11 +79,10 @@ def main():
                        passwd='python') as ca_cursor:
 
       # Get all of the Actions from capublic
-      ca_cursor.execute(qs_bill_history_tbl)
+      ca_cursor.execute(QS_BILL_HISTORY_TBL)
 
-      # For each tuple, attempt to add the action to DDDB
-      for bid, date, text in ca_cursor.fetchall():
-        insert_Action(dd_cursor, bid, date, text)
+      for record in ca_cursor.fetchall():
+        insert_Action(dd_cursor, list(record))
 
   if __name__ == "__main__":
     main()
