@@ -190,10 +190,10 @@ def insert_bill_vote_summary(cursor, bid, mid, cid, vote_date, ayes, naes, absta
 '''
 If Bill Vote Detail is not in DDDB, add. Otherwise, skip
 '''
-def insert_bill_vote_detail(cursor, pid, voteId, result, state):
-  cursor.execute(QS_VOTE_DETAIL, {'pid':pid, 'voteId':voteId, 'state':state})
+def insert_bill_vote_detail(cursor, pid, voteId, result):
+  cursor.execute(QS_VOTE_DETAIL, {'pid':pid, 'voteId':voteId, 'state':STATE})
   if cursor.rowcount == 0:
-    cursor.execute(QI_DETAIL, (pid, voteId, result, state))
+    cursor.execute(QI_DETAIL, (pid, voteId, result, STATE))
 
 '''
 Get Bill Vote Summaries. If bill vote summary isn't found in DDDB, add. 
@@ -203,8 +203,9 @@ def get_summary_votes(ca_cursor, dd_cursor):
   print('Getting Summaries')
   ca_cursor.execute(QS_BILL_SUMMARY)
   rows = ca_cursor.fetchall()
-  for (bid, loc_code, mid, ayes, noes, abstain, result, vote_date) in rows:
+  for bid, loc_code, mid, ayes, noes, abstain, result, vote_date in rows:
     cid = get_committee(ca_cursor, dd_cursor, loc_code)
+    bid = '%s_%s' % (STATE, bid)
 
     if cid is not None:
       print str(cid) + ' ' + str(bid)
@@ -221,9 +222,9 @@ def get_detail_votes(ca_cursor, dd_cursor):
   rows = ca_cursor.fetchall()
   print(len(rows))
 
-  for (bid, loc_code, legislator, vote_code, mid, trans_update, state) in rows:
+  for bid, loc_code, legislator, vote_code, mid, trans_update in rows:
     date = trans_update.strftime('%Y-%m-%d')
-    pid = get_person(dd_cursor, legislator, loc_code, state)
+    pid = get_person(dd_cursor, legislator, loc_code, STATE)
     vote_id = get_vote_id(dd_cursor, bid, mid)
     result = vote_code
 
@@ -235,15 +236,13 @@ def main():
                        db='capublic',
                        user='monty',
                        passwd='python') as ca_cursor:
-    with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-                         port=3306,
-                         db='MultiStateTest',
-                         user='awsDB',
-                         passwd='digitaldemocracy789') as dd_cursor:
+    with loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+                           port=3306,
+                           db='MultiStateTest',
+                           user='awsDB',
+                           passwd='digitaldemocracy789') as dd_cursor:
       get_summary_votes(ca_cursor, dd_cursor)
       get_detail_votes(ca_cursor, dd_cursor)
-      # For testing so nothing gets committed to db.
-      raise Exception()
 
 if __name__ == "__main__":
   main()

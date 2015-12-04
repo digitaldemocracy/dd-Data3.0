@@ -56,7 +56,7 @@ def get_motions():
       ca_cursor.execute(QS_CPUB_MOTION)
       for mid, text, update in ca_cursor.fetchall():
         date = update.strftime('%Y-%m-%d %H:%M:%S')
-        if(date):
+        if date:
           insert_motion(dddb_cursor, mid, date, text)
 
 if __name__ == "__main__":

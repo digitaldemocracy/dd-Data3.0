@@ -60,9 +60,6 @@ QI_LEGISLATOR = '''INSERT INTO Legislator (pid, state)
                    VALUES (%s, %s)'''
 QI_TERM = '''INSERT INTO Term (pid, year, district, house, party, state) 
              VALUES (%s, %s, %s, %s, %s, %s)'''
-QU_TERM = '''UPDATE Term 
-             SET year=%s, district=%s, house=%s, party=%s, state=%s 
-             WHERE pid=%s'''
 
 # Dictionaries
 _HOUSE = {
@@ -79,7 +76,7 @@ _PARTY = {
 Checks if there's a legislator with this pid
 '''
 def check_legislator_pid(cursor, pid):
-   print('Checking legislator pid = {0} from state = {4}...'.format(pid, STATE))
+   print('Checking legislator pid = {0} from state = {1}...'.format(pid, STATE))
    result = cursor.execute(QS_LEGISLATOR, (pid, STATE))
    return cursor.fetchone()
 
@@ -131,7 +128,7 @@ def migrate_legislators(ca_cursor, dd_cursor):
     # and Term tables if they're active.
     else:
       pid = exist[0]
-      result = check_legislator_pid(dd_cursor, pid, STATE)
+      result = check_legislator_pid(dd_cursor, pid)
       if result is None and active == 'Y':
         dd_cursor.execute(QI_LEGISLATOR, (pid, STATE))
       result = check_term(dd_cursor, pid, year, district, house)
@@ -143,11 +140,11 @@ def main():
                        db='capublic',
                        user='monty',
                        passwd='python') as ca_cursor:
-    with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-                         port=3306,
-                         db='MultiStateTest',
-                         user='awsDB',
-                         passwd='digitaldemocracy789') as dd_cursor:
+    with loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+                           port=3306,
+                           db='MultiStateTest',
+                           user='awsDB',
+                           passwd='digitaldemocracy789') as dd_cursor:
       migrate_legislators(ca_cursor, dd_cursor)
 
 if __name__ == "__main__":
