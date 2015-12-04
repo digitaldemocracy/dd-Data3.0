@@ -13,14 +13,14 @@ import loggingdb
 
 from clean_name import clean_name
 
-QS_LOBBYING_FIRM = '''SELECT filer_id, filer_naml
+QS_LOBBYING_FIRM = '''SELECT filer_naml, filer_naml
                       FROM LobbyingFirm'''
 QS_ORGANIZATIONS = '''SELECT oid, name
                       FROM Organizations'''
 QU_LOBBYING_FIRM = '''UPDATE LobbyingFirm
                       SET filer_naml = %s
-                      WHERE filer_id = %s'''
-QU_ORGAINIZATIONS = '''UPDATE Organizations
+                      WHERE filer_naml = %s'''
+QU_ORGANIZATIONS = '''UPDATE Organizations
                        SET name = %s
                        WHERE oid = %s'''
 def clean(index, name):
@@ -33,10 +33,12 @@ def cleanNames(select_query, update_query):
   |select_query|: A query that returns tuples of id and name, in that order.
   |update_query|: A query that updates names by id.
   '''
-  with loggingdb.connect(host='transcription.digitaldemocracy.org',
-                         user='monty',
+  with loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+                         port=3306,
                          db='MultiStateTest',
-                         passwd='python') as dd_cursor:
+                         user='awsDB',
+                         passwd='digitaldemocracy789',
+                         charset='utf8') as dd_cursor:
     dd_cursor.execute(select_query)
     for id_, name in dd_cursor.fetchall():
       cleaned_name = clean_name(name, clean)
