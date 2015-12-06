@@ -7,7 +7,8 @@ Modified By: Daniel Mangin, Mandy Chan, Steven Thon
 Date: 6/11/2015
 
 Description:
-- Takes the bill_xml column from the capublic.bill_version_tbl and inserts it into the appropriate columns in DDDB2015Apr.BillVersion
+- Takes the bill_xml column from the capublic.bill_version_tbl
+  and inserts it into the appropriate columns in DDDB.BillVersion
 - This script runs under the update script
 
 Sources:
@@ -31,85 +32,66 @@ import loggingdb
 from lxml import etree 
 import MySQLdb
 import re
-import binascii
 
 # U.S. State
-state = 'CA'
+STATE = 'CA'
 
-def traverse(root):
-   for node in root:
-      traverse(node)
-      if "caml" in node.tag:
-         node.attrib['class'] = node.tag.split('}')[1]
-         node.tag = 'span'
+# Queries
+QS_CPUB_BILL_VERSION = '''SELECT bill_version_id, bill_xml
+                          FROM bill_version_tbl'''
+QU_BILL_VERSION = '''UPDATE BillVersion
+                     SET title = %s, digest= %s, text = %s, state = %s
+                     WHERE vid = %s'''
 
-def billparse():
-   # MUST SPECIFY charset='utf8' OR BAD THINGS WILL HAPPEN.
-   with loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-                        port=3306,
-                        db='DDDB2015July',
-                        user='awsDB',
-                        passwd='digitaldemocracy789',
-                        charset='utf8') as dd_cursor:
-     with MySQLdb.connect(host='transcription.digitaldemocracy.org',
-                        user='monty',
-                        db='capublic',
-                        passwd='python',
-                        charset='utf8') as ca_cursor:
-       print('Opened connection')
-       ca_cursor.execute('''SELECT bill_version_id, bill_xml
-                            FROM bill_version_tbl;''')
-       print('Executed select query')
-       rows = ca_cursor.fetchall()
-       for (vid, xml) in rows:
-           xml = xml.strip()
-           flags=re.DOTALL
-           xml = re.sub(r'<\?xm-(insertion|deletion)_mark\?>', r'', xml, flags)
-           xml = re.sub(r'<\?xm-(insertion|deletion)_mark (?:data="(.*?)")\?>', r'<span class="\1">\2</span>', xml, flags)
-           '''
-           xml = re.sub(r'<\?xm-(insertion|deletion)_mark_start\?>', r'<span class="\1">', xml, flags)
-           xml = re.sub(r'<\?xm-(insertion|deletion)_mark_end\?>', r'</span>', xml, flags)
-           '''
-           
-           root = etree.fromstring(xml)
+def get_bill_versions(ca_cursor):
+  ca_cursor.execute(QS_CPUB_BILL_VERSION)
+  for vid, xml in ca_cursor.fetchall():
+    xml = xml.strip()
+    flags = re.DOTALL
+    xml = re.sub(r'<\?xm-(insertion|deletion)_mark\?>', r'', xml, flags)
+    xml = re.sub(r'<\?xm-(insertion|deletion)_mark (?:data="(.*?)")\?>',
+        r'<span class="\1">\2</span>', xml, flags)
 
-           namespace = {'caml': 'http://lc.ca.gov/legalservices/schemas/caml.1#'}
+    # These 2 lines give problems. Don't need them for now, might in the future...
+    #xml = re.sub(r'<\?xm-(insertion|deletion)_mark_start\?>', r'<span class="\1">', xml, flags)
+    #xml = re.sub(r'<\?xm-(insertion|deletion)_mark_end\?>', r'</span>', xml, flags)
+    yield '%s_%s' % (STATE, vid), xml
 
-           #print "creating title"
-           title = root.xpath('//caml:Title', namespaces=namespace)[0]
-           titleText = re.sub(r'<.+?>', r'', etree.tostring(title), flags)
+def billparse(ca_cursor, dd_cursor):
+  for vid, xml in get_bill_versions(ca_cursor):
+    root = etree.fromstring(xml)
+    namespace = {'caml':'http://lc.ca.gov/legalservices/schemas/caml.1#'}
 
-           #print "creating digest"
-           digest = ""
-           if (len(root.xpath('//caml:DigestText', method="text", namespaces=namespace)) > 0):
-              digest = root.xpath('//caml:DigestText', method="text", namespaces=namespace)[0]
-              digest = etree.tostring(digest)
+    # Get title
+    title = root.xpath('//caml:Title', namespaces=namespace)[0].text
 
-           #print "creating body"
-           body = ""
-           if (len(root.xpath('//caml:Bill', namespaces=namespace)) > 0):
-              body = root.xpath('//caml:Bill', namespaces=namespace)[0]
-              #traverse(body)
-              body = etree.tostring(body)
-           elif (len(root.xpath('//caml:Content', namespaces=namespace)) > 0):
-              temp = ""
-              for x in range(0, len(root.xpath('//caml:Content', namespaces=namespace))):
-                 temp2 = root.xpath('//caml:Content', namespaces=namespace)[x]
-                 body = body + etree.tostring(temp2)
-           else:
-              print vid
-              print root.xpath('//caml:Bill', namespaces=namespace)
-           #print body
+    # Get digest
+    digest_nodes = root.xpath('//caml:DigestText', namespaces=namespace)
+    digest = digest_nodes[0].text if len(digest_nodes) > 0 else ''
 
-           dd_cursor.execute('''UPDATE BillVersion
-                                SET title = %s, digest= %s, text = %s, state = %s
-                                WHERE vid = %s;''', (titleText, digest, body, vid, state))
-           '''
-           except Exception as e:
-            print(e)
-            print vid
-            #print"problems/" + vid + ".err", "w"
-           '''
+    # Get body
+    body_nodes = root.xpath('//caml:Bill', namespaces=namespace)
+    if len(body_nodes) > 0:
+      body = body_nodes[0].text
+    else:
+      # If there isn't a caml:Bill tag, then there must
+      # be a caml:Content tag.
+      pat = '<{0}Content>.*?</{0}Content>'.format(namespace['caml'])
+      body = ''.join(node for node in re.findall(pat, xml))
+
+    dd_cursor.execute(QU_BILL_VERSION, (title, digest, body, vid, STATE))
 
 if __name__ == "__main__":
-   billparse()
+  # MUST SPECIFY charset='utf8' OR BAD THINGS WILL HAPPEN.
+  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+                       port=3306,
+                       db='MultiStateTest',
+                       user='awsDB',
+                       passwd='digitaldemocracy789',
+                       charset='utf8') as dd_cursor:
+    with MySQLdb.connect(host='transcription.digitaldemocracy.org',
+                         user='monty',
+                         db='capublic',
+                         passwd='python',
+                         charset='utf8') as ca_cursor:
+      billparse(ca_cursor, dd_cursor)
