@@ -1,3 +1,13 @@
+'''
+File: import_legislators_ny.py
+Author: John Alkire
+Date: 11/26/2015
+Description:
+- Imports NY legislators using senate API
+- Fills Person, Term, and Legislator
+- Missing personal/social info for legislators (eg. bio, twitter, etc)
+- Currently configured to test DB
+'''
 import requests
 import MySQLdb
 

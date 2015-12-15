@@ -1,3 +1,12 @@
+'''
+File: import_committees_ny.py
+Author: John Alkire
+Date: 11/26/2015
+Description:
+- Imports NY committees using senate API
+- Fills Committee and servesOn
+- Currently configured to test DB
+'''
 import requests
 import MySQLdb
 

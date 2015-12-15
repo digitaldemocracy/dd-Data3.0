@@ -1,3 +1,12 @@
+'''
+File: import_bills_ny.py
+Author: John Alkire
+Date: 11/26/2015
+Description:
+- Imports NY bills using senate API
+- Fills Bill and BillVersion
+- Currently configured to test DB
+'''
 import requests
 import MySQLdb
 
