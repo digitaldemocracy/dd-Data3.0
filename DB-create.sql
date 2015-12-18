@@ -112,7 +112,7 @@ CHARACTER SET utf8 COLLATE utf8_general_ci;
    can change those every term.
 */
 CREATE TABLE IF NOT EXISTS Term (
-   pid      INTEGER,    -- Person id (ref. Person.pid)
+   pid      INTEGER,    -- Person id (ref. Person.pised)
    year     YEAR,       -- year served
    district INTEGER(3), -- district legislator served in
    house    VARCHAR(100), -- house they serve in,
@@ -164,6 +164,7 @@ CREATE TABLE IF NOT EXISTS servesOn (
    year     YEAR,                                  -- year served
    house    VARCHAR(100),
    cid      INTEGER(3),                            -- Committee id (ref. Committee.cid)
+   position ENUM("Chair", "Vice-Chair", "Member"),
    state    VARCHAR(2),
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
 
@@ -931,10 +932,8 @@ CREATE TABLE IF NOT EXISTS TT_Editor (
    created TIMESTAMP NOT NULL , 
    active BOOLEAN NOT NULL , 
    role VARCHAR(15) NOT NULL , 
-   state VARCHAR(2),
    
    PRIMARY KEY (id),
-   FOREIGN KEY (state) REFERENCES State(abbrev),
    UNIQUE KEY (username)
 )
 ENGINE = INNODB
