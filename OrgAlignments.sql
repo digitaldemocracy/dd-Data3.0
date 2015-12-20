@@ -23,7 +23,7 @@ UNION
 -- themselves said these things
 CREATE VIEW OrgAlignmentsUtter
 AS
-SELECT ap.oid, bd.bid, u.uid, u.alignment
+SELECT ap.oid, bd.bid, u.uid, u.alignment, bd.hid
 FROM AllProfs ap  
     JOIN currentUtterance u 
     ON ap.pid = u.pid
@@ -33,36 +33,33 @@ FROM AllProfs ap
 WHERE ap.oid IS NOT NULL;
 
 -- Uses group by to get all all the distinct alignments of 
--- an organization associated with the specific bill
+-- an organization associated with the specific bill, at a
+-- specific hearing
 CREATE VIEW OrgAlignmentsDistinct
 AS 
-SELECT oid, bid, alignment
+SELECT oid, bid, alignment, hid
 FROM OrgAlignmentsUtter
-GROUP BY oid, bid, alignment;
+GROUP BY oid, bid, alignment, hid;
 
 -- Gets all the alignments we are certain about
 CREATE VIEW OrgAlignmentsDefin
 AS
-SELECT oid, bid, alignment 
+SELECT oid, bid, alignment, hid
 FROM OrgAlignmentsDistinct
 WHERE alignment != 'NA'
-GROUP BY oid, bid 
+GROUP BY oid, bid, hid 
 HAVING COUNT(*) = 1;
 
 -- Next gets all cases where the indeterminate is
 -- trumped by a clear position
 CREATE VIEW OrgAlignmentsTrumped
 AS 
-SELECT oid, bid, alignment 
+SELECT oid, bid, alignment, hid 
 FROM OrgAlignmentsDistinct
-WHERE (oid, bid) IN (SELECT oid, bid
+WHERE (oid, bid, hid) IN (SELECT oid, bid, hid
                      FROM OrgAlignmentsDistinct
-                     GROUP BY oid, bid 
+                     GROUP BY oid, bid, hid 
                      HAVING COUNT(*) = 2)
-    AND (oid, bid) IN (SELECT oid, bid
-                       FROM OrgAlignmentsDistinct
-                       WHERE alignment = 'Indeterminate'
-                         OR alignment = 'Neutral')
     AND alignment != 'Indeterminate' 
     AND alignment != 'Neutral';
 
@@ -70,43 +67,43 @@ WHERE (oid, bid) IN (SELECT oid, bid
 -- and against. These are left unknown
 CREATE VIEW OrgAlignmentsUnknown
 AS 
-SELECT oid, bid, 'Unknown' AS alignment
+SELECT oid, bid, 'Unknown' AS alignment, hid
 FROM OrgAlignmentsDistinct
-WHERE (oid, bid) IN (SELECT oid, bid
-                       FROM OrgAlignmentsDistinct
-                       WHERE alignment = 'Against')
+WHERE (oid, bid, hid) IN (SELECT oid, bid, hid
+                          FROM OrgAlignmentsDistinct
+                          WHERE alignment = 'Against')
     AND alignment = 'For';
 
 -- Rounds up all the left over combos with multiple
 -- alignments
 CREATE VIEW OrgAlignmentsMulti
 AS 
-SELECT oid, bid
+SELECT oid, bid, hid
 FROM OrgAlignmentsDistinct
-WHERE (oid, bid) IN (SELECT oid, bid
-                     FROM OrgAlignmentsDistinct
-                     GROUP BY oid, bid
-                     HAVING COUNT(*) > 1)
-    AND (oid, bid) NOT IN (SELECT oid, bid 
-                           FROM OrgAlignmentsTrumped
-                           UNION 
-                           SELECT oid, bid
-                           FROM OrgAlignmentsUnknown);
+WHERE (oid, bid, hid) IN (SELECT oid, bid, hid
+                          FROM OrgAlignmentsDistinct
+                          GROUP BY oid, bid, hid
+                          HAVING COUNT(*) > 1)
+    AND (oid, bid, hid) NOT IN (SELECT oid, bid, hid 
+                                FROM OrgAlignmentsTrumped
+                                UNION 
+                                SELECT oid, bid, hid
+                                FROM OrgAlignmentsUnknown);
 
 -- Binds the multi alignments to their utterances. You
 -- grab the latest valued one
 CREATE VIEW OrgAMUtter
 AS 
-SELECT oid, bid, MAX(uid) AS uid
+SELECT oid, bid, hid, MAX(uid) AS uid
 FROM OrgAlignmentsUtter 
-WHERE (oid, bid) IN (SELECT oid, bid
+WHERE (oid, bid, hid) IN (SELECT oid, bid, hid
                      FROM OrgAlignmentsMulti)
-GROUP BY oid, bid;
+GROUP BY oid, bid, hid;
 
 -- Gets the alignment of that highest utterance
 CREATE VIEW OrgAlignmentsExtra
 AS 
-SELECT oamu.oid, oamu.bid, u.alignment 
+SELECT oamu.oid, oamu.bid, oamu.hid, u.alignment 
 FROM OrgAMUtter oamu 
     JOIN currentUtterance u 
     ON oamu.uid = u.uid;
@@ -116,13 +113,13 @@ FROM OrgAMUtter oamu
 DROP TABLE IF EXISTS OrgAlignments;
 CREATE TABLE OrgAlignments 
 AS
-    SELECT oid, bid, alignment 
+    SELECT oid, bid, hid, alignment 
     FROM OrgAlignmentsDefin 
 UNION 
-    SELECT oid, bid, alignment 
+    SELECT oid, bid, hid, alignment 
     FROM OrgAlignmentsTrumped
 UNION 
-    SELECT oid, bid, alignment 
+    SELECT oid, bid, hid, alignment 
     FROM OrgAlignmentsExtra;
 
  
