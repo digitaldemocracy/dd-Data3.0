@@ -19,21 +19,35 @@ def call_senate_api(restCall, year, house, offset):
 	out = r.json()
 	return out["result"]["items"]
 
-
+def clean_name(name):
+    bad = ['Jr','Sr','II','III', 'IV']
+    name = name.replace(',', '')
+    name = name.replace('.', '')
+    name_arr = name.split()                     
+    for word in name_arr:
+        print word
+        
+        if len(word) <= 1 or  word in bad:
+            name_arr.remove(word)
+    first = name_arr[0]
+    last = name_arr[1]
+    for x in range(2, len(name_arr)):
+        last = last + ' ' + name_arr[x]    
+    return (first, last)
+    
 def get_senators_api(year):
 	senators = call_senate_api("members", year, "", 0)
 	ret_sens = list()
 	for senator in senators:
 		sen = dict()
-		name = senator['fullName'].split() 
+		name = clean_name(senator['fullName']) 
 		sen['house'] = senator['chamber'].title()
-		sen['last'] = name[len(name) - 1]
+		sen['last'] = name[1]
 		sen['state'] = "NY"
 		sen['year'] = str(year)
 			
 		sen['first'] = name[0]
-		for x in range(1, len(name) - 1):
-			sen['first'] = sen['first'] + " " + name[x]
+		
 		sen['district'] = senator['districtCode']
 		sen['image'] = senator['imgName']
 		if sen['image'] is None:
