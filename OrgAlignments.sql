@@ -91,13 +91,14 @@ WHERE (oid, bid, hid) IN (SELECT oid, bid, hid
                                 FROM OrgAlignmentsUnknown);
 
 -- Binds the multi alignments to their utterances. You
--- grab the latest valued one
+-- grab the latest valued one. Indeterminates are ignored
 CREATE VIEW OrgAMUtter
 AS 
 SELECT oid, bid, hid, MAX(uid) AS uid
 FROM OrgAlignmentsUtter 
 WHERE (oid, bid, hid) IN (SELECT oid, bid, hid
-                     FROM OrgAlignmentsMulti)
+                         FROM OrgAlignmentsMulti
+                         WHERE alignment != "Indeterminate")
 GROUP BY oid, bid, hid;
 
 -- Gets the alignment of that highest utterance
