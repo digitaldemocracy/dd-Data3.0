@@ -16,42 +16,42 @@ def call_senate_api(restCall, year, house, offset):
 		house = "/" + house
 	url = "http://legislation.nysenate.gov/api/3/" + restCall + "/" + str(year) + house + "/search?term=sponsor.rules:true&full=true&limit=1000&key=31kNDZZMhlEjCOV8zkBG1crgWAGxwDIS&offset=" + str(offset)
 	r = requests.get(url)
+	print url
 	out = r.json()
 	return out["result"]["items"]
 
 def get_committeeauthors_api(year):
-	bills = call_senate_api("bill", year, "", 1)
+	bills = call_senate_api("bills", 2015, "", 1)
 	ret_bills = list()
 
 	for bill in bills:
-		bill = dict()
-		b['number'] = bills['basePrintNo'][1:]
-		b['type'] = bills['basePrintNo'][0:1]
+		b = dict()
+		b['type'] = bill['result']['basePrintNo']
 		b['session'] = '0'
-		b['versions'] = bill['amendments']['items']
-		b['bid'] = "NY_" + str(year) + str(year + 1) + b['session'] + b['type'] + b['number']
+		b['versions'] = bill['result']['amendments']['items']
+		b['bid'] = "NY_" + str(year) + str(year + 1) + b['session'] + b['type']
 		ret_bills.append(b)
 	print len(ret_bills)
 	return ret_bills
 
-def insert_committeeauthors_db(bill, cid, year):
+def insert_committeeauthors_db(bill, cid, year, dddb):
 	insert_stmt = 	'''	INSERT INTO CommitteeAuthors
 						(cid, bid, vid, state)
 						VALUES
-						(cid, %(bid)s, %(vid)s, 'NY')
+						(%s, %s, %s, %s)
 						'''
 	for key in bill['versions'].keys():
 		a = dict()
 		a['bid'] = bill['bid']
 		a['vid'] = bill['bid'] + key
-		dddb.execute(insert_stmt, {'bid':a['bid'], 'vid':a['vid']})
+		dddb.execute(insert_stmt, (str(cid), a['bid'], a['vid'], 'NY'))
 
 def add_committeeauthors_db(year, dddb):
 	bills = get_committeeauthors_api(year)
 	cid = get_cid_db(dddb)
 
 	for bill in bills:
-		insert_committeeauthors_db(bill, cid, year)
+		insert_committeeauthors_db(bill, cid, year, dddb)
 
 def get_cid_db(dddb):
 	select_comm = '''SELECT * FROM Committee
@@ -72,5 +72,5 @@ def main():
 						passwd='digitaldemocracy789')
 	dddb = dddb_conn.cursor()
 	dddb_conn.autocommit(True)
-	add_commiteeauthors_db(2015, dddb)
+	add_committeeauthors_db(2015, dddb)
 main()
