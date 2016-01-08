@@ -17,6 +17,7 @@ def call_senate_api(restCall, year, house, offset):
 	r = requests.get(url)
 	print url
 	out = r.json()
+	print type(out), type(out["result"]), type(out["result"]["items"])
 	return (out["result"]["items"], out['total'])
 
 def get_author_api(year):
@@ -25,21 +26,23 @@ def get_author_api(year):
 	ret_bills = list()
 
 	while cur_offset < total:
-		call = call_senate_api("bills", year, "", cur_offset)
+		call = call_senate_api("bills", 2015, "", cur_offset)
+#		print type(call), type(call[0])
 		bills = call[0]
 		total = call[1]
 		for bill in bills:
 			b = dict()
-			b['number'] = bills['basePrintNo'][1:]
-			b['type'] = bills['basePrintNo'][0:1]
+#			print type(b), type(bills), type(bill['basePrintNo']), bill['basePrintNo']
+			b['type'] = bill['basePrintNo']
 			b['session'] = '0'
-			name = b['sponsor']['member']['fullName']
-			sname = first.split(' ')
+			if bill['sponsor']['member'] is None
+			name = bill['sponsor']['member']['fullName']
+			sname = name.split(' ')
 			split_index = len(sname)
 			b['first'] = ' '.join(sname[:split_index]).strip()
 			b['last'] = ' '.join(sname[split_index:]).strip()
 			b['versions'] = bill['amendments']['items']
-			b['bid'] = "NY_" + str(year) + str(year + 1) + b['session'] + b['type'] + b['number']
+			b['bid'] = "NY_" + str(year) + str(year + 1) + b['session'] + b['type']
 			ret_bills.append(b)
 		cur_offset += 1000
 	print len(ret_bills)
