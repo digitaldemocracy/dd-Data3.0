@@ -38,20 +38,49 @@ def insert_committeeauthors_db(bill, cid, year, dddb):
 	insert_stmt = 	'''	INSERT INTO CommitteeAuthors
 						(cid, bid, vid, state)
 						VALUES
-						(%s, %s, %s, %s)
+						(%s, %s, %s, 'NY')
+						'''
+	select_stmt = 	'''	SELECT *
+						FROM CommitteeAuthors
+						WHERE cid = %s
+						 AND bid = %s
+						 AND vid = %s
+						 AND state = 'NY'
 						'''
 	for key in bill['versions'].keys():
-		a = dict()
-		a['bid'] = bill['bid']
-		a['vid'] = bill['bid'] + key
-		dddb.execute(insert_stmt, (str(cid), a['bid'], a['vid'], 'NY'))
+		if check_bid_db(bill['bid'], dddbe):
+			a = dict()
+			a['bid'] = bill['bid']
+			a['vid'] = bill['bid'] + key
+
+			dddb.execute(select_stmt, (str(cid), a['bid'], a['vid']))
+			if dddb.rowcount == 0:
+				dddb.execute(insert_stmt, (str(cid), a['bid'], a['vid']))
+			else:
+				print "already existing"
+		else:
+			print bill['bid'], "fill Bill table first"
+
+def check_bid_db(bid, dddb):
+	select_stmt = '''	SELECT * FROM Bill
+						WHERE bid = %(bid)s
+						'''
+	dddb.execute(select_stmt, {'bid':bid})
+	if dddb.rowcount == 1:
+		return True
+	else:
+		return False
 
 def add_committeeauthors_db(year, dddb):
 	bills = get_committeeauthors_api(year)
 	cid = get_cid_db(dddb)
 
-	for bill in bills:
-		insert_committeeauthors_db(bill, cid, year, dddb)
+	print "cid", cid
+	if cid is not None:
+		for bill in bills:
+			insert_committeeauthors_db(bill, cid, year, dddb)
+	else:
+		print "Fill Committee table first"
 
 def get_cid_db(dddb):
 	select_comm = '''SELECT * FROM Committee
@@ -61,8 +90,9 @@ def get_cid_db(dddb):
                   '''
 	dddb.execute(select_comm)
 	
-	query = dddb.fetchone();
-	return query[0]
+	if dddb.rowcount == 1:
+		return dddb.fetchone()[0]
+	return None
 
 def main():
 	dddb_conn =  MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
