@@ -5,6 +5,7 @@ Date: 12/26/2015
 Description:
 - Imports NY authors using senate API
 - Fills authors
+- Needs Bills table to be filled first
 - Currently configured to test DB
 '''
 import requests
@@ -24,26 +25,32 @@ def get_author_api(year):
 	total = 1000
 	cur_offset = 1
 	ret_bills = list()
+	x = 0
 
 	while cur_offset < total:
 		call = call_senate_api("bills", 2015, "", cur_offset)
-#		print type(call), type(call[0])
 		bills = call[0]
 		total = call[1]
 		for bill in bills:
-			b = dict()
-#			print type(b), type(bills), type(bill['basePrintNo']), bill['basePrintNo']
-			b['type'] = bill['basePrintNo']
-			b['session'] = '0'
-			if bill['sponsor']['member'] is None
-			name = bill['sponsor']['member']['fullName']
-			sname = name.split(' ')
-			split_index = len(sname)
-			b['first'] = ' '.join(sname[:split_index]).strip()
-			b['last'] = ' '.join(sname[split_index:]).strip()
-			b['versions'] = bill['amendments']['items']
-			b['bid'] = "NY_" + str(year) + str(year + 1) + b['session'] + b['type']
-			ret_bills.append(b)
+			if bill['sponsor']['member'] is not None:
+				b = dict()
+				b['type'] = bill['basePrintNo']
+				b['session'] = '0'
+				name = bill['sponsor']['member']['fullName']
+				sname = name.split(' ')
+				split_index = len(sname) - 1
+				
+				if x == 0:
+					print "sname", sname, "index", split_index
+				b['first'] = ' '.join(sname[:split_index]).strip()
+				b['last'] = ' '.join(sname[split_index:]).strip()
+				if x == 0:
+					print "first?", sname[:split_index]
+					print "first",b['first'], "last", b['last']
+					x += 1
+				b['versions'] = bill['amendments']['items']
+				b['bid'] = "NY_" + str(year) + str(year + 1) + b['session'] + b['type']
+				ret_bills.append(b)
 		cur_offset += 1000
 	print len(ret_bills)
 	return ret_bills
@@ -54,24 +61,53 @@ def insert_authors_db(bill, dddb):
 						VALUES
 						(%(pid)s, %(bid)s, %(vid)s, %(contribution)s)
 						'''
+	select_stmt = ''' 	SELECT *
+						FROM authors
+						WHERE pid = %(pid)s
+						 AND bid = %(bid)s
+						 AND vid = %(vid)s
+						 AND contribution = %(contribution)s
+						'''
 	for key in bill['versions'].keys():
 		a = dict()
-		a['pid'] = get_pid_db(bill['first'], bill['last'], dddb)
-		a['bid'] = bill['bid']
-		a['vid'] = bill['bid'] + key
-		a['contributions'] = 'Lead Author'
+		print bill['bid']
+		pid = get_pid_db(bill['first'], bill['last'], dddb)
+		if pid is not None and check_bid_db(bill['bid'], dddb):
+			a['pid'] = pid
+			a['bid'] = bill['bid']
+			a['vid'] = bill['bid'] + key
+			a['contribution'] = 'Lead Author'
 
-		dddb.execute(insert_stmt, a)
+			dddb.execute(select_stmt, a)
+			if dddb.rowcount == 0:
+				dddb.execute(insert_stmt, a)
+			else:
+				print a['bid'], "already existing"
+		else:
+			print "fill Person and Bill table first"
+
+def check_bid_db(bid, dddb):
+	select_stmt = '''	SELECT * FROM Bill
+						WHERE bid = %(bid)s
+						'''
+	dddb.execute(select_stmt, {'bid':bid})
+	if dddb.rowcount == 1:
+		return True
+	else:
+		return False
 
 def get_pid_db(first, last, dddb):
 	select_person = '''	SELECT * FROM Person
                      	WHERE first = %(first)s
-                      	AND last = %(last)s 
+                      	 AND last = %(last)s 
                   		'''
 	dddb.execute(select_person, {'first':first,'last':last})
-	#print (select_person %  {'first':first,'last':last})
-	query = dddb.fetchone();
-	return query[0]
+#	print (select_person %  {'first':first,'last':last})
+	if dddb.rowcount == 1:
+		ret = dddb.fetchone()[0]
+		print ret
+		return ret
+	return None
 
 def add_authors_db(year, dddb):
 	bills = get_author_api(year)
