@@ -120,7 +120,8 @@ CREATE TABLE IF NOT EXISTS Term (
    start    DATE,       -- start date of term
    end      DATE,       -- end date of term
    state    VARCHAR(2), -- state where term was served
-   caucus   VARCHAR(200), -- group that generally votes together
+   -- caucus   VARCHAR(200), -- group that generally votes together. Not 
+                             -- currently in use
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
 
    PRIMARY KEY (pid, year, house, state),
@@ -508,12 +509,12 @@ CHARACTER SET utf8 COLLATE utf8_general_ci;
 
    Organizations are companies or organizations.
 */
-CREATE TABLE IF NOT EXISTS Organizations(
+CREATE TABLE IF NOT EXISTS Organizations (
     oid INTEGER AUTO_INCREMENT,  -- Organization id
     name VARCHAR(200),           -- name
     type INTEGER DEFAULT 0,      -- type (not fleshed out yet)
     city VARCHAR(200),           -- city
-    stateHeadquarterd VARCHAR(2), -- U.S. state, where it's based
+    stateHeadquartered VARCHAR(2), -- U.S. state, where it's based
     lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
 
     PRIMARY KEY (oid)
