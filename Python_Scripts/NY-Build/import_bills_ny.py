@@ -44,7 +44,7 @@ def get_bills_api(year):
             b['bid'] = "NY_" + str(year) + str(year+1) + b['session'] + b['type'] + b['number']
             b['bid'] = b['bid']
             ret_bills.append(b)            
-        cur_offset += 1000    
+        cur_offset += 1000  
     print "Downloaded %d bills..." % len(ret_bills)    
     return ret_bills
 
@@ -58,9 +58,9 @@ def insert_bill_db(bill, dddb):
         dddb.execute(insert_stmt, bill)
     except:
         #print "Bill exists"
-        return false 
+        return False 
         
-    return true
+    return True
 
 def insert_billversions_db(bill, dddb):    
     for key in bill['versions'].keys():
