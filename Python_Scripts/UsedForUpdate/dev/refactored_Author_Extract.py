@@ -256,7 +256,8 @@ def get_authors(ca_cursor, dd_cursor):
       if author_type == 'Legislator':
         pid = get_person(dd_cursor, name, house)
         if pid is not None:
-          add_author(dd_cursor, pid, bid, vid, contrib.title())
+          contribution = contrib.title().replace('_', ' ')
+          add_author(dd_cursor, pid, bid, vid, contribution)
 
       # Committee Authors
       elif author_type == 'Committee':

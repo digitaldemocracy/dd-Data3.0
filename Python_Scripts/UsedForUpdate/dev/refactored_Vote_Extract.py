@@ -223,6 +223,7 @@ def get_detail_votes(ca_cursor, dd_cursor):
   print(len(rows))
 
   for bid, loc_code, legislator, vote_code, mid, trans_update in rows:
+    print(bid)
     date = trans_update.strftime('%Y-%m-%d')
     pid = get_person(dd_cursor, legislator, loc_code, STATE)
     vote_id = get_vote_id(dd_cursor, bid, mid)

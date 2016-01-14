@@ -4,10 +4,10 @@ File: Action_Extract.py
 Author: Daniel Mangin
 Modified By: Mitch Lane, Mandy Chan
 Date: 6/11/2015
-Last Changed: 7/23/2015
+Last Changed: 11/20/2015
 
 Description:
-- Inserts Actions from the bill_history_tbl from capublic into DDDB2015Apr.Action
+- Inserts Actions from the bill_history_tbl from capublic into DDDB.Action
 - This script runs under the update script
 
 Sources:
@@ -25,59 +25,64 @@ Sources:
 
 Populates:
   - Action (bid, date, text)
-
 '''
 
-import re
-import sys
-import time
-import loggingdb
 import MySQLdb
-from pprint import pprint
-from urllib import urlopen
 
-# Queries
-query_insert_Action = '''INSERT INTO Action (bid, date, text)
-                         VALUES (%s, %s, %s);'''
+import loggingdb
+
+STATE = 'CA'
+
+# INSERTS
+QI_ACTION = '''INSERT INTO Action (bid, date, text)
+               VALUES (%s, %s, %s)'''
+
+# SELECTS
+QS_BILL_HISTORY_TBL = '''SELECT bill_id, action_date, action
+                         FROM bill_history_tbl'''
+QS_ACTION_CHECK = '''SELECT bid
+                     FROM Action
+                     WHERE bid = %s
+                      AND date = %s'''
 
 '''
 Checks if the Action is in DDDB. If it isn't, insert it. Otherwise, skip.
+
+|dd_cursor|: DDDB database cursor
+|values|: Tuple that includes the following (in order):
+  |bid|: Bill id
+  |date|: Date of action
+  |text|: Text of action
 '''
-def insert_Action(cursor, bid, date, text):
-  # Check
-  select_stmt = "SELECT bid from Action where bid = %(bid)s AND date = %(date)s"
-  cursor.execute(select_stmt, {'bid':bid, 'date':date})
+def insert_Action(dd_cursor, values):
+  values[0] = '%s_%s' % (STATE, values[0])
+
+  # Check if DDDB already has this action
+  dd_cursor.execute(QS_ACTION_CHECK, (values[0], values[1]))
 
   # If Action not in DDDB, add
-  if(cursor.rowcount == 0):
-    cursor.execute(query_insert_Action, (bid, date, text))	
+  if(dd_cursor.rowcount == 0):
+    dd_cursor.execute(QI_ACTION, values)	
 
 '''
 Loops through all Actions from capublic and adds them as necessary
 '''
 def main():
   with loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-                       port=3306,
-                       db='DDDB2015July',
-                       user='awsDB',
-                       passwd='digitaldemocracy789') as dd_cursor:
+                         port=3306,
+                         db='DDDB2015Dec',
+                         user='awsDB',
+                         passwd='digitaldemocracy789') as dd_cursor:
     with MySQLdb.connect(host='transcription.digitaldemocracy.org',
-                       user='monty',
-                       db='capublic',
-                       passwd='python') as ca_cursor:
+                         user='monty',
+                         db='capublic',
+                         passwd='python') as ca_cursor:
 
       # Get all of the Actions from capublic
-      select_stmt = '''SELECT bill_id, action_date, action
-                       FROM bill_history_tbl'''
-      ca_cursor.execute(select_stmt)
-      for i in range(0, ca_cursor.rowcount):
-          tuple = ca_cursor.fetchone()
-          if tuple:
-            bid = tuple[0];
-            date = tuple[1];
-            text = tuple[2];
-            if(bid):
-              insert_Action(dd_cursor, bid, date, text)
+      ca_cursor.execute(QS_BILL_HISTORY_TBL)
 
-if __name__ == "__main__":
-	main()
+      for record in ca_cursor.fetchall():
+        insert_Action(dd_cursor, list(record))
+
+  if __name__ == "__main__":
+    main()

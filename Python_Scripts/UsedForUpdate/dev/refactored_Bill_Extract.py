@@ -138,6 +138,9 @@ def get_bill_versions(ca_cursor, dd_cursor):
     # Bill and Version Id keeps track of U.S. state
     record[0] = '%s_%s' % (US_STATE, record[0])
     record[1] = '%s_%s' % (US_STATE, record[1])
+    # Appropriation is 'Yes' or 'No' in capublic, but an int in DDDB.
+    if record[5] is not None: 
+      record[5] = 0 if record[5] == 'No' else 1
     record.append(US_STATE)
 
     # Bill status check (Check is necessary; don't know why)

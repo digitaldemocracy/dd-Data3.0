@@ -4,124 +4,162 @@ File: Bill_Extract.py
 Author: Daniel Mangin
 Modified By: Mandy Chan
 Date: 6/11/2015
+Last Changed: 11/20/2015
 
 Description:
-- Inserts the authors from capublic.bill_tbl into DDDB2015Apr.Bill and capublic.bill_version_tbl into DDDB2015Apr.BillVersion
+- Inserts the authors from capublic.bill_tbl into DDDB.Bill and 
+  capublic.bill_version_tbl into DDDB.BillVersion
 - This script runs under the update script
 
 Sources:
-- Leginfo (capublic)
-  - Pubinfo_2015.zip
-  - Pubinfo_Mon.zip
-  - Pubinfo_Tue.zip
-  - Pubinfo_Wed.zip
-  - Pubinfo_Thu.zip
-  - Pubinfo_Fri.zip
-  - Pubinfo_Sat.zip
+  - Leginfo (capublic)
+    - Pubinfo_2015.zip
+    - Pubinfo_Mon.zip
+    - Pubinfo_Tue.zip
+    - Pubinfo_Wed.zip
+    - Pubinfo_Thu.zip
+    - Pubinfo_Fri.zip
+    - Pubinfo_Sat.zip
 
--capublic
-  - bill_tbl
-  - bill_version_tbl
+  - capublic
+    - bill_tbl
+    - bill_version_tbl
 
 Populates:
   - Bill (bid, type, number, state, status, house, session)
   - BillVersion (vid, bid, date, state, subject, appropriation, substantive_changes)
 '''
 
-import re
-import sys
-import loggingdb
 import MySQLdb
-from pprint import pprint
-from urllib import urlopen
 
-# Queries
-insert_bill_stmt = '''INSERT INTO Bill
-                      (bid, type, number, state, status, house, session)
-                      VALUES (%s, %s, %s, %s, %s, %s, %s);'''
-insert_billversion_stmt = '''INSERT INTO BillVersion (vid, bid, date, 
-                             state, subject, appropriation, substantive_changes)
-                             VALUES (%s, %s, %s, %s, %s, %s, %s);'''
+import loggingdb
 
-# Checks if bill exists, if not, adds the bill
-def addBill(cursor, bid, type, number, state, status, house, session):
-  select_stmt = "SELECT bid from Bill where bid = %(bid)s AND number = %(number)s"
-  cursor.execute(select_stmt, {'bid':bid,'number':number})
-  if(cursor.rowcount == 0):
-    print "adding Bill {0}".format(bid)
-    cursor.execute(insert_bill_stmt, (bid, type, number, state, status, house, session))
+US_STATE = 'CA'
 
-# Checks if billVersion exists, if not, adds the billVersion
-def addBillVersion(cursor, vid, bid, date, state, subject, appropriation, substantive_changes):
-  select_stmt = "SELECT bid from BillVersion where vid = %(vid)s"
-  cursor.execute(select_stmt, {'vid':vid})
-  if(cursor.rowcount == 0):
-    print "adding BillVersion {0}".format(vid)
-    cursor.execute(insert_billversion_stmt, (vid, bid, date, state, subject, appropriation, substantive_changes))
+# INSERTS
+QI_BILL = '''INSERT INTO Bill
+             (bid, type, number, billState, status, house, session, state)
+             VALUES (%s, %s, %s, %s, %s, %s, %s, %s)'''
+QI_BILLVERSION = '''INSERT INTO BillVersion (vid, bid, date, billState, 
+                    subject, appropriation, substantive_changes, state)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)'''
 
-# Finds the state of the bill
-# Used as a helper for finding BillVersions
-def findState(cursor, bid):
-  select_stmt = "SELECT state from Bill where bid = %(bid)s"
-  cursor.execute(select_stmt, {'bid':bid})
-  temp = [0]
-  if cursor.rowcount > 0:
-    temp = cursor.fetchone()
-  return temp[0]
+# SELECTS
+QS_BILL_CHECK = '''SELECT bid
+                   FROM Bill
+                   WHERE bid = %s
+                    AND number = %s'''
+QS_BILLVERSION_CHECK = '''SELECT bid
+                          FROM BillVersion
+                          WHERE vid = %s'''
+QS_BILL_TBL = '''SELECT bill_id, measure_type, measure_num, measure_state,
+                        current_status, current_house, session_num
+                 FROM bill_tbl'''
+QS_BILL_VERSION_TBL = '''SELECT bill_version_id, bill_id, 
+                                bill_version_action_date, bill_version_action, 
+                                subject, appropriation, substantive_changes 
+                         FROM bill_version_tbl'''
 
-# Gets all of the Bills, then adds them as necessary
-def getBills(ca_cursor, dd_cursor):
-  select_stmt = "SELECT * FROM bill_tbl"
-  ca_cursor.execute(select_stmt)
-  for i in range(0, ca_cursor.rowcount):
-    temp = ca_cursor.fetchone()
-    bid = temp[0]
-    number = temp[4]
-    status = temp[17]
-    session = temp[2]
-    type = temp[3]
+'''
+Checks if bill exists. If not, adds the bill.
 
-    if (session != '0'):
-      type = type + 'X' + session
+|dd_cursor|: DDDB database cursor
+|values|: Tuple that includes the following (in order):
+  |bid|: Bill id
+  |type_|: Bill type
+  |number|: Bill number
+  |billState|: Bill state
+  |status|: Bill status
+  |house|: House (Assembly/Senate/etc.)
+  |session|: Legislative session
+  |state|: U.S. state the bill resides in
+  |sessionYear|: The year the bill was created
+'''
+def add_bill(dd_cursor, values):
+  dd_cursor.execute(QS_BILL_CHECK, (values[0], values[2]))
 
-    house = temp[16]
-    state = temp[5]
-    addBill(dd_cursor, bid, type, number, state, status, house, session)
+  if dd_cursor.rowcount == 0:
+    dd_cursor.execute(QI_BILL, values)
 
-# Gets all of the BillVersions then adds them as necessary
-def getBillVersions(ca_cursor, dd_cursor):
-  select_stmt = "SELECT * FROM bill_version_tbl"
-  ca_cursor.execute(select_stmt)
-  print 'versions', ca_cursor.rowcount
-  for i in range(0, ca_cursor.rowcount):
-    temp = ca_cursor.fetchone()
-    if temp:
-      vid = temp[0]
-      bid = temp[1]
-      date = temp[3]
-      state = temp[4]
-      subject = temp[6]
-      appropriation = temp[8]
-      substantive_changes = temp[11]
-      if state != 0:
-        addBillVersion(dd_cursor, vid, bid, date, state, subject, appropriation, substantive_changes)
+'''
+Checks if BillVersion exists. If not, adds the BillVersion.
+
+|dd_cursor|: DDDB database cursor
+|values|: Tuple that includes the following (in order):
+  |vid|: Version id
+  |bid|: Bill id
+  |date|: Bill version date
+  |billState|: Bill state
+  |subject|: Bill subject
+  |appropriation|: Bill appropriation
+  |substantive_changes|: Bill changes
+  |state|: U.S. state the bill resides in
+'''
+def add_bill_version(dd_cursor, values):
+  dd_cursor.execute(QS_BILLVERSION_CHECK, (values[0],))
+
+  if dd_cursor.rowcount == 0:
+    dd_cursor.execute(QI_BILLVERSION, values)
+
+'''
+Gets all of the Bills, then adds them as necessary
+
+|ca_cursor|: capublic database cursor
+|dd_cursor|: DDDB database cursor
+'''
+def get_bills(ca_cursor, dd_cursor):
+  ca_cursor.execute(QS_BILL_TBL)
+
+  for bid, type_, number, state, status, house, session in ca_cursor.fetchall():
+    # Session year is taken from bid: Ex: [2015]20160AB1 
+    session_yr = bid[:4]
+    # Bill Id keeps track of U.S. state
+    bid = '%s_%s' % (US_STATE, bid)
+
+    # Special sessions are marked with an X
+    if session != '0':
+      type_ = '%sX%s' % (type_, session)
+
+    add_bill(dd_cursor, 
+             (bid, type_, number, state, status, house, session, US_STATE))
+
+'''
+Gets all of the BillVersions, then adds them as necessary.
+
+|ca_cursor|: capublic database cursor
+|dd_cursor|: DDDB database cursor
+'''
+def get_bill_versions(ca_cursor, dd_cursor):
+  ca_cursor.execute(QS_BILL_VERSION_TBL)
+
+  for record in ca_cursor.fetchall():
+    # Change to list for mutability
+    record = list(record)
+    # Bill and Version Id keeps track of U.S. state
+    record[0] = '%s_%s' % (US_STATE, record[0])
+    record[1] = '%s_%s' % (US_STATE, record[1])
+    # Appropriation is 'Yes' or 'No' in capublic, but an int in DDDB.
+    if record[5] is not None: 
+      record[5] = 0 if record[5] == 'No' else 1
+    record.append(US_STATE)
+
+    # Bill status check (Check is necessary; don't know why)
+    if record[3] != 0:
+      add_bill_version(dd_cursor, record)
 
 def main():
   with loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-                       port=3306,
-                       db='DDDB2015July',
-                       user='awsDB',
-                       passwd='digitaldemocracy789') as dd_cursor:
+                         port=3306,
+                         db='DDDB2015Dec',
+                         user='awsDB',
+                         passwd='digitaldemocracy789') as dd_cursor:
     with MySQLdb.connect(host='transcription.digitaldemocracy.org',
                          user='monty',
                          db='capublic',
                          passwd='python') as ca_cursor:
-      print "getting Bills"
-      getBills(ca_cursor, dd_cursor)
-      print "getting Bill Versions"
-      getBillVersions(ca_cursor, dd_cursor)
-      print "Closing Database Connections"
+
+      get_bills(ca_cursor, dd_cursor)
+      get_bill_versions(ca_cursor, dd_cursor)
 
 if __name__ == "__main__":
   main()
-

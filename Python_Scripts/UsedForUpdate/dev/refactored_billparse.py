@@ -46,6 +46,9 @@ QU_BILL_VERSION = '''UPDATE BillVersion
 def get_bill_versions(ca_cursor):
   ca_cursor.execute(QS_CPUB_BILL_VERSION)
   for vid, xml in ca_cursor.fetchall():
+    # IS THIS OKAY??
+    if xml is None:
+      continue
     xml = xml.strip()
     flags = re.DOTALL
     xml = re.sub(r'<\?xm-(insertion|deletion)_mark\?>', r'', xml, flags)
