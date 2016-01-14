@@ -20,7 +20,22 @@ def call_senate_api(restCall, year, house, offset):
     out = r.json()
     return out["result"]["items"]
 
-
+def is_leg_in_db(senator, dddb):
+    select_leg = '''SELECT * 
+                       FROM Person p, Legislator l
+                       WHERE first = %(first)s AND last = %(last)s AND state = %(state)s
+                       AND p.pid = l.pid'''                                               
+    try:
+        dddb.execute(select_leg, senator)
+        query = dddb.fetchone()
+        
+        if query is None:            
+            return False       
+    except:            
+        return False
+    
+    return False
+    
 def clean_name(name):
     problem_names = {
         "Inez Barron":("Charles", "Barron"), 
@@ -83,18 +98,14 @@ def get_senators_api(year):
         ret_sens.append(sen)
     return ret_sens        
 
-def add_senators_db(year, dddb):
-    senators = get_senators_api(year)
-    x = 0
-    for senator in senators:
-    #senator = senators[0]
+def add_senator_db(senator, dddb):
+    if is_leg_in_db(senator, dddb) == False:
         insert_stmt = '''INSERT INTO Person
                         (last, first, image)
                         VALUES
                         (%(last)s, %(first)s, %(image)s);
                         '''
         dddb.execute(insert_stmt, senator)
-        #print (insert_stmt % senator)
         pid = dddb.lastrowid
         senator['pid'] = pid
         insert_stmt = '''INSERT INTO Legislator
@@ -108,9 +119,18 @@ def add_senators_db(year, dddb):
                         VALUES
                         (%(pid)s, %(year)s, %(house)s, %(state)s, %(district)s);
                         '''
-        dddb.execute(insert_stmt, senator)
-        print senator['last'] + ", " + senator['first'] 
-        x = x + 1
+        dddb.execute(insert_stmt, senator)        
+        print senator['last'] + ", " + senator['first']    
+        return True
+    return False
+     
+def add_senators_db(year, dddb):
+    senators = get_senators_api(year)
+    x = 0
+    for senator in senators:
+    #senator = senators[0]
+        if add_senator_db(senator, dddb):
+            x = x + 1
 
     print str(x) + " records added" 
 

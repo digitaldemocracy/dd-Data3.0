@@ -24,10 +24,45 @@ def get_last_cid_db(dddb):
                     ORDER BY cid DESC
                     LIMIT 1
                   '''
-    dddb.execute(select_comm)
+    cur = dddb.cursor()                  
+    cur.execute(select_comm)
     
-    query = dddb.fetchone();
+    query = cur.fetchone();
     return query[0]
+
+def is_comm_in_db(comm, dddb):
+    cur = dddb.cursor()
+    select_comm = '''SELECT cid 
+                    FROM Committee
+                    WHERE house = %(house)s and name = %(name)s and
+                     state = %(state)s'''                                                                    
+    try:
+        cur.execute(select_comm, comm)
+        query = cur.fetchone()
+             
+        if query is None:                   
+            return False       
+    except:            
+        return False
+    return query
+    
+def is_serveson_in_db(member, dddb):
+    cur = dddb.cursor()
+    select_comm = '''SELECT pid 
+                    FROM servesOn
+                    WHERE pid = %(pid)s and year = %(year)s and 
+                    house = %(house)s and cid = %(cid)s and state = %(state)s'''                                                                    
+    try:
+        cur.execute(select_comm, member)
+        query = cur.fetchone()
+        
+        if query is None:
+            #print select_comm % member            
+            return False       
+    except:            
+        return False    
+    
+    return True
 
 def clean_name(name):
     problem_names = {
@@ -79,7 +114,7 @@ def get_committees_api(year):
     for comm in committees:
         committee = dict()
         committee['name'] = comm['name']
-        committee['type'] = "Standing"
+        
         committee['house'] = "Senate"
         committee['state'] = "NY"
         committee['members'] = list()
@@ -102,31 +137,38 @@ def get_committees_api(year):
 
 def add_committees_db(year, dddb):
     committees = get_committees_api(year)
-
+    cur = dddb.cursor()
     for committee in committees:
-        cid = get_last_cid_db(dddb) + 1
-        committee['cid'] = str(cid)
-        insert_stmt = '''INSERT INTO Committee
-                        (cid, house, name, type, state)
-                        VALUES
-                        (%(cid)s, %(house)s, %(name)s, %(type)s, %(state)s);
-                        '''
-        print (insert_stmt % committee)
-        dddb.execute(insert_stmt, committee)
-    
-        x = 0
+        cid = get_last_cid_db(dddb) + 1      
+        get_cid = is_comm_in_db(committee, dddb)
+        if  get_cid == False:
+
+            committee['cid'] = str(cid)
+            insert_stmt = '''INSERT INTO Committee
+                            (cid, house, name, state)
+                            VALUES
+                            (%(cid)s, %(house)s, %(name)s, %(state)s);
+                            '''
+            #print (insert_stmt % committee)
+            cur.execute(insert_stmt, committee)
+        else:
+            committee['cid'] = get_cid[0]
+           
+        x=0
         for member in committee['members']:
             member['pid'] = get_pid_db(member['first'], member['last'], dddb)
             member['cid'] = committee['cid']
-            insert_stmt = '''INSERT INTO servesOn
-                        (pid, year, house, cid, state)
-                        VALUES
-                        (%(pid)s, %(year)s, %(house)s, %(cid)s, %(state)s);
-                        '''
-            print (insert_stmt % member)
-            dddb.execute(insert_stmt, member)
-            x = x + 1
-        print x
+            
+            if is_serveson_in_db(member, dddb) == False:                
+                insert_stmt = '''INSERT INTO servesOn
+                            (pid, year, house, cid, state, position)
+                            VALUES
+                            (%(pid)s, %(year)s, %(house)s, %(cid)s, %(state)s, %(position)s);
+                            '''
+                #print (insert_stmt % member)
+                cur.execute(insert_stmt, member)                
+                x = x + 1
+            print x
                         
     
 def get_pid_db(first, last, dddb):
@@ -134,25 +176,26 @@ def get_pid_db(first, last, dddb):
                      WHERE first = %(first)s
                       AND last = %(last)s 
                   '''
-    dddb.execute(select_person, {'first':first,'last':last})
-    #print (select_person %  {'first':first,'last':last})
-    query = dddb.fetchone();
+    cur = dddb.cursor()                  
+    cur.execute(select_person, {'first':first,'last':last})
+    
+    query = cur.fetchone();
     return query[0]
     
 
 def main():
-    dddb_conn =  MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+    dddb =  MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                         user='awsDB',
                         db='JohnTest',
                         port=3306,
                         passwd='digitaldemocracy789',
                         charset='utf8')
-    dddb = dddb_conn.cursor()
-    dddb_conn.autocommit(True)
+    dddb.autocommit(True)
+      
 
     add_committees_db(2015, dddb)
     
-    dddb_conn.close()
+    dddb.close()
 main()
     
     

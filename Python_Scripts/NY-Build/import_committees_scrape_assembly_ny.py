@@ -21,6 +21,40 @@ def get_last_cid_db(dddb):
 	query = dddb.fetchone();
 	return query[0]
 
+def is_comm_in_db(comm, dddb):
+
+    select_comm = '''SELECT cid 
+                    FROM Committee
+                    WHERE house = %(house)s and name = %(name)s and
+                     state = %(state)s'''                                                                    
+    try:
+        dddb.execute(select_comm, comm)
+        query = dddb.fetchone()
+             
+        if query is None:                   
+            return False       
+    except:            
+        return False
+    return query
+    
+def is_serveson_in_db(member, dddb):
+
+    select_comm = '''SELECT pid 
+                    FROM servesOn
+                    WHERE pid = %(pid)s and year = %(year)s and 
+                    house = %(house)s and cid = %(cid)s and state = %(state)s'''                                                                    
+    try:
+        dddb.execute(select_comm, member)
+        query = dddb.fetchone()
+        
+        if query is None:
+            #print select_comm % member            
+            return False       
+    except:            
+        return False    
+    
+    return True
+
 def clean_name(name):
     ending = {'Jr':', Jr.','Sr':', Sr.','II':' II','III':' III', 'IV':' IV'}
     name = name.replace(',', ' ')
@@ -60,14 +94,12 @@ def get_committees_html(year):
             committee['house'] = "Assembly"
             committee['state'] = "NY"
             committee['members'] = list()
-            print "\t"+comm
+            print "    "+comm
             
             if len(link) > 0:
                 strip_link = link[0][0:len(link[0]) - 1]
             
-                link = 'http://assembly.state.ny.us/comm/' + strip_link
-                           
-           
+                link = 'http://assembly.state.ny.us/comm/' + strip_link                                      
                 
                 member_page = requests.get(link)
                 member_tree = html.fromstring(member_page.content)
@@ -85,42 +117,49 @@ def get_committees_html(year):
                     sen['state'] = "NY"
                     committee['members'].append(sen)
                     position = 1
-
             
             count = count + 1
             ret_comms.append(committee)    
             y = y + 1
         x = x + 1   
-    print "Count: " + str(count) + "Len: " + str(len(ret_comms))       
+
     return ret_comms                 
 
 def add_committees_db(year, dddb):
     committees = get_committees_html(year)
-    print "Len2: " + str(len(committees))
+
     count = 0
-    for committee in committees:
-        cid = get_last_cid_db(dddb) + 1
-        committee['cid'] = str(cid)
-        insert_stmt = '''INSERT INTO Committee
-                        (cid, house, name, type, state)
-                        VALUES
-                        (%(cid)s, %(house)s, %(name)s, %(type)s, %(state)s);
-                        '''
-        print committee['name']
-        dddb.execute(insert_stmt, committee)
-        count = count + 1
+    for committee in committees:       
+        cid = get_last_cid_db(dddb) + 1      
+        get_cid = is_comm_in_db(committee, dddb)
+        if  get_cid == False:
+
+            committee['cid'] = str(cid)
+            insert_stmt = '''INSERT INTO Committee
+                            (cid, house, name, state)
+                            VALUES
+                            (%(cid)s, %(house)s, %(name)s, %(state)s);
+                            '''
+            count = count + 1
+            print committee['name']
+            #print (insert_stmt % committee)
+            dddb.execute(insert_stmt, committee)
+        else:
+            committee['cid'] = get_cid[0]          
+
         if len(committee['members']) > 0:
             for member in committee['members']:
                 member['pid'] = get_pid_db(member, dddb)
                 member['cid'] = committee['cid']
-                insert_stmt = '''INSERT INTO servesOn
-                            (pid, year, house, cid, state, position)
-                            VALUES
-                            (%(pid)s, %(year)s, %(house)s, %(cid)s, %(state)s, %(position)s);
-                            '''
-                
-                if member['pid'] != "bad":
-                    dddb.execute(insert_stmt, member)
+                if is_serveson_in_db(member, dddb) == False:                
+                    insert_stmt = '''INSERT INTO servesOn
+                                (pid, year, house, cid, state, position)
+                                VALUES
+                                (%(pid)s, %(year)s, %(house)s, %(cid)s, %(state)s, %(position)s);
+                                '''                               
+                    if member['pid'] != "bad":
+                        dddb.execute(insert_stmt, member)
+                        
     print "Final: " + str(count)
                 
 
