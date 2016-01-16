@@ -149,7 +149,3 @@ def main():
     dddb_conn.close()
     
 main()
-
-    
-    
-

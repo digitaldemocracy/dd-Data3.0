@@ -44,10 +44,26 @@ def get_bills_api(year):
             b['bid'] = "NY_" + str(year) + str(year+1) + b['session'] + b['type'] + b['number']
             b['bid'] = b['bid']
             ret_bills.append(b)            
-        cur_offset += 1000  
+        cur_offset += 1000
     print "Downloaded %d bills..." % len(ret_bills)    
     return ret_bills
 
+def update_billv_db(bill, dddb):
+    update_stmt =  '''UPDATE BillVersion
+                    SET bid = %(bid)s, date = %(date)s, state = %(state)s, subject = %(subject)s, title = %(title)s, text = %(text)s                    
+                    WHERE vid = %(vid)s;
+                    '''
+
+    dddb.execute(update_stmt, bill)
+                    
+def update_bill_db(bill, dddb):
+    update_stmt =  '''UPDATE Bill
+                    SET number = %(number)s, type = %(type)s, status = %(status)s, house = %(house)s, state = %(state)s, session = %(session)s, sessionYear = %(sessionYear)s                    
+                    WHERE bid = %(bid)s;
+                    '''
+
+    dddb.execute(update_stmt, bill)                    
+                          
 def insert_bill_db(bill, dddb):
     insert_stmt = '''INSERT INTO Bill
                     (bid, number, type, status, house, state, session, sessionYear)
@@ -57,17 +73,19 @@ def insert_bill_db(bill, dddb):
     try:
         dddb.execute(insert_stmt, bill)
     except:
-        #print "Bill exists"
+        update_bill_db(bill, dddb)
         return False 
         
     return True
 
 def insert_billversions_db(bill, dddb):    
+            
     for key in bill['versions'].keys():
         bv = dict()
         bv['bid'] = bill['bid']
         bv['vid'] = bill['bid'] + key
         bv['date'] = bill['versions'][key]['publishDate']
+
         bv['state'] = "NY"
         bv['subject'] = bill['title']
         bv['title'] = bill['versions'][key]['memo']
@@ -76,14 +94,11 @@ def insert_billversions_db(bill, dddb):
                         (vid, bid, date, state, subject, title, text)
                         VALUES
                         (%(vid)s, %(bid)s, %(date)s, %(state)s, %(subject)s, %(title)s, %(text)s);
-                        '''        
+                        '''                
         try:
             dddb.execute(insert_stmt, bv)            
         except:
-            continue
-            #print "BV exists"
-            #print (insert_stmt % bv)
-        
+            update_billv_db(bv, dddb)
         
 def add_bills_db(year, dddb):
     bills = get_bills_api(year)
@@ -104,6 +119,6 @@ def main():
                         passwd='digitaldemocracy789')
     dddb = dddb_conn.cursor()
     dddb_conn.autocommit(True)
-    #get_bills_api(2015)
     add_bills_db(2015, dddb)
+    
 main()
