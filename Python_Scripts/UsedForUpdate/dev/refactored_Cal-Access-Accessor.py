@@ -326,10 +326,10 @@ def find_lobbyist_employment(dd_cursor, index):
 def main():
   import MySQLdb
   with loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-                       port=3306,
-                       db='DDDB2015Dec',
-                       user='awsDB',
-                       passwd='digitaldemocracy789') as dd_cursor:
+                         port=3306,
+                         db='DDDB2015Dec',
+                         user='awsDB',
+                         passwd='digitaldemocracy789') as dd_cursor:
     # Turn off foreign key checks
     dd_cursor.execute('SET foreign_key_checks = 0')
     with open('CVR_REGISTRATION_CD.TSV', 'rb') as tsvin:
