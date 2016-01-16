@@ -22,9 +22,9 @@ def call_senate_api(restCall, year, house, offset):
 
 def is_leg_in_db(senator, dddb):
     select_leg = '''SELECT * 
-                       FROM Person p, Legislator l
-                       WHERE first = %(first)s AND last = %(last)s AND state = %(state)s
-                       AND p.pid = l.pid'''                                               
+                    FROM Person p, Legislator l
+                    WHERE first = %(first)s AND last = %(last)s AND state = %(state)s
+                    AND p.pid = l.pid'''                                               
     try:
         dddb.execute(select_leg, senator)
         query = dddb.fetchone()
@@ -34,7 +34,7 @@ def is_leg_in_db(senator, dddb):
     except:            
         return False
     
-    return False
+    return True
     
 def clean_name(name):
     problem_names = {
@@ -96,6 +96,7 @@ def get_senators_api(year):
         if sen['image'] is None:
             sen['image'] = ''
         ret_sens.append(sen)
+    print "Downloaded %d legislators..." % len(ret_sens)
     return ret_sens        
 
 def add_senator_db(senator, dddb):
@@ -120,7 +121,7 @@ def add_senator_db(senator, dddb):
                         (%(pid)s, %(year)s, %(house)s, %(state)s, %(district)s);
                         '''
         dddb.execute(insert_stmt, senator)        
-        print senator['last'] + ", " + senator['first']    
+        #print "Added " + senator['last'] + ", " + senator['first']    
         return True
     return False
      
@@ -132,7 +133,7 @@ def add_senators_db(year, dddb):
         if add_senator_db(senator, dddb):
             x = x + 1
 
-    print str(x) + " records added" 
+    print "Added %d legislators" % x 
 
 
 def main():

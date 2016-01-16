@@ -133,16 +133,19 @@ def get_committees_api(year):
                 sen['position'] = "member"
             committee['members'].append(sen)
         ret_comms.append(committee)
+    print "Downloaded %d committees..." % len(ret_comms)
     return ret_comms
 
 def add_committees_db(year, dddb):
     committees = get_committees_api(year)
     cur = dddb.cursor()
+    x = 0
+    y = 0
     for committee in committees:
         cid = get_last_cid_db(dddb) + 1      
         get_cid = is_comm_in_db(committee, dddb)
         if  get_cid == False:
-
+            x = x + 1
             committee['cid'] = str(cid)
             insert_stmt = '''INSERT INTO Committee
                             (cid, house, name, state)
@@ -154,7 +157,7 @@ def add_committees_db(year, dddb):
         else:
             committee['cid'] = get_cid[0]
            
-        x=0
+        
         for member in committee['members']:
             member['pid'] = get_pid_db(member['first'], member['last'], dddb)
             member['cid'] = committee['cid']
@@ -167,8 +170,8 @@ def add_committees_db(year, dddb):
                             '''
                 #print (insert_stmt % member)
                 cur.execute(insert_stmt, member)                
-                x = x + 1
-            print x
+                y = y + 1
+    print "Added %d committees and %d members" % (x,y)
                         
     
 def get_pid_db(first, last, dddb):

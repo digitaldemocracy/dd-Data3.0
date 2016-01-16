@@ -15,12 +15,11 @@ def call_senate_api(restCall, year, house, offset):
         house = "/" + house
     url = "http://legislation.nysenate.gov/api/3/" + restCall + "/" + str(year) + house + "?full=true&limit=1000&key=31kNDZZMhlEjCOV8zkBG1crgWAGxwDIS&offset=" + str(offset)
     r = requests.get(url)
-    print url
+
     out = r.json()
     return (out["result"]["items"], out['total'])
     
 def get_bills_api(year):
-
     total = 1000
     cur_offset = 0
     ret_bills = list()
@@ -45,24 +44,23 @@ def get_bills_api(year):
             b['bid'] = "NY_" + str(year) + str(year+1) + b['session'] + b['type'] + b['number']
             b['bid'] = b['bid']
             ret_bills.append(b)            
-        cur_offset += 1000    
-    print len(ret_bills)
+        cur_offset += 1000  
+    print "Downloaded %d bills..." % len(ret_bills)    
     return ret_bills
 
 def insert_bill_db(bill, dddb):
-    insert_stmt =     '''INSERT INTO Bill
+    insert_stmt = '''INSERT INTO Bill
                     (bid, number, type, status, house, state, session, sessionYear)
                     VALUES
                     (%(bid)s, %(number)s, %(type)s, %(status)s, %(house)s, %(state)s, %(session)s, %(sessionYear)s);
                     '''
-
     try:
         dddb.execute(insert_stmt, bill)
     except:
         #print "Bill exists"
-        #print (insert_stmt % bill)   
-        return false 
-    return true
+        return False 
+        
+    return True
 
 def insert_billversions_db(bill, dddb):    
     for key in bill['versions'].keys():
@@ -80,21 +78,23 @@ def insert_billversions_db(bill, dddb):
                         (%(vid)s, %(bid)s, %(date)s, %(state)s, %(subject)s, %(title)s, %(text)s);
                         '''        
         try:
-            dddb.execute(insert_stmt, bv)
+            dddb.execute(insert_stmt, bv)            
         except:
-            print "BV exists"
+            continue
+            #print "BV exists"
             #print (insert_stmt % bv)
+        
         
 def add_bills_db(year, dddb):
     bills = get_bills_api(year)
     bcount = 0
-    bvcount = 0
+
     for bill in bills:
         if insert_bill_db(bill, dddb):
             bcount = bcount + 1
-        if insert_billversions_db(bill, dddb):
-            bvcount = bvcount + 1
-    print "Inserted %d bills and %d billversions" % (bcount, bvcount)
+        insert_billversions_db(bill, dddb)
+
+    print "Inserted %d bills" % bcount
                     
 def main():
     dddb_conn =  MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',

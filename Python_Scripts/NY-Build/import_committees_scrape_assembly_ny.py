@@ -47,8 +47,7 @@ def is_serveson_in_db(member, dddb):
         dddb.execute(select_comm, member)
         query = dddb.fetchone()
         
-        if query is None:
-            #print select_comm % member            
+        if query is None:            
             return False       
     except:            
         return False    
@@ -85,7 +84,7 @@ def get_committees_html(year):
     for category in categories_html:
         committees_html = tree.xpath('//*[@id="sitelinks"]//ul['+str(x)+']//li/strong/text()')        
         y = 1
-        print category
+        #print category
         for comm in committees_html:                    
             link = tree.xpath('//*[@id="sitelinks"]//ul['+str(x)+']//li['+str(y)+']/a[contains(@href,"mem")]/@href')
             committee = dict()
@@ -94,7 +93,7 @@ def get_committees_html(year):
             committee['house'] = "Assembly"
             committee['state'] = "NY"
             committee['members'] = list()
-            print "    "+comm
+            #print "    "+comm
             
             if len(link) > 0:
                 strip_link = link[0][0:len(link[0]) - 1]
@@ -122,13 +121,14 @@ def get_committees_html(year):
             ret_comms.append(committee)    
             y = y + 1
         x = x + 1   
-
+    print "Scraped %d committees..." % len(ret_comms)
     return ret_comms                 
 
 def add_committees_db(year, dddb):
     committees = get_committees_html(year)
 
     count = 0
+    y = 0
     for committee in committees:       
         cid = get_last_cid_db(dddb) + 1      
         get_cid = is_comm_in_db(committee, dddb)
@@ -141,7 +141,7 @@ def add_committees_db(year, dddb):
                             (%(cid)s, %(house)s, %(name)s, %(state)s);
                             '''
             count = count + 1
-            print committee['name']
+            #print committee['name']
             #print (insert_stmt % committee)
             dddb.execute(insert_stmt, committee)
         else:
@@ -159,8 +159,9 @@ def add_committees_db(year, dddb):
                                 '''                               
                     if member['pid'] != "bad":
                         dddb.execute(insert_stmt, member)
+                        y = y + 1
                         
-    print "Final: " + str(count)
+    print "Inserted %d committees and %d members" % (count, y)
                 
 
 def get_pid_db(person, dddb):
@@ -174,7 +175,7 @@ def get_pid_db(person, dddb):
         query = dddb.fetchone()
         return query[0]
     except:
-        print "Error", (select_person %  person)
+        print "Person not found: ", (select_person %  person)
         return "bad"
 
     
