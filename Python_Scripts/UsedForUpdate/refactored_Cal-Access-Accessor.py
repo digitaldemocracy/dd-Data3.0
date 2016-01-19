@@ -332,7 +332,7 @@ def main():
                          passwd='digitaldemocracy789') as dd_cursor:
     # Turn off foreign key checks
     dd_cursor.execute('SET foreign_key_checks = 0')
-    with open('CVR_REGISTRATION_CD.TSV', 'rb') as tsvin:
+    with open('/home/data_warehouse_common/scripts/CVR_REGISTRATION_CD.TSV', 'rb') as tsvin:
       tsvin = csv.reader(tsvin, delimiter='\t')
       
       val = 0
