@@ -1,3 +1,4 @@
+# -*- coding: utf8 -*-
 '''
 File: import_authors_ny.py
 Author: Min Eric Roh
@@ -26,29 +27,21 @@ def get_author_api(year):
 	total = 1000
 	cur_offset = 1
 	ret_bills = list()
-	x = 0
 
 	while cur_offset < total:
 		call = call_senate_api("bills", year, "", cur_offset)
 		bills = call[0]
 		total = call[1]
 		for bill in bills:
-			if bill['sponsor']['member'] is not None:
+			if bill['sponsor']['member'] is not None and len(bill['sponsor']['member']['fullName'].split()) > 1:
 				b = dict()
 				b['type'] = bill['basePrintNo']
+#				print b['type']
 				b['session'] = '0'
-				name = bill['sponsor']['member']['fullName']
-				sname = name.split(' ')
-				split_index = len(sname) - 1
-				
-#				if x == 0:
-#					print "sname", sname, "index", split_index
-				b['first'] = ' '.join(sname[:1]).strip()
-				b['last'] = ' '.join(sname[split_index:]).strip()
-				if x == 0:
-#					print "first?", sname[:split_index]
-#					print "first",b['first'], "last", b['last']
-					x += 1
+				fullName = bill['sponsor']['member']['fullName'].encode('utf-8')
+				name = clean_name(fullName)
+				b['last'] = name[1]
+				b['first'] = name[0]
 				b['versions'] = bill['amendments']['items']
 				b['bid'] = "NY_" + str(year) + str(year + 1) + b['session'] + b['type']
 				ret_bills.append(b)
@@ -109,6 +102,53 @@ def check_bid_db(bid, dddb):
 	else:
 		print bid, 'no bid'
 		return False
+
+def clean_name(name):
+    problem_names = {
+        "Inez Barron":("Charles", "Barron"), 
+        "Philip Ramos":("Phil", "Ramos"), 
+        "Thomas McKevitt":("Tom", "McKevitt"), 
+        "Albert Stirpe":("Al","Stirpe"), 
+        "Peter Abbate":("Peter","Abbate, Jr."),
+        "Sam Roberts":("Pamela","Hunter"),
+        "Herman Farrell":("Herman", "Farrell, Jr."),
+        "Fred Thiele":("Fred", "Thiele, Jr."),
+        "William Scarborough":("Alicia", "Hyndman"),
+        "Robert Oaks":("Bob", "Oaks"),
+        "Andrew Goodell":("Andy", "Goodell"),
+        "Peter Rivera":("José", "Rivera"),
+        "Addie Jenne Russell":("Addie","Russell"),
+        "Kenneth Blankenbush":("Ken","Blankenbush"),
+        "Alec Brook-Krasny":("Pamela","Harris"),
+        "Mickey Kearns":("Michael", "Kearns"),
+        "Steven Englebright":("Steve", "Englebright"),
+        
+    }
+    ending = {'Jr':', Jr.','Sr':', Sr.','II':' II','III':' III', 'IV':' IV'}
+    name = name.replace(',', ' ')
+    name = name.replace('.', ' ')
+    name = name.replace('  ', ' ')
+    name_arr = name.split()      
+    suffix = "";               
+    for word in name_arr:
+#    	print "word", word
+        if word != name_arr[0] and (len(word) <= 1 or word in ending.keys()):
+            name_arr.remove(word)
+            if word in ending.keys():
+                suffix = ending[word]            
+            
+    first = name_arr.pop(0)
+#    print "first", first
+    while len(name_arr) > 1:
+        first = first + ' ' + name_arr.pop(0)            
+    last = name_arr[0]
+#    print "last", last
+    last = last.replace(' ' ,'') + suffix
+    
+    if (first + ' ' + last) in problem_names.keys():             
+        return problem_names[(first + ' ' + last)]
+#    print "return"
+    return (first, last)
 
 def get_pid_db(first, last, dddb):
 	select_person = '''	SELECT * FROM Person
