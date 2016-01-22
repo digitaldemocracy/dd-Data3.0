@@ -79,8 +79,9 @@ def billparse(ca_cursor, dd_cursor):
     else:
       # If there isn't a caml:Bill tag, then there must
       # be a caml:Content tag.
-      pat = '<{0}Content>.*?</{0}Content>'.format(namespace['caml'])
-      body = ''.join(node for node in re.findall(pat, xml))
+      #pat = '<{0}Content>.*?</{0}Content>'.format(namespace['caml'])
+      pat = '<{0}:Content>.*?</{0}:Content>'.format('caml')
+      body = ''.join(node for node in re.findall(pat, xml, re.DOTALL))
 
     dd_cursor.execute(QU_BILL_VERSION, (title, digest, body, vid, STATE))
 
