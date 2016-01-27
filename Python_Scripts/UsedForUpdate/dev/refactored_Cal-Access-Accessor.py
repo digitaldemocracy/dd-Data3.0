@@ -3,7 +3,7 @@
 File: Cal-Access-Accessor.py
 Author: Daniel Mangin
 Modified By: Mandy Chan, Freddy Hernandez, Matt Versaggi
-Last Modified: January 14, 2016
+Last Modified: January 27, 2016
 
 Description:
 - Goes through the file CVR_REGISTRATION_CD.TSV and places the data into DDDB
@@ -19,7 +19,7 @@ Populates:
   - Lobbyist (pid, filer_id)
   - Person (last, first)
   - Organizations (name, type, city, stateHeadquartered)
-  - LobbyistEmployer (filer_naml, filer_id, coalition)
+  - LobbyistEmployer (filer_id, oid, coalition)
   - LobbyistEmployment (pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr)
   - LobbyistDirectEmployment (pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr)
   - LobbyingContracts (filer_id, sender_id, rpt_date, ls_beg_yr, ls_end_yr)
@@ -28,7 +28,7 @@ Populates:
 import csv
 
 from clean_name import clean_name
-import loggingdb
+#import loggingdb
 import refactored_Lobbying_Firm_Name_Fix
 import refactored_Person_Name_Fix
 
@@ -47,7 +47,7 @@ QI_PERSON = '''INSERT INTO Person (last, first)
                VALUES (%s, %s)'''
 QI_ORGANIZATIONS = '''INSERT INTO Organizations (name, city, stateHeadquartered)
                       VALUES (%s, %s, %s)'''
-QI_LOBBYIST_EMPLOYER = '''INSERT INTO LobbyistEmployer (filer_naml, filer_id,
+QI_LOBBYIST_EMPLOYER = '''INSERT INTO LobbyistEmployer (filer_id, oid,
                            coalition, state)
                           VALUES (%s, %s, %s, %s)'''
 QI_LOBBYIST_EMPLOYMENT = '''INSERT INTO LobbyistEmployment (pid, sender_id,
@@ -94,34 +94,22 @@ QS_LOBBYIST_PID = '''SELECT pid
                      FROM Lobbyist
                      WHERE pid = %s
                       AND state = %s'''
-QS_LOBBYIST_EMPLOYMENT = '''SELECT sender_id, rpt_date, ls_beg_yr, state
+QS_LOBBYIST_EMPLOYMENT = '''SELECT pid, sender_id, rpt_date, ls_end_yr
                             FROM LobbyistEmployment
-                            WHERE sender_id = %s
-                             AND pid = %s
-                             AND ls_beg_yr = %s
+                            WHERE pid = %s
+                             AND sender_id = %s
+                             AND rpt_date = %s
+			     AND ls_beg_yr = %s
                              AND ls_end_yr = %s
                              AND state = %s'''
-QS_LOBBYIST_EMPLOYMENT_2 = '''SELECT *
-                              FROM LobbyistEmployment
-                              WHERE pid = %s
-                               AND sender_id = %s
-                               AND rpt_date = %s
-                               AND ls_end_yr = %s
-                               AND state = %s'''
 QS_LOBBYIST_DIRECT_EMPLOYMENT = '''SELECT sender_id, rpt_date, ls_beg_yr, state
                                    FROM LobbyistDirectEmployment
-                                   WHERE sender_id = %s
-                                    AND pid = %s
+                                   WHERE pid = %s
+                                    AND sender_id = %s
+				    AND rpt_date = %s
                                     AND ls_beg_yr = %s
                                     AND ls_end_yr = %s
                                     AND state = %s'''
-QS_LOBBYIST_DIRECT_EMPLOYMENT_2 = '''SELECT *
-                                     FROM LobbyistDirectEmployment
-                                     WHERE pid = %s
-                                      AND sender_id = %s
-                                      AND rpt_date = %s
-                                      AND ls_end_yr = %s
-                                      AND state = %s'''
 QS_LOBBYING_CONTRACTS = '''SELECT filer_id, sender_id, rpt_date, state
                            FROM LobbyingContracts
                            WHERE filer_id = %s
@@ -202,7 +190,8 @@ def insert_lobbyist_employer(dd_cursor, filer_naml, filer_id, bus_city, coalitio
     filer_naml = clean_name(filer_naml, refactored_Lobbying_Firm_Name_Fix.clean)
     dd_cursor.execute(QS_ORGANIZATIONS, (filer_naml, bus_city, state))
     oid = dd_cursor.fetchone()[0]
-    dd_cursor.execute(QI_LOBBYIST_EMPLOYER, (filer_naml, filer_id, coalition, state))
+#    print 'Inserting into LobbyistEmployer: filer_id:{0}, oid:{1}, coalition:{2}, state:{3}\n'.format(filer_id, oid, coalition, state)
+    dd_cursor.execute(QI_LOBBYIST_EMPLOYER, (filer_id, oid, coalition, state))
 
 '''
 Given a lobbying firm's name, check if it's in DDDB. Otherwise, add.
@@ -259,7 +248,7 @@ Otherwise, add.
 |ls_end_yr|: Lease end year
 '''
 def insert_lobbyist_employment(dd_cursor, pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr):
-  dd_cursor.execute(QS_LOBBYIST_EMPLOYMENT, (sender_id, pid, ls_beg_yr, ls_end_yr, state))
+  dd_cursor.execute(QS_LOBBYIST_EMPLOYMENT, (pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr, state))
   if dd_cursor.rowcount == 0:
     dd_cursor.execute(QI_LOBBYIST_EMPLOYMENT, (pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr, state))
     
@@ -276,7 +265,7 @@ Otherwise, add.
 '''
 def insert_lobbyist_direct_employment(dd_cursor, pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr):
   
-  dd_cursor.execute(QS_LOBBYIST_DIRECT_EMPLOYMENT, (sender_id, pid, ls_beg_yr, ls_end_yr, state))
+  dd_cursor.execute(QS_LOBBYIST_DIRECT_EMPLOYMENT, (pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr, state))
   if dd_cursor.rowcount == 0:
     dd_cursor.execute(QI_LOBBYIST_DIRECT_EMPLOYMENT, (pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr, state))
 
@@ -304,9 +293,9 @@ def insert_lobbyist_contracts(dd_cursor, filer_id, sender_id, rpt_date, ls_beg_y
 def find_lobbyist_employment(dd_cursor, index):
   dd_cursor.execute(QS_LOBBYING_FIRM, (Lobbyist[index][6],))
   if dd_cursor.rowcount > 0:
-    dd_cursor.execute(QS_LOBBYIST_EMPLOYMENT_2,
+    dd_cursor.execute(QS_LOBBYIST_EMPLOYMENT,
       (Lobbyist[index][0], Lobbyist[index][1], Lobbyist[index][2],
-      Lobbyist[index][4], state))
+      Lobbyist[index][3], Lobbyist[index][4], state))
     if dd_cursor.rowcount == 0:
       dd_cursor.execute(QI_LOBBYIST_EMPLOYMENT,
         (Lobbyist[index][0], Lobbyist[index][1], Lobbyist[index][2],
@@ -315,9 +304,9 @@ def find_lobbyist_employment(dd_cursor, index):
   dd_cursor.execute(QS_LOBBYIST_EMPLOYER, (Lobbyist[index][5], state))
   if dd_cursor.rowcount > 0:
     
-    dd_cursor.execute(QS_LOBBYIST_DIRECT_EMPLOYMENT_2,
+    dd_cursor.execute(QS_LOBBYIST_DIRECT_EMPLOYMENT,
       (Lobbyist[index][0], Lobbyist[index][1], Lobbyist[index][2],
-      Lobbyist[index][4], state))
+      Lobbyist[index][3], Lobbyist[index][4], state))
     if dd_cursor.rowcount == 0:
       dd_cursor.execute(QI_LOBBYIST_DIRECT_EMPLOYMENT,
         (Lobbyist[index][0], Lobbyist[index][1], Lobbyist[index][2],
@@ -325,9 +314,9 @@ def find_lobbyist_employment(dd_cursor, index):
         
 def main():
   import MySQLdb
-  with loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                          port=3306,
-                         db='DDDB2015Dec',
+                         db='MattTest',
                          user='awsDB',
                          passwd='digitaldemocracy789') as dd_cursor:
     # Turn off foreign key checks
@@ -343,7 +332,7 @@ def main():
         sender_id = row[4]
         entity_cd = row[6]
         val = val + 1
-        print val
+#        print val
         #case 1 - Lobbying Firm
         if form == 'F601' and entity_cd == 'FRM' and (sender_id[:1] == 'F' or sender_id[:1].isdigit()) and sender_id == row[5]: 
           filer_naml = row[7]
@@ -353,7 +342,7 @@ def main():
           rpt_date = format_date(rpt_date)
           ls_beg_yr = row[13]
           ls_end_yr = row[14]
-          print 'naml = {0}, id = {1}, date = {2}, beg = {3}, end = {4}\n'.format(filer_naml, filer_id, rpt_date, ls_beg_yr, ls_end_yr)
+#          print 'naml = {0}, id = {1}, date = {2}, beg = {3}, end = {4}\n'.format(filer_naml, filer_id, rpt_date, ls_beg_yr, ls_end_yr)
           insert_lobbying_firm(dd_cursor, filer_naml)
           insert_lobbying_firm_state(dd_cursor, filer_naml, filer_id, rpt_date, ls_beg_yr, ls_end_yr)
         #case 2 - Lobbyist and their employer
@@ -368,8 +357,8 @@ def main():
           ls_beg_yr = row[13]
           ls_end_yr = row[14]
           pid = get_person(dd_cursor, filer_id, filer_naml, filer_namf, val)
-          print 'filer_id = {0}\n'.format(filer_id)
-          print 'sender_id = {0}, rpt_date = {1}, ls_beg_yr = {2}, ls_end_yr = {3}\n'.format(sender_id, rpt_date, ls_beg_yr, ls_end_yr)
+#          print 'filer_id = {0}\n'.format(filer_id)
+#          print 'sender_id = {0}, rpt_date = {1}, ls_beg_yr = {2}, ls_end_yr = {3}\n'.format(sender_id, rpt_date, ls_beg_yr, ls_end_yr)
           insert_lobbyist(dd_cursor, pid, filer_id)
           insert_lobbyist_employment(dd_cursor, pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr)
         #case 3 - lobbyist and their direct employment under a lobbying firm
@@ -384,8 +373,8 @@ def main():
           ls_beg_yr = row[13]
           ls_end_yr = row[14]
           pid = get_person(dd_cursor, filer_id, filer_naml, filer_namf, val)
-          print 'filer_id = {0}\n'.format(filer_id)
-          print 'sender_id = {0}, rpt_date = {1}, ls_beg_yr = {2}, ls_end_yr = {3}\n'.format(sender_id, rpt_date, ls_beg_yr, ls_end_yr)
+#          print 'filer_id = {0}\n'.format(filer_id)
+#          print 'sender_id = {0}, rpt_date = {1}, ls_beg_yr = {2}, ls_end_yr = {3}\n'.format(sender_id, rpt_date, ls_beg_yr, ls_end_yr)
           insert_lobbyist(dd_cursor, pid, filer_id)
           insert_lobbyist_direct_employment(dd_cursor, pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr)
         #case 4 - found a lobbyist, but must determine later if they are under a firm or an employer
@@ -400,10 +389,10 @@ def main():
           ls_beg_yr = row[13]
           ls_end_yr = row[14]
           firm_name = row[61]
-          print 'filer_id = {0}\n'.format(filer_id)
+#          print 'filer_id = {0}\n'.format(filer_id)
           pid = get_person(dd_cursor, filer_id, filer_naml, filer_namf, val)
           insert_lobbyist(dd_cursor, pid, filer_id)
-          print 'inserting Lobbyist into index {0}\n'.format(index)
+#          print 'inserting Lobbyist into index {0}\n'.format(index)
           # insert the lobbyist into the array for later
           Lobbyist[index][0] = pid
           Lobbyist[index][1] = sender_id
@@ -426,7 +415,7 @@ def main():
           ls_end_yr = row[14]
 	  bus_city = row[17]
           coalition = (filer_id[:1] == 'C') * 1
-          print 'filer_naml = {0}, filer_id = {1}, coalition = {2}\n'.format(filer_naml, filer_id, coalition)
+#          print 'filer_naml = {0}, filer_id = {1}, coalition = {2}\n'.format(filer_naml, filer_id, coalition)
           insert_organization(dd_cursor, filer_naml, bus_city)
 	  insert_lobbyist_employer(dd_cursor, filer_naml, filer_id, bus_city, coalition)
           insert_lobbyist_contracts(dd_cursor, filer_id, sender_id, rpt_date, ls_beg_yr, ls_end_yr)
@@ -446,7 +435,7 @@ def main():
           ls_end_yr = row[14]
           bus_city = row[17]
           coalition = (filer_id[:1] == 'C') * 1
-          print 'filer_naml = {0}, filer_id = {1}, coalition = {2}\n'.format(filer_naml, filer_id, coalition)
+#          print 'filer_naml = {0}, filer_id = {1}, coalition = {2}\n'.format(filer_naml, filer_id, coalition)
           if ind_cb == 'X':
             insert_organization(dd_cursor, filer_naml + filer_namf, bus_city)
             insert_lobbyist_employer(dd_cursor, filer_naml + filer_namf, filer_id, bus_city, coalition)
@@ -467,7 +456,7 @@ def main():
       # Continuation of case 4
       while index:
         index -= 1
-        print 'checking lobbyist {0}\n'.format(index)
+#        print 'checking lobbyist {0}\n'.format(index)
         find_lobbyist_employment(dd_cursor, index)
         
     # Set foreign key checks on afterwards
