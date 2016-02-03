@@ -19,10 +19,9 @@ Sources:
 '''
 
 import zipfile
-import urllib
 import subprocess
 
-zipUrl = "http://campaignfinance.cdn.sos.ca.gov/dbwebexport.zip"
+zipURL = "http://campaignfinance.cdn.sos.ca.gov/dbwebexport.zip"
 tsvPath = "CalAccess/DATA/CVR_REGISTRATION_CD.TSV"
 zipName = "dbwebexport.zip"
 
@@ -31,11 +30,11 @@ Retrieves dbwebexport.zip and extracts the .TSV file from it
 '''
 def get_zip():
     # Downloads the zip and places it in pwd of this script
-    urllib.urlretrieve(zipUrl, zipName)
+    subprocess.call("wget -t 10 " + zipURL, shell=True)
     
     calZip = zipfile.ZipFile(zipName, 'r')
     calZip.extract(tsvPath)
-    calZip.close() 
+    calZip.close()
 
 '''
 Pulls the .TSV out of the CalAccess directory tree and places it in the pwd,
