@@ -1,6 +1,6 @@
 # -*- coding: utf8 -*-
 '''
-File: import_committees_ny.py
+File: ny_import_committees.py
 Author: John Alkire
 Date: 11/26/2015
 Description:
