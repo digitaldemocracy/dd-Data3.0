@@ -1,5 +1,5 @@
 '''
-File: import_bills_ny.py
+File: ny_import_bills.py
 Author: John Alkire
 Date: 11/26/2015
 Description:
