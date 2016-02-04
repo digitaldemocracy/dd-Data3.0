@@ -1,6 +1,6 @@
 # -*- coding: utf8 -*-
 '''
-File: import_authors_ny.py
+File: ny_import_authors.py
 Author: Min Eric Roh
 Date: 12/26/2015
 Description:
