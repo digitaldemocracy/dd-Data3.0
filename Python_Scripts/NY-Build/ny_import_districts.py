@@ -1,6 +1,6 @@
 #!/usr/bin/env python2.6
 '''
-File: import_districts_ny.py
+File: ny_import_districts.py
 Author: Matt Versaggi
 Modified By: N/A
 Date: 1/20/16
