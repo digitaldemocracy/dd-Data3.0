@@ -1,6 +1,6 @@
 # -*- coding: utf8 -*-
 '''
-File: import_legislators_ny.py
+File: ny_import_legislators.py
 Author: John Alkire
 Date: 11/26/2015
 Description:
