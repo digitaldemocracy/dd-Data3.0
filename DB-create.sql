@@ -377,6 +377,23 @@ CREATE TABLE IF NOT EXISTS authors (
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+/* Table basically just the same info as authors, but it clarifies their 
+role. We have a second table as not to confuse the druple scripts that 
+pull author names. Ideally we role this into authors soon */
+CREATE TABLE IF NOT EXISTS BillSponsors (
+    pid          INTEGER,
+   bid          VARCHAR(23),
+   vid          VARCHAR(33),
+   contribution ENUM('Lead Author', 'Principal Coauthor', 'Coauthor') DEFAULT 'Coauthor',
+   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+
+   PRIMARY KEY (pid, bid, vid),
+   FOREIGN KEY (pid) REFERENCES Legislator(pid), 
+   FOREIGN KEY (bid, vid) REFERENCES BillVersion(bid, vid)
+)
+ENGINE = INNODB
+CHARACTER SET utf8 COLLATE utf8_general_ci;
+
 CREATE TABLE IF NOT EXISTS CommitteeAuthors(
     cid INTEGER,
     bid VARCHAR(23),

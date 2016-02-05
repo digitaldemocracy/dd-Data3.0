@@ -1,5 +1,5 @@
 '''
-File: import_committees_ny.py
+File: ny_import_committees.py
 Author: John Alkire
 Date: 12/16/2015
 Description:

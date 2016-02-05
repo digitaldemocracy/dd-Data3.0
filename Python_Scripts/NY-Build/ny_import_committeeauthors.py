@@ -1,5 +1,5 @@
 '''
-File: import_committeeauthors_ny.py
+File: ny_import_committeeauthors.py
 Author: Min Eric Roh
 Date: 12/26/2015
 Description:
