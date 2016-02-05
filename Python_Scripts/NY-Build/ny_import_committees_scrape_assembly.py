@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 '''
 File: ny_import_committees.py
 Author: John Alkire
@@ -10,6 +11,7 @@ Description:
 from lxml import html
 import requests
 import MySQLdb
+import loggingdb
 
 def get_last_cid_db(dddb):
 	select_comm = '''SELECT cid FROM Committee
@@ -180,9 +182,9 @@ def get_pid_db(person, dddb):
 
     
 def main():
-    dddb_conn =  MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+    dddb_conn = loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                     user='awsDB',
-                    db='JohnTest',
+                    db='DDDB2015Dec',
                     port=3306,
                     passwd='digitaldemocracy789')
     dddb = dddb_conn.cursor()

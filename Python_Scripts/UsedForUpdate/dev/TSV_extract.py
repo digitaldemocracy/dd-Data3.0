@@ -18,8 +18,10 @@ Sources:
     - http://campaignfinance.cdn.sos.ca.gov/dbwebexport.zip (Zip)
 '''
 
-import zipfile
+import os
 import subprocess
+import sys
+import zipfile
 
 zipURL = "http://campaignfinance.cdn.sos.ca.gov/dbwebexport.zip"
 tsvPath = "CalAccess/DATA/CVR_REGISTRATION_CD.TSV"
@@ -30,7 +32,13 @@ Retrieves dbwebexport.zip and extracts the .TSV file from it
 '''
 def get_zip():
     # Downloads the zip and places it in pwd of this script
-    subprocess.call("wget -t 10 " + zipURL, shell=True)
+    wget_process = subprocess.Popen("wget -t 10 " + zipURL,
+                                    shell=True,
+                                    stderr=subprocess.PIPE)
+    _, err = wget_process.communicate()
+    if wget_process.returncode != 0:
+      #sys.stderr.write(err)
+      sys.exit(0)
     
     calZip = zipfile.ZipFile(zipName, 'r')
     calZip.extract(tsvPath)
@@ -46,6 +54,7 @@ def cleanup():
     subprocess.call("rm -f " + zipName, shell=True)
 
 def main():
+    os.chdir('/home/data_warehouse_common/scripts')
     get_zip()
     cleanup()
 

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf8 -*-
 '''
 File: ny_import_authors.py
@@ -11,6 +12,7 @@ Description:
 '''
 import requests
 import MySQLdb
+import loggingdb
 
 counter = 0;
 
@@ -171,9 +173,9 @@ def add_authors_db(year, dddb):
 		insert_authors_db(bill, dddb)
 
 def main():
-	dddb_conn =  MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+	dddb_conn =  loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
 						user='awsDB',
-						db='JohnTest',
+						db='DDDB2015Dec',
 						port=3306,
 						passwd='digitaldemocracy789',
 						charset='utf8')

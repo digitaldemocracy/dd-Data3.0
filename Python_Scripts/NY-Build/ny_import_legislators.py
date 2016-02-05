@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf8 -*-
 '''
 File: ny_import_legislators.py
@@ -11,6 +12,7 @@ Description:
 '''
 import requests
 import MySQLdb
+import loggingdb
 
 def call_senate_api(restCall, year, house, offset):
     if house != "":
@@ -137,9 +139,9 @@ def add_senators_db(year, dddb):
 
 
 def main():
-    dddb_conn =  MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+    dddb_conn =  loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                         user='awsDB',
-                        db='JohnTest',
+                        db='DDDB2015Dec',
                         port=3306,
                         passwd='digitaldemocracy789',
                         charset='utf8')
