@@ -46,7 +46,6 @@ QU_BILL_VERSION = '''UPDATE BillVersion
 def get_bill_versions(ca_cursor):
   ca_cursor.execute(QS_CPUB_BILL_VERSION)
   for vid, xml in ca_cursor.fetchall():
-    # IS THIS OKAY??
     if xml is None:
       continue
     xml = xml.strip()
@@ -68,20 +67,16 @@ def billparse(ca_cursor, dd_cursor):
     # Get title
     title = root.xpath('//caml:Title', namespaces=namespace)[0].text
 
-    # Get digest
-    digest_nodes = root.xpath('//caml:DigestText', namespaces=namespace)
-    digest = digest_nodes[0].text if len(digest_nodes) > 0 else ''
+    def extract_caml(tag):
+      pat = '<{0}:{1}.*?>.*?</{0}:{1}>'.format('caml', tag)
+      return ''.join(node for node in re.findall(pat, xml, re.DOTALL))
+    digest = extract_caml('DigestText')
 
-    # Get body
-    body_nodes = root.xpath('//caml:Bill', namespaces=namespace)
-    if len(body_nodes) > 0:
-      body = body_nodes[0].text
-    else:
+    body = extract_caml('Bill')
+    if body == '':
       # If there isn't a caml:Bill tag, then there must
       # be a caml:Content tag.
-      #pat = '<{0}Content>.*?</{0}Content>'.format(namespace['caml'])
-      pat = '<{0}:Content>.*?</{0}:Content>'.format('caml')
-      body = ''.join(node for node in re.findall(pat, xml, re.DOTALL))
+      body = extract_caml('Content')
 
     dd_cursor.execute(QU_BILL_VERSION, (title, digest, body, vid, STATE))
 
@@ -89,7 +84,7 @@ if __name__ == "__main__":
   # MUST SPECIFY charset='utf8' OR BAD THINGS WILL HAPPEN.
   with loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                          port=3306,
-                         db='DDDB2015Dec',
+                         db='MultiStateTest',
                          user='awsDB',
                          passwd='digitaldemocracy789',
                          charset='utf8') as dd_cursor:
