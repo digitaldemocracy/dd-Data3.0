@@ -93,13 +93,14 @@ def insert_authors_db(bill, dddb):
 		a = dict()
 		pid = get_pid_db(bill['first'], bill['last'], dddb)
 		if pid is not None and check_bid_db(bill['bid'], dddb):
+
 			a['pid'] = pid
 			a['bid'] = bill['bid']
 			a['vid'] = bill['bid'] + key
 			a['contribution'] = 'Lead Author'
 #			print a['vid']
-			dddb.execute(QS_AUTHORS_CHECK, a)
 			vid_check = check_vid_db(a['vid'], dddb)
+			dddb.execute(QS_AUTHORS_CHECK, a)
 			if dddb.rowcount == 0 and vid_check:
 				dddb.execute(QI_AUTHORS, a)
 				counter += 1
