@@ -102,7 +102,7 @@ def insert_authors_db(bill, dddb):
 			if dddb.rowcount == 0 and check_vid_db(a['vid'], dddb):
 				dddb.execute(QI_AUTHORS, a)
 				counter += 1
-			elif dddb.fetchone()[0] != a['pid']:
+			elif check_vid_db(a['vid'], dddb) and dddb.fetchone()[0] != a['pid']:
 				dddb.execute(QU_AUTHORS, a)
 #			else:
 #				print a['bid'], "already existing"
