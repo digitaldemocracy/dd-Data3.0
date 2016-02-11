@@ -14,7 +14,7 @@ import requests
 import MySQLdb
 import loggingdb
 
-#counter = 0
+counter = 0
 
 US_STATE = 'NY'
 
@@ -99,11 +99,13 @@ def insert_authors_db(bill, dddb):
 			a['contribution'] = 'Lead Author'
 #			print a['vid']
 			dddb.execute(QS_AUTHORS_CHECK, a)
-			if dddb.rowcount == 0 and check_vid_db(a['vid'], dddb):
+			vid_check = check_vid_db(a['vid'], dddb)
+			if dddb.rowcount == 0 and vid_check:
 				dddb.execute(QI_AUTHORS, a)
 				counter += 1
-			elif check_vid_db(a['vid'], dddb) and dddb.fetchone()[0] != a['pid']:
+			elif vid_check and dddb.fetchone()[0] != a['pid']:
 				dddb.execute(QU_AUTHORS, a)
+				print 'updated', a['pid']
 #			else:
 #				print a['bid'], "already existing"
 #		else:
@@ -201,5 +203,5 @@ def main():
 #		dddb = dddb_conn.cursor()
 #		dddb_conn.autocommit(True)
 		add_authors_db(2015, dddb)
-#	print counter
+	print counter
 main()
