@@ -14,7 +14,7 @@ import requests
 import MySQLdb
 import loggingdb
 
-counter = 0
+#counter = 0
 
 US_STATE = 'NY'
 
@@ -194,12 +194,12 @@ def add_authors_db(year, dddb):
 def main():
 	with loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
 						user='awsDB',
-						db='DDDB2015',
+						db='DDDB2015Dec',
 						port=3306,
 						passwd='digitaldemocracy789',
 						charset='utf8') as dddb:
 #		dddb = dddb_conn.cursor()
 #		dddb_conn.autocommit(True)
 		add_authors_db(2015, dddb)
-	print counter
+#	print counter
 main()
