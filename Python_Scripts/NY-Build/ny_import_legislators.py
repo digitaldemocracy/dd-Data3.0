@@ -31,11 +31,14 @@ insert_term = '''INSERT INTO Term
                 VALUES
                 (%(pid)s, %(year)s, %(house)s, %(state)s, %(district)s);
                 '''
+API_YEAR = 2016
+API_URL = "http://legislation.nysenate.gov/api/3/{0}/{1}{2}?full=true&"
+API_URL += "limit=1000&key=31kNDZZMhlEjCOV8zkBG1crgWAGxwDIS&offset={3}"
 
-def call_senate_api(restCall, year, house, offset):
+def call_senate_api(restCall, house, offset):
     if house != "":
         house = "/" + house
-    url = "http://legislation.nysenate.gov/api/3/" + restCall + "/" + str(year) + house + "?full=true&limit=1000&key=31kNDZZMhlEjCOV8zkBG1crgWAGxwDIS&offset=" + str(offset)
+    url = API_URL.format(restCall, API_YEAR, house, offset)
     r = requests.get(url)
     out = r.json()
     return out["result"]["items"]
@@ -100,8 +103,8 @@ def clean_name(name):
         
     return (first, last)
     
-def get_senators_api(year):
-    senators = call_senate_api("members", year, "", 0)
+def get_senators_api():
+    senators = call_senate_api("members", "", 0)
     ret_sens = list()
     for senator in senators:
         sen = dict()
@@ -109,7 +112,7 @@ def get_senators_api(year):
         sen['house'] = senator['chamber'].title()
         sen['last'] = name[1]
         sen['state'] = "NY"
-        sen['year'] = str(year)            
+        sen['year'] = senator['sessionYear']            
         sen['first'] = name[0]    
         sen['district'] = senator['districtCode']
         sen['image'] = senator['imgName']
@@ -133,10 +136,9 @@ def add_senator_db(senator, dddb):
 def add_senators_db(year, dddb):
     senators = get_senators_api(year)
     x = 0
-    for senator in senators:
-    #senator = senators[0]
+    for senator in senators:    
         if add_senator_db(senator, dddb):
-            x = x + 1
+            x += 1
 
     print "Added %d legislators" % x 
 
@@ -149,7 +151,7 @@ def main():
                         charset='utf8')
     dddb = dddb_conn.cursor()
     dddb_conn.autocommit(True)
-    add_senators_db(2015, dddb)
+    add_senators_db(dddb)
     dddb_conn.close()
     
 main()

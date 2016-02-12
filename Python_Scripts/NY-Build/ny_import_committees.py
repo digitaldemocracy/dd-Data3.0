@@ -14,37 +14,41 @@ import MySQLdb
 import loggingdb
 
 select_committee_last = '''SELECT cid FROM Committee
-                        ORDER BY cid DESC
-                        LIMIT 1
-                        '''
+                           ORDER BY cid DESC
+                           LIMIT 1'''
                             
 select_committee = '''SELECT cid 
-                        FROM Committee
-                        WHERE house = %(house)s and name = %(name)s and
-                        state = %(state)s'''   
+                      FROM Committee
+                      WHERE house = %(house)s 
+                       AND name = %(name)s 
+                       AND state = %(state)s'''   
                                                 
 select_person = '''SELECT * FROM Person
-                    WHERE first = %(first)s
-                    AND last = %(last)s 
-                '''
+                   WHERE first = %(first)s
+                    AND last = %(last)s'''
                                                                   
 select_serveson = '''SELECT pid 
-                    FROM servesOn
-                    WHERE pid = %(pid)s and year = %(year)s and 
-                    house = %(house)s and cid = %(cid)s and state = %(state)s'''
+                     FROM servesOn
+                     WHERE pid = %(pid)s 
+                      AND year = %(year)s 
+                      AND house = %(house)s 
+                      AND cid = %(cid)s 
+                      AND state = %(state)s'''
 
 insert_committee = '''INSERT INTO Committee
-                    (cid, house, name, state)
-                    VALUES
-                    (%(cid)s, %(house)s, %(name)s, %(state)s);
-                    '''                                                       
+                       (cid, house, name, state)
+                      VALUES
+                       (%(cid)s, %(house)s, %(name)s, %(state)s);'''                                                       
 
 insert_serveson = '''INSERT INTO servesOn
-                    (pid, year, house, cid, state, position)
-                    VALUES
-                    (%(pid)s, %(year)s, %(house)s, %(cid)s, %(state)s, %(position)s);
-                    '''
+                      (pid, year, house, cid, state, position)
+                     VALUES
+                      (%(pid)s, %(year)s, %(house)s, %(cid)s, %(state)s,
+                      %(position)s);'''
 API_YEAR = 2016
+API_URL = "http://legislation.nysenate.gov/api/3/{0}/{1}{2}?full=true&"
+API_URL += "limit=1000&key=31kNDZZMhlEjCOV8zkBG1crgWAGxwDIS&offset={3}"
+
 STATE = 'NY'
                     
 def clean_name(name):
@@ -94,7 +98,7 @@ def clean_name(name):
 def call_senate_api(restCall, house, offset):
     if house != "":
         house = "/" + house
-    url = "http://legislation.nysenate.gov/api/3/" + restCall + "/" + str(API_YEAR) + house + "?full=true&limit=1000&key=31kNDZZMhlEjCOV8zkBG1crgWAGxwDIS&offset=" + str(offset)
+    url = API_URL.format(restCall, API_YEAR, house, offset)
     r = requests.get(url)
     out = r.json()
     return out["result"]["items"]
@@ -137,14 +141,15 @@ def is_serveson_in_db(member, dddb):
 def get_committees_api():
     committees = call_senate_api("committees", "senate", 0)
     ret_comms = list()
-    for comm in committees:
+    
+    for comm in committees:    
         committee = dict()
-        committee['name'] = comm['name']
-        
+        committee['name'] = comm['name']        
         committee['house'] = "Senate"
         committee['state'] = STATE
         committee['members'] = list()
         members = comm['committeeMembers']['items']
+        
         for member in members:
             sen = dict()                
             name = clean_name(member['fullName']) 
@@ -153,12 +158,16 @@ def get_committees_api():
             sen['year'] = member['sessionYear']
             sen['house'] = "Senate"
             sen['state'] = STATE
+            
             if member['title'] == "CHAIR_PERSON":           
                 sen['position'] = "chair"
             else:
                 sen['position'] = "member"
+                
             committee['members'].append(sen)
+            
         ret_comms.append(committee)
+        
     print "Downloaded %d committees..." % len(ret_comms)
     return ret_comms
 
@@ -170,22 +179,21 @@ def add_committees_db(dddb):
     for committee in committees:
         cid = get_last_cid_db(dddb) + 1      
         get_cid = is_comm_in_db(committee, dddb)
+        
         if  get_cid == False:
-            x = x + 1
+            x += 1
             committee['cid'] = str(cid)
-
             cur.execute(insert_committee, committee)
         else:
             committee['cid'] = get_cid[0]
-           
-        
+                   
         for member in committee['members']:
             member['pid'] = get_pid_db(member['first'], member['last'], dddb)
             member['cid'] = committee['cid']
             
             if is_serveson_in_db(member, dddb) == False:                
                 cur.execute(insert_serveson, member)                
-                y = y + 1
+                y += 1
                 
     print "Added %d committees and %d members" % (x,y)                        
     
@@ -206,8 +214,7 @@ def main():
                         charset='utf8')
     dddb.autocommit(True)
       
-
-    add_committees_db(2015, dddb)
+    add_committees_db(dddb)
     
     dddb.close()
 main()

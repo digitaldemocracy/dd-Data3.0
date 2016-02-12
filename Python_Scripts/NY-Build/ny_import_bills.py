@@ -13,41 +13,44 @@ import requests
 import MySQLdb
 import loggingdb
 
-update_billversion =  '''UPDATE BillVersion
-                    SET bid = %(bid)s, date = %(date)s, state = %(state)s, subject = %(subject)s, title = %(title)s, text = %(text)s                    
-                    WHERE vid = %(vid)s;
-                    '''
+update_billversion = '''UPDATE BillVersion
+                        SET bid = %(bid)s, date = %(date)s, state = %(state)s, 
+                         subject = %(subject)s, title = %(title)s, text = %(text)s                    
+                        WHERE vid = %(vid)s;
+                        '''
 
 update_bill =  '''UPDATE Bill
-                SET number = %(number)s, type = %(type)s, status = %(status)s, house = %(house)s, state = %(state)s, session = %(session)s, sessionYear = %(sessionYear)s                    
-                WHERE bid = %(bid)s;
-                '''
+                  SET number = %(number)s, type = %(type)s, status = %(status)s, 
+                   house = %(house)s, state = %(state)s, session = %(session)s, 
+                   sessionYear = %(sessionYear)s                    
+                  WHERE bid = %(bid)s;'''
                 
 insert_bill = '''INSERT INTO Bill
-                (bid, number, type, status, house, state, session, sessionYear)
-                VALUES
-                (%(bid)s, %(number)s, %(type)s, %(status)s, %(house)s, %(state)s, %(session)s, %(sessionYear)s);
-                '''                
+                  (bid, number, type, status, house, state, session, sessionYear)
+                 VALUES
+                  (%(bid)s, %(number)s, %(type)s, %(status)s, %(house)s, %(state)s,
+                  %(session)s, %(sessionYear)s);'''                
                 
 insert_billversion = '''INSERT INTO BillVersion
-                    (vid, bid, date, state, subject, title, text)
-                    VALUES
-                    (%(vid)s, %(bid)s, %(date)s, %(state)s, %(subject)s, %(title)s, %(text)s);
-                    ''' 
+                         (vid, bid, date, state, subject, title, text)
+                        VALUES
+                         (%(vid)s, %(bid)s, %(date)s, %(state)s, %(subject)s, %(title)s,
+                         %(text)s);''' 
                                                
 insert_billversion = '''INSERT INTO BillVersion
-                    (vid, bid, date, state, subject, title, text)
-                    VALUES
-                    (%(vid)s, %(bid)s, %(date)s, %(state)s, %(subject)s, %(title)s, %(text)s);
-                    '''                            
+                         (vid, bid, date, state, subject, title, text)
+                        VALUES
+                         (%(vid)s, %(bid)s, %(date)s, %(state)s, %(subject)s, %(title)s,
+                         %(text)s);'''                            
 API_YEAR = 2016
-STATE = 'NY'
-                 
+STATE = 'NY'                 
 BILL_API_INCREMENT = 1000
+
 def call_senate_api(restCall, house, offset):
     if house != "":
         house = "/" + house
-    url = "http://legislation.nysenate.gov/api/3/" + restCall + "/" + str(API_YEAR) + house + "?full=true&limit=1000&key=31kNDZZMhlEjCOV8zkBG1crgWAGxwDIS&offset=" + str(offset)
+    url = "http://legislation.nysenate.gov/api/3/" + restCall + "/" + str(API_YEAR) + house 
+    url += "?full=true&limit=1000&key=31kNDZZMhlEjCOV8zkBG1crgWAGxwDIS&offset=" + str(offset)
     r = requests.get(url)
 
     out = r.json()
@@ -67,13 +70,13 @@ def get_bills_api():
             b['type'] = bill['basePrintNo'][0:1]
             b['status'] = bill['status']['statusDesc']
             b['house'] = bill['billType']['chamber'].title()
-            b['state'] = "NY"
+            b['state'] = STATE
             b['session'] = '0'
             b['sessionYear'] = bill['session']
             b['title'] = bill['title']
             b['versions'] = bill['amendments']['items']    
-            b['bid'] = "NY_" + str(bill['session']) + str(int(bill['session'])+1) + b['session'] + b['type'] + b['number']
-            b['bid'] = b['bid']
+            b['bid'] = STATE + "_" + str(bill['session']) + str(int(bill['session'])+1) 
+            b['bid'] += b['bid'] + b['session'] + b['type'] + b['number']            
             ret_bills.append(b)            
         cur_offset += BILL_API_INCREMENT
     print "Downloaded %d bills..." % len(ret_bills)    
@@ -94,7 +97,7 @@ def insert_billversions_db(bill, dddb):
         bv['bid'] = bill['bid']
         bv['vid'] = bill['bid'] + key
         bv['date'] = bill['versions'][key]['publishDate']
-        bv['state'] = "NY"
+        bv['state'] = STATE
         bv['subject'] = bill['title']
         bv['title'] = bill['versions'][key]['actClause']
         bv['text'] = bill['versions'][key]['fullText']

@@ -14,36 +14,46 @@ import MySQLdb
 import loggingdb
 
 insert_committee = '''INSERT INTO Committee
-                    (cid, house, name, state)
-                    VALUES
-                    (%(cid)s, %(house)s, %(name)s, %(state)s);
-                    '''
+                       (cid, house, name, state)
+                      VALUES
+                       (%(cid)s, %(house)s, %(name)s, %(state)s);'''
                     
 insert_serveson = '''INSERT INTO servesOn
-                    (pid, year, house, cid, state, position)
-                    VALUES
-                    (%(pid)s, %(year)s, %(house)s, %(cid)s, %(state)s, %(position)s);
-                    '''                            
+                      (pid, year, house, cid, state, position)
+                     VALUES
+                      (%(pid)s, %(year)s, %(house)s, %(cid)s, %(state)s, %(position)s);'''                            
 
 select_committee = '''SELECT cid 
-                    FROM Committee
-                    WHERE house = %(house)s and name = %(name)s and
-                    state = %(state)s'''        
+                      FROM Committee
+                      WHERE house = %(house)s 
+                       AND name = %(name)s 
+                       AND state = %(state)s'''        
 
 select_last_committee = '''SELECT cid FROM Committee
-                        ORDER BY cid DESC
-                        LIMIT 1
-                        '''
+                           ORDER BY cid DESC
+                           LIMIT 1'''
+                           
 select_person = '''SELECT * 
-                    FROM Person p, Legislator l
-                    WHERE first = %(first)s AND last = %(last)s AND state = %(state)s
+                   FROM Person p, Legislator l
+                   WHERE first = %(first)s 
+                    AND last = %(last)s
+                    AND state = %(state)s
                     AND p.pid = l.pid'''   
                     
 select_serveson = '''SELECT pid 
-                    FROM servesOn
-                    WHERE pid = %(pid)s and year = %(year)s and 
-                    house = %(house)s and cid = %(cid)s and state = %(state)s'''
-                                         
+                     FROM servesOn
+                     WHERE pid = %(pid)s 
+                      AND year = %(year)s 
+                      AND house = %(house)s 
+                      AND cid = %(cid)s 
+                      AND state = %(state)s'''
+YEAR = '2015'
+STATE = 'NY'                                         
+COMMITTEES_URL = 'http://assembly.state.ny.us/comm/'
+CATEGORIES_XP = '//*[@id="sitelinks"]/span//text()'
+COMMITTEES_XP = '//*[@id="sitelinks"]//ul[{0}]//li/strong/text()'
+COMMITTEE_LINK_XP = '//*[@id="sitelinks"]//ul[{0}]//li[{1}]/a[contains(@href,"mem")]/@href'
+MEMBERS_XP = '//*[@id="sitelinks"]/span//li/a//text()'
 
 def get_last_cid_db(dddb):
 	dddb.execute(select_last_committee)
@@ -92,38 +102,38 @@ def clean_name(name):
     last = name_arr[0] + suffix
     return (first, last)
     
-def get_committees_html(year):
-    page = requests.get('http://assembly.state.ny.us/comm/')
+def get_committees_html():
+    page = requests.get(COMMITTEES_URL)
     tree = html.fromstring(page.content)
-    categories_html = tree.xpath('//*[@id="sitelinks"]/span//text()')
+    categories_html = tree.xpath(CATEGORIES_XP)
     ret_comms = list()
     committees = dict()
     x = 1
     positions = ["chair", "member"]
     count = 0;
     for category in categories_html:
-        committees_html = tree.xpath('//*[@id="sitelinks"]//ul['+str(x)+']//li/strong/text()')        
+        committees_html = tree.xpath(COMMITTEES_XP.format(x))        
         y = 1
-        #print category
+        print category
         for comm in committees_html:                    
-            link = tree.xpath('//*[@id="sitelinks"]//ul['+str(x)+']//li['+str(y)+']/a[contains(@href,"mem")]/@href')
+            link = tree.xpath(COMMITTEE_LINK_XP.format(x,y))
             committee = dict()
             committee['name'] = comm
             committee['type'] = category
             committee['house'] = "Assembly"
-            committee['state'] = "NY"
+            committee['state'] = STATE
             committee['members'] = list()
-            #print "    "+comm
+            print "    "+comm
             
             if len(link) > 0:
                 strip_link = link[0][0:len(link[0]) - 1]
             
-                link = 'http://assembly.state.ny.us/comm/' + strip_link                                      
+                link = COMMITTEES_URL + strip_link                                      
                 
                 member_page = requests.get(link)
                 member_tree = html.fromstring(member_page.content)
                 
-                members_html = member_tree.xpath('//*[@id="sitelinks"]/span//li/a//text()')
+                members_html = member_tree.xpath(MEMBERS_XP)
                 position = 0
                 for mem in members_html:                    
                     sen = dict()
@@ -131,9 +141,9 @@ def get_committees_html(year):
                     sen['position'] = positions[position] 
                     sen['last'] = name[1]        
                     sen['first'] = name[0]                                        
-                    sen['year'] = str(year)
+                    sen['year'] = YEAR
                     sen['house'] = "Assembly"
-                    sen['state'] = "NY"
+                    sen['state'] = STATE
                     committee['members'].append(sen)
                     position = 1
             
@@ -144,8 +154,8 @@ def get_committees_html(year):
     print "Scraped %d committees..." % len(ret_comms)
     return ret_comms                 
 
-def add_committees_db(year, dddb):
-    committees = get_committees_html(year)
+def add_committees_db(dddb):
+    committees = get_committees_html()
 
     count = 0
     y = 0
@@ -167,7 +177,7 @@ def add_committees_db(year, dddb):
                 member['cid'] = committee['cid']
                 if is_serveson_in_db(member, dddb) == False:                
                        
-                    if member['pid'] != "bad":
+                    if member['pid'] != None:
                         dddb.execute(insert_serveson, member)
                         y = y + 1
                         
@@ -181,7 +191,7 @@ def get_pid_db(person, dddb):
         return query[0]
     except:
         print "Person not found: ", (select_person %  person)
-        return "bad"
+        return None
 
     
 def main():
@@ -193,7 +203,7 @@ def main():
     dddb = dddb_conn.cursor()
     dddb_conn.autocommit(True)
 
-    add_committees_db(2015, dddb)
+    add_committees_db(dddb)
 
     dddb_conn.close()
 
