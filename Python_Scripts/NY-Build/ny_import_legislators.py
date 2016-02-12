@@ -12,6 +12,24 @@ Description:
 import requests
 import MySQLdb
 
+insert_person = '''INSERT INTO Person
+                (last, first, image)
+                VALUES
+                (%(last)s, %(first)s, %(image)s);
+                '''
+
+insert_legislator = '''INSERT INTO Legislator
+                (pid, state)
+                VALUES
+                (%(pid)s, %(state)s);
+                '''
+
+insert_term = '''INSERT INTO Term
+                (pid, year, house, state, district)
+                VALUES
+                (%(pid)s, %(year)s, %(house)s, %(state)s, %(district)s);
+                '''
+
 def call_senate_api(restCall, year, house, offset):
     if house != "":
         house = "/" + house
@@ -21,7 +39,7 @@ def call_senate_api(restCall, year, house, offset):
     return out["result"]["items"]
 
 def is_leg_in_db(senator, dddb):
-    select_leg = '''SELECT * 
+    select_leg = '''SELECT p.pid 
                     FROM Person p, Legislator l
                     WHERE first = %(first)s AND last = %(last)s AND state = %(state)s
                     AND p.pid = l.pid'''                                               
@@ -34,7 +52,7 @@ def is_leg_in_db(senator, dddb):
     except:            
         return False
     
-    return True
+    return query
     
 def clean_name(name):
     problem_names = {
@@ -101,26 +119,11 @@ def get_senators_api(year):
 
 def add_senator_db(senator, dddb):
     if is_leg_in_db(senator, dddb) == False:
-        insert_stmt = '''INSERT INTO Person
-                        (last, first, image)
-                        VALUES
-                        (%(last)s, %(first)s, %(image)s);
-                        '''
-        dddb.execute(insert_stmt, senator)
+        dddb.execute(insert_person, senator)
         pid = dddb.lastrowid
         senator['pid'] = pid
-        insert_stmt = '''INSERT INTO Legislator
-                        (pid, state)
-                        VALUES
-                        (%(pid)s, %(state)s);
-                        '''
-        dddb.execute(insert_stmt, senator)
-        insert_stmt = '''INSERT INTO Term
-                        (pid, year, house, state, district)
-                        VALUES
-                        (%(pid)s, %(year)s, %(house)s, %(state)s, %(district)s);
-                        '''
-        dddb.execute(insert_stmt, senator)        
+        dddb.execute(insert_legislator, senator)        
+        dddb.execute(insert_term, senator)        
         #print "Added " + senator['last'] + ", " + senator['first']    
         return True
     return False
@@ -134,7 +137,6 @@ def add_senators_db(year, dddb):
             x = x + 1
 
     print "Added %d legislators" % x 
-
 
 def main():
     dddb_conn =  MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',

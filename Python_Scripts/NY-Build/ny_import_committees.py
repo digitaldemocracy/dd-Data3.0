@@ -11,59 +11,40 @@ Description:
 import requests
 import MySQLdb
 
-def call_senate_api(restCall, year, house, offset):
-    if house != "":
-        house = "/" + house
-    url = "http://legislation.nysenate.gov/api/3/" + restCall + "/" + str(year) + house + "?full=true&limit=1000&key=31kNDZZMhlEjCOV8zkBG1crgWAGxwDIS&offset=" + str(offset)
-    r = requests.get(url)
-    out = r.json()
-    return out["result"]["items"]
-
-def get_last_cid_db(dddb):
-    select_comm = '''SELECT cid FROM Committee
-                    ORDER BY cid DESC
-                    LIMIT 1
-                  '''
-    cur = dddb.cursor()                  
-    cur.execute(select_comm)
-    
-    query = cur.fetchone();
-    return query[0]
-
-def is_comm_in_db(comm, dddb):
-    cur = dddb.cursor()
-    select_comm = '''SELECT cid 
-                    FROM Committee
-                    WHERE house = %(house)s and name = %(name)s and
-                     state = %(state)s'''                                                                    
-    try:
-        cur.execute(select_comm, comm)
-        query = cur.fetchone()
-             
-        if query is None:                   
-            return False       
-    except:            
-        return False
-    return query
-    
-def is_serveson_in_db(member, dddb):
-    cur = dddb.cursor()
-    select_comm = '''SELECT pid 
+select_committee_last = '''SELECT cid FROM Committee
+                        ORDER BY cid DESC
+                        LIMIT 1
+                        '''
+                            
+select_committee = '''SELECT cid 
+                        FROM Committee
+                        WHERE house = %(house)s and name = %(name)s and
+                        state = %(state)s'''   
+                                                
+select_person = '''SELECT * FROM Person
+                    WHERE first = %(first)s
+                    AND last = %(last)s 
+                '''
+                                                                  
+select_serveson = '''SELECT pid 
                     FROM servesOn
                     WHERE pid = %(pid)s and year = %(year)s and 
-                    house = %(house)s and cid = %(cid)s and state = %(state)s'''                                                                    
-    try:
-        cur.execute(select_comm, member)
-        query = cur.fetchone()
-        
-        if query is None:
-            #print select_comm % member            
-            return False       
-    except:            
-        return False    
-    
-    return True
+                    house = %(house)s and cid = %(cid)s and state = %(state)s'''
 
+insert_committee = '''INSERT INTO Committee
+                    (cid, house, name, state)
+                    VALUES
+                    (%(cid)s, %(house)s, %(name)s, %(state)s);
+                    '''                                                       
+
+insert_serveson = '''INSERT INTO servesOn
+                    (pid, year, house, cid, state, position)
+                    VALUES
+                    (%(pid)s, %(year)s, %(house)s, %(cid)s, %(state)s, %(position)s);
+                    '''
+API_YEAR = 2016
+STATE = 'NY'
+                    
 def clean_name(name):
     problem_names = {
         "Inez Barron":("Charles", "Barron"), 
@@ -82,9 +63,9 @@ def clean_name(name):
         "Kenneth Blankenbush":("Ken","Blankenbush"),
         "Alec Brook-Krasny":("Pamela","Harris"),
         "Mickey Kearns":("Michael", "Kearns"),
-        "Steven Englebright":("Steve", "Englebright"),
-        
+        "Steven Englebright":("Steve", "Englebright"),        
     }
+    
     ending = {'Jr':', Jr.','Sr':', Sr.','II':' II','III':' III', 'IV':' IV'}
     name = name.replace(',', ' ')
     name = name.replace('.', ' ')
@@ -107,16 +88,59 @@ def clean_name(name):
         return problem_names[(first + ' ' + last)]
         
     return (first, last)
+                        
+def call_senate_api(restCall, house, offset):
+    if house != "":
+        house = "/" + house
+    url = "http://legislation.nysenate.gov/api/3/" + restCall + "/" + str(API_YEAR) + house + "?full=true&limit=1000&key=31kNDZZMhlEjCOV8zkBG1crgWAGxwDIS&offset=" + str(offset)
+    r = requests.get(url)
+    out = r.json()
+    return out["result"]["items"]
+
+def get_last_cid_db(dddb):
+
+    cur = dddb.cursor()                  
+    cur.execute(select_committee_last)
     
-def get_committees_api(year):
-    committees = call_senate_api("committees", 2015, "senate", 0)
+    query = cur.fetchone();
+    return query[0]
+
+def is_comm_in_db(comm, dddb):
+    cur = dddb.cursor()
+                                                                     
+    try:
+        cur.execute(select_committee, comm)
+        query = cur.fetchone()
+             
+        if query is None:                   
+            return False       
+    except:            
+        return False
+    return query
+    
+def is_serveson_in_db(member, dddb):
+    cur = dddb.cursor()
+                                                                 
+    try:
+        cur.execute(select_serveson, member)
+        query = cur.fetchone()
+        
+        if query is None:            
+            return False       
+    except:            
+        return False    
+    
+    return True
+    
+def get_committees_api():
+    committees = call_senate_api("committees", "senate", 0)
     ret_comms = list()
     for comm in committees:
         committee = dict()
         committee['name'] = comm['name']
         
         committee['house'] = "Senate"
-        committee['state'] = "NY"
+        committee['state'] = STATE
         committee['members'] = list()
         members = comm['committeeMembers']['items']
         for member in members:
@@ -124,9 +148,9 @@ def get_committees_api(year):
             name = clean_name(member['fullName']) 
             sen['last'] = name[1]
             sen['first'] = name[0]
-            sen['year'] = str(year)
+            sen['year'] = member['sessionYear']
             sen['house'] = "Senate"
-            sen['state'] = "NY"
+            sen['state'] = STATE
             if member['title'] == "CHAIR_PERSON":           
                 sen['position'] = "chair"
             else:
@@ -136,8 +160,8 @@ def get_committees_api(year):
     print "Downloaded %d committees..." % len(ret_comms)
     return ret_comms
 
-def add_committees_db(year, dddb):
-    committees = get_committees_api(year)
+def add_committees_db(dddb):
+    committees = get_committees_api()
     cur = dddb.cursor()
     x = 0
     y = 0
@@ -147,13 +171,8 @@ def add_committees_db(year, dddb):
         if  get_cid == False:
             x = x + 1
             committee['cid'] = str(cid)
-            insert_stmt = '''INSERT INTO Committee
-                            (cid, house, name, state)
-                            VALUES
-                            (%(cid)s, %(house)s, %(name)s, %(state)s);
-                            '''
-            #print (insert_stmt % committee)
-            cur.execute(insert_stmt, committee)
+
+            cur.execute(insert_committee, committee)
         else:
             committee['cid'] = get_cid[0]
            
@@ -163,22 +182,12 @@ def add_committees_db(year, dddb):
             member['cid'] = committee['cid']
             
             if is_serveson_in_db(member, dddb) == False:                
-                insert_stmt = '''INSERT INTO servesOn
-                            (pid, year, house, cid, state, position)
-                            VALUES
-                            (%(pid)s, %(year)s, %(house)s, %(cid)s, %(state)s, %(position)s);
-                            '''
-                #print (insert_stmt % member)
-                cur.execute(insert_stmt, member)                
+                cur.execute(insert_serveson, member)                
                 y = y + 1
-    print "Added %d committees and %d members" % (x,y)
-                        
+                
+    print "Added %d committees and %d members" % (x,y)                        
     
-def get_pid_db(first, last, dddb):
-    select_person = '''SELECT * FROM Person
-                     WHERE first = %(first)s
-                      AND last = %(last)s 
-                  '''
+def get_pid_db(first, last, dddb):    
     cur = dddb.cursor()                  
     cur.execute(select_person, {'first':first,'last':last})
     

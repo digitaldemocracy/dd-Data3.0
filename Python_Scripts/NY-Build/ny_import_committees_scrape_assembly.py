@@ -11,24 +11,47 @@ from lxml import html
 import requests
 import MySQLdb
 
+insert_committee = '''INSERT INTO Committee
+                    (cid, house, name, state)
+                    VALUES
+                    (%(cid)s, %(house)s, %(name)s, %(state)s);
+                    '''
+                    
+insert_serveson = '''INSERT INTO servesOn
+                    (pid, year, house, cid, state, position)
+                    VALUES
+                    (%(pid)s, %(year)s, %(house)s, %(cid)s, %(state)s, %(position)s);
+                    '''                            
+
+select_committee = '''SELECT cid 
+                    FROM Committee
+                    WHERE house = %(house)s and name = %(name)s and
+                    state = %(state)s'''        
+
+select_last_committee = '''SELECT cid FROM Committee
+                        ORDER BY cid DESC
+                        LIMIT 1
+                        '''
+select_person = '''SELECT * 
+                    FROM Person p, Legislator l
+                    WHERE first = %(first)s AND last = %(last)s AND state = %(state)s
+                    AND p.pid = l.pid'''   
+                    
+select_serveson = '''SELECT pid 
+                    FROM servesOn
+                    WHERE pid = %(pid)s and year = %(year)s and 
+                    house = %(house)s and cid = %(cid)s and state = %(state)s'''
+                                         
+
 def get_last_cid_db(dddb):
-	select_comm = '''SELECT cid FROM Committee
-					ORDER BY cid DESC
-					LIMIT 1
-                  '''
-	dddb.execute(select_comm)
+	dddb.execute(select_last_committee)
 	
 	query = dddb.fetchone();
 	return query[0]
 
-def is_comm_in_db(comm, dddb):
-
-    select_comm = '''SELECT cid 
-                    FROM Committee
-                    WHERE house = %(house)s and name = %(name)s and
-                     state = %(state)s'''                                                                    
+def is_comm_in_db(comm, dddb):                                                            
     try:
-        dddb.execute(select_comm, comm)
+        dddb.execute(select_committee, comm)
         query = dddb.fetchone()
              
         if query is None:                   
@@ -37,14 +60,9 @@ def is_comm_in_db(comm, dddb):
         return False
     return query
     
-def is_serveson_in_db(member, dddb):
-
-    select_comm = '''SELECT pid 
-                    FROM servesOn
-                    WHERE pid = %(pid)s and year = %(year)s and 
-                    house = %(house)s and cid = %(cid)s and state = %(state)s'''                                                                    
+def is_serveson_in_db(member, dddb):                                                                   
     try:
-        dddb.execute(select_comm, member)
+        dddb.execute(select_serveson, member)
         query = dddb.fetchone()
         
         if query is None:            
@@ -133,16 +151,10 @@ def add_committees_db(year, dddb):
         cid = get_last_cid_db(dddb) + 1      
         get_cid = is_comm_in_db(committee, dddb)
         if  get_cid == False:
-
             committee['cid'] = str(cid)
-            insert_stmt = '''INSERT INTO Committee
-                            (cid, house, name, state)
-                            VALUES
-                            (%(cid)s, %(house)s, %(name)s, %(state)s);
-                            '''
+
             count = count + 1
-            #print committee['name']
-            #print (insert_stmt % committee)
+
             dddb.execute(insert_stmt, committee)
         else:
             committee['cid'] = get_cid[0]          
@@ -152,24 +164,15 @@ def add_committees_db(year, dddb):
                 member['pid'] = get_pid_db(member, dddb)
                 member['cid'] = committee['cid']
                 if is_serveson_in_db(member, dddb) == False:                
-                    insert_stmt = '''INSERT INTO servesOn
-                                (pid, year, house, cid, state, position)
-                                VALUES
-                                (%(pid)s, %(year)s, %(house)s, %(cid)s, %(state)s, %(position)s);
-                                '''                               
+                       
                     if member['pid'] != "bad":
-                        dddb.execute(insert_stmt, member)
+                        dddb.execute(insert_serveson, member)
                         y = y + 1
                         
     print "Inserted %d committees and %d members" % (count, y)
                 
 
 def get_pid_db(person, dddb):
-    select_person = '''SELECT * 
-                       FROM Person p, Legislator l
-                       WHERE first = %(first)s AND last = %(last)s AND state = %(state)s
-                       AND p.pid = l.pid'''                                           
-    
     try:
         dddb.execute(select_person, person)
         query = dddb.fetchone()
