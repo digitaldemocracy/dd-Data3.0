@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 # -*- coding: utf8 -*-
+=======
+#!/usr/bin/env python
+>>>>>>> origin/master
 '''
 File: ny_import_bills.py
 Author: John Alkire
@@ -10,6 +14,7 @@ Description:
 '''
 import requests
 import MySQLdb
+import loggingdb
 
 update_billversion =  '''UPDATE BillVersion
                     SET bid = %(bid)s, date = %(date)s, state = %(state)s, subject = %(subject)s, title = %(title)s, text = %(text)s                    
@@ -114,9 +119,9 @@ def add_bills_db( dddb):
     print "Inserted %d bills" % bcount
                     
 def main():
-    dddb_conn =  MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+    dddb_conn =  loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                         user='awsDB',
-                        db='JohnTest',
+                        db='DDDB2015Dec',
                         port=3306,
                         passwd='digitaldemocracy789',
                         charset='utf8')

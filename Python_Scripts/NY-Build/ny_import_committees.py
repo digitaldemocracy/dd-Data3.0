@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf8 -*-
 '''
 File: ny_import_committees.py
@@ -10,6 +11,7 @@ Description:
 '''
 import requests
 import MySQLdb
+import loggingdb
 
 select_committee_last = '''SELECT cid FROM Committee
                         ORDER BY cid DESC
@@ -196,9 +198,9 @@ def get_pid_db(first, last, dddb):
     
 
 def main():
-    dddb =  MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+    dddb =  loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                         user='awsDB',
-                        db='JohnTest',
+                        db='DDDB2015Dec',
                         port=3306,
                         passwd='digitaldemocracy789',
                         charset='utf8')
