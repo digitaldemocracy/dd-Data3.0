@@ -1,8 +1,6 @@
 <<<<<<< HEAD
 # -*- coding: utf8 -*-
-=======
 #!/usr/bin/env python
->>>>>>> origin/master
 '''
 File: ny_import_bills.py
 Author: John Alkire

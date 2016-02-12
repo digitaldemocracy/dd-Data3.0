@@ -45,6 +45,7 @@ select_billvotedetail = '''SELECT voteId
                             FROM BillVoteDetail
                             WHERE voteId = %(voteId)s and pid = %(pid)s 
                         '''                                                            
+API_YEAR = 2016
                         
 dddb_conn =  MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                 user='awsDB',
@@ -56,10 +57,10 @@ dddb_conn.autocommit(True)
 
 voteToResult = {'N': 'NOE', 'Y':'AYE', 'E':'ABS',  'A':'AYE'}
 
-def call_senate_api(restCall, year, house, offset):
+def call_senate_api(restCall, house, offset):
     if house != "":
         house = "/" + house
-    url = "http://legislation.nysenate.gov/api/3/" + restCall + "/" + str(year) + house + "?full=true&limit=100&key=31kNDZZMhlEjCOV8zkBG1crgWAGxwDIS&offset=" + str(offset)
+    url = "http://legislation.nysenate.gov/api/3/" + restCall + "/" + str(API_YEAR) + house + "?full=true&limit=100&key=31kNDZZMhlEjCOV8zkBG1crgWAGxwDIS&offset=" + str(offset)
     r = requests.get(url)
 
     out = r.json()
@@ -103,7 +104,7 @@ def get_bills_api(year):
     
     while cur_offset < total:
 
-        call = call_senate_api("bills", 2015, "", cur_offset)
+        call = call_senate_api("bills", "", cur_offset)
         bills = call[0]
         total = call[1]
         for bill in bills:             
@@ -311,5 +312,4 @@ def insert_billvotesums_db(bills):
                 insert_bvd_db(bv['votes'], voteId)
 
 speaker = get_speaker_name()
-
-insert_billvotesums_db(get_bills_api(2015))
+insert_billvotesums_db(get_bills_api())
