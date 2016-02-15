@@ -78,7 +78,7 @@ def billparse(ca_cursor, dd_cursor):
       # be a caml:Content tag.
       body = extract_caml('Content')
 
-    dd_cursor.execute(QU_BILL_VERSION, (title, digest, body, STATE, vid))
+    dd_cursor.execute(QU_BILL_VERSION, (title, digest, body, vid, STATE))
 
 if __name__ == "__main__":
   # MUST SPECIFY charset='utf8' OR BAD THINGS WILL HAPPEN.

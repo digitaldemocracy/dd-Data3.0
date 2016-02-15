@@ -1,6 +1,5 @@
-#!/usr/bin/env python
 '''
-File: import_committeeauthors_ny.py
+File: ny_import_committeeauthors.py
 Author: Min Eric Roh
 Date: 12/26/2015
 Description:
@@ -11,47 +10,18 @@ Description:
 '''
 import requests
 import MySQLdb
-import loggingdb
-
-US_STATE = 'NY'
-
-# URL
-URL = ('http://legislation.nysenate.gov/api/3/%(restCall)s/%(year)s%(house)s/' +
-	'search?term=sponsor.rules:true&full=true&limit=1000&key=' +
-	'31kNDZZMhlEjCOV8zkBG1crgWAGxwDIS&offset=%(offset)s')
-
-# INSERTS
-QI_COMMITTEEAUTHORS = '''	INSERT INTO CommitteeAuthors
-							(cid, bid, vid, state)
-							VALUES
-							(%s, %s, %s, 'NY')'''
-
-# SELECTS
-QS_COMMITTEEAUTHORS_CHECK = '''	SELECT *
-								FROM CommitteeAuthors
-								WHERE cid = %s
-								 AND bid = %s
-								 AND vid = %s
-								 AND state = 'NY' '''
-QS_COMMITTEE = '''SELECT * FROM Committee
-						WHERE house = 'Senate'
-                      	AND name = 'Rules'
-                      	AND state = 'NY' '''
-QS_BILL = '''	SELECT * FROM Bill
-				WHERE bid = %(bid)s'''
-
 
 def call_senate_api(restCall, year, house, offset):
 	if house != "":
 		house = "/" + house
-	url = URL % {'restCall':restCall, 'year':str(year), 'house':house, 'offset':str(offset)}
+	url = "http://legislation.nysenate.gov/api/3/" + restCall + "/" + str(year) + house + "/search?term=sponsor.rules:true&full=true&limit=1000&key=31kNDZZMhlEjCOV8zkBG1crgWAGxwDIS&offset=" + str(offset)
 	r = requests.get(url)
 	print url
 	out = r.json()
 	return out["result"]["items"]
 
 def get_committeeauthors_api(year):
-	bills = call_senate_api("bills", year, "", 1)
+	bills = call_senate_api("bills", 2015, "", 1)
 	ret_bills = list()
 
 	for bill in bills:
@@ -65,22 +35,37 @@ def get_committeeauthors_api(year):
 	return ret_bills
 
 def insert_committeeauthors_db(bill, cid, year, dddb):
+	insert_stmt = 	'''	INSERT INTO CommitteeAuthors
+						(cid, bid, vid, state)
+						VALUES
+						(%s, %s, %s, 'NY')
+						'''
+	select_stmt = 	'''	SELECT *
+						FROM CommitteeAuthors
+						WHERE cid = %s
+						 AND bid = %s
+						 AND vid = %s
+						 AND state = 'NY'
+						'''
 	for key in bill['versions'].keys():
-		if check_bid_db(bill['bid'], dddb):
+		if check_bid_db(bill['bid'], dddbe):
 			a = dict()
 			a['bid'] = bill['bid']
 			a['vid'] = bill['bid'] + key
 
-			dddb.execute(QS_COMMITTEEAUTHORS_CHECK, (str(cid), a['bid'], a['vid']))
+			dddb.execute(select_stmt, (str(cid), a['bid'], a['vid']))
 			if dddb.rowcount == 0:
-				dddb.execute(QI_COMMITTEEAUTHORS, (str(cid), a['bid'], a['vid']))
+				dddb.execute(insert_stmt, (str(cid), a['bid'], a['vid']))
 			else:
 				print "already existing"
 		else:
 			print bill['bid'], "fill Bill table first"
 
 def check_bid_db(bid, dddb):
-	dddb.execute(QS_BILL, {'bid':bid})
+	select_stmt = '''	SELECT * FROM Bill
+						WHERE bid = %(bid)s
+						'''
+	dddb.execute(select_stmt, {'bid':bid})
 	if dddb.rowcount == 1:
 		return True
 	else:
@@ -98,20 +83,24 @@ def add_committeeauthors_db(year, dddb):
 		print "Fill Committee table first"
 
 def get_cid_db(dddb):
-	dddb.execute(QS_COMMITTEE)
+	select_comm = '''SELECT * FROM Committee
+						WHERE house = 'Senate'
+                      	AND name = 'Rules'
+                      	AND state = 'NY'
+                  '''
+	dddb.execute(select_comm)
 	
 	if dddb.rowcount == 1:
 		return dddb.fetchone()[0]
 	return None
 
 def main():
-	with loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+	dddb_conn =  MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
 						user='awsDB',
-						db='DDDB2015Dec',
+						db='JohnTest',
 						port=3306,
-						passwd='digitaldemocracy789',
-						charset='utf8') as dddb:
-#		dddb = dddb_conn.cursor()
-#		dddb_conn.autocommit(True)
-		add_committeeauthors_db(2015, dddb)
+						passwd='digitaldemocracy789')
+	dddb = dddb_conn.cursor()
+	dddb_conn.autocommit(True)
+	add_committeeauthors_db(2015, dddb)
 main()

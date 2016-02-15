@@ -14,16 +14,37 @@ import requests
 import MySQLdb
 import loggingdb
 
-def call_senate_api(restCall, year, house, offset):
+insert_person = '''INSERT INTO Person
+                (last, first, image)
+                VALUES
+                (%(last)s, %(first)s, %(image)s);
+                '''
+
+insert_legislator = '''INSERT INTO Legislator
+                (pid, state)
+                VALUES
+                (%(pid)s, %(state)s);
+                '''
+
+insert_term = '''INSERT INTO Term
+                (pid, year, house, state, district)
+                VALUES
+                (%(pid)s, %(year)s, %(house)s, %(state)s, %(district)s);
+                '''
+API_YEAR = 2016
+API_URL = "http://legislation.nysenate.gov/api/3/{0}/{1}{2}?full=true&"
+API_URL += "limit=1000&key=31kNDZZMhlEjCOV8zkBG1crgWAGxwDIS&offset={3}"
+
+def call_senate_api(restCall, house, offset):
     if house != "":
         house = "/" + house
-    url = "http://legislation.nysenate.gov/api/3/" + restCall + "/" + str(year) + house + "?full=true&limit=1000&key=31kNDZZMhlEjCOV8zkBG1crgWAGxwDIS&offset=" + str(offset)
+    url = API_URL.format(restCall, API_YEAR, house, offset)
     r = requests.get(url)
     out = r.json()
     return out["result"]["items"]
 
 def is_leg_in_db(senator, dddb):
-    select_leg = '''SELECT * 
+    select_leg = '''SELECT p.pid 
                     FROM Person p, Legislator l
                     WHERE first = %(first)s AND last = %(last)s AND state = %(state)s
                     AND p.pid = l.pid'''                                               
@@ -36,7 +57,7 @@ def is_leg_in_db(senator, dddb):
     except:            
         return False
     
-    return True
+    return query
     
 def clean_name(name):
     problem_names = {
@@ -82,8 +103,8 @@ def clean_name(name):
         
     return (first, last)
     
-def get_senators_api(year):
-    senators = call_senate_api("members", year, "", 0)
+def get_senators_api():
+    senators = call_senate_api("members", "", 0)
     ret_sens = list()
     for senator in senators:
         sen = dict()
@@ -91,7 +112,7 @@ def get_senators_api(year):
         sen['house'] = senator['chamber'].title()
         sen['last'] = name[1]
         sen['state'] = "NY"
-        sen['year'] = str(year)            
+        sen['year'] = senator['sessionYear']            
         sen['first'] = name[0]    
         sen['district'] = senator['districtCode']
         sen['image'] = senator['imgName']
@@ -103,26 +124,11 @@ def get_senators_api(year):
 
 def add_senator_db(senator, dddb):
     if is_leg_in_db(senator, dddb) == False:
-        insert_stmt = '''INSERT INTO Person
-                        (last, first, image)
-                        VALUES
-                        (%(last)s, %(first)s, %(image)s);
-                        '''
-        dddb.execute(insert_stmt, senator)
+        dddb.execute(insert_person, senator)
         pid = dddb.lastrowid
         senator['pid'] = pid
-        insert_stmt = '''INSERT INTO Legislator
-                        (pid, state)
-                        VALUES
-                        (%(pid)s, %(state)s);
-                        '''
-        dddb.execute(insert_stmt, senator)
-        insert_stmt = '''INSERT INTO Term
-                        (pid, year, house, state, district)
-                        VALUES
-                        (%(pid)s, %(year)s, %(house)s, %(state)s, %(district)s);
-                        '''
-        dddb.execute(insert_stmt, senator)        
+        dddb.execute(insert_legislator, senator)        
+        dddb.execute(insert_term, senator)        
         #print "Added " + senator['last'] + ", " + senator['first']    
         return True
     return False
@@ -130,13 +136,11 @@ def add_senator_db(senator, dddb):
 def add_senators_db(year, dddb):
     senators = get_senators_api(year)
     x = 0
-    for senator in senators:
-    #senator = senators[0]
+    for senator in senators:    
         if add_senator_db(senator, dddb):
-            x = x + 1
+            x += 1
 
     print "Added %d legislators" % x 
-
 
 def main():
     dddb_conn =  loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
@@ -147,7 +151,7 @@ def main():
                         charset='utf8')
     dddb = dddb_conn.cursor()
     dddb_conn.autocommit(True)
-    add_senators_db(2015, dddb)
+    add_senators_db(dddb)
     dddb_conn.close()
     
 main()

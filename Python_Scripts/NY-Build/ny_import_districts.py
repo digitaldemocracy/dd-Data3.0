@@ -21,7 +21,7 @@ Populates:
 
 import datetime
 import json
-import loggingdb
+#import loggingdb
 from urllib import urlopen
 
 # U.S. State
@@ -111,9 +111,9 @@ def get_districts(dd_cursor):
 
 def main():
   import MySQLdb
-  with loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                          port=3306,
-                         db='DDDB2015Dec',
+                         db='MattTest',
                          user='awsDB',
                          passwd='digitaldemocracy789') as dd_cursor:
     get_districts(dd_cursor)
