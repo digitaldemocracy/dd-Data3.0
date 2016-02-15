@@ -65,4 +65,5 @@ def main():
     get_zip()
 
 if __name__ == '__main__':
+    os.chdir('/home/data_warehouse_common/scripts')
     main()
