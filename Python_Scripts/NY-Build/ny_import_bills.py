@@ -16,8 +16,7 @@ import loggingdb
 update_billversion = '''UPDATE BillVersion
                         SET bid = %(bid)s, date = %(date)s, state = %(state)s, 
                          subject = %(subject)s, title = %(title)s, text = %(text)s                    
-                        WHERE vid = %(vid)s;
-                        '''
+                        WHERE vid = %(vid)s;'''
 
 update_bill =  '''UPDATE Bill
                   SET number = %(number)s, type = %(type)s, status = %(status)s, 
@@ -43,19 +42,25 @@ insert_billversion = '''INSERT INTO BillVersion
                          (%(vid)s, %(bid)s, %(date)s, %(state)s, %(subject)s, %(title)s,
                          %(text)s);'''                            
 API_YEAR = 2016
+API_URL = "http://legislation.nysenate.gov/api/3/{0}/{1}{2}?full=true&" 
+API_URL += "limit=1000&key=31kNDZZMhlEjCOV8zkBG1crgWAGxwDIS&offset={3}"
 STATE = 'NY'                 
 BILL_API_INCREMENT = 1000
 
+#calls NY Senate API and returns a tuple with the list of results and the total number of results                        
 def call_senate_api(restCall, house, offset):
     if house != "":
         house = "/" + house
-    url = "http://legislation.nysenate.gov/api/3/" + restCall + "/" + str(API_YEAR) + house 
-    url += "?full=true&limit=1000&key=31kNDZZMhlEjCOV8zkBG1crgWAGxwDIS&offset=" + str(offset)
-    r = requests.get(url)
-
-    out = r.json()
-    return (out["result"]["items"], out['total'])
     
+    url = API_URL.format(restCall, API_YEAR, house, offset)
+    r = requests.get(url)
+    out = r.json()
+    
+    return (out["result"]["items"], out['total'])
+
+#function to compile all bill data from NY senate API. There are over 1000 bills
+#so the API is looped over in 1000 bill increments. Data is placed into lists
+#and dictionaries. List of bill dictionaries is returned    
 def get_bills_api():
     total = BILL_API_INCREMENT
     cur_offset = 0
@@ -76,25 +81,30 @@ def get_bills_api():
             b['title'] = bill['title']
             b['versions'] = bill['amendments']['items']    
             b['bid'] = STATE + "_" + str(bill['session']) + str(int(bill['session'])+1) 
-            b['bid'] += b['bid'] + b['session'] + b['type'] + b['number']            
+            b['bid'] += b['session'] + b['type'] + b['number']            
             ret_bills.append(b)            
         cur_offset += BILL_API_INCREMENT
-    print "Downloaded %d bills..." % len(ret_bills)    
+        
+    #print "Downloaded %d bills..." % len(ret_bills)    
     return ret_bills                     
-                          
+                
+#function to insert a new bill or update an existing one. Returns true if
+#insertion occurs, false otherwise                          
 def insert_bill_db(bill, dddb):
-    try:                
+    try:                        
         dddb.execute(insert_bill, bill)        
     except:        
         dddb.execute(update_bill, bill)  
         return False         
     return True
 
+#function to parse over and insert billversions. Called once per bill;
+#inserts or updates corresponding number of bill versions
 def insert_billversions_db(bill, dddb):    
             
     for key in bill['versions'].keys():
         bv = dict()
-        bv['bid'] = bill['bid']
+        bv['bid'] = bill['bid']        
         bv['vid'] = bill['bid'] + key
         bv['date'] = bill['versions'][key]['publishDate']
         bv['state'] = STATE
@@ -107,6 +117,7 @@ def insert_billversions_db(bill, dddb):
         except:            
             dddb.execute(update_billversion, bv)
         
+#function to loop over all bills and insert bills and bill versions        
 def add_bills_db( dddb):
     bills = get_bills_api()
     bcount = 0

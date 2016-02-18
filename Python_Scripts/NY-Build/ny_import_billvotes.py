@@ -44,7 +44,8 @@ select_billvotesummary = '''SELECT voteId
 select_billvotedetail = '''SELECT voteId 
                            FROM BillVoteDetail
                            WHERE voteId = %(voteId)s 
-                            AND pid = %(pid)s'''                                                            
+                            AND pid = %(pid)s'''                        
+                                                                
 API_YEAR = 2016
 API_URL = "http://legislation.nysenate.gov/api/3/{0}/{1}{2}?full=true&"
 API_URL += "limit=100&key=31kNDZZMhlEjCOV8zkBG1crgWAGxwDIS&offset={3}"

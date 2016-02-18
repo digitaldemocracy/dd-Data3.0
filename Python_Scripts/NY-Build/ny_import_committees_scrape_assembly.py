@@ -33,7 +33,7 @@ select_last_committee = '''SELECT cid FROM Committee
                            ORDER BY cid DESC
                            LIMIT 1'''
                            
-select_person = '''SELECT * 
+select_person = '''SELECT pid
                    FROM Person p, Legislator l
                    WHERE first = %(first)s 
                     AND last = %(last)s
@@ -167,7 +167,7 @@ def add_committees_db(dddb):
 
             count = count + 1
 
-            dddb.execute(insert_stmt, committee)
+            dddb.execute(insert_committee, committee)
         else:
             committee['cid'] = get_cid[0]          
 

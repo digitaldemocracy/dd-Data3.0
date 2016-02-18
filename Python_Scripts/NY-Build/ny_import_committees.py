@@ -23,9 +23,12 @@ select_committee = '''SELECT cid
                        AND name = %(name)s 
                        AND state = %(state)s'''   
                                                 
-select_person = '''SELECT * FROM Person
-                   WHERE first = %(first)s
-                    AND last = %(last)s'''
+select_person = '''SELECT p.pid 
+                   FROM Person p, Legislator l
+                   WHERE first = %(first)s 
+                    AND last = %(last)s 
+                    AND state = %(state)s
+                    AND p.pid = l.pid'''
                                                                   
 select_serveson = '''SELECT pid 
                      FROM servesOn
@@ -50,7 +53,11 @@ API_URL = "http://legislation.nysenate.gov/api/3/{0}/{1}{2}?full=true&"
 API_URL += "limit=1000&key=31kNDZZMhlEjCOV8zkBG1crgWAGxwDIS&offset={3}"
 
 STATE = 'NY'
-                    
+
+#this function takes in a full name and outputs a tuple with a first and last name 
+#names should be cleaned to maintain presence of Jr, III, etc, but remove middle names.
+#many names for assembly members in the New York Senate API do not line up with the assembly     
+#website. The API names are replaced with the website names.        
 def clean_name(name):
     problem_names = {
         "Inez Barron":("Charles", "Barron"), 
@@ -94,7 +101,8 @@ def clean_name(name):
         return problem_names[(first + ' ' + last)]
         
     return (first, last)
-                        
+
+#calls NY Senate API and returns the list of results                        
 def call_senate_api(restCall, house, offset):
     if house != "":
         house = "/" + house
@@ -103,14 +111,16 @@ def call_senate_api(restCall, house, offset):
     out = r.json()
     return out["result"]["items"]
 
+#function gets the largest CID in the DB because CID does not autoincrement
 def get_last_cid_db(dddb):
-
     cur = dddb.cursor()                  
     cur.execute(select_committee_last)
     
     query = cur.fetchone();
     return query[0]
 
+#checks if Committee is in database. 
+#If it is, return its CID. Otherwise, return false
 def is_comm_in_db(comm, dddb):
     cur = dddb.cursor()
                                                                      
@@ -123,7 +133,9 @@ def is_comm_in_db(comm, dddb):
     except:            
         return False
     return query
-    
+
+#checks if a servesOn item exists in the DB.
+#returns true/false as expected    
 def is_serveson_in_db(member, dddb):
     cur = dddb.cursor()
                                                                  
@@ -137,7 +149,9 @@ def is_serveson_in_db(member, dddb):
         return False    
     
     return True
-    
+
+#function to call senate API and process all necessary data into lists and     
+#dictionaries. Returns list of committee dicts
 def get_committees_api():
     committees = call_senate_api("committees", "senate", 0)
     ret_comms = list()
@@ -168,9 +182,12 @@ def get_committees_api():
             
         ret_comms.append(committee)
         
-    print "Downloaded %d committees..." % len(ret_comms)
+    #print "Downloaded %d committees..." % len(ret_comms)
     return ret_comms
 
+#function to add committees to DB. Calls API and then processes data
+#only adds committees if they do not exist and only adds to servesOn if member
+#is not already there.
 def add_committees_db(dddb):
     committees = get_committees_api()
     cur = dddb.cursor()
@@ -188,22 +205,22 @@ def add_committees_db(dddb):
             committee['cid'] = get_cid[0]
                    
         for member in committee['members']:
-            member['pid'] = get_pid_db(member['first'], member['last'], dddb)
+            member['pid'] = get_pid_db(member, dddb)
             member['cid'] = committee['cid']
             
             if is_serveson_in_db(member, dddb) == False:                
                 cur.execute(insert_serveson, member)                
                 y += 1
                 
-    print "Added %d committees and %d members" % (x,y)                        
-    
-def get_pid_db(first, last, dddb):    
+    #print "Added %d committees and %d members" % (x,y)                        
+
+#function to get PID of person based on name.     
+def get_pid_db(person, dddb):    
     cur = dddb.cursor()                  
-    cur.execute(select_person, {'first':first,'last':last})
+    cur.execute(select_person, person)
     
     query = cur.fetchone();
-    return query[0]
-    
+    return query[0]    
 
 def main():
     dddb =  loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
