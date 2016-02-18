@@ -1,5 +1,5 @@
-# -*- coding: utf8 -*-
 #!/usr/bin/env python
+# -*- coding: utf8 -*-
 '''
 File: ny_import_bills.py
 Author: John Alkire
