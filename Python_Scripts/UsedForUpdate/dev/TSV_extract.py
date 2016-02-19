@@ -18,6 +18,7 @@ Sources:
 
 import zipfile
 import subprocess
+import contextlib
 import os
 from datetime import datetime
 
@@ -40,7 +41,7 @@ def get_zip():
             logFile.write("On {0} at {1}: TSV download successful\n"
                           .format(datetime.date(datetime.now()),
                                   datetime.time(datetime.now())))
-            with zipfile.ZipFile(zipName, 'r') as calZip:
+            with contextlib.closing(zipfile.ZipFile(zipName, 'r')) as calZip:
                 calZip.extract(tsvPath)
             cleanup()
         else:
