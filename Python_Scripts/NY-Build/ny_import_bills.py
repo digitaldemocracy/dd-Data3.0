@@ -21,29 +21,38 @@ update_billversion = '''UPDATE BillVersion
 update_bill =  '''UPDATE Bill
                   SET number = %(number)s, type = %(type)s, status = %(status)s, 
                    house = %(house)s, state = %(state)s, session = %(session)s, 
-                   sessionYear = %(sessionYear)s                    
+                   sessionYear = %(sessionYear)s
                   WHERE bid = %(bid)s;'''
-                
+
 insert_bill = '''INSERT INTO Bill
                   (bid, number, type, status, house, state, session, sessionYear)
                  VALUES
                   (%(bid)s, %(number)s, %(type)s, %(status)s, %(house)s, %(state)s,
-                  %(session)s, %(sessionYear)s);'''                
-                
+                  %(session)s, %(sessionYear)s);'''
+
 insert_billversion = '''INSERT INTO BillVersion
                          (vid, bid, date, state, subject, title, text)
                         VALUES
                          (%(vid)s, %(bid)s, %(date)s, %(state)s, %(subject)s, %(title)s,
-                         %(text)s);''' 
-                                               
+                         %(text)s);'''
+
 insert_billversion = '''INSERT INTO BillVersion
                          (vid, bid, date, state, subject, title, text)
                         VALUES
                          (%(vid)s, %(bid)s, %(date)s, %(state)s, %(subject)s, %(title)s,
-                         %(text)s);'''                            
+                         %(text)s);'''                
+
+select_bill = '''SELECT bid 
+                 FROM Bill   
+                 WHERE bid = %(bid)s'''
+
+select_billversion = '''SELECT vid 
+                        FROM BillVersion   
+                        WHERE vid = %(vid)s'''                 
+
 API_YEAR = 2016
 API_URL = "http://legislation.nysenate.gov/api/3/{0}/{1}{2}?full=true&" 
-API_URL += "limit=1000&key=31kNDZZMhlEjCOV8zkBG1crgWAGxwDIS&offset={3}"
+API_URL += "limit=1000&key=31kNDZZMhlEjCOV8zkBG1crgWAGxwDIS&offset={3}&term=billType.resolution:false"
 STATE = 'NY'                 
 BILL_API_INCREMENT = 1000
 
@@ -65,11 +74,14 @@ def get_bills_api():
     total = BILL_API_INCREMENT
     cur_offset = 0
     ret_bills = list()
+    
     while cur_offset < total:
-        call = call_senate_api("bills", "", cur_offset)
+        call = call_senate_api("bills", "/search", cur_offset)
         bills = call[0]
         total = call[1]
-        for bill in bills:             
+        
+        for bill in bills:
+            bill = bill['result']             
             b = dict()
             b['number'] = bill['basePrintNo'][1:]
             b['type'] = bill['basePrintNo'][0:1]
@@ -82,7 +94,8 @@ def get_bills_api():
             b['versions'] = bill['amendments']['items']    
             b['bid'] = STATE + "_" + str(bill['session']) + str(int(bill['session'])+1) 
             b['bid'] += b['session'] + b['type'] + b['number']            
-            ret_bills.append(b)            
+            ret_bills.append(b)  
+                      
         cur_offset += BILL_API_INCREMENT
         
     #print "Downloaded %d bills..." % len(ret_bills)    
@@ -91,12 +104,39 @@ def get_bills_api():
 #function to insert a new bill or update an existing one. Returns true if
 #insertion occurs, false otherwise                          
 def insert_bill_db(bill, dddb):
-    try:                        
+    if not is_bill_in_db(bill, dddb):                        
         dddb.execute(insert_bill, bill)        
-    except:        
+    else:        
         dddb.execute(update_bill, bill)  
-        return False         
+        return False   
+              
     return True
+
+#checks if a bill is in the DB based on a generated BID
+#returns true/false as expected
+def is_bill_in_db(bill, dddb):
+    dddb.execute(select_bill, bill)
+    bill_bid = dddb.fetchone()
+    
+    if bill_bid is None:            
+        return False
+    if bill_bid[0] == bill['bid']:
+        return True
+        
+    return False
+
+#checks if a billversion is in the DB based on a generated VID
+#returns true/false as expected
+def is_bv_in_db(bv, dddb):
+    dddb.execute(select_billversion, bv)    
+    bv_vid = dddb.fetchone()
+    
+    if bv_vid is None:            
+        return False
+    if bv_vid[0] == bv['vid']:
+        return True
+        
+    return False
 
 #function to parse over and insert billversions. Called once per bill;
 #inserts or updates corresponding number of bill versions
@@ -112,9 +152,9 @@ def insert_billversions_db(bill, dddb):
         bv['title'] = bill['versions'][key]['actClause']
         bv['text'] = bill['versions'][key]['fullText']
         
-        try:
+        if not is_bv_in_db(bv, dddb):
             dddb.execute(insert_billversion, bv)            
-        except:            
+        else:            
             dddb.execute(update_billversion, bv)
         
 #function to loop over all bills and insert bills and bill versions        
