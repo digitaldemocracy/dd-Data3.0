@@ -33,7 +33,7 @@ select_last_committee = '''SELECT cid FROM Committee
                            ORDER BY cid DESC
                            LIMIT 1'''
                            
-select_person = '''SELECT pid
+select_person = '''SELECT l.pid
                    FROM Person p, Legislator l
                    WHERE first = %(first)s 
                     AND last = %(last)s
@@ -89,16 +89,19 @@ def clean_name(name):
     name = name.replace(',', ' ')
     name = name.replace('.', ' ')
     name_arr = name.split()      
-    suffix = "";               
+    suffix = "";
+    
     for word in name_arr:
         if word != name_arr[0] and (len(word) <= 1 or word in ending.keys()):
             name_arr.remove(word)
             if word in ending.keys():
-                suffix = ending[word]            
-            
+                suffix = ending[word]
+
     first = name_arr.pop(0)
+    
     while len(name_arr) > 1:
-        first = first + ' ' + name_arr.pop(0)            
+        first = first + ' ' + name_arr.pop(0)
+                    
     last = name_arr[0] + suffix
     return (first, last)
     
@@ -111,10 +114,12 @@ def get_committees_html():
     x = 1
     positions = ["chair", "member"]
     count = 0;
+    
     for category in categories_html:
         committees_html = tree.xpath(COMMITTEES_XP.format(x))        
         y = 1
-        print category
+        #print category
+        
         for comm in committees_html:                    
             link = tree.xpath(COMMITTEE_LINK_XP.format(x,y))
             committee = dict()
@@ -123,7 +128,7 @@ def get_committees_html():
             committee['house'] = "Assembly"
             committee['state'] = STATE
             committee['members'] = list()
-            print "    "+comm
+            #print "    "+comm
             
             if len(link) > 0:
                 strip_link = link[0][0:len(link[0]) - 1]
@@ -135,6 +140,7 @@ def get_committees_html():
                 
                 members_html = member_tree.xpath(MEMBERS_XP)
                 position = 0
+                
                 for mem in members_html:                    
                     sen = dict()
                     name = clean_name(mem)                        
@@ -151,27 +157,27 @@ def get_committees_html():
             ret_comms.append(committee)    
             y = y + 1
         x = x + 1   
-    print "Scraped %d committees..." % len(ret_comms)
+    #print "Scraped %d committees..." % len(ret_comms)
     return ret_comms                 
 
 def add_committees_db(dddb):
     committees = get_committees_html()
-
     count = 0
     y = 0
+    
     for committee in committees:       
         cid = get_last_cid_db(dddb) + 1      
         get_cid = is_comm_in_db(committee, dddb)
+        
         if  get_cid == False:
             committee['cid'] = str(cid)
-
             count = count + 1
-
             dddb.execute(insert_committee, committee)
         else:
             committee['cid'] = get_cid[0]          
 
         if len(committee['members']) > 0:
+        
             for member in committee['members']:
                 member['pid'] = get_pid_db(member, dddb)
                 member['cid'] = committee['cid']
@@ -181,7 +187,7 @@ def add_committees_db(dddb):
                         dddb.execute(insert_serveson, member)
                         y = y + 1
                         
-    print "Inserted %d committees and %d members" % (count, y)
+    #print "Inserted %d committees and %d members" % (count, y)
                 
 
 def get_pid_db(person, dddb):
