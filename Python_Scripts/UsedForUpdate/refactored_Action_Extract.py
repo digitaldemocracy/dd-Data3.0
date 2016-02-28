@@ -55,6 +55,8 @@ Checks if the Action is in DDDB. If it isn't, insert it. Otherwise, skip.
   |text|: Text of action
 '''
 def insert_Action(dd_cursor, values):
+  if values[0] == '201520160ACR117':
+    print(values[1])
   values[0] = '%s_%s' % (STATE, values[0])
 
   # Check if DDDB already has this action
@@ -62,13 +64,15 @@ def insert_Action(dd_cursor, values):
 
   # If Action not in DDDB, add
   if(dd_cursor.rowcount == 0):
+    if values[0] == 'CA_201520160ACR117':
+      print('Going to insert')
     dd_cursor.execute(QI_ACTION, values)	
 
 '''
 Loops through all Actions from capublic and adds them as necessary
 '''
 def main():
-  with loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                          port=3306,
                          db='DDDB2015Dec',
                          user='awsDB',
@@ -84,5 +88,5 @@ def main():
       for record in ca_cursor.fetchall():
         insert_Action(dd_cursor, list(record))
 
-  if __name__ == "__main__":
-    main()
+if __name__ == "__main__":
+  main()
