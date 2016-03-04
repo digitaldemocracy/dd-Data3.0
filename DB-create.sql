@@ -143,9 +143,9 @@ CHARACTER SET utf8 COLLATE utf8_general_ci;
 */
 CREATE TABLE IF NOT EXISTS Committee (
    cid    INTEGER(3),               -- Committee id
-   house  VARCHAR(100) NOT NULL,
+   house  VARCHAR(200) NOT NULL,
    name   VARCHAR(200) NOT NULL,    -- committee name
-   Type   VARCHAR(100),
+   type   VARCHAR(100),
    state VARCHAR(2),
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
 
