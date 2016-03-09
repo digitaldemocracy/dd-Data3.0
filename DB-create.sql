@@ -166,7 +166,7 @@ CREATE TABLE IF NOT EXISTS servesOn (
    year     YEAR,                                  -- year served
    house    VARCHAR(100),
    cid      INTEGER(3),                            -- Committee id (ref. Committee.cid)
-   position ENUM("Chair", "Vice-Chair", "Member"),
+   position ENUM('Chair', 'Vice-Chair', 'Co-Chair', 'Member'),
    state    VARCHAR(2),
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
 
