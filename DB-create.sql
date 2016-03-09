@@ -57,6 +57,7 @@ CHARACTER SET utf8 COLLATE utf8_general_ci;
 CREATE TABLE IF NOT EXISTS House (
   name  VARCHAR(100), -- Name for the house. eg Assembly, Senate
   state VARCHAR(2),
+  type VARCHAR(100),
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
 
   PRIMARY KEY (name, state),
@@ -170,7 +171,6 @@ CREATE TABLE IF NOT EXISTS servesOn (
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
 
    PRIMARY KEY (pid, year, house, state, cid),
-   FOREIGN KEY (pid, year, house, state) REFERENCES Term(pid, year, house, state),
    FOREIGN KEY (cid) REFERENCES Committee(cid), 
    FOREIGN KEY (house, state) REFERENCES House(name, state),
    FOREIGN KEY (state) REFERENCES State(abbrev)
@@ -363,6 +363,8 @@ CREATE TABLE IF NOT EXISTS BillVersion (
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+-- Note that for now contribution is either always lead author 
+-- or blank
 CREATE TABLE IF NOT EXISTS authors (
    pid          INTEGER,
    bid          VARCHAR(23),
@@ -377,22 +379,33 @@ CREATE TABLE IF NOT EXISTS authors (
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+CREATE TABLE IF NOT EXISTS BillSponsorRolls (
+    roll VARCHAR(100),
+    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+
+    PRIMARY KEY (roll)
+    )
+  ENGINE = INNODB
+  CHARACTER SET utf8 COLLATE utf8_general_ci;
+
 /* Table basically just the same info as authors, but it clarifies their 
 role. We have a second table as not to confuse the druple scripts that 
 pull author names. Ideally we role this into authors soon */
 CREATE TABLE IF NOT EXISTS BillSponsors (
-    pid          INTEGER,
+   pid          INTEGER,
    bid          VARCHAR(23),
    vid          VARCHAR(33),
-   contribution ENUM('Lead Author', 'Principal Coauthor', 'Coauthor') DEFAULT 'Coauthor',
+   contribution VARCHAR(100),
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
 
    PRIMARY KEY (pid, bid, vid),
    FOREIGN KEY (pid) REFERENCES Legislator(pid), 
-   FOREIGN KEY (bid, vid) REFERENCES BillVersion(bid, vid)
+   FOREIGN KEY (bid, vid) REFERENCES BillVersion(bid, vid),
+   FOREIGN KEY (contribution) REFERENCES BillSponsorRolls(roll)
 )
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
+
 
 CREATE TABLE IF NOT EXISTS CommitteeAuthors(
     cid INTEGER,
@@ -439,7 +452,8 @@ ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 CREATE OR REPLACE VIEW currentUtterance 
-AS SELECT uid, vid, pid, time, endTime, text, type, alignment, state 
+AS SELECT uid, vid, pid, time, endTime, text, type, alignment, state, did, 
+  lastTouched 
 FROM Utterance 
 WHERE current = TRUE AND finalized = TRUE ORDER BY time DESC;
 
@@ -720,14 +734,16 @@ CREATE TABLE IF NOT EXISTS LegislativeStaffRepresentation(
    committee INTEGER,
    hid   INTEGER,                       -- added
    state VARCHAR(2),
+   did INT,
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
 
-   PRIMARY KEY (pid, hid),                    -- added
+   PRIMARY KEY (pid, hid, did),                    -- added
    FOREIGN KEY (pid) REFERENCES Person(pid),
    FOREIGN KEY (legislator) REFERENCES Person(pid),
    FOREIGN KEY (hid) REFERENCES Hearing(hid),
    FOREIGN KEY (committee) REFERENCES Committee(cid),
    FOREIGN KEY (state) REFERENCES State(abbrev),
+   FOREIGN KEY (did) REFERENCES BillDiscussion(did),
    CHECK (Legislator IS NOT NULL AND flag = 0 OR committee IS NOT NULL AND flag = 1)
 )
 ENGINE = INNODB
@@ -829,7 +845,7 @@ CREATE TABLE IF NOT EXISTS StateConstOfficeRep(
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS StateConstOfficeRepresentation(
+CREATE TABLE IF NOT EXISTS StateConstOfficeRepRepresentation(
    pid INTEGER,
    office VARCHAR(200),
    position VARCHAR(200),
@@ -891,6 +907,27 @@ CREATE TABLE IF NOT EXISTS Behests(
 )
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+-- The next two tables are added for Toshi
+CREATE TABLE IF NOT EXISTS BillTypes (
+  Type VARCHAR(10),
+  Label VARCHAR(10),
+  House VARCHAR(100),
+  State VARCHAR(2),
+  lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW()
+  )
+ENGINE = INNODB
+CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS SpeakerProfileTypes  (
+  SpeakerType VARCHAR(50),
+  Label VARCHAR(50),
+  State VARCHAR(2),
+  lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW()
+  )
+ENGINE = INNODB
+CHARACTER SET utf8 COLLATE utf8_general_ci;
+  
 
 CREATE TABLE IF NOT EXISTS BillAnalysis(
     analysis_id DECIMAL(22, 0),
@@ -991,6 +1028,8 @@ CREATE TABLE TT_EditorStates (
 )
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+
 
 
 
