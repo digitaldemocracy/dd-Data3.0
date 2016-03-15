@@ -137,7 +137,7 @@ def billparse(ca_cursor, dd_cursor):
 
 if __name__ == "__main__":
   # MUST SPECIFY charset='utf8' OR BAD THINGS WILL HAPPEN.
-  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+  with loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                          port=3306,
                          db='DDDB2015Dec',
                          user='awsDB',
