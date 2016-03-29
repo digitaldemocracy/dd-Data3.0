@@ -398,7 +398,7 @@ CREATE TABLE IF NOT EXISTS BillSponsors (
    contribution VARCHAR(100),
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
 
-   PRIMARY KEY (pid, bid, vid),
+   PRIMARY KEY (pid, bid, vid, contribution),
    FOREIGN KEY (pid) REFERENCES Legislator(pid), 
    FOREIGN KEY (bid, vid) REFERENCES BillVersion(bid, vid),
    FOREIGN KEY (contribution) REFERENCES BillSponsorRolls(roll)
@@ -950,6 +950,33 @@ CREATE TABLE IF NOT EXISTS BillAnalysis(
     PRIMARY KEY(analysis_id)
 );
 
+
+-- You need to add a schedule D vs E flag probably
+CREATE TABLE IF NOT EXISTS LegStaffGifts (
+  year YEAR,
+  agency_name VARCHAR(100),
+  last_name VARCHAR(100),
+  first_name VARCHAR(100),
+  person_type ENUM('Staff', 'Legislator'),
+  position VARCHAR(200),
+  district_number INT,
+  jurisdiction VARCHAR(200),
+  source_name VARCHAR(100),
+  source_city VARCHAR(100),
+  source_state VARCHAR(100),
+  source_business VARCHAR(100), -- business the source is involved in
+  date_given DATE, 
+  gift_value DECIMAL,
+  reimbursed BOOLEAN, -- this one is just a flag
+  gift_description VARCHAR(200),
+  speech_or_panel BOOLEAN, -- flag to see if was for a speech
+  image_url VARCHAR(75)
+)
+ENGINE = INNODB
+CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+
+
 /* Entity::DeprecatedPerson
 
    This is used for tracking what people are deprecated and will flush them 
@@ -973,6 +1000,7 @@ CHARACTER SET utf8 COLLATE utf8_general_ci;
 */
 CREATE TABLE IF NOT EXISTS DeprecatedOrganization(
    oid INTEGER,      -- Organization id (ref. Organization.oid)
+  lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
 
    PRIMARY KEY(oid)
 )
