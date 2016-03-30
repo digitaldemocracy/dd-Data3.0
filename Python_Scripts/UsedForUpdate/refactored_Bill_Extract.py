@@ -38,8 +38,9 @@ US_STATE = 'CA'
 
 # INSERTS
 QI_BILL = '''INSERT INTO Bill
-             (bid, type, number, billState, status, house, session, state)
-             VALUES (%s, %s, %s, %s, %s, %s, %s, %s)'''
+             (bid, type, number, billState, status, house, session, state,
+              sessionYear)
+             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)'''
 QI_BILLVERSION = '''INSERT INTO BillVersion (vid, bid, date, billState, 
                     subject, appropriation, substantive_changes, state)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s)'''
@@ -121,7 +122,8 @@ def get_bills(ca_cursor, dd_cursor):
       type_ = '%sX%s' % (type_, session)
 
     add_bill(dd_cursor, 
-             (bid, type_, number, state, status, house, session, US_STATE))
+       (bid, type_, number, state, status, house, session, US_STATE,
+       session_yr))
 
 '''
 Gets all of the BillVersions, then adds them as necessary.

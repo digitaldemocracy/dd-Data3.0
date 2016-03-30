@@ -220,15 +220,17 @@ def get_detail_votes(ca_cursor, dd_cursor):
   print('Getting Details')
   ca_cursor.execute(QS_BILL_DETAIL)
   rows = ca_cursor.fetchall()
-  print(len(rows))
 
   for bid, loc_code, legislator, vote_code, mid, trans_update in rows:
-    print(bid)
+    bid = '%s_%s' % (STATE, bid)
     date = trans_update.strftime('%Y-%m-%d')
     pid = get_person(dd_cursor, legislator, loc_code, STATE)
     vote_id = get_vote_id(dd_cursor, bid, mid)
     result = vote_code
 
+#    if bid == '201520160AB350':
+#      print('vote_id: %s, pid: %s' % (vote_id, pid))
+#      raise Exception()
     if vote_id is not None and pid is not None:
       insert_bill_vote_detail(dd_cursor, pid, vote_id, result)
 
