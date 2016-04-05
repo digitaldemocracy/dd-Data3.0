@@ -42,6 +42,10 @@ QI_AUTHORS = '''INSERT INTO authors (pid, bid, vid, contribution)
                 VALUES (%s, %s, %s, %s)''' 
 QI_COMMITTEEAUTHORS = '''INSERT INTO CommitteeAuthors (cid, bid, vid, state)
                          VALUES (%s, %s, %s, %s)'''
+QI_BILLSPONSORS = '''INSERT INTO BillSponsors (pid, bid, vid, contribution)
+                VALUES (%s, %s, %s, %s)''' 
+QI_BILLSPONSORROLLS = '''INSERT INTO BillSponsorRolls (roll)
+                VALUES (%s)''' 
 
 # SELECTS
 QS_COMMITTEEAUTHORS_CHECK = '''SELECT *
@@ -65,6 +69,15 @@ QS_AUTHORS_CHECK = '''SELECT *
                       WHERE bid = %s
                        AND pid = %s
                        AND vid = %s'''
+QS_BILLSPONSORS_CHECK = '''SELECT *
+                           FROM BillSponsors
+                           WHERE bid = %s
+                            AND pid = %s
+                            AND vid = %s
+                            AND contribution = %s'''
+QS_BILLSPONSORROLL_CHECK = '''SELECT *
+                              FROM BillSponsorRolls
+                              WHERE roll = %s'''
 QS_BILL_VERSION_AUTHORS_TBL = '''SELECT bill_version_id, type, house, name,
                                   contribution, primary_author_flg
                                  FROM bill_version_authors_tbl'''
@@ -234,6 +247,27 @@ def add_author(dd_cursor, pid, bid, vid, contribution):
     dd_cursor.execute(QI_AUTHORS, (pid, bid, vid, contribution))
 
 '''
+If the BillSponsor for this bill is not in the DDDB, add BillSponsor.
+If contribution is not in the DDDB then add.
+|dd_cursor|: DDDB database cursor
+|pid|: Person id
+|bid|: Bill id
+|vid|: Bill Version id
+|contribution|: the person's contribution to the bill (ex: Lead Author)
+'''
+def add_sponsor(dd_cursor, pid, bid, vid, contribution):
+  dd_cursor.execute(QS_BILLSPONSORROLL_CHECK, (contribution,))
+
+  if dd_cursor.rowcount == 0:
+    dd_cursor.execute(QI_BILLSPONSORROLLS, (contribution,))
+
+  dd_cursor.execute(QS_BILLSPONSORS_CHECK, (bid, pid, vid, contribution))
+
+  if dd_cursor.rowcount == 0:
+    print pid, vid, contribution
+    dd_cursor.execute(QI_BILLSPONSORS, (pid, bid, vid, contribution))
+
+'''
 Grabs capublic's information and selectively adds bill authors into DDDB.
 Authors are only added if they are the primary lead author of the bill. 
 Also, bill authors can be either Legislators or Committees.
@@ -249,6 +283,13 @@ def get_authors(ca_cursor, dd_cursor):
   for vid, author_type, house, name, contrib, prim_author_flg in rows:
     vid = '%s_%s' % (STATE, vid)
     bid = get_bid(dd_cursor, vid)
+    contribution = contrib.title().replace('_', ' ')
+
+    # IF bid in database and is a Legislator add to BillSponsors
+    if bid is not None and author_type == 'Legislator':
+      pid = get_person(dd_cursor, name, house)
+      if pid is not None:
+        add_sponsor(dd_cursor, pid, bid, vid, contribution)
 
     # Check if the bill is in DDDB. Otherwise, skip
     if bid is not None and prim_author_flg == 'Y':
@@ -256,7 +297,6 @@ def get_authors(ca_cursor, dd_cursor):
       if author_type == 'Legislator':
         pid = get_person(dd_cursor, name, house)
         if pid is not None:
-          contribution = contrib.title().replace('_', ' ')
           add_author(dd_cursor, pid, bid, vid, contribution)
 
       # Committee Authors
