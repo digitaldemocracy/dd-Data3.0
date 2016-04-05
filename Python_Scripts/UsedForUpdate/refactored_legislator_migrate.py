@@ -30,7 +30,7 @@ Populates:
   - Term (pid, year, district, house, party, state)
 '''
 
-import loggingdb
+#import loggingdb
 import MySQLdb
 from Name_Fixes_Legislator_Migrate import clean_name_legislator_migrate
 
@@ -122,7 +122,7 @@ def migrate_legislators(ca_cursor, dd_cursor):
         print('Inserting Legislator: %s %s %s %s %s %s' %
               (pid, year, district, house, party, STATE))
         dd_cursor.execute(QI_LEGISLATOR, (pid, STATE))
-        dd_cursor.execute(QI_TERM, (year, district, house, party, pid, STATE))
+        dd_cursor.execute(QI_TERM, (pid, year, district, house, party, STATE))
 
     # If this legislator is in DDDB, check if they're also in the Legislator 
     # and Term tables if they're active.
@@ -140,9 +140,9 @@ def main():
                        db='capublic',
                        user='monty',
                        passwd='python') as ca_cursor:
-    with loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+    with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                            port=3306,
-                           db='DDDB2015Dec',
+                           db='EricTest',
                            user='awsDB',
                            passwd='digitaldemocracy789') as dd_cursor:
       migrate_legislators(ca_cursor, dd_cursor)
