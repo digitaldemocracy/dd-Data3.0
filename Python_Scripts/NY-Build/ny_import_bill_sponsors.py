@@ -17,7 +17,7 @@ import MySQLdb
 counter = 0
 
 US_STATE = 'NY'
-CONTRIBUTION = 'Sponsor'
+CONTRIBUTION = 'multiSponsors'
 
 # URL
 URL = ('http://legislation.nysenate.gov/api/3/%(restCall)s/%(year)s%(house)s' +
@@ -87,12 +87,16 @@ def get_author_api(year):
 				b['type'] = bill['basePrintNo']
 #				print b['type']
 				b['session'] = '0'
-				fullName = bill['sponsor']['member']['fullName'].encode('utf-8')
-				name = clean_name(fullName)
-				b['last'] = name[1]
-				b['first'] = name[0]
 				b['versions'] = bill['amendments']['items']
 				b['bid'] = "NY_" + str(year) + str(year + 1) + b['session'] + b['type']
+#				for versions in bill['amendments']['items'].values():
+#					if versions['coSponsors']['size'] > 0:
+#						for sponsors in versions['coSponsors']['items']:
+#							print sponsors['fullName'].encode('utf8')
+#							fullName = sponsors['fullName'].encode('utf8')
+#							name = clean_name(fullName)
+#							b['last'] = name[1]
+#							b['first'] = name[0]
 				ret_bills.append(b)
 		cur_offset += 1000
 	print len(ret_bills)
@@ -112,33 +116,38 @@ def add_sponsor(dd_cursor, pid, bid, vid, contribution):
   dd_cursor.execute(QS_BILLSPONSORS_CHECK, (bid, pid, vid, contribution))
 
   if dd_cursor.rowcount == 0:
-    print pid, vid, contribution
+#    print pid, vid, contribution
     dd_cursor.execute(QI_BILLSPONSORS, (pid, bid, vid, contribution))
 
 def insert_authors_db(bill, dddb):
 	global counter
 	
-	for key in bill['versions'].keys():
-		a = dict()
-		pid = get_pid_db(bill['first'], bill['last'], dddb)
-		if pid is not None and check_bid_db(bill['bid'], dddb):
+#	print type(bill['versions'])
+#	print type(bill['versions'].values()), bill['versions'].values()
 
-			a['pid'] = pid
-			a['bid'] = bill['bid']
-			a['vid'] = bill['bid'] + key
-			a['contribution'] = 'Lead Author'
-#			print a['vid']
-			vid_check = check_vid_db(a['vid'], dddb)
-			dddb.execute(QS_AUTHORS_CHECK, a)
-			if dddb.rowcount == 0 and vid_check:
-				dddb.execute(QI_AUTHORS, a)
-				counter += 1
-			elif vid_check and dddb.fetchone()[0] != a['pid']:
-				dddb.execute(QU_AUTHORS, a)
-				print 'updated', a['pid']
-			dddb.execute(QS_BILLSPONSORS_CHECK)
-			if dddb.rowcount == 0 and vid_check:
-				add_sponsor(dddb, a['pid'], a['bid'], a['vid'], CONTRIBUTION)
+	for version in bill['versions'].values():
+		a = dict()
+#		print version['version']
+		a['vid'] = bill['bid'] + version['version']
+		vid_check = check_vid_db(a['vid'], dddb)
+		if version['multiSponsors']['size'] > 0  and check_bid_db(bill['bid'], dddb) and vid_check:
+			for sponsors in version['multiSponsors']['items']:
+				fullName = sponsors['fullName'].encode('utf8')
+				name = clean_name(fullName)
+				a['last'] = name[1]
+				a['first'] = name[0]
+#				print a['vid']
+		 		pid = get_pid_db(a['first'], a['last'], dddb)
+				if pid is not None:
+					a['pid'] = pid
+					a['bid'] = bill['bid']
+		#			print a['vid']
+					dddb.execute(QS_BILLSPONSORS_CHECK, (a['bid'], a['pid'], a['vid'], CONTRIBUTION))
+					if dddb.rowcount == 0:
+						counter += 1
+						if counter % 1000 == 0:
+							print counter
+						add_sponsor(dddb, a['pid'], a['bid'], a['vid'], CONTRIBUTION)
 #			else:
 #				print a['bid'], "already existing"
 #		else:
@@ -223,10 +232,10 @@ def get_pid_db(first, last, dddb):
 		return None
 
 def add_authors_db(year, dddb):
-	dddb.execute(QS_BILLSPONSORROLL_CHECK, CONTRIBUTION)
+	dddb.execute(QS_BILLSPONSORROLL_CHECK, (CONTRIBUTION,))
 
 	if dddb.rowcount == 0:
-		dddb.execute(QI_BILLSPONSORROLLS, CONTRIBUTION)
+		dddb.execute(QI_BILLSPONSORROLLS, (CONTRIBUTION,))
 
 	bills = get_author_api(year)
 
@@ -236,16 +245,18 @@ def add_authors_db(year, dddb):
 def main():
 	with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
 						user='awsDB',
-						db='DDDB2015Dec',
+						db='EricTest',
 						port=3306,
 						passwd='digitaldemocracy789',
 						charset='utf8') as dddb:
 #		dddb = dddb_conn.cursor()
 #		dddb_conn.autocommit(True)
-#		add_authors_db(2015, dddb)
-		call = call_senate_api("bills", 2015, "", 1)
-		bills = call[0]
-		for bill in bills:
+		add_authors_db(2015, dddb)
+		print counter
+'''
+#		call = call_senate_api("bills", 2015, "", 1)
+#		bills = call[0]
+#		for bill in bills:
 #			print type(bill)
 			for versions in bill['amendments']['items'].values():
 #				print type(versions['coSponsors']), versions['coSponsors']
@@ -254,6 +265,6 @@ def main():
 						print sponsors['fullName'].encode('utf8')
 				if versions['multiSponsors']['size'] > 0:
 					for sponsors in versions['multiSponsors']['items']:
-						print sponsors['fullName'].encode('utf8')
-		print counter
+						print sponsors['fullName'].encode('utf8')'''
+		
 main()
