@@ -220,7 +220,7 @@ def main():
 	#Connect to the Database
 	dddb_conn =  MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                         user='awsDB',
-                        db='MikeyTest',
+                        db='DDDB2015Dec',
                         port=3306,
                         passwd='digitaldemocracy789',
                         charset='utf8')

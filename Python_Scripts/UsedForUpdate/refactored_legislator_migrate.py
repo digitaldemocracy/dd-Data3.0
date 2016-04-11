@@ -122,7 +122,7 @@ def migrate_legislators(ca_cursor, dd_cursor):
         print('Inserting Legislator: %s %s %s %s %s %s' %
               (pid, year, district, house, party, STATE))
         dd_cursor.execute(QI_LEGISLATOR, (pid, STATE))
-        dd_cursor.execute(QI_TERM, (year, district, house, party, pid, STATE))
+        dd_cursor.execute(QI_TERM, (pid, year, district, house, party, STATE))
 
     # If this legislator is in DDDB, check if they're also in the Legislator 
     # and Term tables if they're active.
