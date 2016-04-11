@@ -74,6 +74,7 @@ CHARACTER SET utf8 COLLATE utf8_general_ci;
 CREATE TABLE IF NOT EXISTS Person (
    pid    INTEGER AUTO_INCREMENT,   -- Person id
    last   VARCHAR(50) NOT NULL,     -- last name
+   middle VARCHAR(50),              -- middle name
    first  VARCHAR(50) NOT NULL,     -- first name
    image VARCHAR(256),              -- path to image (if exists)
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(), 
@@ -1027,7 +1028,7 @@ CREATE TABLE IF NOT EXISTS TT_Task (
    hid INTEGER ,    -- added
    did INTEGER , 
    editor_id INTEGER ,
-   name VARCHAR(255) NOT NULL , 
+   name VARCHAR(1000) NOT NULL , 
    vid INTEGER , 
    startTime INTEGER NOT NULL , 
    endTime INTEGER NOT NULL , 
