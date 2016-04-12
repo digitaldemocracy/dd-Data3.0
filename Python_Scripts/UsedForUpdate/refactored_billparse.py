@@ -90,7 +90,6 @@ def sanitize_xml(xml):
     (r'&lt;xhtml:', '<'),   # Specific case 1.
     (r'&lt;/xhtml:', '</'), # Specific case 2.
     (r'&quot;', '"'),
-    (r'&lt;', '<'),         # General case for the specific cases above.
     (r'<<', '<')
   ]
 
@@ -119,7 +118,12 @@ def get_bill_versions(ca_cursor):
 def billparse(ca_cursor, dd_cursor):
   for vid, xml in get_bill_versions(ca_cursor):
     # This line will fail if |xml| is not valid XML.
-    root = etree.fromstring(xml)
+    try:
+      root = etree.fromstring(xml)
+    except:
+      print(vid)
+      print(xml)
+      raise
 
     def extract_caml(tag):
       pat = '<{0}:{1}.*?>(.*?)</{0}:{1}>'.format('caml', tag)
