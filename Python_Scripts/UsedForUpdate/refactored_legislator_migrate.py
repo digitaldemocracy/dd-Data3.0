@@ -96,6 +96,10 @@ def check_name(cursor, last, first):
    name = clean_name_legislator_migrate(last, first).split('<SPLIT>')
    first = name[0]
    last = name[1]
+
+   if 'Reginald Byron' in first:
+      first = 'Reginald'
+
    cursor.execute(QS_PERSON, (last, first))
    return cursor.fetchone()
 
@@ -113,7 +117,7 @@ def migrate_legislators(ca_cursor, dd_cursor):
 
     # If this legislator isn't in DDDB, add them to Person table
     if exist is None:
-      print 'New Member: {0} {1}'.format(first, last)
+      print 'New Member: first: {0} last: {1}'.format(first, last)
       dd_cursor.execute(QI_PERSON, (last, first))
 
       # If this is an active legislator, add them to Legislator and Term too
@@ -140,9 +144,9 @@ def main():
                        db='capublic',
                        user='monty',
                        passwd='python') as ca_cursor:
-    with loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+    with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                            port=3306,
-                           db='DDDB2015Dec',
+                           db='MattTest',
                            user='awsDB',
                            passwd='digitaldemocracy789') as dd_cursor:
       migrate_legislators(ca_cursor, dd_cursor)
