@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 '''
 File: Vote_Extract.py
-Author: Daniel Mangin
+Authored By: Daniel Mangin
+Modified By: Matt Versaggi
 Date: 6/11/2015
+Last Modified: 5/18/2016
 
 Description:
 - Gets vote data from capublic.bill_summary_vote into DDDB.BillVoteSummary
@@ -31,9 +33,44 @@ Populates:
 
 import loggingdb
 import MySQLdb
+import sys
 
 # U.S. State
 STATE = 'CA'
+
+# Names pulled from CAPublic database that are missing comma before 'and'
+# (this is compared to the names that are scraped from the committee websites
+# and placed in our DB by the refactored_Get_Committees_Web script).
+#
+# NOTE: If any of these names has > 1 'and' in them, there will be problems.
+NAMES_MISSING_COMMA = ['Water, Parks and Wildlife', 
+                       'Public Employees, Retirement and Social Security']
+# Extraordinary Committees 
+# 
+# NOTE: I had planned on using these lists of extraordinary committees
+# to identify votes that were for these committees specifically. However,
+# there was a lot of overlap for both Rules and Appropriations (there exists
+# standing committees for those in both houses as well), and we needed to
+# get this script working quickly due to an immenent (temporary) shutdown
+# of Digital Democracy
+A_EXTRAORDINARY_I_COMMITTEES = ['Finance',
+                                'Transportation and Infrastructure Development',
+                                'Rules'
+                               ]
+
+A_EXTRAORDINARY_II_COMMITTEES = ['Finance',
+                                 'Public Health and Developmental Services',
+                                 'Rules'
+                                ]
+
+S_EXTRAORDINARY_I_COMMITTEES = ['Rules',
+                               'Appropriations',
+                               'Transportation and Infrastructure Development'
+                               ]
+S_EXTRAORDINARY_II_COMMITTEES = ['Rules',
+                                'Appropriations',
+                                'Public Health and Developmental Services'
+                                ]
 
 # Queries
 QS_BILL_DETAIL = '''SELECT bill_id, location_code, legislator_name, 
@@ -98,6 +135,7 @@ def find_committee(cursor, name, house):
   cursor.execute(QS_COMMITTEE, {'name':name, 'house':house, 'state':STATE})
   if(cursor.rowcount == 1):
     return cursor.fetchone()[0]
+  sys.stderr.write("WARNING: Unable to find committee {0}\n".format(name))
   return None
 
 '''
@@ -107,68 +145,93 @@ Otherwise, return None.
 def get_committee(ca_cursor, dd_cursor, location_code):
   ca_cursor.execute(QS_LOCATION_CODE, {'location_code':location_code})
   if(ca_cursor.rowcount > 0):
-    temp = ca_cursor.fetchone()
-    name = temp[0]
-    long_name = temp[1]
-    if 'Water, Parks' in long_name:
-      long_name = 'Water, Parks, and Wildlife'
-    if 'Asm' in name or 'Assembly' in name:
+    loc_result = ca_cursor.fetchone()
+    temp_name = loc_result[0]
+    committee_name = loc_result[1]
+
+    committee_name = clean_name(committee_name)
+
+    if 'Asm' in temp_name or 'Assembly' in temp_name:
       house = 'Assembly'
-    elif 'Sen' in name:
-      house = 'Senate'
     else:
-      house = 'Joint'
-  return find_committee(dd_cursor, long_name, house)
+      house = 'Senate'
+
+    if 'Floor' in committee_name:
+      name = '{0} Floor'.format(house)
+    elif 'Transportation and Infrastructure Development' in committee_name:
+      name = '{0} 1st Extraordinary Session on {1}'.format(house, committee_name)
+    elif 'Public Health and Developmental Services' in committee_name:
+      name = '{0} 2nd Extraordinary Session on {1}'.format(house, committee_name)
+    elif 'Finance' in committee_name and house == 'Assembly':
+      name = 'Assembly 1st Extraordinary Session on Finance'
+    else:
+      name = '{0} Standing Committee on {1}'.format(house, committee_name)
+
+  return find_committee(dd_cursor, name, house)
     
 '''
-Cleans bad names
+Handles all instances of reformatting and cleaning specific legislator and
+committee names.
 '''
 def clean_name(name):
   # For de Leon
   temp = name.split('\xc3\xb3')
-  if(len(temp) > 1):
+  if (len(temp) > 1):
     name = temp[0] + 'o' + temp[1];
 
   # For Travis Allen
-  if(name == 'Allen Travis'):
+  if (name == 'Allen Travis'):
     name = 'Travis Allen'
+
+  if (name == 'Aging and Long Term Care'):
+    name = 'Aging and Long-Term Care'
+
+  # For any names missing a final comma before 'and' (see top of script)
+  if (name in NAMES_MISSING_COMMA):
+    name_pieces = name.split(' and ')
+    name = '{0}, and {1}'.format(name_pieces[0], name_pieces[1])
 
   return name
 
+'''
+'''
 def get_person(cursor, filer_naml, floor, state):
-	pid = None 
-	filer_naml = clean_name(filer_naml)
-	temp = filer_naml.split(' ')
-	if(floor == 'AFLOOR'):
-		floor = "Assembly"
-	else:
-		floor = "Senate"
-	filer_namf = ''
-	if(len(temp) > 1):
-		filer_naml = temp[len(temp)-1]
-		filer_namf = temp[0]
-		cursor.execute(QS_PERSON_FL, {'filer_naml':filer_naml, 'filer_namf':filer_namf})
-	else:
-		cursor.execute(QS_PERSON_L, {'filer_naml':filer_naml, 'filer_namf':filer_namf})
-	if cursor.rowcount == 1:
-		pid = cursor.fetchone()[0]
-	elif cursor.rowcount > 1:
-		a = []
-		for j in range(0, cursor.rowcount):
-			temp = cursor.fetchone()
-			a.append(temp[0])
-		for j in range(0, cursor.rowcount):
-			cursor.execute(QS_TERM, {'pid':a[j],'house':floor,'state':state})
-			if(cursor.rowcount == 1):
-				pid = cursor.fetchone()[0]
-	else:
-		filer_naml = '%' + filer_naml + '%'
-		cursor.execute(QS_PERSON_LIKE_L, {'filer_naml':filer_naml, 'filer_namf':filer_namf})
-		if(cursor.rowcount > 0):
-			pid = cursor.fetchone()[0]
-		else:
-			print "could not find {0}".format(filer_naml)
-	return pid
+  pid = None 
+  filer_naml = clean_name(filer_naml)
+  temp = filer_naml.split(' ')
+
+  if(floor == 'AFLOOR'):
+    floor = "Assembly"
+  else:
+    floor = "Senate"
+  filer_namf = ''
+  if(len(temp) > 1):
+    filer_naml = temp[len(temp)-1]
+    filer_namf = temp[0]
+    print 'They had a first name!!!'
+    cursor.execute(QS_PERSON_FL, {'filer_naml':filer_naml, 'filer_namf':filer_namf})
+  else:
+    print 'Only a last name...'
+    cursor.execute(QS_PERSON_L, {'filer_naml':filer_naml, 'filer_namf':filer_namf})
+  if cursor.rowcount == 1:
+    pid = cursor.fetchone()[0]
+  elif cursor.rowcount > 1:
+    a = []
+    for j in range(0, cursor.rowcount):
+      temp = cursor.fetchone()
+      a.append(temp[0])
+    for j in range(0, cursor.rowcount):
+      cursor.execute(QS_TERM, {'pid':a[j],'house':floor,'state':state})
+      if(cursor.rowcount == 1):
+        pid = cursor.fetchone()[0]
+  else:
+    filer_naml = '%' + filer_naml + '%'
+    cursor.execute(QS_PERSON_LIKE_L, {'filer_naml':filer_naml, 'filer_namf':filer_namf})
+    if(cursor.rowcount > 0):
+      pid = cursor.fetchone()[0]
+    else:
+      sys.stderr.write("WARNING: Unable to find person {0}".format(filer_naml))
+  return pid
 
 '''
 If Bill Vote Summary is found, return vote id. Otherwise, return None.
@@ -176,7 +239,7 @@ If Bill Vote Summary is found, return vote id. Otherwise, return None.
 def get_vote_id(cursor, bid, mid):
   cursor.execute(QS_VOTE_ID, {'bid':bid, 'mid':mid})
   if cursor.rowcount == 1:
-    return cursor.fetchone()[0]
+    return cursor.fetchone()[0]  
   return None;
 
 '''
