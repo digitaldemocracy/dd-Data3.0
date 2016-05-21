@@ -167,11 +167,14 @@ def insert_lobbyingfirm_db(lobbyist):
         dddb.execute(insert_lobbyingfirm, lobbyist)
         for person in lobbyist['lobbyists']:
             per = dict()
-            name = clean_name(person)
-            per['state'] = 'NY'
-            per['first'] = name[0]
-            per['last'] = name[1]
-            insert_lobbyist_db(per)                
+            try:
+                name = clean_name(person)
+                per['state'] = 'NY'
+                per['first'] = name[0]
+                per['last'] = name[1]
+                insert_lobbyist_db(per)
+            except:
+                print name
     
 def insert_lobbyists_db(lobbyists):
     for lobbyist in lobbyists.values():
