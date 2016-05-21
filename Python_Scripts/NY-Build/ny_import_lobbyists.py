@@ -2,12 +2,12 @@
 '''
 File: import_lobbyists_ny.py
 Author: John Alkire
-Date: 1/22/2016
+Modified: 5/20/2016
 Description:
 - Imports NY lobbyist data using NY API (https://data.ny.gov/Transparency/Registered-Lobbyist-Disclosures-Beginning-2007/djsm-9cw7)
 - Fills Lobbyist, LobbyingFirm
-- Note that there is not filer ID in the NY data, which means LobbyingFirmState cannot be filled. We need to decide
-  on a method to either create filer IDs or alter the schema. 
+- Note that there is not filer ID in the NY data, which means LobbyingFirmState, LobbyistEmployment, LobbyistEmployer
+  cannot be filled. We need to decide on a method to either create filer IDs or alter the schema. 
 '''
 import requests
 import MySQLdb
@@ -88,7 +88,7 @@ def get_names(names):
     return ret_names
 
 def call_lobbyist_api():
-    url = 'https://data.ny.gov/resource/mbmr-kxth.json?$limit=50'
+    url = 'https://data.ny.gov/resource/mbmr-kxth.json?$limit=50000'
     r = requests.get(url)
     lobbyists_api = r.json()
     return lobbyists_api
@@ -96,8 +96,14 @@ def call_lobbyist_api():
 def get_lobbyists_api(lobbyists_api):
     lobbyists = dict()
     for lbyst in lobbyists_api:    
+         
         if lbyst['lobbyist_name'] in lobbyists:
-            pass
+            if not lobbyist['person']: 
+                if 'additional_lobbyists_lr' in lbyst:
+                    lobbyist['lobbyists'] += get_names(lbyst['additional_lobbyists_lr'])
+                if 'additional_lobbyists_lbr' in lbyst:
+                    lobbyist['lobbyists'] += get_names(lbyst['additional_lobbyists_lbr'])
+                lobbyist['lobbyists'] = list(set(lobbyist['lobbyists']))
         else:
             lobbyist = dict()
             lobbyist['person'] = False
@@ -120,15 +126,17 @@ def get_lobbyists_api(lobbyists_api):
             
             if not lobbyist['person']:
                 lobbyist['lobbyists'] = list()
-                lobbyist['lobbyists'] += get_names(lbyst['additional_lobbyists_lr'])
-                lobbyist['lobbyists'] += get_names(lbyst['additional_lobbyists_lbr'])
-                lobbyist['lobbyists'] = list(set(lobbyist['lobbyists']))        
+                if 'additional_lobbyists_lr' in lbyst:
+                    lobbyist['lobbyists'] += get_names(lbyst['additional_lobbyists_lr'])
+                if 'additional_lobbyists_lbr' in lbyst:
+                    lobbyist['lobbyists'] += get_names(lbyst['additional_lobbyists_lbr'])
+                lobbyist['lobbyists'] = list(set(lobbyist['lobbyists']))
+                        
             lobbyists[lbyst['lobbyist_name']] = lobbyist            
     
     return lobbyists
     
 def is_lobbyist_in_db(lobbyist):
-
     dddb.execute(select_lobbyist, lobbyist)
     query = dddb.fetchone()
     
@@ -138,7 +146,6 @@ def is_lobbyist_in_db(lobbyist):
     return True
     
 def is_lobbyingfirm_in_db(lobbyist):
-
     dddb.execute(select_lobbyingfirm, lobbyist)
     query = dddb.fetchone()
     
