@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python27
 '''
 File: legislator_migrate.py
 Author: ???
@@ -30,9 +30,11 @@ Populates:
   - Term (pid, year, district, house, party, state)
 '''
 
-import loggingdb
 import MySQLdb
 from Name_Fixes_Legislator_Migrate import clean_name_legislator_migrate
+from graylogger.graylogger import GrayLogger
+
+logger = None
 
 # U.S. State
 STATE = 'CA'
@@ -117,14 +119,14 @@ def migrate_legislators(ca_cursor, dd_cursor):
 
     # If this legislator isn't in DDDB, add them to Person table
     if exist is None:
-      print 'New Member: first: {0} last: {1}'.format(first, last)
+      logger.info('New Member: first: {0} last: {1}'.format(first, last))
       dd_cursor.execute(QI_PERSON, (last, first))
 
       # If this is an active legislator, add them to Legislator and Term too
       if active == 'Y':
         pid = dd_cursor.lastrowid
-        print('Inserting Legislator: %s %s %s %s %s %s' %
-              (pid, year, district, house, party, STATE))
+        logger.info(('Inserting Legislator: %s %s %s %s %s %s' %
+              (pid, year, district, house, party, STATE)))
         dd_cursor.execute(QI_LEGISLATOR, (pid, STATE))
         dd_cursor.execute(QI_TERM, (pid, year, district, house, party, STATE))
 
@@ -152,4 +154,6 @@ def main():
       migrate_legislators(ca_cursor, dd_cursor)
 
 if __name__ == "__main__":
-  main()
+  with GrayLogger('http://development.digitaldemocracy.org:12202/gelf') as _logger:
+    logger = _logger
+    main()
