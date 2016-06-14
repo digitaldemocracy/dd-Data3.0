@@ -3,7 +3,8 @@
 '''
 File: ny_import_legislators.py
 Author: John Alkire
-Date: 11/26/2015
+Modified: Eric Roh
+Date: 4/12/2016
 Description:
 - Imports NY legislators using senate API
 - Fills Person, Term, and Legislator
@@ -36,15 +37,19 @@ select_legislator = '''SELECT p.pid
                         AND state = %(state)s
                         AND p.pid = l.pid'''
 
-select_term = '''SELECT p.pid 
-                 FROM Person p, Term t
-                 WHERE first = %(first)s 
-                  AND last = %(last)s 
+select_term = '''SELECT district
+                 FROM Term
+                 WHERE pid = %(pid)s 
                   AND state = %(state)s
                   AND year = %(year)s
-                  AND house = %(house)s
-                  AND district = %(district)s
-                  AND p.pid = t.pid'''                        
+                  AND house = %(house)s'''
+
+QU_TERM = '''UPDATE Term
+             SET district = %(district)s
+             WHERE pid = %(pid)s
+              AND state = %(state)s
+              AND year = %(year)s
+              AND house = %(house)s'''                        
                                            
 API_YEAR = 2016
 API_URL = "http://legislation.nysenate.gov/api/3/{0}/{1}{2}?full=true&"
@@ -106,6 +111,7 @@ def call_senate_api(restCall, house, offset):
     if house != "":
         house = "/" + house
     url = API_URL.format(restCall, API_YEAR, house, offset)
+    print url
     r = requests.get(url)
     out = r.json()
     return out["result"]["items"]
@@ -124,16 +130,21 @@ def is_leg_in_db(senator, dddb):
     
     return query[0]
 
-#checks if Term + Person is in database. 
+#checks if Term + Person is in database.
+# UPDATES the Term if the district has changed. 
 #returns true/false as expected
 def is_term_in_db(senator, dddb):                                            
     try:
         dddb.execute(select_term, senator)
         query = dddb.fetchone()
-        
-        if query is None:            
-            return False       
-    except:            
+
+        if query[0] != senator['district']:
+            print 'updated', senator
+            dddb.execute(QU_TERM, senator)
+            return True
+        if query is None:
+            return False
+    except:
         return False
     
     return True

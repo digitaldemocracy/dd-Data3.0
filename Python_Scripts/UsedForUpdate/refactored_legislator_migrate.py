@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python27
 '''
 File: legislator_migrate.py
 Author: ???
@@ -30,9 +30,11 @@ Populates:
   - Term (pid, year, district, house, party, state)
 '''
 
-import loggingdb
 import MySQLdb
 from Name_Fixes_Legislator_Migrate import clean_name_legislator_migrate
+from graylogger.graylogger import GrayLogger
+
+logger = None
 
 # U.S. State
 STATE = 'CA'
@@ -96,6 +98,10 @@ def check_name(cursor, last, first):
    name = clean_name_legislator_migrate(last, first).split('<SPLIT>')
    first = name[0]
    last = name[1]
+
+   if 'Reginald Byron' in first:
+      first = 'Reginald'
+
    cursor.execute(QS_PERSON, (last, first))
    return cursor.fetchone()
 
@@ -113,14 +119,14 @@ def migrate_legislators(ca_cursor, dd_cursor):
 
     # If this legislator isn't in DDDB, add them to Person table
     if exist is None:
-      print 'New Member: {0} {1}'.format(first, last)
+      logger.info('New Member: first: {0} last: {1}'.format(first, last))
       dd_cursor.execute(QI_PERSON, (last, first))
 
       # If this is an active legislator, add them to Legislator and Term too
       if active == 'Y':
         pid = dd_cursor.lastrowid
-        print('Inserting Legislator: %s %s %s %s %s %s' %
-              (pid, year, district, house, party, STATE))
+        logger.info(('Inserting Legislator: %s %s %s %s %s %s' %
+              (pid, year, district, house, party, STATE)))
         dd_cursor.execute(QI_LEGISLATOR, (pid, STATE))
         dd_cursor.execute(QI_TERM, (pid, year, district, house, party, STATE))
 
@@ -140,12 +146,14 @@ def main():
                        db='capublic',
                        user='monty',
                        passwd='python') as ca_cursor:
-    with loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+    with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                            port=3306,
-                           db='DDDB2015Dec',
+                           db='MattTest',
                            user='awsDB',
                            passwd='digitaldemocracy789') as dd_cursor:
       migrate_legislators(ca_cursor, dd_cursor)
 
 if __name__ == "__main__":
-  main()
+  with GrayLogger('http://development.digitaldemocracy.org:12202/gelf') as _logger:
+    logger = _logger
+    main()

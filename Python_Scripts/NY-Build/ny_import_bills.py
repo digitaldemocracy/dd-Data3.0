@@ -3,7 +3,9 @@
 '''
 File: ny_import_bills.py
 Author: John Alkire
+maintained: Miguel Aguilar
 Date: 11/26/2015
+Last Update: 6/14/2016
 Description:
 - Imports NY bills using senate API
 - Fills Bill and BillVersion
@@ -52,16 +54,21 @@ select_billversion = '''SELECT vid
 
 API_YEAR = 2016
 API_URL = "http://legislation.nysenate.gov/api/3/{0}/{1}{2}?full=true&" 
-API_URL += "limit=1000&key=31kNDZZMhlEjCOV8zkBG1crgWAGxwDIS&offset={3}&term=billType.resolution:false"
+API_URL += "limit=1000&key=31kNDZZMhlEjCOV8zkBG1crgWAGxwDIS&offset={3}&"
 STATE = 'NY'                 
 BILL_API_INCREMENT = 1000
 
 #calls NY Senate API and returns a tuple with the list of results and the total number of results                        
-def call_senate_api(restCall, house, offset):
+def call_senate_api(restCall, house, offset, resolution):
     if house != "":
         house = "/" + house
     
-    url = API_URL.format(restCall, API_YEAR, house, offset)
+    if resolution:
+        api_url = API_URL+"term=billType.resolution:true"
+    else:
+        api_url = API_URL+"term=billType.resolution:false"
+
+    url = api_url.format(restCall, API_YEAR, house, offset)
     r = requests.get(url)
     out = r.json()
     
@@ -70,13 +77,13 @@ def call_senate_api(restCall, house, offset):
 #function to compile all bill data from NY senate API. There are over 1000 bills
 #so the API is looped over in 1000 bill increments. Data is placed into lists
 #and dictionaries. List of bill dictionaries is returned    
-def get_bills_api():
+def get_bills_api(resolution):
     total = BILL_API_INCREMENT
     cur_offset = 0
     ret_bills = list()
     
     while cur_offset < total:
-        call = call_senate_api("bills", "/search", cur_offset)
+        call = call_senate_api("bills", "/search", cur_offset, resolution)
         bills = call[0]
         total = call[1]
         
@@ -159,7 +166,9 @@ def insert_billversions_db(bill, dddb):
         
 #function to loop over all bills and insert bills and bill versions        
 def add_bills_db( dddb):
-    bills = get_bills_api()
+    #Resolution passed in, if 'True' then gets all the resolutions
+    bills = get_bills_api(False)
+    bills.extend(get_bills_api(True))
     bcount = 0
 
     for bill in bills:
