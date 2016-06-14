@@ -951,13 +951,20 @@ CREATE TABLE IF NOT EXISTS BillAnalysis(
     PRIMARY KEY(analysis_id)
 );
 
+-- These are the offices that staff work for 
+CREATE TABLE IF NOT EXISTS LegislativeOffices (
+  agency_name VARCHAR(100),
+  lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
 
--- You need to add a schedule D vs E flag probably
+  PRIMARY KEY (agency_name)
+)
+ENGINE = INNODB
+CHARACTER SET utf8 COLLATE utf8_general_ci;
+
 CREATE TABLE IF NOT EXISTS LegStaffGifts (
   year YEAR,
-  agency_name VARCHAR(100),
-  last_name VARCHAR(100),
-  first_name VARCHAR(100),
+  agency_name VARCHAR(100), -- The broad gov agency receiving the gift
+  staff_member INT, -- the staff member receiving the gift
   person_type ENUM('Staff', 'Legislator'),
   position VARCHAR(200),
   district_number INT,
@@ -971,12 +978,34 @@ CREATE TABLE IF NOT EXISTS LegStaffGifts (
   reimbursed BOOLEAN, -- this one is just a flag
   gift_description VARCHAR(200),
   speech_or_panel BOOLEAN, -- flag to see if was for a speech
-  image_url VARCHAR(75)
+  image_url VARCHAR(2000),
+  lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+
+  FOREIGN KEY (staff_member) REFERENCES Person(pid),
+  FOREIGN KEY  (agency_name) REFERENCES LegislativeOffices(agency_name)
 )
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+-- This is really just a many-to-many relation between 
+-- LegStaffGifts and Term
+CREATE TABLE IF NOT EXISTS LegOfficePersonnel (
+  staff_member INT,
+  legislator INT, -- pk for term
+  term_year YEAR, -- pk for term
+  house VARCHAR(100), -- pk for term 
+  state CHAR(2), -- pk for term 
+  start_date DATE, -- When the staff member started at this office
+  end_date DATE,  -- when staff member ended with that office
+  lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
 
+  PRIMARY KEY (staff_member, legislator, term_year, house, state), 
+  FOREIGN KEY (staff_member) REFERENCES LegislativeStaff(pid), 
+  FOREIGN KEY (legislator, term_year, house, state) 
+    REFERENCES Term(pid, year, house, state)
+)
+ENGINE = INNODB
+CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Entity::DeprecatedPerson
 
