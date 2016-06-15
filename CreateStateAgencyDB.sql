@@ -23,23 +23,34 @@ CREATE TABLE IF NOT EXISTS StateAgency (
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
--- This is the Person replacement table. Covers both board members 
--- and board staff. Also should contain a generic person to grab 
--- all other utterances
-CREATE TABLE IF NOT EXISTS AgencyEmployee (
-   ae_id    INTEGER AUTO_INCREMENT,   -- Person id
+-- Will include generic entries for Department Staff, Witness Testimony,
+-- and Public Comment
+CREATE TABLE IF NOT EXISTS Person (
+   pid INTEGER AUTO_INCREMENT,   -- Person id
    last   VARCHAR(50) NOT NULL,     -- last name
    middle VARCHAR(50),              -- middle name
    first  VARCHAR(50) NOT NULL,     -- first name
    image VARCHAR(255),              -- path to image (if exists)
-   agency INT,
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(), 
 
-   PRIMARY KEY (ae_id),
+   PRIMARY KEY (pid)
+)
+ENGINE = INNODB
+CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS servesOn (
+   pid      INTEGER,                               -- Person id (ref. Person.pid)
+   year     YEAR,                                  -- year served
+   agency INT,
+   position ENUM('Boardmember', 'Executive Staff'),
+   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+
+   PRIMARY KEY (pid, year, agency, position),
    FOREIGN KEY (agency) REFERENCES StateAgency(sa_id)
 )
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
+
 
 -- Hearing
 -- add fk to StateAgency because we have no CommitteeHearing
@@ -137,7 +148,7 @@ CREATE TABLE IF NOT EXISTS Utterance (
 
    PRIMARY KEY (uid, current),
    UNIQUE KEY (uid, vid, speaker, current, time),
-   FOREIGN KEY (speaker) REFERENCES AgencyEmployee(ae_id),
+   FOREIGN KEY (speaker) REFERENCES Person(pid),
    FOREIGN KEY (vid) REFERENCES Video(vid),
    FOREIGN KEY (agenda_item) REFERENCES AgendaItem(ai_id),
    FOREIGN KEY (state) REFERENCES State(abbrev)
