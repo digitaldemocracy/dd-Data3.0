@@ -1087,6 +1087,71 @@ CREATE TABLE TT_EditorStates (
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+CREATE TABLE IF NOT EXISTS TT_Videos (
+   videoId INTEGER AUTO_INCREMENT,
+   hearingName VARCHAR(255),
+   hearingDate DATE,
+   url VARCHAR(255), 
+   sourceUrl VARCHAR(255), 
+   fileName VARCHAR(255),
+   duration INTEGER,
+   state VARCHAR(2),
+   status ENUM("downloading","downloaded","failed","skipped","queued","diarized","cut","approved"),
+   glacierId VARCHAR(255),
+   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+   PRIMARY KEY (videoId)
+)
+ENGINE = INNODB
+CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS TT_Cuts (
+   cutId INTEGER AUTO_INCREMENT,
+   videoId INTEGER,
+   fileId VARCHAR(255),
+   fileName VARCHAR(255),
+   start_time FLOAT,
+   end_time FLOAT,
+   leading_silence FLOAT DEFAULT 0.0,
+   type ENUM("pause","silenece"),
+   finalized BOOLEAN NOT NULL,
+   current BOOLEAN NOT NULL,
+   created TIMESTAMP DEFAULT NOW(),
+   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+   PRIMARY KEY (cutId),
+   FOREIGN KEY (videoId) REFERENCES TT_Videos(videoId)
+)
+ENGINE = INNODB
+CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS TT_ServiceRequests (
+   cutId INTEGER,
+   serviceProvider ENUM("cielo", "green_button", "other"),
+   turnaround INTEGER,
+   fidelity VARCHAR(255),
+   importance VARCHAR(255),
+   transcript VARCHAR(255),
+   job_id VARCHAR(255),
+   status ENUM("in_progress", "completed") DEFAULT "in_progress", 
+   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+   PRIMARY KEY (cutId),
+   FOREIGN KEY (cutId) REFERENCES TT_Cuts(cutId)
+)
+ENGINE = INNODB
+CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS TT_HostingUrl (
+   cutId INTEGER,
+   url VARCHAR(255),
+   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+   PRIMARY KEY (cutId),
+   FOREIGN KEY (cutId) REFERENCES TT_Cuts(cutId)
+)
+ENGINE = INNODB
+CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+CREATE OR REPLACE VIEW TT_currentCuts 
+AS SELECT * FROM TT_Cuts 
+WHERE current = TRUE AND finalized = FALSE ORDER BY videoId DESC, cutId ASC;
 
 
 
