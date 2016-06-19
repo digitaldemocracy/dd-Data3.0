@@ -1094,7 +1094,7 @@ CREATE TABLE IF NOT EXISTS TT_Videos (
    url VARCHAR(255), 
    sourceUrl VARCHAR(255), 
    fileName VARCHAR(255),
-   duration INTEGER,
+   duration FLOAT,
    state VARCHAR(2),
    status ENUM("downloading","downloaded","failed","skipped","queued","diarized","cut","approved","tasked"),
    glacierId VARCHAR(255),
