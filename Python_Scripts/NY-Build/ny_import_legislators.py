@@ -4,7 +4,7 @@
 File: ny_import_legislators.py
 Author: John Alkire
 Modified: Eric Roh
-Date: 4/12/2016
+Date: 6/21/2016
 Description:
 - Imports NY legislators using senate API
 - Fills Person, Term, and Legislator
@@ -237,11 +237,7 @@ def main():
                         port=3306,
                         passwd='digitaldemocracy789',
                         charset='utf8') as dddb:
-#    dddb = dddb_conn.cursor()
-#    dddb_conn.autocommit(True)
       add_senators_db(dddb)
-      raise TypeError()
-#    dddb_conn.close()
 
 if __name__ == '__main__':
   with GrayLogger(GRAY_URL) as _logger:
