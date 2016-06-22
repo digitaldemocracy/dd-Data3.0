@@ -3,9 +3,9 @@
 '''
 File: ny_import_bills.py
 Author: John Alkire
-maintained: Miguel Aguilar
+maintained: Miguel Aguilar, Eric Roh
 Date: 11/26/2015
-Last Update: 6/14/2016
+Last Update: 6/21/2016
 Description:
 - Imports NY bills using senate API
 - Fills Bill and BillVersion
@@ -13,7 +13,10 @@ Description:
 '''
 import requests
 import MySQLdb
-import loggingdb
+from graylogger.graylogger import GrayLogger
+GRAY_URL = 'http://development.digitaldemocracy.org:12202/gelf'
+logger = None
+
 
 update_billversion = '''UPDATE BillVersion
                         SET bid = %(bid)s, date = %(date)s, state = %(state)s, 
@@ -57,6 +60,14 @@ API_URL = "http://legislation.nysenate.gov/api/3/{0}/{1}{2}?full=true&"
 API_URL += "limit=1000&key=31kNDZZMhlEjCOV8zkBG1crgWAGxwDIS&offset={3}&"
 STATE = 'NY'                 
 BILL_API_INCREMENT = 1000
+
+
+def create_payload(table, sqlstmt):
+    return {
+      '_table': table,
+      '_sqlstmt': sqlstmt,
+      '_state': 'NY'
+    }
 
 #calls NY Senate API and returns a tuple with the list of results and the total number of results                        
 def call_senate_api(restCall, house, offset, resolution):
@@ -112,9 +123,17 @@ def get_bills_api(resolution):
 #insertion occurs, false otherwise                          
 def insert_bill_db(bill, dddb):
     if not is_bill_in_db(bill, dddb):                        
-        dddb.execute(insert_bill, bill)        
+      try:
+        eddb.execute(insert_bill, bill)
+      except MySQLdb.Error:
+        logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+            additional_fields=create_payload('Bill', (insert_bill, bill)))
     else:        
-        dddb.execute(update_bill, bill)  
+      try:
+        dddb.execute(update_bill, bill)
+      except MySQLdb.Error:
+        logger.warning('Update Failed', full_msg=traceback.format_exc(),
+              additional_fields=create_payload('Bill', (update_bill, bill)))
         return False   
               
     return True
@@ -160,9 +179,17 @@ def insert_billversions_db(bill, dddb):
         bv['text'] = bill['versions'][key]['fullText']
         
         if not is_bv_in_db(bv, dddb):
-            dddb.execute(insert_billversion, bv)            
+          try:
+            dddb.execute(insert_billversion, bv)
+          except MySQLdb.Error:
+            logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+                additional_fields=create_payload('Bill Version',( insert_billversion, bv)))
         else:            
+          try:
             dddb.execute(update_billversion, bv)
+          except MySQLdb.Error:
+            logger.warning('Update Failed', full_msg=traceback.format_exc(),
+                additional_fields=create_payload('Bill Version', (update_billversion, bv)))
         
 #function to loop over all bills and insert bills and bill versions        
 def add_bills_db( dddb):
@@ -179,14 +206,15 @@ def add_bills_db( dddb):
     print "Inserted %d bills" % bcount
                     
 def main():
-    dddb_conn =  loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+    with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                         user='awsDB',
                         db='DDDB2015Dec',
                         port=3306,
                         passwd='digitaldemocracy789',
-                        charset='utf8')
-    dddb = dddb_conn.cursor()
-    dddb_conn.autocommit(True)
-    add_bills_db(dddb)
+                        charset='utf8') as dddb:
+      add_bills_db(dddb)
     
-main()
+if __name__ == '__main__':
+  with GrayLogger(GRAY_URL) as _logger:
+    logger = _logger
+    main()
