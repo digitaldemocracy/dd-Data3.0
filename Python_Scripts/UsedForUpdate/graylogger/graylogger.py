@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python2.6
 import json
 import requests
 import traceback
@@ -38,8 +38,8 @@ class GrayLogger(object):
       pass
 
   def __getattr__(self, name):
-    levels = {k.lower():v for k, v in GrayLogger.__dict__.items()
-              if not k.startswith('__') and not callable(k)} 
+    levels = dict((k.lower(), v) for k, v in GrayLogger.__dict__.items()
+                  if not k.startswith('__') and not callable(k))
 
     if name in levels:
       return partial(self.log, levels[name])
