@@ -10,11 +10,14 @@ Description:
 - Needs Bill, BillVersion, Person tables to be filled first
 - Currently configured to test DB
 '''
+
+import traceback
 import requests
 import MySQLdb
 from graylogger.graylogger import GrayLogger                                    
 API_URL = 'http://development.digitaldemocracy.org:12202/gelf'                  
 logger = None
+logged_list = list()
 
 counter = 0
 
@@ -85,6 +88,7 @@ def get_author_api(year):
   total = 1000
   cur_offset = 1
   ret_bills = list()
+  problem_names = list()
 
   while cur_offset < total:
     call = call_senate_api("bills", year, "", cur_offset)
@@ -92,17 +96,24 @@ def get_author_api(year):
     total = call[1]
     for bill in bills:
       if bill['sponsor']['member'] is not None:
-        b = dict()
-        b['type'] = bill['basePrintNo']
-#       print b['type']
-        b['session'] = '0'
-        fullName = bill['sponsor']['member']['fullName'].encode('utf-8')
-        name = clean_name(fullName)
-        b['last'] = name[1]
-        b['first'] = name[0]
-        b['versions'] = bill['amendments']['items']
-        b['bid'] = "NY_" + str(year) + str(year + 1) + b['session'] + b['type']
-        ret_bills.append(b)
+        try:
+          b = dict()
+          b['type'] = bill['basePrintNo']
+#         print b['type']
+          b['session'] = '0'
+          fullName = bill['sponsor']['member']['fullName'].encode('utf-8')
+          name = clean_name(fullName)
+          b['last'] = name[1]
+          b['first'] = name[0]
+          b['versions'] = bill['amendments']['items']
+          b['bid'] = "NY_" + str(year) + str(year + 1) + b['session'] + b['type']
+          ret_bills.append(b)
+        except IndexError:
+          name = bill['sponsor']['member']['fullName'].encode('utf-8')
+          if name not in problem_names:
+            problem_names.append(name)
+            logger.warning('Problem with name ' + name,
+                full_msg=traceback.format_exc(), additional_fields={'_state':'NY'})
     cur_offset += 1000
   print len(ret_bills)
   return ret_bills
@@ -157,7 +168,7 @@ def insert_authors_db(bill, dddb):
           logger.warning('Update Failed', full_msg=traceback.format_exc(),
               additional_fields=create_payload('CoAuthors', (QU_AUTHORS, a)))
         print 'updated', a['pid']
-      dddb.execute(QS_BILLSPONSORS_CHECK)
+      dddb.execute(QS_BILLSPONSORS_CHECK, (a['pid'], a['bid'], a['vid'], CONTRIBUTION))
       if dddb.rowcount == 0 and vid_check:
         add_sponsor(dddb, a['pid'], a['bid'], a['vid'], CONTRIBUTION)
 #     else:
@@ -170,7 +181,11 @@ def check_vid_db(vid, dddb):
   if dddb.rowcount == 1:
     return True
   else:
-    print vid, 'no vid'
+#    print vid, 'no vid'
+    if vid not in logged_list:
+      logged_list.append(vid)
+      logger.warning('BillVerson not found ' + vid,
+          additional_fields={'_state':'NY'})
     return False 
 
 def check_bid_db(bid, dddb):
@@ -178,7 +193,11 @@ def check_bid_db(bid, dddb):
   if dddb.rowcount == 1:
     return True
   else:
-    print bid, 'no bid'
+    if bid not in logged_list:
+      logged_list.append(bid)
+      logger.warning('Bill not found ' + bid,
+          additional_fields={'_state':'NY'})
+#    print bid, 'no bid'
     return False
 
 def clean_name(name):
@@ -211,9 +230,9 @@ def clean_name(name):
     name_arr = name.split()      
     suffix = "";
     if len(name_arr) == 1 and name_arr[0] in problem_names.keys():
-      print name_arr
+#      print name_arr
       name_arr = list(problem_names[name_arr[0]])
-      print name_arr
+#      print name_arr
     for word in name_arr:
 #     print "word", word
         if word != name_arr[0] and (len(word) <= 1 or word in ending.keys()):
@@ -240,7 +259,11 @@ def get_pid_db(first, last, dddb):
     ret = dddb.fetchone()[0]
     return ret
   else:
-    print first, last, 'not in database'
+#    print first, last, 'not in database'
+    if last not in loggd_list:
+      logged_list.append(last)
+      logger.warning('Person not found ' + first + ' ' + last,
+          additional_fields={'_state':'NY'})
     return None
 
 def add_authors_db(year, dddb):

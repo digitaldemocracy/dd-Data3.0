@@ -124,7 +124,7 @@ def get_bills_api(resolution):
 def insert_bill_db(bill, dddb):
     if not is_bill_in_db(bill, dddb):                        
       try:
-        eddb.execute(insert_bill, bill)
+        dddb.execute(insert_bill, bill)
       except MySQLdb.Error:
         logger.warning('Insert Failed', full_msg=traceback.format_exc(),
             additional_fields=create_payload('Bill', (insert_bill, bill)))

@@ -88,7 +88,15 @@ def clean_name(name):
         "Kenneth Blankenbush":("Ken","Blankenbush"),
         "Alec Brook-Krasny":("Pamela","Harris"),
         "Mickey Kearns":("Michael", "Kearns"),
-        "Steven Englebright":("Steve", "Englebright"),        
+        "Steven Englebright":("Steve", "Englebright"),
+        "WILLIAMS":("Jamie", "Williams"),
+        "PEOPLES-STOKE":("Crystal", "Peoples-Stoke"),
+        "KAMINSKY":("Todd", "Kaminsky"),
+        "HYNDMAN":("Alicia", "Hyndman"),
+        "HUNTER":("Pamela", "Hunter"),
+        "HARRIS":("Pamela", "Harris"),
+        "CASTORINA":("Ron", "Castorina", "Jr"),
+        "CANCEL":("Alice", "Cancel"),
     }
     
     ending = {'Jr':', Jr.','Sr':', Sr.','II':' II','III':' III', 'IV':' IV'}
@@ -97,6 +105,10 @@ def clean_name(name):
     name = name.replace('  ', ' ')
     name_arr = name.split()      
     suffix = "";         
+
+    if len(name_arr) == 1 and name_arr[0] in problem_names.keys():
+      name_arr = list(problem_names[name_arr[0]])
+
           
     for word in name_arr:
         if word != name_arr[0] and (len(word) <= 1 or word in ending.keys()):
@@ -114,7 +126,6 @@ def clean_name(name):
     
     if (first + ' ' + last) in problem_names.keys():             
         return problem_names[(first + ' ' + last)]
-        
     return (first, last)
 
 #calls NY Senate API and returns the list of results    
@@ -123,8 +134,8 @@ def call_senate_api(restCall, house, offset):
         house = "/" + house
     url = API_URL.format(restCall, API_YEAR, house, offset)
     #print "Hey Yall!!! I'm going to print the result of the API_URL format call!"
-    #print url
     r = requests.get(url)
+    print url
     out = r.json()
     return out["result"]["items"]
 
@@ -183,8 +194,8 @@ def get_senators_api():
         ret_sens.append(sen)
       except IndexError as error:
         logger.warning('Problem with name ' + senator['fullName'], 
-            full_msg=traceback.format_exc())
-    #print "Downloaded %d legislators..." % len(ret_sens)
+            full_msg=traceback.format_exc(), additional_fields={'_state':'NY'})
+    print "Downloaded %d legislators..." % len(ret_sens)
     return ret_sens        
 
 #function to add legislator's data to Person, Legislator, and Term

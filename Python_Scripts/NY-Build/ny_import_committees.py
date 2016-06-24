@@ -171,6 +171,7 @@ def get_committees_api():
         members = comm['committeeMembers']['items']
         
         for member in members:
+          try:
             sen = dict()                
             name = clean_name(member['fullName']) 
             sen['last'] = name[1]
@@ -185,7 +186,10 @@ def get_committees_api():
                 sen['position'] = "member"
                 
             committee['members'].append(sen)
-            
+          except IndexError:
+            logger.warning('Person not found ' + member['fullName'],
+                additional_fields={'_state':'NY'})
+
         ret_comms.append(committee)
         
     #print "Downloaded %d committees..." % len(ret_comms)

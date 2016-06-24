@@ -14,6 +14,7 @@ import MySQLdb
 from graylogger.graylogger import GrayLogger
 API_URL = 'http://development.digitaldemocracy.org:12202/gelf'
 logger = None
+logged_list = list()
 
 US_STATE = 'NY'
 
@@ -81,17 +82,22 @@ def insert_committeeauthors_db(bill, cid, year, dddb):
 
       dddb.execute(QS_COMMITTEEAUTHORS_CHECK, (str(cid), a['bid'], a['vid']))
       if dddb.rowcount == 0:
-        dddb.execute(QI_COMMITTEEAUTHORS, (str(cid), a['bid'], a['vid']))
-      else:
-        print "already existing"
-    else:
-      print bill['bid'], "fill Bill table first"
+        try:
+          dddb.execute(QI_COMMITTEEAUTHORS, (str(cid), a['bid'], a['vid']))
+        except MySQLdb.Error:
+          logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+              additional_fields=create_payload('CommitteeAuthors', 
+                (QI_COMMITTEEAUTHORS, (str(cid), a['bid'], a['vid']))))
 
 def check_bid_db(bid, dddb):
   dddb.execute(QS_BILL, {'bid':bid})
   if dddb.rowcount == 1:
     return True
   else:
+    if bid not in logged_list:
+      logged_list.append(bid)
+      logger.warning('Bill not found ' + bid,
+          additional_fields={'_state':'NY'})
     return False
 
 def add_committeeauthors_db(year, dddb):
