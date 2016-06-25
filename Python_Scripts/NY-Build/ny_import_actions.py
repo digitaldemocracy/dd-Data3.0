@@ -32,8 +32,6 @@ API_URL += "limit=1000&key=31kNDZZMhlEjCOV8zkBG1crgWAGxwDIS&offset={3}&"
 STATE = 'NY'                 
 BILL_API_INCREMENT = 1000
 
-#API KEY: key=qvMsF9IPtTB1HZSFAN3y6MopPJiNP6TB
-
 #calls NY Senate API and returns a tuple with the list of results and the total number of results                        
 def call_senate_api(restCall, house, offset, resolution):
     if house != "":
@@ -124,10 +122,9 @@ def main():
                         port=3306,
                         passwd='digitaldemocracy789',
                         charset='utf8') as dddb:
-       add_bill_actions_db(dddb)      
+        add_bill_actions_db(dddb)      
     
 if __name__ == '__main__':
     with GrayLogger(GRAY_URL) as _logger:
         logger = _logger
         main()
-
