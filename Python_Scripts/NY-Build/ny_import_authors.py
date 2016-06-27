@@ -221,7 +221,12 @@ def clean_name(name):
         "Steven Englebright":("Steve", "Englebright"),
         "HUNTER":("Pamela","Hunter"),
         "HYNDMAN":("Alicia","Hyndman"),
-        "HARRIS":("Pamela","Harris")
+        "HARRIS":("Pamela","Harris"),
+        "WILLIAMS":("Jamie", "Williams"),
+        "PEOPLES-STOKE":("Crystal", "Peoples-Stoke"),
+        "KAMINSKY":("Todd", "Kaminsky"),
+        "CASTORINA":("Ron", "Castorina", "Jr"),
+        "CANCEL":("Alice", "Cancel"),
     }
     ending = {'Jr':', Jr.','Sr':', Sr.','II':' II','III':' III', 'IV':' IV'}
     name = name.replace(',', ' ')
