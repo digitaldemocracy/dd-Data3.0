@@ -93,7 +93,7 @@ def add_bill(dd_cursor, values):
       dd_cursor.execute(QI_BILL, values)
     except MySQLdb.Error:
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-          additional_fields=create_payload('Bill', (QS_BILL_CHECK, (values[0], values[2]))))
+          additional_fields=create_payload('Bill', (QS_BILL_CHECK % (values[0], values[2]))))
 
 '''
 Checks if BillVersion exists. If not, adds the BillVersion.
@@ -117,9 +117,10 @@ def add_bill_version(dd_cursor, values):
       dd_cursor.execute(QI_BILLVERSION, values)
     except MySQLdb.Error:
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-          additional_fields=create_payload('BillVersion', (QS_BILLVERSION_CHECK, (values[0],))))
+          additional_fields=create_payload('BillVersion', 
+            (QS_BILLVERSION_CHECK % (values[0],))))
 
-'''
+          '''
 Gets all of the Bills, then adds them as necessary
 
 |ca_cursor|: capublic database cursor

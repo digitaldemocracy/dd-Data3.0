@@ -173,7 +173,7 @@ def get_person(dd_cursor, filer_id, filer_naml, filer_namf, val):
     except MySQLdb.Error:                                              
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
           additional_fields=create_payload('Person', 
-            (QI_PERSON, (filer_naml, filer_namf))))
+            (QI_PERSON % (filer_naml, filer_namf))))
     dd_cursor.execute(QS_PERSON_MAX_PID)
     pid = dd_cursor.fetchone()[0]
   return pid
@@ -194,7 +194,7 @@ def insert_organization(dd_cursor, filer_naml, bus_city):
     except MySQLdb.Error:
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
           additional_fields=create_payload('Organizations', 
-            (QI_ORGANIZATIONS, (filer_naml, bus_city, state))))
+            (QI_ORGANIZATIONS % (filer_naml, bus_city, state))))
 
 '''
 Given a person's information, check if it's in DDDB. Otherwise, add.
@@ -216,7 +216,7 @@ def insert_lobbyist_employer(dd_cursor, filer_naml, filer_id, bus_city, coalitio
     except MySQLdb.Error:
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
           additional_fields=create_payload('LobbyiestEmployer',
-            (QI_LOBBYIST_EMPLOYER, (filer_id, oid, coalition, state))))
+            (QI_LOBBYIST_EMPLOYER % (filer_id, oid, coalition, state))))
 
 '''
 Given a lobbying firm's name, check if it's in DDDB. Otherwise, add.
@@ -234,7 +234,7 @@ def insert_lobbying_firm(dd_cursor, filer_naml):
     except MySQLdb.Error:                                              
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
           additional_fields=create_payload('LobbyingFirm', 
-            (QI_LOBBYING_FIRM, (filer_naml,))))
+            (QI_LOBBYING_FIRM % (filer_naml,))))
 
 '''
 Given a lobbying firm's information and state, check if it's in DDDB. If not, add.
@@ -254,7 +254,7 @@ def insert_lobbying_firm_state(dd_cursor, filer_naml, filer_id, rpt_date, ls_beg
     except MySQLdb.Error as error:                                              
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
         additional_fields=create_payload('LobbyingFirmState', 
-          (QI_LOBBYING_FIRM_STATE, (filer_id, rpt_date, ls_beg_yr, ls_end_yr, filer_naml, state))))
+          (QI_LOBBYING_FIRM_STATE % (filer_id, rpt_date, ls_beg_yr, ls_end_yr, filer_naml, state))))
 
 '''
 Given a lobbyist information, check if it's in DDDB. Otherwise, add.
@@ -274,7 +274,7 @@ def insert_lobbyist(dd_cursor, pid, filer_id):
     except MySQLdb.Error as error:                                              
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
           additional_fields=create_payload('Lobbyist', 
-            (QI_LOBBYIST, (pid, filer_id, state))))
+            (QI_LOBBYIST % (pid, filer_id, state))))
 
 '''
 Given a lobbyist and their lobbying firm informations, check if it's in DDDB.
@@ -295,7 +295,7 @@ def insert_lobbyist_employment(dd_cursor, pid, sender_id, rpt_date, ls_beg_yr, l
     except MySQLdb.Error:
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
           additional_fields=create_payload('LobbistEmployment',
-            (QI_LOBBYIST_EMPLOYMENT, (pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr, state))))
+            (QI_LOBBYIST_EMPLOYMENT % (pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr, state))))
     
 '''
 Given a lobbyist and their direct employer informations, check if it's in DDDB.
@@ -317,7 +317,7 @@ def insert_lobbyist_direct_employment(dd_cursor, pid, sender_id, rpt_date, ls_be
     except MySQLdb.Error:
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
           additional_fields=create_payload('LobbyistDirectEmployment',
-            (QI_LOBBYIST_DIRECT_EMPLOYMENT, (pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr, state))))
+            (QI_LOBBYIST_DIRECT_EMPLOYMENT % (pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr, state))))
 
 '''
 Given a lobbyist and their employer informations, check if it's in DDDB.
@@ -340,7 +340,7 @@ def insert_lobbyist_contracts(dd_cursor, filer_id, sender_id, rpt_date, ls_beg_y
     except MySQLdb.Error:
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
           additional_fields=create_payload('LobbingContracts',
-            (QI_LOBBYING_CONTRACTS, (filer_id, sender_id, rpt_date, ls_beg_yr, ls_end_yr, state))))
+            (QI_LOBBYING_CONTRACTS % (filer_id, sender_id, rpt_date, ls_beg_yr, ls_end_yr, state))))
   
 # For case 4
 # Goes through the lobbyist list and determines if they work for
@@ -359,7 +359,7 @@ def find_lobbyist_employment(dd_cursor, index):
       except MySQLdb.Error:
         logger.warning('Insert Failed', full_msg=traceback.format_exc(),
             additional_fields=create_payload('LobbyistEmployment',
-              (QI_LOBBYIST_EMPLOYMENT, (Lobbyist[index][0], 
+              (QI_LOBBYIST_EMPLOYMENT % (Lobbyist[index][0], 
               Lobbyist[index][1], Lobbyist[index][2],
               Lobbyist[index][3], Lobbyist[index][4], state))))
 
@@ -377,7 +377,7 @@ def find_lobbyist_employment(dd_cursor, index):
       except MySQLdb.Error:
         logger.warning('Insert Failed', full_msg=traceback.format_exc(),
             additional_fields=create_payload('LobbyistDirectEmployment',
-              (QI_LOBBYIST_DIRECT_EMPLOYMENT, (Lobbyist[index][0], 
+              (QI_LOBBYIST_DIRECT_EMPLOYMENT % (Lobbyist[index][0], 
                 Lobbyist[index][1], Lobbyist[index][2], Lobbyist[index][3], 
                 Lobbyist[index][4], state))))
         

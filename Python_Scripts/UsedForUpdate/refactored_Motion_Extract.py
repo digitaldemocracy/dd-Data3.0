@@ -57,7 +57,7 @@ def insert_motion(cursor, mid, date, text):
     except MySQLdb.Error as error:
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
           additional_fields=create_payload('Motion', 
-            (QI_MOTION, (mid, date, text, do_pass_flag))))
+            (QI_MOTION % (mid, date, text, do_pass_flag))))
 
 def get_motions():
   with MySQLdb.connect(host='transcription.digitaldemocracy.org',

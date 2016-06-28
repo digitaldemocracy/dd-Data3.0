@@ -88,7 +88,7 @@ def insert_district(cursor, state, house, did, note, year, region, geodata):
     except MySQLdb.Error:
             logger.warning('Insert Failed', full_msg=traceback.format_exc(),
                 additional_fields=create_payload('Distrcit',
-                  (QI_DISTRICT, (state, house, did, note, year, geodata, region))))
+                  (QI_DISTRICT % (state, house, did, note, year, geodata, region))))
 
 '''
 Gets all districts and inserts them into DDDB

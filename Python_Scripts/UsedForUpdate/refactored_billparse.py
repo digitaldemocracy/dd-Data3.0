@@ -151,7 +151,8 @@ def billparse(ca_cursor, dd_cursor):
       dd_cursor.execute(QU_BILL_VERSION, (title, digest, body, STATE, vid))
     except MySQLdb.Error:
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-          additional_fields=create_payload('BillVersion', (QU_BILL_VERSION, (title, digest, body, STATE, vid))))
+          additional_fields=create_payload('BillVersion', 
+            (QU_BILL_VERSION % (title, digest, body, STATE, vid))))
 
 if __name__ == "__main__":
   # MUST SPECIFY charset='utf8' OR BAD THINGS WILL HAPPEN.

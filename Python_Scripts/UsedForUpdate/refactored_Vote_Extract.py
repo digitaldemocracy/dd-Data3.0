@@ -31,6 +31,7 @@ Populates:
 
 '''
 
+import traceback
 import MySQLdb
 import sys
 from graylogger.graylogger import GrayLogger
@@ -129,6 +130,13 @@ QI_SUMMARY = '''INSERT INTO BillVoteSummary
 
 QI_DETAIL =  '''INSERT INTO BillVoteDetail (pid, voteId, result, state) 
                 VALUES (%s, %s, %s, %s)'''
+
+def create_payload(table, sqlstmt):
+  return {
+    '_table': table,
+    '_sqlstmt': sqlstmt,
+    '_state': 'NY'
+  }
 
 '''
 If committee is found, return cid. Otherwise, return None.
@@ -252,9 +260,10 @@ def insert_bill_vote_summary(cursor, bid, mid, cid, vote_date, ayes, naes, absta
   if cursor.rowcount == 0:
     try:
       cursor.execute(QI_SUMMARY, (bid, mid, cid, vote_date, ayes, naes, abstain, result))
-    except MySQLdb.Error as error:
-      logger.warning('Insert Failed', full_msg=error+(QI_SUMMARY, 
-        (bid, mid, cid, vote_date, ayes, naes, abstain, result)))
+    except MySQLdb.Error:
+      logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+          additional_fields=create_payload('BillVoteSummary', 
+            (QI_SUMMARY % (bid, mid, cid, vote_date, ayes, naes, abstain, result))))
 
 '''
 If Bill Vote Detail is not in DDDB, add. Otherwise, skip
@@ -264,8 +273,10 @@ def insert_bill_vote_detail(cursor, pid, voteId, result):
   if cursor.rowcount == 0:
     try:
       cursor.execute(QI_DETAIL, (pid, voteId, result, STATE))
-    except MySQLdb.Error as error:
-      logger.warning('Insert Failed', full_msg=error+(QI_DETAIL, (pid, voteId, result, STATE)))
+    except MySQLdb.Error:
+      logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+          additional_fields=create_payload('BillVoteDetail',
+            (QI_DETAIL % (pid, voteId, result, STATE))))
 
 '''
 Get Bill Vote Summaries. If bill vote summary isn't found in DDDB, add. 

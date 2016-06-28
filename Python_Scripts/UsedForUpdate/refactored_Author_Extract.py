@@ -137,7 +137,7 @@ def add_committee_author(dd_cursor, cid, bid, vid):
     except MySQLdb.Error:
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
           additional_fields=create_payload('CommitteeAuthors', 
-            (QI_COMMITTEEAUTHORS, (cid, bid, vid, STATE))))
+            (QI_COMMITTEEAUTHORS % (cid, bid, vid, STATE))))
 
 '''
 Cleans up the committee name if extraneous information is included.
@@ -289,7 +289,7 @@ def add_author(dd_cursor, pid, bid, vid, contribution):
     except MySQLdb.Error:
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
           additional_fields=create_payload('Authors', 
-            (QI_AUTHORS, (pid, bid, vid, contribution))))
+            (QI_AUTHORS % (pid, bid, vid, contribution))))
 
 '''
 If the BillSponsor for this bill is not in the DDDB, add BillSponsor.
@@ -309,7 +309,7 @@ def add_sponsor(dd_cursor, pid, bid, vid, contribution):
     except MySQLdb.Error as error:
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
         additional_fields=create_payload('BillSponsorRolls', 
-          (QI_BILLSPONSORROLLS, (contribution,))))
+          (QI_BILLSPONSORROLLS % (contribution,))))
 
   dd_cursor.execute(QS_BILLSPONSORS_CHECK, (bid, pid, vid, contribution))
 
@@ -320,7 +320,7 @@ def add_sponsor(dd_cursor, pid, bid, vid, contribution):
     except MySQLdb.Error as error:                                              
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
         additional_fields=create_payload('BillSponsors', 
-          (QI_BILLSPONSORS, (pid, bid, vid, contribution))))
+          (QI_BILLSPONSORS % (pid, bid, vid, contribution))))
 
 '''
 Grabs capublic's information and selectively adds bill authors into DDDB.

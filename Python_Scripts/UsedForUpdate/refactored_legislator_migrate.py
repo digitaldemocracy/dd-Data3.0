@@ -132,7 +132,7 @@ def migrate_legislators(ca_cursor, dd_cursor):
         dd_cursor.execute(QI_PERSON, (last, first))
       except MySQLdb.Error:
         logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-            additional_fields=create_payload('Person', (QI_PERSON, (last, first))))
+            additional_fields=create_payload('Person', (QI_PERSON % (last, first))))
 
       # If this is an active legislator, add them to Legislator and Term too
       if active == 'Y':
@@ -143,13 +143,13 @@ def migrate_legislators(ca_cursor, dd_cursor):
           dd_cursor.execute(QI_LEGISLATOR, (pid, STATE))
         except MySQLdb.Error:
            logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-               additional_fields=create_payload('Legislator', (QI_LEGISLATOR, (pid, STATE))))
+               additional_fields=create_payload('Legislator' % (QI_LEGISLATOR, (pid, STATE))))
         try:
           dd_cursor.execute(QI_TERM, (pid, year, district, house, party, STATE))
         except MySQLdb.Error:
           logger.warning('Insert Failed', full_msg=traceback.format_exc(),
               additional_fields=create_payload('Term', 
-                (QI_TERM, (pid, year, district, house, party, STATE))))
+                (QI_TERM % (pid, year, district, house, party, STATE))))
 
     # If this legislator is in DDDB, check if they're also in the Legislator 
     # and Term tables if they're active.
@@ -161,7 +161,7 @@ def migrate_legislators(ca_cursor, dd_cursor):
           dd_cursor.execute(QI_LEGISLATOR, (pid, STATE))
         except MySQLdb.Error:
           logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-              additional_fields=create_payload('Legislator', (QI_LEGISLATOR, (pid, STATE))))
+              additional_fields=create_payload('Legislator', (QI_LEGISLATOR % (pid, STATE))))
       result = check_term(dd_cursor, pid, year, district, house)
       if result is None and active == 'Y':
         try:
@@ -169,7 +169,7 @@ def migrate_legislators(ca_cursor, dd_cursor):
         except MySQLdb.Error:
           logger.warning('Insert Failed', full_msg=traceback.format_exc(),
               additional_fields=create_payload('Term',
-                (QI_TERM, (pid, year, district, house, party, STATE))))
+                (QI_TERM % (pid, year, district, house, party, STATE))))
 
 def main():
   with MySQLdb.connect(host='transcription.digitaldemocracy.org',
