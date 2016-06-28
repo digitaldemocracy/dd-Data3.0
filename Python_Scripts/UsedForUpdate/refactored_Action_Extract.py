@@ -71,12 +71,12 @@ def insert_Action(dd_cursor, values):
   dd_cursor.execute(QS_ACTION_CHECK, values)
   # If Action not in DDDB, add
   if(dd_cursor.rowcount == 0):
-    logger.info('New Action %s %s %s' % (values[0], values[1], values[2]))
+#    logger.info('New Action %s %s %s' % (values[0], values[1], values[2]))
     try:
       dd_cursor.execute(QI_ACTION, values)
     except MySQLdb.Error:
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-          additional_fields=create_payload('Action', (QI_ACTION, (values[0], values[1], values[2])))
+          additional_fields=create_payload('Action', (QI_ACTION % (values[0], values[1], values[2]))))
 
 '''
 Loops through all Actions from capublic and adds them as necessary
