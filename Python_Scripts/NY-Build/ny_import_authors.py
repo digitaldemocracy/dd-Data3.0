@@ -137,7 +137,7 @@ def add_sponsor(dd_cursor, pid, bid, vid, contribution):
       dd_cursor.execute(QI_BILLSPONSORS, (pid, bid, vid, contribution))
     except MySQLdb.Error:
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-          additional_fields=create_payload('BillSponsors', (QI_BILLSPONSORS, (pid, bid, vid, contribution))))
+          additional_fields=create_payload('BillSponsors', (QI_BILLSPONSORS % (pid, bid, vid, contribution))))
 
 def insert_authors_db(bill, dddb):
   global counter
@@ -159,14 +159,14 @@ def insert_authors_db(bill, dddb):
           dddb.execute(QI_AUTHORS, a)
         except MySQLdb.Error:
           logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-              additional_fields=create_payload('CoAuthors', (QI_AUTHORS, a)))
+              additional_fields=create_payload('CoAuthors', (QI_AUTHORS % a)))
         counter += 1
       elif vid_check and dddb.fetchone()[0] != a['pid']:
         try:
           dddb.execute(QU_AUTHORS, a)
         except MySQLdb.Error:
           logger.warning('Update Failed', full_msg=traceback.format_exc(),
-              additional_fields=create_payload('CoAuthors', (QU_AUTHORS, a)))
+              additional_fields=create_payload('CoAuthors', (QU_AUTHORS % a)))
         print 'updated', a['pid']
       dddb.execute(QS_BILLSPONSORS_CHECK, (a['pid'], a['bid'], a['vid'], CONTRIBUTION))
       if dddb.rowcount == 0 and vid_check:
@@ -279,7 +279,7 @@ def add_authors_db(year, dddb):
       dddb.execute(QI_BILLSPONSORROLLS, CONTRIBUTION)
     except MySQLdb.Error:
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-          additional_fields=create_payload('BillSponsorRolls', QI_BILLSPONSORROLLS, CONTRIBUTION))
+          additional_fields=create_payload('BillSponsorRolls', (QI_BILLSPONSORROLLS % CONTRIBUTION)))
 
   bills = get_author_api(year)
 

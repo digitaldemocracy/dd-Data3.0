@@ -105,7 +105,7 @@ def populate_table(dddb, legislator):
       dddb.execute(QU_LEGISLATOR, legislator)
     except MySQLdb.Error:
       logger.warning('Update Failed', full_msg=traceback.format_exc(),
-          additional_fields=create_payload('Legislator', (QU_LEGISLATOR, legislator)))
+          additional_fields=create_payload('Legislator', (QU_LEGISLATOR % legislator)))
 
     #Update the Term table
 #   update = 'UPDATE Term '
@@ -119,7 +119,7 @@ def populate_table(dddb, legislator):
       dddb.execute(QU_TERM, legislator)
     except MySQLdb.Error:
       logger.warning('Update Failed', full_msg=traceback.format_exc(),
-          additional_fields=create_payload('Term', (QU_TERM, legislator)))
+          additional_fields=create_payload('Term', (QU_TERM % legislator)))
 
 
 def clean_name(name):

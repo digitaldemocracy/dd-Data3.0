@@ -19,6 +19,7 @@ Populates:
 
 '''
 
+import traceback
 import datetime
 import json
 from urllib import urlopen
@@ -90,7 +91,7 @@ def insert_district(dd_cursor, house, did, note, year, region, geoData):
     except MySQLdb.Error:
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
           additional_fields=create_payload('District', 
-            (QI_DISTRICT, (state, house, did, note, year, region, geoData))))
+            (QI_DISTRICT % (state, house, did, note, year, region, geoData))))
 #    print (QI_DISTRICT % (state, house, did, note, year, region, geoData))
 
 '''

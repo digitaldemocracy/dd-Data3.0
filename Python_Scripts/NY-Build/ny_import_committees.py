@@ -9,6 +9,8 @@ Description:
 - Fills Committee and servesOn
 - Currently configured to test DB
 '''
+
+import traceback
 import requests
 import MySQLdb
 from graylogger.graylogger import GrayLogger
@@ -213,7 +215,7 @@ def add_committees_db(cur):
               cur.execute(insert_committee, committee)
             except MySQLdb.Error:
               logger.warning('Insert Failed', full_msg=traceback.format_exc(),        
-                    additional_fields=create_payload('Committee', (insert_committee, committee)))
+                    additional_fields=create_payload('Committee', (insert_committee % committee)))
         else:
             committee['cid'] = get_cid[0]
                    
@@ -226,7 +228,7 @@ def add_committees_db(cur):
                 cur.execute(insert_serveson, member)
               except MySQLdb.Error:
                 logger.warning('Update Failed', full_msg=traceback.format_exc(),        
-                      additional_fields=create_payload('Serveson', (insert_serveson, member)))
+                      additional_fields=create_payload('Serveson', (insert_serveson % member)))
               y += 1
                 
     #print "Added %d committees and %d members" % (x,y)                        

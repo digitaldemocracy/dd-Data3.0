@@ -11,6 +11,8 @@ Description:
 - Fills Bill and BillVersion
 - Currently configured to test DB
 '''
+
+import traceback
 import requests
 import MySQLdb
 from graylogger.graylogger import GrayLogger
@@ -127,13 +129,13 @@ def insert_bill_db(bill, dddb):
         dddb.execute(insert_bill, bill)
       except MySQLdb.Error:
         logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-            additional_fields=create_payload('Bill', (insert_bill, bill)))
+            additional_fields=create_payload('Bill', (insert_bill % bill)))
     else:        
       try:
         dddb.execute(update_bill, bill)
       except MySQLdb.Error:
         logger.warning('Update Failed', full_msg=traceback.format_exc(),
-              additional_fields=create_payload('Bill', (update_bill, bill)))
+              additional_fields=create_payload('Bill', (update_bill % bill)))
         return False   
               
     return True
@@ -183,13 +185,13 @@ def insert_billversions_db(bill, dddb):
             dddb.execute(insert_billversion, bv)
           except MySQLdb.Error:
             logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-                additional_fields=create_payload('Bill Version',( insert_billversion, bv)))
+                additional_fields=create_payload('Bill Version',( insert_billversion % bv)))
         else:            
           try:
             dddb.execute(update_billversion, bv)
           except MySQLdb.Error:
             logger.warning('Update Failed', full_msg=traceback.format_exc(),
-                additional_fields=create_payload('Bill Version', (update_billversion, bv)))
+                additional_fields=create_payload('Bill Version', (update_billversion % bv)))
         
 #function to loop over all bills and insert bills and bill versions        
 def add_bills_db( dddb):

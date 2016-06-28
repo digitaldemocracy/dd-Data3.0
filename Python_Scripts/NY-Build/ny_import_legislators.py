@@ -208,25 +208,25 @@ def add_senator_db(senator, dddb):
     if pid == False:
       try:
         dddb.execute(insert_person, senator)
-      except MySQLdb.Error as error:
-        logger.warning('Insert Failed', full_msg=error, 
-            additional_fields=create_payload('Person', (insert_person, senator)))
+      except MySQLdb.Error:
+        logger.warning('Insert Failed', full_msg=traceback.format_exc(), 
+            additional_fields=create_payload('Person', (insert_person % senator)))
       pid = dddb.lastrowid        
       senator['pid'] = pid
       try:
         dddb.execute(insert_legislator, senator)
-      except MySQLdb.Error as error:
-        logger.warning('Insert Failed', full_msg=error,
-            additional_fields=create_payload('Legislator', (insert_legislator, senator)))
+      except MySQLdb.Error:
+        logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+            additional_fields=create_payload('Legislator', (insert_legislator % senator)))
       ret = True
     
     if is_term_in_db(senator, dddb) == False:   
       #print insert_term % senator  
       try:
         dddb.execute(insert_term, senator)
-      except MySQLdb.Error as error:
-        logger.warning('Insert Failed', full_msg=error,
-            additional_fields=create_payload('Term', (insert_term, senator)))
+      except MySQLdb.Error:
+        logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+            additional_fields=create_payload('Term', (insert_term % senator)))
        
     return ret    
 

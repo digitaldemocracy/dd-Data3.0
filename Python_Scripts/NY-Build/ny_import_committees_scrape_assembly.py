@@ -8,6 +8,8 @@ Description:
 - Fills Committee and servesOn
 - Currently configured to test DB
 '''
+
+import traceback
 from lxml import html
 import requests
 import MySQLdb
@@ -185,7 +187,7 @@ def add_committees_db(dddb):
               dddb.execute(insert_committee, committee)
             except MySQLdb.Error:
               logger.warning('Insert Failed', full_msg=traceback.format_exc(),        
-                    additional_fields=create_payload('Committee', (insert_committee, committee)))
+                    additional_fields=create_payload('Committee', (insert_committee % committee)))
         else:
             committee['cid'] = get_cid[0]          
 
@@ -195,13 +197,12 @@ def add_committees_db(dddb):
                 member['pid'] = get_pid_db(member, dddb)
                 member['cid'] = committee['cid']
                 if is_serveson_in_db(member, dddb) == False:                
-                       
                     if member['pid'] != None:
                       try:
                         dddb.execute(insert_serveson, member)
                       except MySQLdb.Error:
                         logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-                            additional_fields=create_payload('Committee', (insert_committee, committee)))
+                            additional_fields=create_payload('Committee', (insert_committee % committee)))
                       y = y + 1
                         
     #print "Inserted %d committees and %d members" % (count, y)

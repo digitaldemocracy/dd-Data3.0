@@ -9,6 +9,8 @@ Description:
 - Needs Committee table to be filled first
 - Currently configured to test DB
 '''
+
+import traceback
 import requests
 import MySQLdb
 from graylogger.graylogger import GrayLogger
@@ -87,7 +89,7 @@ def insert_committeeauthors_db(bill, cid, year, dddb):
         except MySQLdb.Error:
           logger.warning('Insert Failed', full_msg=traceback.format_exc(),
               additional_fields=create_payload('CommitteeAuthors', 
-                (QI_COMMITTEEAUTHORS, (str(cid), a['bid'], a['vid']))))
+                (QI_COMMITTEEAUTHORS % (str(cid), a['bid'], a['vid']))))
 
 def check_bid_db(bid, dddb):
   dddb.execute(QS_BILL, {'bid':bid})

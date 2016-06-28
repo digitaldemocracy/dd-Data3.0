@@ -135,7 +135,7 @@ def add_sponsor(dd_cursor, pid, bid, vid, contribution):
     except MySQLdb.Error:
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
           additional_fields=create_payload('BillSponsors', 
-            (QI_BILLSPONSORS, (pid, bid, vid, contribution))))
+            (QI_BILLSPONSORS % (pid, bid, vid, contribution))))
 
 def insert_sponsors_db(bill, dddb, contribution):
 # print type(bill['versions'])
@@ -276,13 +276,13 @@ def add_authors_db(year, dddb):
         except MySQLdb.Error:
           logger.warning('Insert Failed', full_msg=traceback.format_exc(),
               additional_fields=create_payload('BillSponsorRoll', 
-                (QI_BILLSPONSORROLLS, (contribution,))))
+                (QI_BILLSPONSORROLLS % (contribution,))))
       insert_sponsors_db(bill, dddb, contribution)
 
 def main():
   with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
             user='awsDB',
-            db='EricTest',
+            db='DDDB2015Dec',
             port=3306,
             passwd='digitaldemocracy789',
             charset='utf8') as dddb:
