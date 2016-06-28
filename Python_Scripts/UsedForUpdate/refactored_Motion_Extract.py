@@ -24,8 +24,11 @@ Sources:
   - bill_motion_tbl
 '''
 
-import loggingdb
+import traceback
 import MySQLdb
+from graylogger.graylogger import GrayLogger
+API_URL = 'http://development.digitaldemocracy.org:12202/gelf'
+logger = None
 
 QI_MOTION = '''INSERT INTO Motion (mid, date, text, doPass) 
                VALUES (%s, %s, %s, %s)'''
@@ -36,19 +39,32 @@ QS_MOTION = '''SELECT mid
 QS_CPUB_MOTION = '''SELECT motion_id, motion_text, trans_update
                     FROM bill_motion_tbl'''
 
+def create_payload(table, sqlstmt):
+  return {
+      '_table': table,
+      '_sqlstmt': sqlstmt,
+      '_state': 'NY'
+  }
+
+
 # Insert the Motion row into DDDB if none is found
 def insert_motion(cursor, mid, date, text):
   cursor.execute(QS_MOTION, {'mid':mid, 'date':date})
   if(cursor.rowcount == 0):
     do_pass_flag = 1 if 'do pass' in text.lower() else 0
-    cursor.execute(QI_MOTION, (mid, date, text, do_pass_flag))  
+    try:
+      cursor.execute(QI_MOTION, (mid, date, text, do_pass_flag))
+    except MySQLdb.Error as error:
+      logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+          additional_fields=create_payload('Motion', 
+            (QI_MOTION, (mid, date, text, do_pass_flag))))
 
 def get_motions():
   with MySQLdb.connect(host='transcription.digitaldemocracy.org',
                        db='capublic',
                        user='monty',
                        passwd='python') as ca_cursor:
-    with loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+    with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                            port=3306,
                            db='DDDB2015Dec',
                            user='awsDB',
@@ -60,4 +76,6 @@ def get_motions():
           insert_motion(dddb_cursor, mid, date, text)
 
 if __name__ == "__main__":
-  get_motions() 
+  with GrayLogger(API_URL) as _logger:
+    logger = _logger
+    get_motions() 

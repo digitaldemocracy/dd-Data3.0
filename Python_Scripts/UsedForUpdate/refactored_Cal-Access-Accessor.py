@@ -27,10 +27,13 @@ Populates:
 
 import csv
 
+import traceback
 from clean_name import clean_name
-import loggingdb
 import refactored_Lobbying_Firm_Name_Fix
 import refactored_Person_Name_Fix
+from graylogger.graylogger import GrayLogger                                    
+API_URL = 'http://development.digitaldemocracy.org:12202/gelf'                  
+logger = None
 
 # U.S. State
 state = 'CA'
@@ -119,6 +122,13 @@ QS_LOBBYING_CONTRACTS = '''SELECT filer_id, sender_id, rpt_date, state
 # Currently a static table that is sized to 10,000
 Lobbyist = [[0 for x in xrange(7)] for x in xrange(10000)]
 
+def create_payload(table, sqlstmt):
+  return {
+      '_table': table,
+      '_sqlstmt': sqlstmt,
+      '_state': 'NY'
+  }
+
 # Changes the date into a linux format for the database
 def format_date(date_str):
   date = ''
@@ -158,7 +168,12 @@ def get_person(dd_cursor, filer_id, filer_naml, filer_namf, val):
   if dd_cursor.rowcount >= 1:
     pid = dd_cursor.fetchone()[0]
   else:
-    dd_cursor.execute(QI_PERSON, (filer_naml, filer_namf))
+    try:
+      dd_cursor.execute(QI_PERSON, (filer_naml, filer_namf))
+    except MySQLdb.Error:                                              
+      logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+          additional_fields=create_payload('Person', 
+            (QI_PERSON, (filer_naml, filer_namf))))
     dd_cursor.execute(QS_PERSON_MAX_PID)
     pid = dd_cursor.fetchone()[0]
   return pid
@@ -174,7 +189,12 @@ def insert_organization(dd_cursor, filer_naml, bus_city):
   dd_cursor.execute(QS_ORGANIZATIONS, (filer_naml, bus_city, state))
   if dd_cursor.rowcount == 0:
     filer_naml = clean_name(filer_naml, refactored_Lobbying_Firm_Name_Fix.clean)
-    dd_cursor.execute(QI_ORGANIZATIONS, (filer_naml, bus_city, state))
+    try:
+      dd_cursor.execute(QI_ORGANIZATIONS, (filer_naml, bus_city, state))
+    except MySQLdb.Error:
+      logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+          additional_fields=create_payload('Organizations', 
+            (QI_ORGANIZATIONS, (filer_naml, bus_city, state))))
 
 '''
 Given a person's information, check if it's in DDDB. Otherwise, add.
@@ -191,7 +211,12 @@ def insert_lobbyist_employer(dd_cursor, filer_naml, filer_id, bus_city, coalitio
     dd_cursor.execute(QS_ORGANIZATIONS, (filer_naml, bus_city, state))
     oid = dd_cursor.fetchone()[0]
 #    print 'Inserting into LobbyistEmployer: filer_id:{0}, oid:{1}, coalition:{2}, state:{3}\n'.format(filer_id, oid, coalition, state)
-    dd_cursor.execute(QI_LOBBYIST_EMPLOYER, (filer_id, oid, coalition, state))
+    try:
+      dd_cursor.execute(QI_LOBBYIST_EMPLOYER, (filer_id, oid, coalition, state))
+    except MySQLdb.Error:
+      logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+          additional_fields=create_payload('LobbyiestEmployer',
+            (QI_LOBBYIST_EMPLOYER, (filer_id, oid, coalition, state))))
 
 '''
 Given a lobbying firm's name, check if it's in DDDB. Otherwise, add.
@@ -204,7 +229,12 @@ def insert_lobbying_firm(dd_cursor, filer_naml):
   filer_naml = clean_name(filer_naml, refactored_Lobbying_Firm_Name_Fix.clean)
   dd_cursor.execute(QS_LOBBYING_FIRM, (filer_naml,))
   if dd_cursor.rowcount == 0:
-    dd_cursor.execute(QI_LOBBYING_FIRM, (filer_naml,))
+    try:
+      dd_cursor.execute(QI_LOBBYING_FIRM, (filer_naml,))
+    except MySQLdb.Error:                                              
+      logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+          additional_fields=create_payload('LobbyingFirm', 
+            (QI_LOBBYING_FIRM, (filer_naml,))))
 
 '''
 Given a lobbying firm's information and state, check if it's in DDDB. If not, add.
@@ -219,7 +249,12 @@ def insert_lobbying_firm_state(dd_cursor, filer_naml, filer_id, rpt_date, ls_beg
   dd_cursor.execute(QS_LOBBYING_FIRM_STATE, (filer_id, state))
   if dd_cursor.rowcount == 0:
     filer_naml = clean_name(filer_naml, refactored_Lobbying_Firm_Name_Fix.clean)
-    dd_cursor.execute(QI_LOBBYING_FIRM_STATE, (filer_id, rpt_date, ls_beg_yr, ls_end_yr, filer_naml, state))
+    try:
+      dd_cursor.execute(QI_LOBBYING_FIRM_STATE, (filer_id, rpt_date, ls_beg_yr, ls_end_yr, filer_naml, state))
+    except MySQLdb.Error as error:                                              
+      logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+        additional_fields=create_payload('LobbyingFirmState', 
+          (QI_LOBBYING_FIRM_STATE, (filer_id, rpt_date, ls_beg_yr, ls_end_yr, filer_naml, state))))
 
 '''
 Given a lobbyist information, check if it's in DDDB. Otherwise, add.
@@ -234,7 +269,12 @@ def insert_lobbyist(dd_cursor, pid, filer_id):
     return
   dd_cursor.execute(QS_LOBBYIST, (filer_id, state))
   if dd_cursor.rowcount == 0:
-    dd_cursor.execute(QI_LOBBYIST, (pid, filer_id, state))
+    try:
+      dd_cursor.execute(QI_LOBBYIST, (pid, filer_id, state))
+    except MySQLdb.Error as error:                                              
+      logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+          additional_fields=create_payload('Lobbyist', 
+            (QI_LOBBYIST, (pid, filer_id, state))))
 
 '''
 Given a lobbyist and their lobbying firm informations, check if it's in DDDB.
@@ -250,7 +290,12 @@ Otherwise, add.
 def insert_lobbyist_employment(dd_cursor, pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr):
   dd_cursor.execute(QS_LOBBYIST_EMPLOYMENT, (pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr, state))
   if dd_cursor.rowcount == 0:
-    dd_cursor.execute(QI_LOBBYIST_EMPLOYMENT, (pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr, state))
+    try:
+      dd_cursor.execute(QI_LOBBYIST_EMPLOYMENT, (pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr, state))
+    except MySQLdb.Error:
+      logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+          additional_fields=create_payload('LobbistEmployment',
+            (QI_LOBBYIST_EMPLOYMENT, (pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr, state))))
     
 '''
 Given a lobbyist and their direct employer informations, check if it's in DDDB.
@@ -267,7 +312,12 @@ def insert_lobbyist_direct_employment(dd_cursor, pid, sender_id, rpt_date, ls_be
   
   dd_cursor.execute(QS_LOBBYIST_DIRECT_EMPLOYMENT, (pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr, state))
   if dd_cursor.rowcount == 0:
-    dd_cursor.execute(QI_LOBBYIST_DIRECT_EMPLOYMENT, (pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr, state))
+    try:
+      dd_cursor.execute(QI_LOBBYIST_DIRECT_EMPLOYMENT, (pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr, state))
+    except MySQLdb.Error:
+      logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+          additional_fields=create_payload('LobbyistDirectEmployment',
+            (QI_LOBBYIST_DIRECT_EMPLOYMENT, (pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr, state))))
 
 '''
 Given a lobbyist and their employer informations, check if it's in DDDB.
@@ -284,8 +334,13 @@ def insert_lobbyist_contracts(dd_cursor, filer_id, sender_id, rpt_date, ls_beg_y
   dd_cursor.execute(QS_LOBBYING_CONTRACTS,
     (filer_id, sender_id, rpt_date, state))
   if dd_cursor.rowcount == 0:
-    dd_cursor.execute(QI_LOBBYING_CONTRACTS,
-      (filer_id, sender_id, rpt_date, ls_beg_yr, ls_end_yr, state))
+    try:
+      dd_cursor.execute(QI_LOBBYING_CONTRACTS,
+          (filer_id, sender_id, rpt_date, ls_beg_yr, ls_end_yr, state))
+    except MySQLdb.Error:
+      logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+          additional_fields=create_payload('LobbingContracts',
+            (QI_LOBBYING_CONTRACTS, (filer_id, sender_id, rpt_date, ls_beg_yr, ls_end_yr, state))))
   
 # For case 4
 # Goes through the lobbyist list and determines if they work for
@@ -297,9 +352,16 @@ def find_lobbyist_employment(dd_cursor, index):
       (Lobbyist[index][0], Lobbyist[index][1], Lobbyist[index][2],
       Lobbyist[index][3], Lobbyist[index][4], state))
     if dd_cursor.rowcount == 0:
-      dd_cursor.execute(QI_LOBBYIST_EMPLOYMENT,
-        (Lobbyist[index][0], Lobbyist[index][1], Lobbyist[index][2],
-        Lobbyist[index][3], Lobbyist[index][4], state))
+      try:
+        dd_cursor.execute(QI_LOBBYIST_EMPLOYMENT, (Lobbyist[index][0], 
+          Lobbyist[index][1], Lobbyist[index][2],
+          Lobbyist[index][3], Lobbyist[index][4], state))
+      except MySQLdb.Error:
+        logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+            additional_fields=create_payload('LobbyistEmployment',
+              (QI_LOBBYIST_EMPLOYMENT, (Lobbyist[index][0], 
+              Lobbyist[index][1], Lobbyist[index][2],
+              Lobbyist[index][3], Lobbyist[index][4], state))))
 
   dd_cursor.execute(QS_LOBBYIST_EMPLOYER, (Lobbyist[index][5], state))
   if dd_cursor.rowcount > 0:
@@ -308,13 +370,20 @@ def find_lobbyist_employment(dd_cursor, index):
       (Lobbyist[index][0], Lobbyist[index][1], Lobbyist[index][2],
       Lobbyist[index][3], Lobbyist[index][4], state))
     if dd_cursor.rowcount == 0:
-      dd_cursor.execute(QI_LOBBYIST_DIRECT_EMPLOYMENT,
-        (Lobbyist[index][0], Lobbyist[index][1], Lobbyist[index][2],
-        Lobbyist[index][3], Lobbyist[index][4], state))
+      try:
+        dd_cursor.execute(QI_LOBBYIST_DIRECT_EMPLOYMENT, (Lobbyist[index][0], 
+          Lobbyist[index][1], Lobbyist[index][2], 
+          Lobbyist[index][3], Lobbyist[index][4], state))
+      except MySQLdb.Error:
+        logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+            additional_fields=create_payload('LobbyistDirectEmployment',
+              (QI_LOBBYIST_DIRECT_EMPLOYMENT, (Lobbyist[index][0], 
+                Lobbyist[index][1], Lobbyist[index][2], Lobbyist[index][3], 
+                Lobbyist[index][4], state))))
         
 def main():
   import MySQLdb
-  with loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                          port=3306,
                          db='DDDB2015Dec',
                          user='awsDB',
@@ -463,4 +532,6 @@ def main():
     dd_cursor.execute('SET foreign_key_checks = 1')
       
 if __name__ == '__main__':
-  main()
+  with GrayLogger(API_URL) as _logger:                                          
+    logger = _logger                                                            
+    main()

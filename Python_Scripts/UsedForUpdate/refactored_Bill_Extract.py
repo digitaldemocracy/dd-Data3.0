@@ -2,9 +2,9 @@
 '''
 File: Bill_Extract.py
 Author: Daniel Mangin
-Modified By: Mandy Chan
+Modified By: Mandy Chan, Eric Roh
 Date: 6/11/2015
-Last Changed: 11/20/2015
+Last Changed: 6/20/2016
 
 Description:
 - Inserts the authors from capublic.bill_tbl into DDDB.Bill and 
@@ -30,9 +30,11 @@ Populates:
   - BillVersion (vid, bid, date, state, subject, appropriation, substantive_changes)
 '''
 
+import traceback
 import MySQLdb
-
-import loggingdb
+from graylogger.graylogger import GrayLogger                                    
+API_URL = 'http://development.digitaldemocracy.org:12202/gelf'                  
+logger = None
 
 US_STATE = 'CA'
 
@@ -61,6 +63,13 @@ QS_BILL_VERSION_TBL = '''SELECT bill_version_id, bill_id,
                                 subject, appropriation, substantive_changes 
                          FROM bill_version_tbl'''
 
+def create_payload(table, sqlstmt):
+  return {
+    '_table': table,
+    '_sqlstmt': sqlstmt,
+    '_state': 'NY'
+  }
+
 '''
 Checks if bill exists. If not, adds the bill.
 
@@ -80,7 +89,11 @@ def add_bill(dd_cursor, values):
   dd_cursor.execute(QS_BILL_CHECK, (values[0], values[2]))
 
   if dd_cursor.rowcount == 0:
-    dd_cursor.execute(QI_BILL, values)
+    try:
+      dd_cursor.execute(QI_BILL, values)
+    except MySQLdb.Error:
+      logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+          additional_fields=create_payload('Bill', (QS_BILL_CHECK, (values[0], values[2]))))
 
 '''
 Checks if BillVersion exists. If not, adds the BillVersion.
@@ -100,7 +113,11 @@ def add_bill_version(dd_cursor, values):
   dd_cursor.execute(QS_BILLVERSION_CHECK, (values[0],))
 
   if dd_cursor.rowcount == 0:
-    dd_cursor.execute(QI_BILLVERSION, values)
+    try:
+      dd_cursor.execute(QI_BILLVERSION, values)
+    except MySQLdb.Error:
+      logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+          additional_fields=create_payload('BillVersion', (QS_BILLVERSION_CHECK, (values[0],))))
 
 '''
 Gets all of the Bills, then adds them as necessary
@@ -150,7 +167,7 @@ def get_bill_versions(ca_cursor, dd_cursor):
       add_bill_version(dd_cursor, record)
 
 def main():
-  with loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                          port=3306,
                          db='DDDB2015Dec',
                          user='awsDB',
@@ -159,9 +176,10 @@ def main():
                          user='monty',
                          db='capublic',
                          passwd='python') as ca_cursor:
-
       get_bills(ca_cursor, dd_cursor)
       get_bill_versions(ca_cursor, dd_cursor)
 
 if __name__ == "__main__":
-  main()
+  with GrayLogger(API_URL) as _logger:                                          
+    logger = _logger                                                            
+    main()

@@ -28,10 +28,13 @@ Populates:
   - BillVersion (title, digest, text, state)
 '''
 
-import loggingdb
+import traceback
 from lxml import etree 
 import MySQLdb
 import re
+from graylogger.graylogger import GrayLogger                                    
+API_URL = 'http://development.digitaldemocracy.org:12202/gelf'                  
+logger = None
 
 # U.S. State
 STATE = 'CA'
@@ -42,6 +45,13 @@ QS_CPUB_BILL_VERSION = '''SELECT bill_version_id, bill_xml
 QU_BILL_VERSION = '''UPDATE BillVersion
                      SET title = %s, digest= %s, text = %s, state = %s
                      WHERE vid = %s'''
+
+def create_payload(table, sqlstmt):
+  return {
+      '_table': table,
+      '_sqlstmt': sqlstmt,
+      '_state': 'NY'
+  }
 
 '''Tries to remove unmatched html tags from an xml string.
 '''
@@ -137,11 +147,15 @@ def billparse(ca_cursor, dd_cursor):
       # If there isn't a caml:Bill tag, then there must
       # be a caml:Content tag.
       body = extract_caml('Content')
-    dd_cursor.execute(QU_BILL_VERSION, (title, digest, body, STATE, vid))
+    try:
+      dd_cursor.execute(QU_BILL_VERSION, (title, digest, body, STATE, vid))
+    except MySQLdb.Error:
+      logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+          additional_fields=create_payload('BillVersion', (QU_BILL_VERSION, (title, digest, body, STATE, vid))))
 
 if __name__ == "__main__":
   # MUST SPECIFY charset='utf8' OR BAD THINGS WILL HAPPEN.
-  with loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                          port=3306,
                          db='DDDB2015Dec',
                          user='awsDB',
@@ -152,4 +166,6 @@ if __name__ == "__main__":
                          db='capublic',
                          passwd='python',
                          charset='utf8') as ca_cursor:
-      billparse(ca_cursor, dd_cursor)
+      with GrayLogger(API_URL) as _logger:                                          
+        logger = _logger 
+        billparse(ca_cursor, dd_cursor)

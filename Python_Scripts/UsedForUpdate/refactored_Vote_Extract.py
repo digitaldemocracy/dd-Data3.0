@@ -31,9 +31,11 @@ Populates:
 
 '''
 
-import loggingdb
 import MySQLdb
 import sys
+from graylogger.graylogger import GrayLogger
+API_URL = 'http://development.digitaldemocracy.org:12202/gelf'
+logger = None
 
 # U.S. State
 STATE = 'CA'
@@ -248,7 +250,11 @@ If Bill Vote Summary is not in DDDB, add. Otherwise, skip
 def insert_bill_vote_summary(cursor, bid, mid, cid, vote_date, ayes, naes, abstain, result):
   cursor.execute(QS_VOTE_SUMMARY, {'bid':bid, 'mid':mid, 'vote_date':vote_date})
   if cursor.rowcount == 0:
-    cursor.execute(QI_SUMMARY, (bid, mid, cid, vote_date, ayes, naes, abstain, result))
+    try:
+      cursor.execute(QI_SUMMARY, (bid, mid, cid, vote_date, ayes, naes, abstain, result))
+    except MySQLdb.Error as error:
+      logger.warning('Insert Failed', full_msg=error+(QI_SUMMARY, 
+        (bid, mid, cid, vote_date, ayes, naes, abstain, result)))
 
 '''
 If Bill Vote Detail is not in DDDB, add. Otherwise, skip
@@ -256,7 +262,10 @@ If Bill Vote Detail is not in DDDB, add. Otherwise, skip
 def insert_bill_vote_detail(cursor, pid, voteId, result):
   cursor.execute(QS_VOTE_DETAIL, {'pid':pid, 'voteId':voteId, 'state':STATE})
   if cursor.rowcount == 0:
-    cursor.execute(QI_DETAIL, (pid, voteId, result, STATE))
+    try:
+      cursor.execute(QI_DETAIL, (pid, voteId, result, STATE))
+    except MySQLdb.Error as error:
+      logger.warning('Insert Failed', full_msg=error+(QI_DETAIL, (pid, voteId, result, STATE)))
 
 '''
 Get Bill Vote Summaries. If bill vote summary isn't found in DDDB, add. 
@@ -302,7 +311,7 @@ def main():
                        db='capublic',
                        user='monty',
                        passwd='python') as ca_cursor:
-    with loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+    with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                            port=3306,
                            db='DDDB2015Dec',
                            user='awsDB',
@@ -311,4 +320,6 @@ def main():
       get_detail_votes(ca_cursor, dd_cursor)
 
 if __name__ == "__main__":
-  main()
+  with GrayLogger(API_URL) as _logger:
+    logger = _logger
+    main()

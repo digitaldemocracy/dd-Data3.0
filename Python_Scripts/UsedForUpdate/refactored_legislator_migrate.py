@@ -30,6 +30,7 @@ Populates:
   - Term (pid, year, district, house, party, state)
 '''
 
+import traceback
 import MySQLdb
 from Name_Fixes_Legislator_Migrate import clean_name_legislator_migrate
 from graylogger.graylogger import GrayLogger
@@ -74,11 +75,18 @@ _PARTY = {
   'DEM':'Democrat'
 }
 
+def create_payload(table, sqlstmt):
+  return {
+      '_table': table,
+      '_sqlstmt': sqlstmt,
+      '_state': 'NY'
+  }
+
 '''
 Checks if there's a legislator with this pid
 '''
 def check_legislator_pid(cursor, pid):
-   print('Checking legislator pid = {0} from state = {1}...'.format(pid, STATE))
+   #print('Checking legislator pid = {0} from state = {1}...'.format(pid, STATE))
    result = cursor.execute(QS_LEGISLATOR, (pid, STATE))
    return cursor.fetchone()
 
@@ -86,8 +94,8 @@ def check_legislator_pid(cursor, pid):
 Checks if there's a legislator with this term year
 '''
 def check_term(cursor, pid, year, district, house):
-   print('pid={0},year={1},district={2},house={3},state={4}'.format(
-     pid,year,district,house,STATE))
+   #print('pid={0},year={1},district={2},house={3},state={4}'.format(
+   #  pid,year,district,house,STATE))
    cursor.execute(QS_TERM, (pid, year, STATE))
    return cursor.fetchone()
 
@@ -120,15 +128,28 @@ def migrate_legislators(ca_cursor, dd_cursor):
     # If this legislator isn't in DDDB, add them to Person table
     if exist is None:
       logger.info('New Member: first: {0} last: {1}'.format(first, last))
-      dd_cursor.execute(QI_PERSON, (last, first))
+      try:
+        dd_cursor.execute(QI_PERSON, (last, first))
+      except MySQLdb.Error:
+        logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+            additional_fields=create_payload('Person', (QI_PERSON, (last, first))))
 
       # If this is an active legislator, add them to Legislator and Term too
       if active == 'Y':
         pid = dd_cursor.lastrowid
         logger.info(('Inserting Legislator: %s %s %s %s %s %s' %
               (pid, year, district, house, party, STATE)))
-        dd_cursor.execute(QI_LEGISLATOR, (pid, STATE))
-        dd_cursor.execute(QI_TERM, (pid, year, district, house, party, STATE))
+        try:
+          dd_cursor.execute(QI_LEGISLATOR, (pid, STATE))
+        except MySQLdb.Error:
+           logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+               additional_fields=create_payload('Legislator', (QI_LEGISLATOR, (pid, STATE))))
+        try:
+          dd_cursor.execute(QI_TERM, (pid, year, district, house, party, STATE))
+        except MySQLdb.Error:
+          logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+              additional_fields=create_payload('Term', 
+                (QI_TERM, (pid, year, district, house, party, STATE))))
 
     # If this legislator is in DDDB, check if they're also in the Legislator 
     # and Term tables if they're active.
@@ -136,10 +157,19 @@ def migrate_legislators(ca_cursor, dd_cursor):
       pid = exist[0]
       result = check_legislator_pid(dd_cursor, pid)
       if result is None and active == 'Y':
-        dd_cursor.execute(QI_LEGISLATOR, (pid, STATE))
+        try:
+          dd_cursor.execute(QI_LEGISLATOR, (pid, STATE))
+        except MySQLdb.Error:
+          logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+              additional_fields=create_payload('Legislator', (QI_LEGISLATOR, (pid, STATE))))
       result = check_term(dd_cursor, pid, year, district, house)
       if result is None and active == 'Y':
-        result = dd.execute(QI_TERM, (pid, year, district, house, party, STATE))
+        try:
+          result = dd.execute(QI_TERM, (pid, year, district, house, party, STATE))
+        except MySQLdb.Error:
+          logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+              additional_fields=create_payload('Term',
+                (QI_TERM, (pid, year, district, house, party, STATE))))
 
 def main():
   with MySQLdb.connect(host='transcription.digitaldemocracy.org',
@@ -148,7 +178,7 @@ def main():
                        passwd='python') as ca_cursor:
     with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                            port=3306,
-                           db='MattTest',
+                           db='EricTest',
                            user='awsDB',
                            passwd='digitaldemocracy789') as dd_cursor:
       migrate_legislators(ca_cursor, dd_cursor)
