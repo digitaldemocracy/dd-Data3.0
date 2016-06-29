@@ -50,7 +50,7 @@ def create_payload(table, sqlstmt):
   return {
       '_table': table,
       '_sqlstmt': sqlstmt,
-      '_state': 'NY'
+      '_state': 'CA'
   }
 
 '''Tries to remove unmatched html tags from an xml string.

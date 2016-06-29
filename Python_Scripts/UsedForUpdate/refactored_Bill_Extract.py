@@ -67,7 +67,7 @@ def create_payload(table, sqlstmt):
   return {
     '_table': table,
     '_sqlstmt': sqlstmt,
-    '_state': 'NY'
+    '_state': 'CA'
   }
 
 '''
@@ -120,7 +120,7 @@ def add_bill_version(dd_cursor, values):
           additional_fields=create_payload('BillVersion', 
             (QS_BILLVERSION_CHECK % (values[0],))))
 
-          '''
+'''
 Gets all of the Bills, then adds them as necessary
 
 |ca_cursor|: capublic database cursor

@@ -37,6 +37,7 @@ import sys
 from graylogger.graylogger import GrayLogger
 API_URL = 'http://development.digitaldemocracy.org:12202/gelf'
 logger = None
+logged_list = list()
 
 # U.S. State
 STATE = 'CA'
@@ -135,7 +136,7 @@ def create_payload(table, sqlstmt):
   return {
     '_table': table,
     '_sqlstmt': sqlstmt,
-    '_state': 'NY'
+    '_state': 'CA'
   }
 
 '''
@@ -218,10 +219,10 @@ def get_person(cursor, filer_naml, floor, state):
   if(len(temp) > 1):
     filer_naml = temp[len(temp)-1]
     filer_namf = temp[0]
-    print 'They had a first name!!!'
+#    print 'They had a first name!!!'
     cursor.execute(QS_PERSON_FL, {'filer_naml':filer_naml, 'filer_namf':filer_namf})
   else:
-    print 'Only a last name...'
+#    print 'Only a last name...'
     cursor.execute(QS_PERSON_L, {'filer_naml':filer_naml, 'filer_namf':filer_namf})
   if cursor.rowcount == 1:
     pid = cursor.fetchone()[0]
@@ -291,9 +292,13 @@ def get_summary_votes(ca_cursor, dd_cursor):
     bid = '%s_%s' % (STATE, bid)
 
     if cid is not None:
-      print str(cid) + ' ' + str(bid)
+#      print str(cid) + ' ' + str(bid)
       insert_bill_vote_summary(
           dd_cursor, bid, mid, cid, vote_date, ayes, noes, abstain, result)
+    elif cid is None and loc_code not in logged_list:
+      logged_list.append(loc_code)
+      logger.warning('Committee not found ' + loc_code, 
+          additional_fields={'_state':'CA'})
 
 '''
 Get Bill Vote Details. If bill vote detail isn't found in DDDB, add.
@@ -316,6 +321,14 @@ def get_detail_votes(ca_cursor, dd_cursor):
 #      raise Exception()
     if vote_id is not None and pid is not None:
       insert_bill_vote_detail(dd_cursor, pid, vote_id, result)
+    elif vote_id is None and (bid, mid) not in logged_list:
+      logged_list.append((bid, mid))
+      logger.warning('Vote ID not found', full_msg='vote_id for bid: ' + bid +
+          ' mid: ' + mid + ' not found', additional_fields={'_state':'CA'})
+    elif pid is None and legislator not in logged_list:
+      logged_list.append(legislator)
+      logger.warning('Person not found ' + legislator, 
+          additional_fields={'_state':'CA'})
 
 def main():
   with MySQLdb.connect(host='transcription.digitaldemocracy.org',

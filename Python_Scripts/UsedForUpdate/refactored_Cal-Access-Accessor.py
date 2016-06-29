@@ -126,7 +126,7 @@ def create_payload(table, sqlstmt):
   return {
       '_table': table,
       '_sqlstmt': sqlstmt,
-      '_state': 'NY'
+      '_state': 'CA'
   }
 
 # Changes the date into a linux format for the database
