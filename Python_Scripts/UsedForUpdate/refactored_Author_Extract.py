@@ -87,7 +87,7 @@ QS_BILLSPONSORS_CHECK = '''SELECT *
 QS_BILLSPONSORROLL_CHECK = '''SELECT *
                               FROM BillSponsorRolls
                               WHERE roll = %s'''
-QS_BILL_VERSION_AUTHORS_TBL = '''SELECT bill_version_id, type, house, name,
+QS_BILL_VERSION_AUTHORS_TBL = '''SELECT DISTINCT bill_version_id, type, house, name,
                                   contribution, primary_author_flg
                                  FROM bill_version_authors_tbl'''
 QS_LEGISLATOR_FL = '''SELECT Person.pid, last, first
