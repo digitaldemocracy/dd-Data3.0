@@ -297,7 +297,7 @@ def get_summary_votes(ca_cursor, dd_cursor):
           dd_cursor, bid, mid, cid, vote_date, ayes, noes, abstain, result)
     elif cid is None and loc_code not in logged_list:
       logged_list.append(loc_code)
-      logger.warning('Committee not found ' + loc_code, 
+      logger.warning('Committee not found ' + str(loc_code), 
           additional_fields={'_state':'CA'})
 
 '''
@@ -321,10 +321,10 @@ def get_detail_votes(ca_cursor, dd_cursor):
 #      raise Exception()
     if vote_id is not None and pid is not None:
       insert_bill_vote_detail(dd_cursor, pid, vote_id, result)
-    elif vote_id is None and (bid, mid) not in logged_list:
-      logged_list.append((bid, mid))
-      logger.warning('Vote ID not found', full_msg='vote_id for bid: ' + bid +
-          ' mid: ' + mid + ' not found', additional_fields={'_state':'CA'})
+#    elif vote_id is None and (bid, mid) not in logged_list:
+#      logged_list.append((bid, mid))
+#      logger.warning('Vote ID not found', full_msg='vote_id for bid: ' + bid +
+#          ' mid: ' + str(mid) + ' not found', additional_fields={'_state':'CA'})
     elif pid is None and legislator not in logged_list:
       logged_list.append(legislator)
       logger.warning('Person not found ' + legislator, 
@@ -337,7 +337,7 @@ def main():
                        passwd='python') as ca_cursor:
     with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                            port=3306,
-                           db='DDDB2015Dec',
+                           db='EricTest',
                            user='awsDB',
                            passwd='digitaldemocracy789') as dd_cursor:
       get_summary_votes(ca_cursor, dd_cursor)
