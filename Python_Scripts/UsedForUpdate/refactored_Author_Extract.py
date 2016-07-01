@@ -314,7 +314,7 @@ def add_sponsor(dd_cursor, pid, bid, vid, contribution):
   dd_cursor.execute(QS_BILLSPONSORS_CHECK, (bid, pid, vid, contribution))
 
   if dd_cursor.rowcount == 0:
-    print pid, vid, contribution
+#    print pid, vid, contribution
     try:
       dd_cursor.execute(QI_BILLSPONSORS, (pid, bid, vid, contribution))
     except MySQLdb.Error as error:                                              

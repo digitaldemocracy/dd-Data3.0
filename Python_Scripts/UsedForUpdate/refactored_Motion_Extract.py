@@ -36,7 +36,7 @@ QS_MOTION = '''SELECT mid
                FROM Motion 
                WHERE mid = %(mid)s 
                 AND date = %(date)s'''
-QS_CPUB_MOTION = '''SELECT motion_id, motion_text, trans_update
+QS_CPUB_MOTION = '''SELECT DISTINCT motion_id, motion_text, trans_update
                     FROM bill_motion_tbl'''
 
 def create_payload(table, sqlstmt):

@@ -77,10 +77,10 @@ S_EXTRAORDINARY_II_COMMITTEES = ['Rules',
                                 ]
 
 # Queries
-QS_BILL_DETAIL = '''SELECT bill_id, location_code, legislator_name, 
+QS_BILL_DETAIL = '''SELECT DISTINCT bill_id, location_code, legislator_name, 
                      vote_code, motion_id, trans_update
                     FROM bill_detail_vote_tbl'''
-QS_BILL_SUMMARY = '''SELECT bill_id, location_code, motion_id, ayes, noes, 
+QS_BILL_SUMMARY = '''SELECT DISTINCT bill_id, location_code, motion_id, ayes, noes, 
                       abstain, vote_result, trans_update
                      FROM bill_summary_vote_tbl'''
 QS_VOTE_DETAIL = '''SELECT pid, voteId
@@ -337,7 +337,7 @@ def main():
                        passwd='python') as ca_cursor:
     with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                            port=3306,
-                           db='EricTest',
+                           db='DDDB2015Dec',
                            user='awsDB',
                            passwd='digitaldemocracy789') as dd_cursor:
       get_summary_votes(ca_cursor, dd_cursor)
