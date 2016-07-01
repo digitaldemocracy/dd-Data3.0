@@ -18,10 +18,14 @@ Populates:
 
 '''
 
+import traceback
 import datetime
 import json
-import loggingdb
+import MySQLdb
 from urllib import urlopen
+from graylogger.graylogger import GrayLogger                                    
+API_URL = 'http://development.digitaldemocracy.org:12202/gelf'                  
+logger = None
 
 # Queries
 QS_DISTRICT = '''SELECT * FROM District
@@ -39,6 +43,14 @@ url_string = ('http://openstates.org/api/v1//districts/boundary/ocd-division' +
 # Constants
 _NUM_LOWER_DISTRICTS = 81
 _NUM_UPPER_DISTRICTS = 41
+
+
+def create_payload(table, sqlstmt):
+  return {
+      '_table': table,
+      '_sqlstmt': sqlstmt,
+      '_state': 'CA'
+  }
 
 '''
 Turns the region JSON into a string
@@ -70,8 +82,13 @@ If district is not in DDDB, add. Otherwise, skip.
 def insert_district(cursor, state, house, did, note, year, region, geodata):
   cursor.execute(QS_DISTRICT, {'did':did, 'house':house})
   if(cursor.rowcount == 0):
-    cursor.execute(QI_DISTRICT,
-                   (state, house, did, note, year, geodata, region))
+    try:
+      cursor.execute(QI_DISTRICT,
+          (state, house, did, note, year, geodata, region))
+    except MySQLdb.Error:
+            logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+                additional_fields=create_payload('Distrcit',
+                  (QI_DISTRICT % (state, house, did, note, year, geodata, region))))
 
 '''
 Gets all districts and inserts them into DDDB
@@ -107,7 +124,7 @@ def get_districts(dd_cursor):
     insert_district(dd_cursor, state, house, did, note, year, region, geodata)
 
 def main():
-  with loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                          port=3306,
                          db='DDDB2015Dec',
                          user='awsDB',
@@ -115,4 +132,6 @@ def main():
     get_districts(dd_cursor)
 
 if __name__ == "__main__":
-  main()
+  with GrayLogger(API_URL) as _logger:                                          
+    logger = _logger
+    main()

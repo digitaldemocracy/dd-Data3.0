@@ -31,9 +31,13 @@ Populates:
 
 '''
 
-import loggingdb
+import traceback
 import MySQLdb
 import sys
+from graylogger.graylogger import GrayLogger
+API_URL = 'http://development.digitaldemocracy.org:12202/gelf'
+logger = None
+logged_list = list()
 
 # U.S. State
 STATE = 'CA'
@@ -73,10 +77,10 @@ S_EXTRAORDINARY_II_COMMITTEES = ['Rules',
                                 ]
 
 # Queries
-QS_BILL_DETAIL = '''SELECT bill_id, location_code, legislator_name, 
+QS_BILL_DETAIL = '''SELECT DISTINCT bill_id, location_code, legislator_name, 
                      vote_code, motion_id, trans_update
                     FROM bill_detail_vote_tbl'''
-QS_BILL_SUMMARY = '''SELECT bill_id, location_code, motion_id, ayes, noes, 
+QS_BILL_SUMMARY = '''SELECT DISTINCT bill_id, location_code, motion_id, ayes, noes, 
                       abstain, vote_result, trans_update
                      FROM bill_summary_vote_tbl'''
 QS_VOTE_DETAIL = '''SELECT pid, voteId
@@ -127,6 +131,13 @@ QI_SUMMARY = '''INSERT INTO BillVoteSummary
 
 QI_DETAIL =  '''INSERT INTO BillVoteDetail (pid, voteId, result, state) 
                 VALUES (%s, %s, %s, %s)'''
+
+def create_payload(table, sqlstmt):
+  return {
+    '_table': table,
+    '_sqlstmt': sqlstmt,
+    '_state': 'CA'
+  }
 
 '''
 If committee is found, return cid. Otherwise, return None.
@@ -208,10 +219,10 @@ def get_person(cursor, filer_naml, floor, state):
   if(len(temp) > 1):
     filer_naml = temp[len(temp)-1]
     filer_namf = temp[0]
-    print 'They had a first name!!!'
+#    print 'They had a first name!!!'
     cursor.execute(QS_PERSON_FL, {'filer_naml':filer_naml, 'filer_namf':filer_namf})
   else:
-    print 'Only a last name...'
+#    print 'Only a last name...'
     cursor.execute(QS_PERSON_L, {'filer_naml':filer_naml, 'filer_namf':filer_namf})
   if cursor.rowcount == 1:
     pid = cursor.fetchone()[0]
@@ -248,7 +259,12 @@ If Bill Vote Summary is not in DDDB, add. Otherwise, skip
 def insert_bill_vote_summary(cursor, bid, mid, cid, vote_date, ayes, naes, abstain, result):
   cursor.execute(QS_VOTE_SUMMARY, {'bid':bid, 'mid':mid, 'vote_date':vote_date})
   if cursor.rowcount == 0:
-    cursor.execute(QI_SUMMARY, (bid, mid, cid, vote_date, ayes, naes, abstain, result))
+    try:
+      cursor.execute(QI_SUMMARY, (bid, mid, cid, vote_date, ayes, naes, abstain, result))
+    except MySQLdb.Error:
+      logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+          additional_fields=create_payload('BillVoteSummary', 
+            (QI_SUMMARY % (bid, mid, cid, vote_date, ayes, naes, abstain, result))))
 
 '''
 If Bill Vote Detail is not in DDDB, add. Otherwise, skip
@@ -256,7 +272,12 @@ If Bill Vote Detail is not in DDDB, add. Otherwise, skip
 def insert_bill_vote_detail(cursor, pid, voteId, result):
   cursor.execute(QS_VOTE_DETAIL, {'pid':pid, 'voteId':voteId, 'state':STATE})
   if cursor.rowcount == 0:
-    cursor.execute(QI_DETAIL, (pid, voteId, result, STATE))
+    try:
+      cursor.execute(QI_DETAIL, (pid, voteId, result, STATE))
+    except MySQLdb.Error:
+      logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+          additional_fields=create_payload('BillVoteDetail',
+            (QI_DETAIL % (pid, voteId, result, STATE))))
 
 '''
 Get Bill Vote Summaries. If bill vote summary isn't found in DDDB, add. 
@@ -271,9 +292,13 @@ def get_summary_votes(ca_cursor, dd_cursor):
     bid = '%s_%s' % (STATE, bid)
 
     if cid is not None:
-      print str(cid) + ' ' + str(bid)
+#      print str(cid) + ' ' + str(bid)
       insert_bill_vote_summary(
           dd_cursor, bid, mid, cid, vote_date, ayes, noes, abstain, result)
+    elif cid is None and loc_code not in logged_list:
+      logged_list.append(loc_code)
+      logger.warning('Committee not found ' + str(loc_code), 
+          additional_fields={'_state':'CA'})
 
 '''
 Get Bill Vote Details. If bill vote detail isn't found in DDDB, add.
@@ -296,13 +321,21 @@ def get_detail_votes(ca_cursor, dd_cursor):
 #      raise Exception()
     if vote_id is not None and pid is not None:
       insert_bill_vote_detail(dd_cursor, pid, vote_id, result)
+#    elif vote_id is None and (bid, mid) not in logged_list:
+#      logged_list.append((bid, mid))
+#      logger.warning('Vote ID not found', full_msg='vote_id for bid: ' + bid +
+#          ' mid: ' + str(mid) + ' not found', additional_fields={'_state':'CA'})
+    elif pid is None and legislator not in logged_list:
+      logged_list.append(legislator)
+      logger.warning('Person not found ' + legislator, 
+          additional_fields={'_state':'CA'})
 
 def main():
   with MySQLdb.connect(host='transcription.digitaldemocracy.org',
                        db='capublic',
                        user='monty',
                        passwd='python') as ca_cursor:
-    with loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+    with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                            port=3306,
                            db='DDDB2015Dec',
                            user='awsDB',
@@ -311,4 +344,6 @@ def main():
       get_detail_votes(ca_cursor, dd_cursor)
 
 if __name__ == "__main__":
-  main()
+  with GrayLogger(API_URL) as _logger:
+    logger = _logger
+    main()

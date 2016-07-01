@@ -19,10 +19,13 @@ Populates:
 
 '''
 
+import traceback
 import datetime
 import json
-#import loggingdb
 from urllib import urlopen
+from graylogger.graylogger import GrayLogger                                    
+GRAY_URL = 'http://development.digitaldemocracy.org:12202/gelf'
+logger = None
 
 # U.S. State
 state = 'NY'
@@ -44,6 +47,13 @@ url_string = ('http://openstates.org/api/v1//districts/boundary/ocd-division' +
 # Constants
 _NUM_LOWER_DISTRICTS = 151
 _NUM_UPPER_DISTRICTS = 64
+
+def create_payload(table, sqlstmt):
+  return {
+      '_table': table,
+      '_sqlstmt': sqlstmt,
+      '_state': 'NY'
+  }
 
 '''
 Turns the region JSON into a string for insertion
@@ -75,8 +85,14 @@ Attempts to insert a district into the DDDB. If already there, skip.
 def insert_district(dd_cursor, house, did, note, year, region, geoData):
   dd_cursor.execute(QS_DISTRICT, {'did':did, 'house':house, 'state':state})
   if (dd_cursor.rowcount == 0):
-    dd_cursor.execute(QI_DISTRICT,
+    try:
+      dd_cursor.execute(QI_DISTRICT,
                       (state, house, did, note, year, region, geoData))
+    except MySQLdb.Error:
+      logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+          additional_fields=create_payload('District', 
+            (QI_DISTRICT % (state, house, did, note, year, region, geoData))))
+#    print (QI_DISTRICT % (state, house, did, note, year, region, geoData))
 
 '''
 Gets all districts and inserts them into DDDB
@@ -113,11 +129,13 @@ def main():
   import MySQLdb
   with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                          port=3306,
-                         db='MattTest',
+                         db='DDDB2015Dec',
                          user='awsDB',
                          passwd='digitaldemocracy789') as dd_cursor:
     get_districts(dd_cursor)
 
 if __name__ == "__main__":
-  main()
+  with GrayLogger(GRAY_URL) as _logger:
+    logger = _logger
+    main()
 
