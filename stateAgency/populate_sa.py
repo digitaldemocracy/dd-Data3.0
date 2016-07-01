@@ -108,10 +108,10 @@ Given a person's name, check if it's in DDDB. If not, add.
 |last|: Last name of Person
 '''
 def insert_person(dd_cursor, first, middle, last):
-  pid = get_person(dd_cursor, last, middle, first)
+  pid = get_person(dd_cursor, first, middle, last)
   if pid is None:
-    dd_cursor.execute(QI_PERSON, (last, middle, first))
-    pid = get_person(dd_cursor, last, middle, first)
+    dd_cursor.execute(QI_PERSON, (first, middle, last))
+    pid = get_person(dd_cursor, first, middle, last)
   return pid
 
 '''
@@ -133,7 +133,9 @@ to_remove = [
     "mr",
     "ms",
     "mrs",
-    "ph.d"
+    "ph.d",
+    "assemblymember",
+    "senator"
 ]
 def split_name(full_name):
     names = full_name.split()
@@ -229,7 +231,6 @@ def extract_members(xlsx_name, verbose=False):
     return agency_dict
 
 def main():
-  extract_members("./sa.xlsx")
   xlsx_file = "./sa.xlsx"
   with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                          port=3306,
@@ -253,6 +254,7 @@ def main():
         
     # Set foreign key checks on afterwards
     dd_cursor.execute('SET foreign_key_checks = 1')
+
       
 if __name__ == '__main__':
   main()
