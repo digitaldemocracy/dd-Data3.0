@@ -128,14 +128,15 @@ CREATE TABLE IF NOT EXISTS Video_ttml (
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS Agenda (
-   aid         INTEGER AUTO_INCREMENT,
-   agency      INTEGER,
-   date        DATE,
+CREATE TABLE IF NOT EXISTS Document (
+   doc_id INTEGER AUTO_INCREMENT,
+   fileId VARCHAR(20),
+   hid INTEGER,
+   agency INT,
+   state VARCHAR(2),
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
 
-   PRIMARY KEY (aid),
-   UNIQUE KEY (agency, date),
+   PRIMARY KEY (doc_id),
    FOREIGN KEY (agency) REFERENCES StateAgency(sa_id)
 )
 ENGINE = INNODB
@@ -198,10 +199,27 @@ AS SELECT uid, vid, speaker, time, endTime, text, state, agenda_item,
 FROM Utterance 
 WHERE current = TRUE AND finalized = TRUE ORDER BY time DESC;
 
+CREATE TABLE IF NOT EXISTS TT_Documents (
+   documentId INTEGER AUTO_INCREMENT,
+   documentName VARCHAR(255),
+   agency INT,
+   date DATE,
+   url VARCHAR(255), 
+   fileName VARCHAR(255),
+   status ENUM("downloading","downloaded","failed","skipped","queued","approved","tasked"),
+   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+
+   PRIMARY KEY (documentId),
+   FOREIGN KEY (agency) REFERENCES StateAgency(sa_id)
+)
+ENGINE = INNODB
+CHARACTER SET utf8 COLLATE utf8_general_ci;
+
 CREATE TABLE IF NOT EXISTS TT_Videos (
    videoId INTEGER AUTO_INCREMENT,
    hearingName VARCHAR(255),
    hearingDate DATE,
+   agency INT,
    url VARCHAR(255), 
    sourceUrl VARCHAR(255), 
    fileName VARCHAR(255),
@@ -210,7 +228,8 @@ CREATE TABLE IF NOT EXISTS TT_Videos (
    status ENUM("downloading","downloaded","failed","skipped","queued","diarized","cut","approved","tasked"),
    glacierId VARCHAR(255),
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
-   PRIMARY KEY (videoId)
+   PRIMARY KEY (videoId),
+   FOREIGN KEY (agency) REFERENCES StateAgency(sa_id)
 )
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
