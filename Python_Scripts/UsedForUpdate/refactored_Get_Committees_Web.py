@@ -3,9 +3,9 @@
 '''
 File: Get_Committees_Web.py
 Author: Daniel Mangin
-Modified By: Mandy Chan, Freddy Hernandez, Matt Versaggi
-Date: 6/11/2015
-Last Modified: 1/26/2016
+Modified By: Mandy Chan, Freddy Hernandez, Matt Versaggi, Miguel Aguilar
+Date: 06/11/2015
+Last Modified: 07/06/2016
 
 Description:
 - Scrapes the Assembly and Senate websites to gather committees and memberships
@@ -24,13 +24,11 @@ Populates:
   - servesOn (pid, year, house, cid, state)
 
 Notes:
-  - Some committees cause a 404 (Not Found) when the committee membership url 
-      is requested; this happens when the link is clicked on through the browser
-      as well, so there's not much that can be done about it. At this point, the
-      committee membership pages known to cause this are:
-        * Assembly Select Committee on Emerging Technology
-        * Assembly Select Committee on Expanding Access to CA Natural Resources
-
+  - The 403 HTTP Request error is still an issue for two pages.
+    You are able to open the pages through the browser, but not 
+    through python urllib2. The pages with this issue:
+      - http://apro.assembly.ca.gov/membersstaff
+      - http://smup.senate.ca.gov/
 '''
 
 import datetime
@@ -88,6 +86,15 @@ QS_SERVESON = '''SELECT * FROM servesOn
                   AND cid = %s
                   AND state = %s'''
 
+# DELETES
+# Maybe change year from '<=' to '<'? 
+# Not sure if we want to keep previous years 
+QD_SERVESON = '''DELETE FROM servesOn
+                WHERE cid = %s
+                AND house = %s
+                AND year <= %s
+                AND state = %s'''
+
 '''
 Cleans committee names
 
@@ -143,6 +150,7 @@ def clean_url(url, house, host):
     # |url| is a relative link; make it an absolute link.
     url = '%s%s' % (host, url)
   if house == 'Assembly':
+    #print 'HERE URL: %s   LEN: %d'%(url, len(url.split('/')))
     if len(url.split('/')) == 3:
       # Special case for Assembly Standing Committee on Water, Parks, and Wildlife
       if 'awpw.assembly' in url:
@@ -152,7 +160,12 @@ def clean_url(url, house, host):
         url += '/membersstaff'
     if len(url.split('/')) == 4 and url.endswith('/'):
       # Same as above except url ends with another forward slash
-      url += 'membersstaff'
+      if 'expandingaccesstocanaturalresources' in url:
+        url += 'content/members-staff'
+      elif 'emergingtech.assembly' in url:
+        url += 'content/members'
+      else:
+        url += 'membersstaff'
   return url
 
 '''
@@ -184,15 +197,17 @@ Checks if the legislator is already in database, otherwise input them in servesO
 |cid|: id of committee serving on
 |position|: position in the committee
 '''
-def insert_serveson(cursor, pid, year, house, cid, position):
+def insert_serveson(cursor, pid, year, house, cid, position, count):
   # First get year of Term served by Person represented by pid
   cursor.execute(QS_TERM_2, (pid, house, year, STATE))
   termYear = cursor.fetchone()[0]
   cursor.execute(QS_SERVESON, (pid, house, termYear, cid, STATE))
   if (cursor.rowcount == 0):
-    print 'About to insert pid:{0} year:{1} house:{2} cid:{3} position:{4} \
-           state:{5}'.format(pid, termYear, house, cid, position, STATE)
+    #print 'About to insert pid:{0} year:{1} house:{2} cid:{3} position:{4} \
+           #state:{5}'.format(pid, termYear, house, cid, position, STATE)
     cursor.execute(QI_SERVESON, (pid, termYear, house, cid, position, STATE))
+    count = count + 1
+  return count
 
 '''
 Gets a committee id given its house and name. If the committee does
@@ -205,15 +220,20 @@ obtained.
 
 Returns the committee id.
 '''
-def get_committee_id(cursor, house, name, commType):
-  cursor.execute(QS_COMMITTEE, (house, name, commType, STATE))
-  com = cursor.fetchone()
+def get_committee_id(cursor, house, name, commType, comm_count):
   # Tweak committee type slightly for Subcommittees/Budget Subcommittees
   if "Sub" in commType:
     commType += "committee"
     if "Budget" in name:
       commType = "Budget " + commType
-  return insert_committee(cursor, house, name, commType) if com is None else com[0]
+
+  cursor.execute(QS_COMMITTEE, (house, name, commType, STATE))
+  com = cursor.fetchone()
+
+  if com is None:
+    comm_count = comm_count + 1
+
+  return insert_committee(cursor, house, name, commType) if com is None else com[0], comm_count
 
 '''
 Finds the id of a person.
@@ -232,6 +252,19 @@ def get_person_id(cursor, name):
   # Special case for Katcho...This is why we don't like him.
   if 'Katcho' in names[0]:
     first = 'K.H. \"Katcho\"'
+  # Other special cases
+  elif 'Christina' in names[0] and 'Garcia' in names[-1]:
+    first = 'Cristina'
+  elif 'Mark' in names[0] and 'Levine' in names[-1]:
+    first = 'Marc'
+  elif 'Steven' in names[0] and 'Glazer' in names[-1]:
+    first = 'Steve'
+  elif 'Lorena' in names[0] and 'Gonzales' in names[-1]:
+    first = 'Lorena'
+    names[-1] = 'Gonzalez'
+  elif 'Fran' in names[0] and 'Pavely' in names[-1]:
+    first = 'Fran'
+    names[-1] = 'Pavley'
   # Special case for Patricia Bates; She's Pat in the DB
   elif 'Patricia' in names[0] and 'Bates' in names[-1]:
     first = 'Pat'
@@ -305,6 +338,7 @@ def get_committee_members(url, house):
     member_pat = '<td>\s*<a.*?>(.*?)</a>(<a.*?>.*?</a>)*.*?</td>'
   else:
     member_pat = '<a href=.*?>Senator\s+(.*?)</a>'
+
   for match in scan_page(url, member_pat):
     # Check to see if scraped name has HTML within the name itself,
     #   i.e. Kans<a href="http://yada.yada">en Chu
@@ -418,37 +452,46 @@ to DDDB if it does not already exist.
 |cursor|: database cursor
 |house|: political house (Assembly or Senate)
 '''
-def update_committees(cursor, house, year):
+def update_committees(cursor, house, year, comm_count, serve_count):
   cursor.execute(QS_TERM, (house, year, STATE))
   term_pids = [row[0] for row in cursor.fetchall()]
 
   # Special case for floor committee.
-  floor_cid = get_committee_id(cursor, house, '%s Floor' % house, "Floor")
+  floor_cid, comm_count = get_committee_id(cursor, house, '%s Floor' % house, "Floor", comm_count)
+  # Delete previous entries in order to insert the latest ones
+  cursor.execute(QD_SERVESON, (floor_cid, house, year, STATE))
   for pid in term_pids:
-    insert_serveson(cursor, pid, year, house, floor_cid, 'Member')
+    serve_count = insert_serveson(cursor, pid, year, house, floor_cid, 'Member', serve_count)
 
   for url, name, commType in get_committees(house):
     # Joint committees are recorded with a house of 'Joint'.
-    cid = get_committee_id(cursor, 'Joint' if 'Joint' in name else house,
-                           name, commType)
+    cid, comm_count = get_committee_id(cursor, 'Joint' if 'Joint' in name else house,
+                           name, commType, comm_count)
+    # Delete previous entries in order to insert the latest ones
+    cursor.execute(QD_SERVESON, (cid, house, year, STATE))
     for member in get_committee_members(url, house):
       cleanMember, position = get_member_position(member)
       pid = get_person_id(cursor, cleanMember)
       if pid is not None and pid in term_pids:
-        insert_serveson(cursor, pid, year, house, cid, position)
+        serve_count = insert_serveson(cursor, pid, year, house, cid, position, serve_count)
       else:
         print "WARNING: Could not find {0} in DB".format(clean_name(member.split('(')[0]))
+
+  return comm_count, serve_count
 
 def main():
   with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                        port=3306,
-                       db='MattTest',
+                       db='DDDB2015Dec',
                        user='awsDB',
                        passwd='digitaldemocracy789',
                        charset='utf8') as dd:
+    comm_count = serve_count = 0
     year = datetime.datetime.now().year
     for house in ['Assembly', 'Senate']:
-      update_committees(dd, house, year)
+      comm_count, serve_count = update_committees(dd, house, year, comm_count, serve_count)
+    print 'Inserted %d entries to Committee'%comm_count
+    print 'Inserted %d entries to servesOn'%serve_count
     
 if __name__ == '__main__':
   main()
