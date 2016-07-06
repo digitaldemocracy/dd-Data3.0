@@ -38,8 +38,9 @@ import re
 import sys
 import urllib2
 from bs4 import BeautifulSoup
-
-#import loggingdb
+from graylogger.graylogger import GrayLogger                                    
+API_URL = 'http://development.digitaldemocracy.org:12202/gelf'                  
+logger = None
 
 # U.S. State
 STATE = 'CA'
@@ -178,11 +179,16 @@ Inserts committee
 Returns the new cid.
 '''
 def insert_committee(cursor, house, name, commType):
-  # Get the next available cid.
-  cursor.execute(QS_COMMITTEE_MAX_CID)
-  cid = cursor.fetchone()[0] + 1
-  cursor.execute(QI_COMMITTEE, (cid, house, name, commType, STATE))
-  return cid
+  try:
+    # Get the next available cid
+    cursor.execute(QS_COMMITTEE_MAX_CID)
+    cid = cursor.fetchone()[0] + 1
+    cursor.execute(QI_COMMITTEE, (cid, house, name, commType, STATE))
+    return cid
+  except MySQLdb.Error:
+    logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+    additional_fields=create_payload('Get_Committees_Web Insert Committee',(QI_COMMITTEE%(cid, house, name, commType, STATE))))
+    return -1
 
 '''
 Checks if the legislator is already in database, otherwise input them in servesOn
@@ -196,18 +202,26 @@ Checks if the legislator is already in database, otherwise input them in servesO
 |house|: political house (assebly/senate)
 |cid|: id of committee serving on
 |position|: position in the committee
+|serve_count|: insert servesOn count
+
+Returns insert servesOn count
 '''
-def insert_serveson(cursor, pid, year, house, cid, position, count):
-  # First get year of Term served by Person represented by pid
-  cursor.execute(QS_TERM_2, (pid, house, year, STATE))
-  termYear = cursor.fetchone()[0]
-  cursor.execute(QS_SERVESON, (pid, house, termYear, cid, STATE))
-  if (cursor.rowcount == 0):
-    #print 'About to insert pid:{0} year:{1} house:{2} cid:{3} position:{4} \
-           #state:{5}'.format(pid, termYear, house, cid, position, STATE)
-    cursor.execute(QI_SERVESON, (pid, termYear, house, cid, position, STATE))
-    count = count + 1
-  return count
+def insert_serveson(cursor, pid, year, house, cid, position, serve_count):
+  try:
+    # First get year of Term served by Person represented by pid
+    cursor.execute(QS_TERM_2, (pid, house, year, STATE))
+    termYear = cursor.fetchone()[0]
+    cursor.execute(QS_SERVESON, (pid, house, termYear, cid, STATE))
+    if (cursor.rowcount == 0):
+      #print 'About to insert pid:{0} year:{1} house:{2} cid:{3} position:{4} \
+             #state:{5}'.format(pid, termYear, house, cid, position, STATE)
+      cursor.execute(QI_SERVESON, (pid, termYear, house, cid, position, STATE))
+      serve_count = serve_count + 1
+  except MySQLdb.Error:
+    logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+    additional_fields=create_payload('Get_Committees_Web Insert servesOn',(QI_SERVESON%(pid, termYear, house, cid, position, STATE))))
+
+  return serve_count
 
 '''
 Gets a committee id given its house and name. If the committee does
@@ -217,8 +231,9 @@ obtained.
 |cursor|: database cursor
 |house|: political house (assembly/senate)
 |name|: name of the committee
+|comm_count|: insert Committee count
 
-Returns the committee id.
+Returns the committee id and insert Committee count.
 '''
 def get_committee_id(cursor, house, name, commType, comm_count):
   # Tweak committee type slightly for Subcommittees/Budget Subcommittees
@@ -227,8 +242,12 @@ def get_committee_id(cursor, house, name, commType, comm_count):
     if "Budget" in name:
       commType = "Budget " + commType
 
-  cursor.execute(QS_COMMITTEE, (house, name, commType, STATE))
-  com = cursor.fetchone()
+  try:
+    cursor.execute(QS_COMMITTEE, (house, name, commType, STATE))
+    com = cursor.fetchone()
+  except MySQLdb.Error:
+    logger.warning('Select Failed', full_msg=traceback.format_exc(),
+    additional_fields=create_payload('Get_Committees_Web Get Committee ID',(QS_COMMITTEE%(house, name, commType, STATE))))
 
   if com is None:
     comm_count = comm_count + 1
@@ -292,7 +311,12 @@ def get_person_id(cursor, name):
   first = clean_name(first)
   last = clean_name(last)
   
-  cursor.execute(QS_LEGISLATOR, (last, first))
+  try:
+    cursor.execute(QS_LEGISLATOR, (last, first))
+  except MySQLdb.Error:
+    logger.warning('Select Failed', full_msg=traceback.format_exc(),
+    additional_fields=create_payload('Get_Committees_Web Select Legislator',(QS_LEGISLATOR%(last, first))))
+
   if cursor.rowcount > 0:
     res = cursor.fetchone()[0]
   else:
@@ -446,11 +470,33 @@ def get_committees(house):
         yield url, commName, commType.split(" ")[0]
 
 '''
+Cleans (deletes) the members of a committee (cid) in the servesOn table.
+That way they can insert the latest data in servesOn.
+
+|cursor|: database cursor
+|cid|: committee ID
+|house|: political house (Assembly or Senate)
+|year|: year of term
+'''
+def clean_servesOn(cursor, cid, house, year):
+  try:
+    # Delete previous entries in order to insert the latest ones
+    cursor.execute(QD_SERVESON, (cid, house, year, STATE))
+  except MySQLdb.Error:
+    logger.warning('Delete Failed', full_msg=traceback.format_exc(),
+    additional_fields=create_payload('Get_Committees_Web Delete servesOn Members',(QD_SERVESON%(cid, house, year, STATE))))
+
+'''
 Scrapes committee web pages for committee information and adds it
 to DDDB if it does not already exist.
 
 |cursor|: database cursor
 |house|: political house (Assembly or Senate)
+|year|: year of term
+|comm_count|: insert Committee count
+|serve_count|: insert servesOn count
+
+Returns insert counts
 '''
 def update_committees(cursor, house, year, comm_count, serve_count):
   cursor.execute(QS_TERM, (house, year, STATE))
@@ -458,8 +504,7 @@ def update_committees(cursor, house, year, comm_count, serve_count):
 
   # Special case for floor committee.
   floor_cid, comm_count = get_committee_id(cursor, house, '%s Floor' % house, "Floor", comm_count)
-  # Delete previous entries in order to insert the latest ones
-  cursor.execute(QD_SERVESON, (floor_cid, house, year, STATE))
+  clean_servesOn(cursor, floor_cid, house, year)
   for pid in term_pids:
     serve_count = insert_serveson(cursor, pid, year, house, floor_cid, 'Member', serve_count)
 
@@ -467,8 +512,8 @@ def update_committees(cursor, house, year, comm_count, serve_count):
     # Joint committees are recorded with a house of 'Joint'.
     cid, comm_count = get_committee_id(cursor, 'Joint' if 'Joint' in name else house,
                            name, commType, comm_count)
-    # Delete previous entries in order to insert the latest ones
-    cursor.execute(QD_SERVESON, (cid, house, year, STATE))
+    clean_servesOn(cursor, cid, house, year)
+
     for member in get_committee_members(url, house):
       cleanMember, position = get_member_position(member)
       pid = get_person_id(cursor, cleanMember)
@@ -494,4 +539,6 @@ def main():
     print 'Inserted %d entries to servesOn'%serve_count
     
 if __name__ == '__main__':
-  main()
+  with GrayLogger(API_URL) as _logger:                                          
+    logger = _logger
+    main()
