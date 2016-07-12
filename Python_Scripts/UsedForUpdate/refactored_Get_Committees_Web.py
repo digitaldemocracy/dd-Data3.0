@@ -1,11 +1,11 @@
-#!/usr/bin/env python27
+#!/usr/bin/env python2.6
 # -*- coding: utf-8 -*- 
 '''
 File: Get_Committees_Web.py
 Author: Daniel Mangin
 Modified By: Mandy Chan, Freddy Hernandez, Matt Versaggi, Miguel Aguilar
 Date: 06/11/2015
-Last Modified: 07/06/2016
+Last Modified: 07/12/2016
 
 Description:
 - Scrapes the Assembly and Senate websites to gather committees and memberships
