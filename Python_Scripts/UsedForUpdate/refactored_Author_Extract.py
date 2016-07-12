@@ -177,7 +177,7 @@ def get_committee(dd_cursor, name, house):
     logged_list.append(name)
     logger.warning('Committee not found ' + name, 
         full_msg=(QS_COMMITTEE_GET, (name, house, STATE)),
-        additional_fields={'_state':'NY'})
+        additional_fields={'_state':'CA'})
   return None
 
 '''
