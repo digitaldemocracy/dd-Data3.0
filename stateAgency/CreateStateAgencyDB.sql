@@ -134,6 +134,7 @@ CREATE TABLE IF NOT EXISTS Document (
    hid INTEGER,
    agency INT,
    state VARCHAR(2),
+   doc_type ENUM("agenda","supplementary"),
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
 
    PRIMARY KEY (doc_id),
@@ -321,7 +322,7 @@ CREATE TABLE IF NOT EXISTS TT_Task (
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
-CREATE TABLE TT_EditorStates (
+CREATE TABLE IF NOT EXISTS TT_EditorStates (
   tt_user INT,
   state VARCHAR(2),
   priority INT,
