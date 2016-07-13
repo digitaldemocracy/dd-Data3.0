@@ -97,6 +97,13 @@ QD_SERVESON = '''DELETE FROM servesOn
                 AND year <= %s
                 AND state = %s'''
 
+def create_payload(table, sqlstmt):                                             
+  return {                                                                    
+    '_table': table,                                                          
+    '_sqlstmt': sqlstmt,                                                      
+    '_state': 'CA'                                                            
+      }
+
 '''
 Cleans committee names
 
@@ -188,7 +195,7 @@ def insert_committee(cursor, house, name, commType):
     return cid
   except MySQLdb.Error:
     logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-    additional_fields=create_payload('Get_Committees_Web Insert Committee',(QI_COMMITTEE%(cid, house, name, commType, STATE))))
+    additional_fields=create_payload('Committee',(QI_COMMITTEE%(cid, house, name, commType, STATE))))
     return -1
 
 '''
@@ -220,7 +227,7 @@ def insert_serveson(cursor, pid, year, house, cid, position, serve_count):
       serve_count = serve_count + 1
   except MySQLdb.Error:
     logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-    additional_fields=create_payload('Get_Committees_Web Insert servesOn',(QI_SERVESON%(pid, termYear, house, cid, position, STATE))))
+    additional_fields=create_payload('servesOn',(QI_SERVESON%(pid, termYear, house, cid, position, STATE))))
 
   return serve_count
 
@@ -248,7 +255,7 @@ def get_committee_id(cursor, house, name, commType, comm_count):
     com = cursor.fetchone()
   except MySQLdb.Error:
     logger.warning('Select Failed', full_msg=traceback.format_exc(),
-    additional_fields=create_payload('Get_Committees_Web Get Committee ID',(QS_COMMITTEE%(house, name, commType, STATE))))
+    additional_fields=create_payload('Committee',(QS_COMMITTEE%(house, name, commType, STATE))))
 
   if com is None:
     comm_count = comm_count + 1
@@ -316,7 +323,7 @@ def get_person_id(cursor, name):
     cursor.execute(QS_LEGISLATOR, (last, first))
   except MySQLdb.Error:
     logger.warning('Select Failed', full_msg=traceback.format_exc(),
-    additional_fields=create_payload('Get_Committees_Web Select Legislator',(QS_LEGISLATOR%(last, first))))
+    additional_fields=create_payload('Legislator',(QS_LEGISLATOR%(last, first))))
 
   if cursor.rowcount > 0:
     res = cursor.fetchone()[0]
@@ -485,7 +492,7 @@ def clean_servesOn(cursor, cid, house, year):
     cursor.execute(QD_SERVESON, (cid, house, year, STATE))
   except MySQLdb.Error:
     logger.warning('Delete Failed', full_msg=traceback.format_exc(),
-    additional_fields=create_payload('Get_Committees_Web Delete servesOn Members',(QD_SERVESON%(cid, house, year, STATE))))
+    additional_fields=create_payload('servesOn',(QD_SERVESON%(cid, house, year, STATE))))
 
 '''
 Scrapes committee web pages for committee information and adds it
