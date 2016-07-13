@@ -36,6 +36,7 @@ import json
 import MySQLdb
 import re
 import sys
+import traceback
 import urllib2
 from bs4 import BeautifulSoup
 from graylogger.graylogger import GrayLogger                                    
