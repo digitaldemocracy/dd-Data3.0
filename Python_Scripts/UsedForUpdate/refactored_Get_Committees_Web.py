@@ -97,11 +97,11 @@ QD_SERVESON = '''DELETE FROM servesOn
                 AND year <= %s
                 AND state = %s'''
 
-def create_payload(table, sqlstmt):                                             
-  return {                                                                    
-    '_table': table,                                                          
-    '_sqlstmt': sqlstmt,                                                      
-    '_state': 'CA'                                                            
+def create_payload(table, sqlstmt):
+  return {
+    '_table': table,
+    '_sqlstmt': sqlstmt,
+    '_state': 'CA'
       }
 
 '''
