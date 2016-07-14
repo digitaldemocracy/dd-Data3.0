@@ -1,19 +1,23 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.6
 # -*- coding: utf8 -*-
+
 '''
 File: ny_import_billvotes.py
 Author: John Alkire
 Maintained: Miguel Aguilar
 Date: 1/22/2016
-Last Updated: 06/28/2016
+Last Updated: 07/13/2016
 Description:
 - Imports NY bill vote data using the senate API and by scraping the NY assembly page
 - Fills BillVoteDetail and BillVoteSummary
 - Currently configured to test DB
 '''
+
 import requests
 import MySQLdb
 import sys
+import traceback
+from datetime import datetime
 from bs4 import BeautifulSoup
 from graylogger.graylogger import GrayLogger
 GRAY_URL = 'http://development.digitaldemocracy.org:12202/gelf'
@@ -25,9 +29,9 @@ insert_billvotedetail = '''INSERT INTO BillVoteDetail
                             (%(pid)s,%(voteId)s,%(result)s,%(state)s);'''
                         
 insert_billvotesummary = '''INSERT INTO BillVoteSummary
-                             (bid,cid,VoteDate,ayes,naes,abstain, result)
+                             (bid,cid,VoteDate,VoteDateSeq,ayes,naes,abstain, result)
                             VALUES
-                             (%(bid)s,%(cid)s,%(VoteDate)s,%(ayes)s,%(naes)s,%(abstain)s, %(result)s);'''
+                             (%(bid)s,%(cid)s,%(VoteDate)s,%(VoteDateSeq)s,%(ayes)s,%(naes)s,%(abstain)s, %(result)s);'''
                                                 
 select_person = '''SELECT * 
                    FROM Person p, Legislator l, Term t
@@ -41,7 +45,13 @@ select_committee = '''SELECT cid
                       FROM Committee
                       WHERE house = %(house)s 
                        AND name = %(name)s 
-                       AND state = %(state)s'''       
+                       AND state = %(state)s'''
+
+select_committee_2 = '''SELECT name 
+                      FROM Committee
+                      WHERE house = %s  
+                       AND state = %s
+                       AND name like %s'''        
 
 select_billvotesummary = '''SELECT voteId 
                             FROM BillVoteSummary
@@ -56,10 +66,18 @@ select_billvotedetail = '''SELECT voteId
 API_YEAR = 2016
 API_URL = "http://legislation.nysenate.gov/api/3/{0}/{1}{2}?full=true&"
 API_URL += "limit=1000&key=31kNDZZMhlEjCOV8zkBG1crgWAGxwDIS&offset={3}"
-ASSEMBLY_URL = 'http://assembly.state.ny.us/leg/?default_fld=&bn={0}&term={0}&Votes=Y'
+ASSEMBLY_URL = 'http://assembly.state.ny.us/leg/?default_fld=&leg_video=&bn={0}&term={1}&Committee%26nbspVotes=Y&Floor%26nbspVotes=Y'
 BILL_API_INCREMENT = 1000
 STATE = 'NY'
 voteToResult = {'N': 'NOE', 'Y':'AYE', 'E':'ABS',  'A':'AYE'}
+
+
+def create_payload(table, sqlstmt):                                             
+    return {
+        '_table': table,
+        '_sqlstmt': sqlstmt,
+        '_state': 'NY'
+    }
 
 
 def call_senate_api(restCall, house, offset):
@@ -139,11 +157,11 @@ def get_comm_cid(dddb, comm):
         dddb.execute(select_committee, comm)
     except MySQLdb.Error:
         logger.warning('Select Failed', full_msg=traceback.format_exc(),
-        additional_fields=create_payload('BillVotes Get CID',(select_committee, comm)))
+        additional_fields=create_payload('Committee',(select_committee%comm)))
 
     query = dddb.fetchone()
            
-    if query is None:                 
+    if query is None:              
         raise Exception('No CID found')   
     
     return query[0]
@@ -196,6 +214,7 @@ def get_vote_sums_senate(dddb, bill, vote_items):
             bv['name'] =  bv['house'] + ' Floor'
     
         bv['VoteDate'] = billvote['voteDate']
+        bv['VoteDateSeq'] = 0
         bv['votes'] = get_vote_details_sen(dddb, billvote['memberVotes']['items'], bv)
     
         try:
@@ -249,21 +268,50 @@ def get_vote_details_sen(dddb, vote_items, bv):
     
     return ret_votes
            
+
+def get_db_name(dddb, name):
+    comm = {'name':name, 'state':'NY', 'house':'Assembly'}
+    dddb.execute(select_committee_2, ('Assembly', 'NY', '%'+'%'.join(name.split())+'%'))
+    query = dddb.fetchone()
+
+    if query is None:              
+        raise Exception('No Name found')
+
+    return query[0]
+
 def get_vote_sums_assem(dddb, bid, bill):
     ret_arr = list()
-    url = ASSEMBLY_URL.format(bill, API_YEAR)
+    api_year = 2015
+    url = ASSEMBLY_URL.format(bill, api_year)
     page = requests.get(url)
 
-    soup = BeautifulSoup(page.content, 'html.parser')
+    soup = BeautifulSoup(page.content, 'html5lib')
     
     for table in soup.find_all('table'):         
         bv = dict()
         bv['bid'] = bid;
-        bv['VoteDate'] = str(table.find('caption').find_all('span')[1].string) 
-        tally = table.find('caption').find(style="float-right").find('span').string.split('/')
+        if str(table.find('caption').find_all('span')[0].string) == 'DATE:':
+            bv['VoteDate'] = datetime.strptime(str(table.find('caption').find_all('span')[1].string), '%m/%d/%Y')
+            bv['name'] = 'Assembly Floor'
+        else:
+            bv['VoteDate'] = datetime.strptime(str(table.find('caption').find_all('span')[3].string), '%m/%d/%Y')
+            comm_name = str(table.find('caption').find_all('span')[1].string).split('   ')[0].lower()
+            comm_name = ' '.join([word[0].upper() + word[1:] if word not in ['and', 'on', 'in', 'to', '&', 'of', 'with', 'the'] \
+                            else word for word in comm_name.split()])
+            if '-' in comm_name:
+                ndx = comm_name.index('-')+1
+                comm_name = ''.join([comm_name[:ndx], comm_name[ndx].upper(), comm_name[ndx + 1:]])
+            if '/' in comm_name:
+                ndx = comm_name.index('/')+1
+                comm_name = ''.join([comm_name[:ndx], comm_name[ndx].upper(), comm_name[ndx + 1:]])
+
+            c_name = get_db_name(dddb,comm_name)
+            bv['name'] = c_name
+
+        bv['VoteDateSeq'] = 0
         bv['state'] = STATE
-        bv['name'] = 'Assembly Floor'
         bv['house'] = 'Assembly'
+
         names = table.find_all('td')
         votes = dict() 
       
@@ -274,7 +322,7 @@ def get_vote_sums_assem(dddb, bid, bill):
                 else:
                     votes[str(names[x].string)] = str(names[x+1].string)
                 
-        vote_details = get_vote_details_assem(bid,votes)
+        vote_details = get_vote_details_assem(dddb,bid,votes)
         bv['votes'] = vote_details[0]
         bv['ayes'] = vote_details[1]
         bv['naes'] = vote_details[2]
@@ -290,7 +338,7 @@ def get_vote_sums_assem(dddb, bid, bill):
         
     return ret_arr
                         
-def get_vote_details_assem(bid, votes):    
+def get_vote_details_assem(dddb, bid, votes):    
     ret_list = list()
     y = n = a = 0
     
@@ -303,9 +351,9 @@ def get_vote_details_assem(bid, votes):
         bvd['result'] = voteToResult[v[0:1]]
         bvd['pid'] = get_pid_db(dddb, bvd)
         
-        if v[0:1] == 'Y':
+        if v[0:1] == 'Y' or v == 'Aye':
             y = y + 1
-        elif v[0:1] == 'N':
+        elif v[0:1] == 'N' or v == 'Nay':
             n = n + 1
         else:
             a = a + 1
@@ -321,7 +369,7 @@ def get_pid_db(dddb, person):
         return query[0]
     except MySQLdb.Error:
         logger.warning('Select Failed', full_msg=traceback.format_exc(),
-        additional_fields=create_payload('BillVotes Get PID',(select_person, person)))
+        additional_fields=create_payload('Person',(select_person%person)))
         print "Person not found: ", (select_person %  person)
         return None
 
@@ -345,7 +393,7 @@ def is_billvotesum_in_db(dddb, bv):
         return query
     except MySQLdb.Error:
         logger.warning('Select Failed', full_msg=traceback.format_exc(),
-        additional_fields=create_payload('BillVotes Select BillVoteSummary',(select_billvotesummary, bv)))
+        additional_fields=create_payload('BillVoteSummary',(select_billvotesummary, bv)))
         return False
     
 def is_bvd_in_db(dddb, bvd):
@@ -357,7 +405,7 @@ def is_bvd_in_db(dddb, bvd):
         return True
     except MySQLdb.Error:
         logger.warning('Select Failed', full_msg=traceback.format_exc(),
-        additional_fields=create_payload('BillVotes Select BillVoteDetail',(select_billvotedetail, bvd)))
+        additional_fields=create_payload('BillVoteDetail',(select_billvotedetail%bvd)))
         return False
 
 def insert_bvd_db(dddb, votes, voteId, none_count):
@@ -369,7 +417,7 @@ def insert_bvd_db(dddb, votes, voteId, none_count):
                     dddb.execute(insert_billvotedetail, bvd)
                 except MySQLdb.Error:
                     logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-                    additional_fields=create_payload('BillVotes Insert BillVoteDetail',(insert_billvotedetail, bvd)))
+                    additional_fields=create_payload('BillVoteDetail',(insert_billvotedetail%bvd)))
 
             if bvd['pid'] is None:
                 none_count = none_count + 1
@@ -389,7 +437,7 @@ def insert_billvotesums_db(dddb, bills):
                     sum_count = sum_count + 1
                 except MySQLdb.Error:
                     logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-                    additional_fields=create_payload('BillVotes Insert BillVoteDetail',(insert_billvotesummary, bv)))
+                    additional_fields=create_payload('BillVoteSummary',(insert_billvotesummary%bv)))
 
                 voteId = dddb.lastrowid
                 none_count = insert_bvd_db(dddb, bv['votes'], voteId, none_count)
@@ -397,6 +445,8 @@ def insert_billvotesums_db(dddb, bills):
     #print('Number of invalid inserts: ', none_count)
     print "Number of billvote summary and details inserted: %d" % sum_count
 
+
+speaker = get_speaker_name()
 def main():
     with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                         user='awsDB',
@@ -404,7 +454,6 @@ def main():
                         port=3306,
                         passwd='digitaldemocracy789',
                         charset='utf8') as dddb:
-        #speaker = get_speaker_name()
         insert_billvotesums_db(dddb, get_bills_api(dddb))   
 
 if __name__ == '__main__':
