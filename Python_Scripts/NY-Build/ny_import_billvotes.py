@@ -6,7 +6,7 @@ File: ny_import_billvotes.py
 Author: John Alkire
 Maintained: Miguel Aguilar
 Date: 1/22/2016
-Last Updated: 07/13/2016
+Last Updated: 07/14/2016
 Description:
 - Imports NY bill vote data using the senate API and by scraping the NY assembly page
 - Fills BillVoteDetail and BillVoteSummary
@@ -56,7 +56,11 @@ select_committee_2 = '''SELECT name
 select_billvotesummary = '''SELECT voteId 
                             FROM BillVoteSummary
                             WHERE bid = %(bid)s 
-                             AND VoteDate = %(VoteDate)s'''
+                             AND VoteDate = %(VoteDate)s
+                             AND cid = %(cid)s
+                             AND ayes = %(ayes)s
+                             AND naes = %(naes)s
+                             AND abstain = %(abstain)s'''
                     
 select_billvotedetail = '''SELECT voteId 
                            FROM BillVoteDetail
