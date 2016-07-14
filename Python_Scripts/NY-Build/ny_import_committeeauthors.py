@@ -17,6 +17,7 @@ from graylogger.graylogger import GrayLogger
 API_URL = 'http://development.digitaldemocracy.org:12202/gelf'
 logger = None
 logged_list = list()
+INSERTED = 0
 
 US_STATE = 'NY'
 
@@ -76,6 +77,7 @@ def get_committeeauthors_api(year):
   return ret_bills
 
 def insert_committeeauthors_db(bill, cid, year, dddb):
+  global INSERTED
   for key in bill['versions'].keys():
     if check_bid_db(bill['bid'], dddb):
       a = dict()
@@ -86,6 +88,7 @@ def insert_committeeauthors_db(bill, cid, year, dddb):
       if dddb.rowcount == 0:
         try:
           dddb.execute(QI_COMMITTEEAUTHORS, (str(cid), a['bid'], a['vid']))
+          INSERTED += dddb.rowcount
         except MySQLdb.Error:
           logger.warning('Insert Failed', full_msg=traceback.format_exc(),
               additional_fields=create_payload('CommitteeAuthors', 
@@ -128,6 +131,11 @@ def main():
             passwd='digitaldemocracy789',
             charset='utf8') as dddb:
     add_committeeauthors_db(2015, dddb)
+    logger.info(__file__ + ' terminated successfully.', 
+        full_msg='Inserted ' + str(INSERTED) + ' rows',
+        additional_fields={'_affected_rows':str(INSERTED),
+                           '_inserted':str(INSERTED),
+                           '_state':'NY'})
 
 if __name__ == '__main__':
   with GrayLogger(API_URL) as _logger:                                          

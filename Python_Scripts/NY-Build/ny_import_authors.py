@@ -18,6 +18,7 @@ from graylogger.graylogger import GrayLogger
 API_URL = 'http://development.digitaldemocracy.org:12202/gelf'                  
 logger = None
 logged_list = list()
+INSERTED = 0
 
 counter = 0
 
@@ -141,6 +142,7 @@ def add_sponsor(dd_cursor, pid, bid, vid, contribution):
 
 def insert_authors_db(bill, dddb):
   global counter
+  global INSERTED
   
   for key in bill['versions'].keys():
     a = dict()
@@ -157,6 +159,7 @@ def insert_authors_db(bill, dddb):
       if dddb.rowcount == 0 and vid_check:
         try:
           dddb.execute(QI_AUTHORS, a)
+          INSERTED += dddb.rowcount
         except MySQLdb.Error:
           logger.warning('Insert Failed', full_msg=traceback.format_exc(),
               additional_fields=create_payload('CoAuthors', (QI_AUTHORS % a)))
@@ -296,6 +299,11 @@ def main():
 #   dddb = dddb_conn.cursor()
 #   dddb_conn.autocommit(True)
     add_authors_db(2015, dddb)
+    logger.info(__file__ + ' terminated successfully.', 
+        full_msg='Inserted ' + str(INSERTED) + ' rows',
+        additional_fields={'_affected_rows':str(INSERTED),
+                           '_inserted':str(INSERTED),
+                           '_state':'NY'})
 #   call = call_senate_api("bills", 2015, "", 1)
 #   bills = call[0]
 #   for bill in bills:

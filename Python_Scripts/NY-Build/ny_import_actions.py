@@ -12,6 +12,7 @@
 
 import requests
 import MySQLdb
+import traceback
 from graylogger.graylogger import GrayLogger
 GRAY_URL = 'http://development.digitaldemocracy.org:12202/gelf'
 logger = None
@@ -31,6 +32,13 @@ API_URL = "http://legislation.nysenate.gov/api/3/{0}/{1}{2}?full=true&"
 API_URL += "limit=1000&key=31kNDZZMhlEjCOV8zkBG1crgWAGxwDIS&offset={3}&"
 STATE = 'NY'                 
 BILL_API_INCREMENT = 1000
+
+def create_payload(table, sqlstmt):                                             
+    return {
+        '_table': table,
+        '_sqlstmt': sqlstmt,
+        '_state': 'NY'
+    }
 
 #calls NY Senate API and returns a tuple with the list of results and the total number of results                        
 def call_senate_api(restCall, house, offset, resolution):
@@ -98,7 +106,7 @@ def insert_actions_db(bill, dddb):
                 dddb.execute(insert_action, act)
             except MySQLdb.Error:
                 logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-                additional_fields=create_payload('Bill Action',( insert_action, act)))
+                additional_fields=create_payload('Action',(insert_action%act)))
             return True
         return False
 
