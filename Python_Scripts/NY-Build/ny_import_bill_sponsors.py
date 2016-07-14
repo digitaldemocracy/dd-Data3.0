@@ -18,6 +18,7 @@ from graylogger.graylogger import GrayLogger
 GRAY_URL = 'http://development.digitaldemocracy.org:12202/gelf'
 logger = None
 logged_list = list()
+INSERTED = 0
 
 counter = 0
 
@@ -28,10 +29,6 @@ URL = ('http://legislation.nysenate.gov/api/3/%(restCall)s/%(year)s%(house)s' +
     '?full=true&limit=1000&key=IhV5AXQ1rhUS8ePXkfwsO4AvjQSodd4Q&offset=%(offset)s')
 
 # INSERTS
-QI_AUTHORS = '''INSERT INTO authors
-        (pid, bid, vid, contribution)
-        VALUES
-        (%(pid)s, %(bid)s, %(vid)s, %(contribution)s)'''
 QI_BILLSPONSORS = '''INSERT INTO BillSponsors (pid, bid, vid, contribution)
                    VALUES (%s, %s, %s, %s)'''
 QI_BILLSPONSORROLLS = '''INSERT INTO BillSponsorRolls (roll)
@@ -131,6 +128,7 @@ def add_sponsor(dd_cursor, pid, bid, vid, contribution):
 #    print pid, vid, contribution
     try:
       dd_cursor.execute(QI_BILLSPONSORS, (pid, bid, vid, contribution))
+      INSERTED += dd_cursor.rowcount
       counter += 1
     except MySQLdb.Error:
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
@@ -158,7 +156,7 @@ def insert_sponsors_db(bill, dddb, contribution):
             a['pid'] = pid
             a['bid'] = bill['bid']
     #       print a['vid']
-            if counter % 1000 == 0:
+            if counter % 1000 == 0 and counter != 0:
               print counter
             add_sponsor(dddb, a['pid'], a['bid'], a['vid'], contribution)
         except IndexError:
@@ -289,6 +287,12 @@ def main():
 #   dddb = dddb_conn.cursor()
 #   dddb_conn.autocommit(True)
     add_authors_db(2015, dddb)
+    logger.info(__file__ + ' terminated', 
+        full_msg='inserted ' + str(INSERTED) + ' in BillSponsors',
+        additional_fields={'_table':'BillSponsors',
+                           '_affected_rows':INSERTED,
+                           '_inserted':INSERTED,
+                           '_state':'NY'})
     print counter
 '''
 #   call = call_senate_api("bills", 2015, "", 1)

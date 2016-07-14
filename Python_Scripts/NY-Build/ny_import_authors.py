@@ -162,14 +162,14 @@ def insert_authors_db(bill, dddb):
           INSERTED += dddb.rowcount
         except MySQLdb.Error:
           logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-              additional_fields=create_payload('CoAuthors', (QI_AUTHORS % a)))
+              additional_fields=create_payload('authors', (QI_AUTHORS % a)))
         counter += 1
       elif vid_check and dddb.fetchone()[0] != a['pid']:
         try:
           dddb.execute(QU_AUTHORS, a)
         except MySQLdb.Error:
           logger.warning('Update Failed', full_msg=traceback.format_exc(),
-              additional_fields=create_payload('CoAuthors', (QU_AUTHORS % a)))
+              additional_fields=create_payload('authors', (QU_AUTHORS % a)))
         print 'updated', a['pid']
       dddb.execute(QS_BILLSPONSORS_CHECK, (a['pid'], a['bid'], a['vid'], CONTRIBUTION))
       if dddb.rowcount == 0 and vid_check:
