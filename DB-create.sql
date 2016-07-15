@@ -1136,7 +1136,7 @@ CREATE TABLE IF NOT EXISTS TT_Videos (
    fileName VARCHAR(255),
    duration FLOAT,
    state VARCHAR(2),
-   status ENUM("downloading","downloaded","failed","skipped","queued","diarized","cut","approved"),
+   status ENUM("downloading","downloaded","failed","skipped","queued","diarized","cut","approved","tasked"),
    glacierId VARCHAR(255),
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
    PRIMARY KEY (videoId)

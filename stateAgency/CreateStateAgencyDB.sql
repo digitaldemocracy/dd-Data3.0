@@ -51,6 +51,29 @@ CREATE TABLE IF NOT EXISTS servesOn (
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+CREATE TABLE IF NOT EXISTS Organization (
+   oid INT AUTO_INCREMENT,
+   name VARCHAR(255),
+   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+
+   PRIMARY KEY (oid),
+   UNIQUE (name)
+)
+ENGINE = INNODB
+CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS represents (
+   pid      INTEGER,
+   organization INT,
+   agenda_item INT,
+   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+
+   PRIMARY KEY (pid, agenda_item),
+   FOREIGN KEY (organization) REFERENCES Organization(oid),
+   FOREIGN KEY (agenda_item) REFERENCES AgendaItem(ai_id)
+)
+ENGINE = INNODB
+CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 -- Hearing
 -- add fk to StateAgency because we have no CommitteeHearing
@@ -105,6 +128,20 @@ CREATE TABLE IF NOT EXISTS Video_ttml (
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+CREATE TABLE IF NOT EXISTS Document (
+   doc_id INTEGER AUTO_INCREMENT,
+   fileId VARCHAR(20),
+   hid INTEGER,
+   agency INT,
+   state VARCHAR(2),
+   doc_type ENUM("agenda","supplementary"),
+   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+
+   PRIMARY KEY (doc_id),
+   FOREIGN KEY (agency) REFERENCES StateAgency(sa_id)
+)
+ENGINE = INNODB
+CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 -- similar to DDDB2015.BillDiscussion but includes a name
 -- * this is the one change Darius will need to make
@@ -163,6 +200,89 @@ AS SELECT uid, vid, speaker, time, endTime, text, state, agenda_item,
 FROM Utterance 
 WHERE current = TRUE AND finalized = TRUE ORDER BY time DESC;
 
+CREATE TABLE IF NOT EXISTS TT_Documents (
+   documentId INTEGER AUTO_INCREMENT,
+   documentName VARCHAR(255),
+   agency INT,
+   date DATE,
+   url VARCHAR(255), 
+   fileName VARCHAR(255),
+   status ENUM("downloading","downloaded","failed","skipped","queued","approved","tasked"),
+   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+
+   PRIMARY KEY (documentId),
+   FOREIGN KEY (agency) REFERENCES StateAgency(sa_id)
+)
+ENGINE = INNODB
+CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS TT_Videos (
+   videoId INTEGER AUTO_INCREMENT,
+   hearingName VARCHAR(255),
+   hearingDate DATE,
+   agency INT,
+   url VARCHAR(255), 
+   sourceUrl VARCHAR(255), 
+   fileName VARCHAR(255),
+   duration FLOAT,
+   state VARCHAR(2),
+   status ENUM("downloading","downloaded","failed","skipped","queued","diarized","cut","approved","tasked"),
+   glacierId VARCHAR(255),
+   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+   PRIMARY KEY (videoId),
+   FOREIGN KEY (agency) REFERENCES StateAgency(sa_id)
+)
+ENGINE = INNODB
+CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS TT_Cuts (
+   cutId INTEGER AUTO_INCREMENT,
+   videoId INTEGER,
+   fileId VARCHAR(255),
+   fileName VARCHAR(255),
+   start_time FLOAT,
+   end_time FLOAT,
+   leading_silence FLOAT DEFAULT 0.0,
+   type ENUM("pause","silenece"),
+   finalized BOOLEAN NOT NULL,
+   current BOOLEAN NOT NULL,
+   created TIMESTAMP DEFAULT NOW(),
+   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+   PRIMARY KEY (cutId),
+   FOREIGN KEY (videoId) REFERENCES TT_Videos(videoId)
+)
+ENGINE = INNODB
+CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS TT_ServiceRequests (
+   cutId INTEGER,
+   serviceProvider ENUM("cielo", "green_button", "other"),
+   turnaround INTEGER,
+   fidelity VARCHAR(255),
+   importance VARCHAR(255),
+   transcript VARCHAR(255),
+   job_id VARCHAR(255),
+   status ENUM("in_progress", "completed") DEFAULT "in_progress", 
+   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+   PRIMARY KEY (cutId),
+   FOREIGN KEY (cutId) REFERENCES TT_Cuts(cutId)
+)
+ENGINE = INNODB
+CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS TT_HostingUrl (
+   cutId INTEGER,
+   url VARCHAR(255),
+   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+   PRIMARY KEY (cutId),
+   FOREIGN KEY (cutId) REFERENCES TT_Cuts(cutId)
+)
+ENGINE = INNODB
+CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+CREATE OR REPLACE VIEW TT_currentCuts 
+AS SELECT * FROM TT_Cuts 
+WHERE current = TRUE AND finalized = FALSE ORDER BY videoId DESC, cutId ASC;
 
 CREATE TABLE IF NOT EXISTS TT_Editor (
    id INTEGER AUTO_INCREMENT , 
@@ -202,7 +322,7 @@ CREATE TABLE IF NOT EXISTS TT_Task (
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
-CREATE TABLE TT_EditorStates (
+CREATE TABLE IF NOT EXISTS TT_EditorStates (
   tt_user INT,
   state VARCHAR(2),
   priority INT,
@@ -214,5 +334,33 @@ CREATE TABLE TT_EditorStates (
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+/*  LEGACY TABLES  */
+/* Entity::DeprecatedPerson
 
+   This is used for tracking what people are deprecated and will flush them 
+   out at a set time.
 
+   Used by: Toshi
+*/
+CREATE TABLE IF NOT EXISTS DeprecatedPerson (
+    pid INTEGER,     -- Person id (ref. Person.pid)
+    
+    PRIMARY KEY(pid)
+)
+ENGINE = INNODB
+CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+/* Entity::DeprecatedOrganizations
+
+   This is used for tracking what Organizations are deprecated
+
+   Used by: Toshi
+*/
+CREATE TABLE IF NOT EXISTS DeprecatedOrganization (
+   oid INTEGER,      -- Organization id (ref. Organization.oid)
+  lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+
+   PRIMARY KEY(oid)
+)
+ENGINE = INNODB
+CHARACTER SET utf8 COLLATE utf8_general_ci;

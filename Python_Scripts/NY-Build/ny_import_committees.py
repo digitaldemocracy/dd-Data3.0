@@ -9,9 +9,13 @@ Description:
 - Fills Committee and servesOn
 - Currently configured to test DB
 '''
+
+import traceback
 import requests
 import MySQLdb
-import loggingdb
+from graylogger.graylogger import GrayLogger
+GRAY_URL = 'http://development.digitaldemocracy.org:12202/gelf'
+logger = None
 
 select_committee_last = '''SELECT cid FROM Committee
                            ORDER BY cid DESC
@@ -53,6 +57,13 @@ API_URL = "http://legislation.nysenate.gov/api/3/{0}/{1}{2}?full=true&"
 API_URL += "limit=1000&key=31kNDZZMhlEjCOV8zkBG1crgWAGxwDIS&offset={3}"
 
 STATE = 'NY'
+
+def create_payload(table, sqlstmt):
+    return {
+      '_table': table,
+      '_sqlstmt': sqlstmt,
+      '_state': 'NY'
+    }
 
 #this function takes in a full name and outputs a tuple with a first and last name 
 #names should be cleaned to maintain presence of Jr, III, etc, but remove middle names.
@@ -112,8 +123,7 @@ def call_senate_api(restCall, house, offset):
     return out["result"]["items"]
 
 #function gets the largest CID in the DB because CID does not autoincrement
-def get_last_cid_db(dddb):
-    cur = dddb.cursor()                  
+def get_last_cid_db(cur):
     cur.execute(select_committee_last)
     
     query = cur.fetchone();
@@ -121,8 +131,7 @@ def get_last_cid_db(dddb):
 
 #checks if Committee is in database. 
 #If it is, return its CID. Otherwise, return false
-def is_comm_in_db(comm, dddb):
-    cur = dddb.cursor()
+def is_comm_in_db(comm, cur):
                                                                      
     try:
         cur.execute(select_committee, comm)
@@ -136,8 +145,7 @@ def is_comm_in_db(comm, dddb):
 
 #checks if a servesOn item exists in the DB.
 #returns true/false as expected    
-def is_serveson_in_db(member, dddb):
-    cur = dddb.cursor()
+def is_serveson_in_db(member, cur):
                                                                  
     try:
         cur.execute(select_serveson, member)
@@ -165,6 +173,7 @@ def get_committees_api():
         members = comm['committeeMembers']['items']
         
         for member in members:
+          try:
             sen = dict()                
             name = clean_name(member['fullName']) 
             sen['last'] = name[1]
@@ -179,7 +188,10 @@ def get_committees_api():
                 sen['position'] = "member"
                 
             committee['members'].append(sen)
-            
+          except IndexError:
+            logger.warning('Person not found ' + member['fullName'],
+                additional_fields={'_state':'NY'})
+
         ret_comms.append(committee)
         
     #print "Downloaded %d committees..." % len(ret_comms)
@@ -188,53 +200,59 @@ def get_committees_api():
 #function to add committees to DB. Calls API and then processes data
 #only adds committees if they do not exist and only adds to servesOn if member
 #is not already there.
-def add_committees_db(dddb):
+def add_committees_db(cur):
     committees = get_committees_api()
-    cur = dddb.cursor()
     x = 0
     y = 0
     for committee in committees:
-        cid = get_last_cid_db(dddb) + 1      
-        get_cid = is_comm_in_db(committee, dddb)
+        cid = get_last_cid_db(cur) + 1      
+        get_cid = is_comm_in_db(committee, cur)
         
         if  get_cid == False:
             x += 1
             committee['cid'] = str(cid)
-            cur.execute(insert_committee, committee)
+            try:
+              cur.execute(insert_committee, committee)
+            except MySQLdb.Error:
+              logger.warning('Insert Failed', full_msg=traceback.format_exc(),        
+                    additional_fields=create_payload('Committee', (insert_committee % committee)))
         else:
             committee['cid'] = get_cid[0]
                    
         for member in committee['members']:
-            member['pid'] = get_pid_db(member, dddb)
+            member['pid'] = get_pid_db(member, cur)
             member['cid'] = committee['cid']
             
-            if is_serveson_in_db(member, dddb) == False:                
-                cur.execute(insert_serveson, member)                
-                y += 1
+            if is_serveson_in_db(member, cur) == False:                
+              try:
+                cur.execute(insert_serveson, member)
+              except MySQLdb.Error:
+                logger.warning('Update Failed', full_msg=traceback.format_exc(),        
+                      additional_fields=create_payload('Serveson', (insert_serveson % member)))
+              y += 1
                 
     #print "Added %d committees and %d members" % (x,y)                        
 
 #function to get PID of person based on name.     
-def get_pid_db(person, dddb):    
-    cur = dddb.cursor()                  
+def get_pid_db(person, cur):    
     cur.execute(select_person, person)
     
     query = cur.fetchone();
     return query[0]    
 
 def main():
-    dddb =  loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+    with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                         user='awsDB',
                         db='DDDB2015Dec',
                         port=3306,
                         passwd='digitaldemocracy789',
-                        charset='utf8')
-    dddb.autocommit(True)
-      
-    add_committees_db(dddb)
-    
-    dddb.close()
-main()
+                        charset='utf8') as dddb:
+      add_committees_db(dddb)
+
+if __name__ == '__main__':
+  with GrayLogger(GRAY_URL) as _logger:
+    logger = _logger
+    main()
     
     
 

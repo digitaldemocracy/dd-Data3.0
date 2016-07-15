@@ -1,19 +1,23 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.6
 # -*- coding: utf8 -*-
 '''
 File: ny_import_legislators.py
 Author: John Alkire
 Modified: Eric Roh
-Date: 4/12/2016
+Date: 6/21/2016
 Description:
 - Imports NY legislators using senate API
 - Fills Person, Term, and Legislator
 - Missing personal/social info for legislators (eg. bio, twitter, etc)
 - Currently configured to test DB
 '''
+
+import traceback
 import requests
 import MySQLdb
-import loggingdb
+from graylogger.graylogger import GrayLogger                                    
+GRAY_URL = 'http://development.digitaldemocracy.org:12202/gelf'
+logger = None
 
 insert_person = '''INSERT INTO Person
                 (last, first, image)
@@ -55,6 +59,13 @@ API_YEAR = 2016
 API_URL = "http://legislation.nysenate.gov/api/3/{0}/{1}{2}?full=true&"
 API_URL += "limit=1000&key=31kNDZZMhlEjCOV8zkBG1crgWAGxwDIS&offset={3}"
 
+def create_payload(table, sqlstmt):
+  return {
+    '_table': table,
+    '_sqlstmt': sqlstmt,
+    '_state': 'NY'
+  }
+
 #this function takes in a full name and outputs a tuple with a first and last name 
 #names should be cleaned to maintain presence of Jr, III, etc, but remove middle names.
 #many names for assembly members in the New York Senate API do not line up with the assembly     
@@ -77,7 +88,15 @@ def clean_name(name):
         "Kenneth Blankenbush":("Ken","Blankenbush"),
         "Alec Brook-Krasny":("Pamela","Harris"),
         "Mickey Kearns":("Michael", "Kearns"),
-        "Steven Englebright":("Steve", "Englebright"),        
+        "Steven Englebright":("Steve", "Englebright"),
+        "WILLIAMS":("Jamie", "Williams"),
+        "PEOPLES-STOKE":("Crystal", "Peoples-Stoke"),
+        "KAMINSKY":("Todd", "Kaminsky"),
+        "HYNDMAN":("Alicia", "Hyndman"),
+        "HUNTER":("Pamela", "Hunter"),
+        "HARRIS":("Pamela", "Harris"),
+        "CASTORINA":("Ron", "Castorina", "Jr"),
+        "CANCEL":("Alice", "Cancel"),
     }
     
     ending = {'Jr':', Jr.','Sr':', Sr.','II':' II','III':' III', 'IV':' IV'}
@@ -86,6 +105,10 @@ def clean_name(name):
     name = name.replace('  ', ' ')
     name_arr = name.split()      
     suffix = "";         
+
+    if len(name_arr) == 1 and name_arr[0] in problem_names.keys():
+      name_arr = list(problem_names[name_arr[0]])
+
           
     for word in name_arr:
         if word != name_arr[0] and (len(word) <= 1 or word in ending.keys()):
@@ -103,7 +126,6 @@ def clean_name(name):
     
     if (first + ' ' + last) in problem_names.keys():             
         return problem_names[(first + ' ' + last)]
-        
     return (first, last)
 
 #calls NY Senate API and returns the list of results    
@@ -111,8 +133,9 @@ def call_senate_api(restCall, house, offset):
     if house != "":
         house = "/" + house
     url = API_URL.format(restCall, API_YEAR, house, offset)
-    print url
+    #print "Hey Yall!!! I'm going to print the result of the API_URL format call!"
     r = requests.get(url)
+    print url
     out = r.json()
     return out["result"]["items"]
 
@@ -139,7 +162,8 @@ def is_term_in_db(senator, dddb):
         query = dddb.fetchone()
 
         if query[0] != senator['district']:
-            print 'updated', senator
+            #print "Hella updated! Radical!~~~~~"
+            #print 'updated', senator
             dddb.execute(QU_TERM, senator)
             return True
         if query is None:
@@ -155,8 +179,9 @@ def get_senators_api():
     senators = call_senate_api("members", "", 0)
     ret_sens = list()
     for senator in senators:
+      try:
         sen = dict()
-        name = clean_name(senator['fullName']) 
+        name = clean_name(senator['fullName'])
         sen['house'] = senator['chamber'].title()
         sen['last'] = name[1]
         sen['state'] = "NY"
@@ -167,6 +192,9 @@ def get_senators_api():
         if sen['image'] is None:
             sen['image'] = ''
         ret_sens.append(sen)
+      except IndexError as error:
+        logger.warning('Problem with name ' + senator['fullName'], 
+            full_msg=traceback.format_exc(), additional_fields={'_state':'NY'})
     print "Downloaded %d legislators..." % len(ret_sens)
     return ret_sens        
 
@@ -178,15 +206,27 @@ def add_senator_db(senator, dddb):
     ret = False
     senator['pid'] = pid
     if pid == False:
+      try:
         dddb.execute(insert_person, senator)
-        pid = dddb.lastrowid        
-        senator['pid'] = pid
-        dddb.execute(insert_legislator, senator)  
-        ret = True
+      except MySQLdb.Error:
+        logger.warning('Insert Failed', full_msg=traceback.format_exc(), 
+            additional_fields=create_payload('Person', (insert_person % senator)))
+      pid = dddb.lastrowid        
+      senator['pid'] = pid
+      try:
+        dddb.execute(insert_legislator, senator)
+      except MySQLdb.Error:
+        logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+            additional_fields=create_payload('Legislator', (insert_legislator % senator)))
+      ret = True
     
     if is_term_in_db(senator, dddb) == False:   
-        print insert_term % senator  
-        dddb.execute(insert_term, senator)        
+      #print insert_term % senator  
+      try:
+        dddb.execute(insert_term, senator)
+      except MySQLdb.Error:
+        logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+            additional_fields=create_payload('Term', (insert_term % senator)))
        
     return ret    
 
@@ -202,15 +242,15 @@ def add_senators_db(dddb):
     #print "Added %d legislators" % x 
 
 def main():
-    dddb_conn =  loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+    with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                         user='awsDB',
                         db='DDDB2015Dec',
                         port=3306,
                         passwd='digitaldemocracy789',
-                        charset='utf8')
-    dddb = dddb_conn.cursor()
-    dddb_conn.autocommit(True)
-    add_senators_db(dddb)
-    dddb_conn.close()
-    
-main()
+                        charset='utf8') as dddb:
+      add_senators_db(dddb)
+
+if __name__ == '__main__':
+  with GrayLogger(GRAY_URL) as _logger:
+    logger = _logger
+    main()

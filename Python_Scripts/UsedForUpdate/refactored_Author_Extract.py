@@ -2,9 +2,9 @@
 '''
 File: Author_Extract.py
 Author: Daniel Mangin
-Modified By: Mitch Lane, Mandy Chan, Steven Thon
+Modified By: Mitch Lane, Mandy Chan, Steven Thon, Eric Roh
 Date: 6/11/2015
-Last Modified: 11/23/2015
+Last Modified: 6/20/2016
 
 Description:
 - Inserts the authors from capublic.bill_version_authors_tbl into the 
@@ -30,9 +30,12 @@ Populates:
 
 '''
 
+import traceback
 import MySQLdb
-
-import loggingdb
+from graylogger.graylogger import GrayLogger
+API_URL = 'http://development.digitaldemocracy.org:12202/gelf'
+logger = None
+logged_list = list()
 
 # U.S. State
 STATE = 'CA'
@@ -59,6 +62,12 @@ QS_COMMITTEE_GET = '''SELECT cid
                       WHERE name = %s
                        AND house = %s
                        AND state = %s'''
+QS_COMMITTEE_SHORT_GET = '''SELECT cid
+                            FROM Committee
+                            WHERE short_name = %s
+                             AND house = %s
+                             AND state = "CA"
+                            '''
 
 QS_BILLVERSION_BID = '''SELECT bid
                         FROM BillVersion
@@ -78,7 +87,7 @@ QS_BILLSPONSORS_CHECK = '''SELECT *
 QS_BILLSPONSORROLL_CHECK = '''SELECT *
                               FROM BillSponsorRolls
                               WHERE roll = %s'''
-QS_BILL_VERSION_AUTHORS_TBL = '''SELECT bill_version_id, type, house, name,
+QS_BILL_VERSION_AUTHORS_TBL = '''SELECT DISTINCT bill_version_id, type, house, name,
                                   contribution, primary_author_flg
                                  FROM bill_version_authors_tbl'''
 QS_LEGISLATOR_FL = '''SELECT Person.pid, last, first
@@ -104,6 +113,13 @@ QS_LEGISLATOR_LIKE_L = '''SELECT Person.pid, last, first
                            AND last LIKE %s
                           ORDER BY Person.pid'''
 
+def create_payload(table, sqlstmt):
+  return {
+      '_table': table,
+      '_sqlstmt': sqlstmt,
+      '_state': 'CA'
+  }
+
 '''
 If the committee author for this bill is not in DDDB, add. Otherwise, skip.
 
@@ -116,7 +132,12 @@ def add_committee_author(dd_cursor, cid, bid, vid):
   dd_cursor.execute(QS_COMMITTEEAUTHORS_CHECK, (cid, bid, vid, STATE))
 
   if dd_cursor.rowcount == 0:
-    dd_cursor.execute(QI_COMMITTEEAUTHORS, (cid, bid, vid, STATE))
+    try:
+      dd_cursor.execute(QI_COMMITTEEAUTHORS, (cid, bid, vid, STATE))
+    except MySQLdb.Error:
+      logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+          additional_fields=create_payload('CommitteeAuthors', 
+            (QI_COMMITTEEAUTHORS % (cid, bid, vid, STATE))))
 
 '''
 Cleans up the committee name if extraneous information is included.
@@ -147,6 +168,16 @@ def get_committee(dd_cursor, name, house):
 
   if dd_cursor.rowcount == 1:
     return dd_cursor.fetchone()[0]
+
+  dd_cursor.execute(QS_COMMITTEE_SHORT_GET, (name, house))
+  if dd_cursor.rowcount == 1:
+    return dd_cursor.fetchone()[0]
+
+  if name not in logged_list:
+    logged_list.append(name)
+    logger.warning('Committee not found ' + name, 
+        full_msg=(QS_COMMITTEE_GET, (name, house, STATE)),
+        additional_fields={'_state':'CA'})
   return None
 
 '''
@@ -213,7 +244,11 @@ def get_person(dd_cursor, filer_naml, house):
     dd_cursor.execute(QS_LEGISLATOR_LIKE_L, (filer_naml,))
     if(dd_cursor.rowcount == 1):
       pid = dd_cursor.fetchone()[0]
-
+  
+  if pid is None and temp not in logged_list:
+    logged_list.append(temp)
+    logger.warning('Person not found ' + ' '.join(temp),
+        additional_fields={'_state':'CA'})
   return pid
 
 '''
@@ -229,6 +264,11 @@ def get_bid(dd_cursor, vid):
 
   if dd_cursor.rowcount > 0:
 	  return dd_cursor.fetchone()[0]
+  if vid not in logged_list:
+    logged_list.append(vid)
+    logger.warning('BillVersion not found '+vid, 
+        full_msg=(QS_BILLVERSION_BID, (vid, STATE)),
+        additional_fields={'_state':'CA'})
   return None
 
 '''
@@ -244,7 +284,12 @@ def add_author(dd_cursor, pid, bid, vid, contribution):
   dd_cursor.execute(QS_AUTHORS_CHECK, (bid, pid, vid))
 
   if dd_cursor.rowcount == 0:
-    dd_cursor.execute(QI_AUTHORS, (pid, bid, vid, contribution))
+    try:
+      dd_cursor.execute(QI_AUTHORS, (pid, bid, vid, contribution))
+    except MySQLdb.Error:
+      logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+          additional_fields=create_payload('Authors', 
+            (QI_AUTHORS % (pid, bid, vid, contribution))))
 
 '''
 If the BillSponsor for this bill is not in the DDDB, add BillSponsor.
@@ -259,13 +304,23 @@ def add_sponsor(dd_cursor, pid, bid, vid, contribution):
   dd_cursor.execute(QS_BILLSPONSORROLL_CHECK, (contribution,))
 
   if dd_cursor.rowcount == 0:
-    dd_cursor.execute(QI_BILLSPONSORROLLS, (contribution,))
+    try:
+      dd_cursor.execute(QI_BILLSPONSORROLLS, (contribution,))
+    except MySQLdb.Error as error:
+      logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+        additional_fields=create_payload('BillSponsorRolls', 
+          (QI_BILLSPONSORROLLS % (contribution,))))
 
   dd_cursor.execute(QS_BILLSPONSORS_CHECK, (bid, pid, vid, contribution))
 
   if dd_cursor.rowcount == 0:
-    print pid, vid, contribution
-    dd_cursor.execute(QI_BILLSPONSORS, (pid, bid, vid, contribution))
+#    print pid, vid, contribution
+    try:
+      dd_cursor.execute(QI_BILLSPONSORS, (pid, bid, vid, contribution))
+    except MySQLdb.Error as error:                                              
+      logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+        additional_fields=create_payload('BillSponsors', 
+          (QI_BILLSPONSORS % (pid, bid, vid, contribution))))
 
 '''
 Grabs capublic's information and selectively adds bill authors into DDDB.
@@ -306,7 +361,7 @@ def get_authors(ca_cursor, dd_cursor):
           add_committee_author(dd_cursor, cid, bid, vid)
 
 def main():
-  with loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                          port=3306,
                          db='DDDB2015Dec',
                          user='awsDB',
@@ -318,4 +373,7 @@ def main():
       get_authors(ca_cursor, dd_cursor)
 
 if __name__ == '__main__':
-  main()  
+  with GrayLogger(API_URL) as _logger:
+    logger = _logger
+    main()
+

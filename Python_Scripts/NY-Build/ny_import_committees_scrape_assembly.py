@@ -8,10 +8,14 @@ Description:
 - Fills Committee and servesOn
 - Currently configured to test DB
 '''
+
+import traceback
 from lxml import html
 import requests
 import MySQLdb
-import loggingdb
+from graylogger.graylogger import GrayLogger                                    
+GRAY_URL = 'http://development.digitaldemocracy.org:12202/gelf'                 
+logger = None
 
 insert_committee = '''INSERT INTO Committee
                        (cid, house, name, state)
@@ -54,6 +58,13 @@ CATEGORIES_XP = '//*[@id="sitelinks"]/span//text()'
 COMMITTEES_XP = '//*[@id="sitelinks"]//ul[{0}]//li/strong/text()'
 COMMITTEE_LINK_XP = '//*[@id="sitelinks"]//ul[{0}]//li[{1}]/a[contains(@href,"mem")]/@href'
 MEMBERS_XP = '//*[@id="sitelinks"]/span//li/a//text()'
+
+def create_payload(table, sqlstmt):                                             
+      return {                                                                    
+        '_table': table,                                                          
+        '_sqlstmt': sqlstmt,                                                      
+        '_state': 'NY'                                                            
+      }
 
 def get_last_cid_db(dddb):
 	dddb.execute(select_last_committee)
@@ -172,7 +183,11 @@ def add_committees_db(dddb):
         if  get_cid == False:
             committee['cid'] = str(cid)
             count = count + 1
-            dddb.execute(insert_committee, committee)
+            try:
+              dddb.execute(insert_committee, committee)
+            except MySQLdb.Error:
+              logger.warning('Insert Failed', full_msg=traceback.format_exc(),        
+                    additional_fields=create_payload('Committee', (insert_committee % committee)))
         else:
             committee['cid'] = get_cid[0]          
 
@@ -182,10 +197,13 @@ def add_committees_db(dddb):
                 member['pid'] = get_pid_db(member, dddb)
                 member['cid'] = committee['cid']
                 if is_serveson_in_db(member, dddb) == False:                
-                       
                     if member['pid'] != None:
+                      try:
                         dddb.execute(insert_serveson, member)
-                        y = y + 1
+                      except MySQLdb.Error:
+                        logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+                            additional_fields=create_payload('Committee', (insert_committee % committee)))
+                      y = y + 1
                         
     #print "Inserted %d committees and %d members" % (count, y)
                 
@@ -201,16 +219,15 @@ def get_pid_db(person, dddb):
 
     
 def main():
-    dddb_conn = loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+    with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                     user='awsDB',
                     db='DDDB2015Dec',
                     port=3306,
-                    passwd='digitaldemocracy789')
-    dddb = dddb_conn.cursor()
-    dddb_conn.autocommit(True)
+                    passwd='digitaldemocracy789') as dddb:
 
-    add_committees_db(dddb)
+      add_committees_db(dddb)
 
-    dddb_conn.close()
-
-main()
+if __name__ == '__main__':                                                      
+    with GrayLogger(GRAY_URL) as _logger:                                         
+          logger = _logger
+          main()

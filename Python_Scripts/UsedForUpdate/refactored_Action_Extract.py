@@ -2,9 +2,9 @@
 '''
 File: Action_Extract.py
 Author: Daniel Mangin
-Modified By: Mitch Lane, Mandy Chan
+Modified By: Mitch Lane, Mandy Chan, Eric Roh
 Date: 6/11/2015
-Last Changed: 11/20/2015
+Last Changed: 6/20/2016
 
 Description:
 - Inserts Actions from the bill_history_tbl from capublic into DDDB.Action
@@ -27,9 +27,11 @@ Populates:
   - Action (bid, date, text)
 '''
 
+import traceback
 import MySQLdb
-
-import loggingdb
+from graylogger.graylogger import GrayLogger
+API_URL = 'http://development.digitaldemocracy.org:12202/gelf' 
+logger = None
 
 STATE = 'CA'
 
@@ -46,6 +48,13 @@ QS_ACTION_CHECK = '''SELECT bid
                       AND date = %s
                       AND text = %s'''
 
+def create_payload(table, sqlstmt):
+  return {
+      '_table': table,
+      '_sqlstmt': sqlstmt,
+      '_state': 'CA'
+  }
+
 '''
 Checks if the Action is in DDDB. If it isn't, insert it. Otherwise, skip.
 
@@ -60,16 +69,20 @@ def insert_Action(dd_cursor, values):
 
   # Check if DDDB already has this action
   dd_cursor.execute(QS_ACTION_CHECK, values)
-
   # If Action not in DDDB, add
   if(dd_cursor.rowcount == 0):
-    dd_cursor.execute(QI_ACTION, values)	
+#    logger.info('New Action %s %s %s' % (values[0], values[1], values[2]))
+    try:
+      dd_cursor.execute(QI_ACTION, values)
+    except MySQLdb.Error:
+      logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+          additional_fields=create_payload('Action', (QI_ACTION % (values[0], values[1], values[2]))))
 
 '''
 Loops through all Actions from capublic and adds them as necessary
 '''
 def main():
-  with loggingdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                          port=3306,
                          db='DDDB2015Dec',
                          user='awsDB',
@@ -78,7 +91,6 @@ def main():
                          user='monty',
                          db='capublic',
                          passwd='python') as ca_cursor:
-
       # Get all of the Actions from capublic
       ca_cursor.execute(QS_BILL_HISTORY_TBL)
 
@@ -86,4 +98,6 @@ def main():
         insert_Action(dd_cursor, list(record))
 
 if __name__ == "__main__":
-  main()
+  with GrayLogger(API_URL) as _logger:
+    logger = _logger
+    main()
