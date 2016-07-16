@@ -18,6 +18,10 @@ import MySQLdb
 from graylogger.graylogger import GrayLogger                                    
 GRAY_URL = 'http://development.digitaldemocracy.org:12202/gelf'
 logger = None
+P_INSERT = 0
+L_INSERT = 0
+T_INSERT = 0
+T_UPDATE = 0
 
 insert_person = '''INSERT INTO Person
                 (last, first, image)
@@ -164,7 +168,12 @@ def is_term_in_db(senator, dddb):
         if query[0] != senator['district']:
             #print "Hella updated! Radical!~~~~~"
             #print 'updated', senator
-            dddb.execute(QU_TERM, senator)
+            try:
+              dddb.execute(QU_TERM, senator)
+            except MySQLdb.Error:
+              logger.warning('Update Failed', full_msg=traceback.format_exc(),
+                  additional_fields=create_payload('Term', (QU_TERM % senator)))
+            T_UPDATE += dddb.rowcount
             return True
         if query is None:
             return False
@@ -202,12 +211,14 @@ def get_senators_api():
 #adds to Person and Legislator if they are not already filled
 #and adds to Term if it is not already filled
 def add_senator_db(senator, dddb):
+    global P_INSERT, L_INSERT, T_INSERT
     pid = is_leg_in_db(senator, dddb)
     ret = False
     senator['pid'] = pid
     if pid == False:
       try:
         dddb.execute(insert_person, senator)
+        P_INSERT += dddb.rowcount
       except MySQLdb.Error:
         logger.warning('Insert Failed', full_msg=traceback.format_exc(), 
             additional_fields=create_payload('Person', (insert_person % senator)))
@@ -215,6 +226,7 @@ def add_senator_db(senator, dddb):
       senator['pid'] = pid
       try:
         dddb.execute(insert_legislator, senator)
+        L_INSERT += dddb.rowcount
       except MySQLdb.Error:
         logger.warning('Insert Failed', full_msg=traceback.format_exc(),
             additional_fields=create_payload('Legislator', (insert_legislator % senator)))
@@ -224,6 +236,7 @@ def add_senator_db(senator, dddb):
       #print insert_term % senator  
       try:
         dddb.execute(insert_term, senator)
+        T_INSERT += dddb.rowcount
       except MySQLdb.Error:
         logger.warning('Insert Failed', full_msg=traceback.format_exc(),
             additional_fields=create_payload('Term', (insert_term % senator)))
@@ -249,6 +262,16 @@ def main():
                         passwd='digitaldemocracy789',
                         charset='utf8') as dddb:
       add_senators_db(dddb)
+      logger.info(__file__ + ' terminated successfully.', 
+          full_msg='Inserted ' + str(P_INSERT) + ' rows in Person, inserted ' +
+                   str(L_INSERT) + ' rows in Legislator and inserted '
+                    + str(T_INSERT) + ' and updated ' + str(T_UPDATE) + ' rows in Term',
+          additional_fields={'_affected_rows':str(P_INSERT + L_INSERT + T_INSERT + T_UPDATE),
+                             '_inserted':'Person:'+str(P_INSERT)+
+                                         ', Legislator:'+str(L_INSERT)+
+                                         ', Term:'+str(T_INSERT),
+                             '_updated':'Term:'+str(T_UPDATE),
+                             '_state':'NY'})
 
 if __name__ == '__main__':
   with GrayLogger(GRAY_URL) as _logger:

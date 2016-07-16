@@ -16,6 +16,8 @@ import MySQLdb
 from graylogger.graylogger import GrayLogger
 GRAY_URL = 'http://development.digitaldemocracy.org:12202/gelf'
 logger = None
+C_INSERTED = 0
+S_INSERTED = 0
 
 select_committee_last = '''SELECT cid FROM Committee
                            ORDER BY cid DESC
@@ -201,6 +203,7 @@ def get_committees_api():
 #only adds committees if they do not exist and only adds to servesOn if member
 #is not already there.
 def add_committees_db(cur):
+    global C_INSERTED
     committees = get_committees_api()
     x = 0
     y = 0
@@ -213,6 +216,7 @@ def add_committees_db(cur):
             committee['cid'] = str(cid)
             try:
               cur.execute(insert_committee, committee)
+              C_INSERTED += cur.rowcount
             except MySQLdb.Error:
               logger.warning('Insert Failed', full_msg=traceback.format_exc(),        
                     additional_fields=create_payload('Committee', (insert_committee % committee)))
@@ -226,9 +230,10 @@ def add_committees_db(cur):
             if is_serveson_in_db(member, cur) == False:                
               try:
                 cur.execute(insert_serveson, member)
+                S_INSERTED += cur.rowcount
               except MySQLdb.Error:
-                logger.warning('Update Failed', full_msg=traceback.format_exc(),        
-                      additional_fields=create_payload('Serveson', (insert_serveson % member)))
+                logger.warning('Insert Failed', full_msg=traceback.format_exc(),        
+                      additional_fields=create_payload('servesOn', (insert_serveson % member)))
               y += 1
                 
     #print "Added %d committees and %d members" % (x,y)                        
@@ -248,6 +253,13 @@ def main():
                         passwd='digitaldemocracy789',
                         charset='utf8') as dddb:
       add_committees_db(dddb)
+      logger.info(__file__ + ' terminated successfully.', 
+          full_msg='Inserted ' + str(C_INSERTED) + ' rows in Committee and inserted ' 
+                    + str(S_INSERTED) + ' rows in servesOn',
+          additional_fields={'_affected_rows':str(C_INSERTED + S_INSERTED),
+                             '_inserted':'Committee:'+str(C_INSERTED)+
+                                         ', servesOn:'+str(S_INSERTED),
+                             '_state':'NY'})
 
 if __name__ == '__main__':
   with GrayLogger(GRAY_URL) as _logger:

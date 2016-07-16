@@ -291,7 +291,7 @@ def main():
         full_msg='inserted ' + str(INSERTED) + ' in BillSponsors',
         additional_fields={'_table':'BillSponsors',
                            '_affected_rows':INSERTED,
-                           '_inserted':INSERTED,
+                           '_inserted':'BillSponsors:'+str(INSERTED),
                            '_state':'NY'})
     print counter
 '''
