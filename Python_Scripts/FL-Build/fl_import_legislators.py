@@ -4,7 +4,9 @@
 '''
 File: fl_import_legislators.py
 Author: Miguel Aguilar
+Maintained: Miguel Aguilar
 Date: 07/05/2016
+Last Updated: 07/17/2016
 
 Description:
   - This script populates the database with the Florida state legislators
@@ -18,6 +20,7 @@ Populates:
   - Term (year, district, house, party, start, end, state, caucus)
 '''
 
+import datetime
 import requests
 import MySQLdb
 import traceback
@@ -74,37 +77,26 @@ QU_TERM = '''
           AND house=%(house)s
           '''
 
+
+def create_payload(table, sqlstmt):                                             
+  return {
+    '_table': table,
+    '_sqlstmt': sqlstmt,
+    '_state': 'FL'
+  }
+
 def clean_name(name):
   problem_names = {
-    #GET NEW NAMES CAUSE THESE ARE FROM NY NOT FL
-    "Inez Barron":("Charles", "Barron"), 
-    "Philip Ramos":("Phil", "Ramos"), 
-    "Thomas McKevitt":("Tom", "McKevitt"), 
-    "Albert Stirpe":("Al","Stirpe"), 
-    "Peter Abbate":("Peter","Abbate, Jr."),
-    "Sam Roberts":("Pamela","Hunter"),
-    "Herman Farrell":("Herman", "Farrell, Jr."),
-    "Fred Thiele":("Fred", "Thiele, Jr."),
-    "William Scarborough":("Alicia", "Hyndman"),
-    "Robert Oaks":("Bob", "Oaks"),
-    "Andrew Goodell":("Andy", "Goodell"),
-    "Peter Rivera":("José", "Rivera"),
-    "Addie Jenne Russell":("Addie","Russell"),
-    "Kenneth Blankenbush":("Ken","Blankenbush"),
-    "Alec Brook-Krasny":("Pamela","Harris"),
-    "Mickey Kearns":("Michael", "Kearns"),
-    "Steven Englebright":("Steve", "Englebright"),
-    "WILLIAMS":("Jamie", "Williams"),
-    "PEOPLES-STOKE":("Crystal", "Peoples-Stoke"),
-    "KAMINSKY":("Todd", "Kaminsky"),
-    "HYNDMAN":("Alicia", "Hyndman"),
-    "HUNTER":("Pamela", "Hunter"),
-    "HARRIS":("Pamela", "Harris"),
-    "CASTORINA":("Ron", "Castorina", "Jr"),
-    "CANCEL":("Alice", "Cancel"),
+    "Miguel Diaz de la Portilla":("Miguel", "Diaz de la Portilla"),
+    "Charles Van Zant":("Charles", "Van Zant"), 
+    "Mike La Rosa":("Mike", "La Rosa"),
+    "Charlie Dean, Sr.":("Charles", "Dean, Sr."), 
+    "Mike Hill":("Walter Bryan", "Hill"), 
+    "Bob Cortes":("Robert","Cortes"), 
+    "Danny Burgess, Jr.":("Daniel Wright","Burgess, Jr."),
+    "Coach P Plasencia":("Rene","Plasencia"),
     }
     
-
   #IF THERE IS ONE OR TWO COMMAS THEN FLIP THE NAME
   if name.count(',') == 1:
     name_flip = name.split(',')
@@ -159,38 +151,125 @@ def get_legislators_api(dddb, house):
   for entry in ret_list:
     leg = {}
 
-    print 'NOT CLEAN: %s'%entry['full_name']
     clean_leg_name = clean_name(entry['full_name'])
-    print 'YES CLEAN: %s'%(' '.join(clean_leg_name))
+    leg['middle'] = entry['middle_name']
     leg['first'] = clean_leg_name[0]
     leg['last'] = clean_leg_name[1]
-    leg['middle'] = entry['middle_name']
+
+    if leg['middle'] is not None:
+      if len(leg['middle']) > 1 and leg['middle'] in clean_leg_name[0]:
+        leg['first'] = clean_leg_name[0].split()[0]
+    elif len(leg['middle'])==1:
+      leg['middle'] = leg['middle'] + '.'
+
+    if ' "' in leg['first']:
+      if len(leg['first'].split()[0]) > 1:
+        leg['first'] = ' '.join(clean_leg_name[0].split(' "')[:-1])
+
+    leg['image'] = entry['photo_url'].split('/')[-1]
+    leg['district'] = entry['district']
+    leg['state'] = entry['state'].upper()
+    leg['website_url'] = entry['url']
+
+    #Not sure what the term year should be, did one year before so 2015
+    leg['year'] = datetime.datetime.now().year-1
+
+    if entry['party'] == 'Republican':
+      leg['party'] = entry['party']
+    else:
+      leg['party'] = 'Democrat'
+
+    if house == 'upper':
+      leg['house'] = 'Senate'
+    else:
+      leg['house'] = 'Assembly'
+
+    for office in entry['offices']:
+      if office['type'] == 'capitol':
+        leg['room_number'] = office['address'].split()[0]
+        leg['capitol_phone'] = office['phone']
+
+    leg_list.append(leg)
 
   return leg_list
 
-def is_leg_in_db(dddb, leg):
-  dddb.execute(QS_LEGISLATOR, leg)
-  query = dddb.fetchone()
+def is_term_in_db(dddb, leg):
+  try:
+    dddb.execute(QS_TERM, leg)
+    query = dddb.fetchone()
 
-  if query is None:
+    if query is None:
+      return False
+
+    if query[0] != leg['district']:
+      dddb.execute(QU_TERM, leg)
+      return True
+  except:
     return False
 
   return True
 
+def is_leg_in_db(dddb, leg):
+  try:
+    dddb.execute(QS_LEGISLATOR, leg)
+    query = dddb.fetchone()
+
+    if query is None:
+      return False
+  except:
+    return False
+
+  return query[0]
+
 def add_legislators_db(dddb, leg_list):
+  #Person Insert Count and Term Insert Count
+  pi_count = ti_count = 0
   for leg in leg_list:
-    if not is_leg_in_db(dddb, leg):
-      pass
+    pid = is_leg_in_db(dddb, leg)
+    leg['pid'] = pid
+
+    if not pid:
+      try:
+        dddb.execute(QI_PERSON, leg)
+        pid = dddb.lastrowid
+        leg['pid'] = pid
+        pi_count = pi_count + 1
+      except MySQLdb.Error:
+        logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+            additional_fields=create_payload('Person', (QI_PERSON%leg)))
+
+      try:
+        dddb.execute(QI_LEGISLATOR, leg)
+      except MySQLdb.Error:
+        logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+            additional_fields=create_payload('Legislator', (QI_LEGISLATOR%leg)))
+
+    if is_term_in_db(dddb, leg) == False:
+      try:
+        dddb.execute(QI_TERM, leg)
+        ti_count = ti_count + 1
+      except MySQLdb.Error:
+        logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+            additional_fields=create_payload('Term', (QI_TERM%leg)))
+
+  return pi_count, ti_count 
 
 def main():
   with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                         user='awsDB',
-                        db='MikeyTest',
+                        db='DDDB2015Dec',
                         port=3306,
                         passwd='digitaldemocracy789',
                         charset='utf8') as dddb:
+    #Insert Counter for Person and Term
+    pi_count = ti_count = 0
     for house in ['upper', 'lower']:
-      add_legislators_db(dddb, get_legislators_api(dddb, house))
+      ret_count = add_legislators_db(dddb, get_legislators_api(dddb, house))
+      pi_count = pi_count + ret_count[0]
+      ti_count = ti_count + ret_count[1]
+
+    print 'Inserted %d Persons and Legislators'%pi_count
+    print 'Inserted %d Terms'%ti_count
 
 if __name__ == '__main__':
   with GrayLogger(GRAY_URL) as _logger:
