@@ -118,7 +118,7 @@ CREATE TABLE IF NOT EXISTS Term (
    year     YEAR,       -- year served
    district INTEGER(3), -- district legislator served in
    house    VARCHAR(100), -- house they serve in,
-   party    ENUM('Republican', 'Democrat', 'Other') NOT NULL,
+   party    ENUM('Republican', 'Democrat', 'Other'),
    start    DATE,       -- start date of term
    end      DATE,       -- end date of term
    state    VARCHAR(2), -- state where term was served
@@ -188,7 +188,7 @@ CHARACTER SET utf8 COLLATE utf8_general_ci;
 */
 CREATE TABLE IF NOT EXISTS Bill (
    bid     VARCHAR(23),          -- Bill id (concat of state+years+session+type+number)
-   type    VARCHAR(3) NOT NULL,  -- bill type abbreviation
+   type    VARCHAR(5) NOT NULL,  -- bill type abbreviation
    number  INTEGER NOT NULL,     -- bill number
    billState   ENUM('Chaptered', 'Introduced', 'Amended Assembly', 'Amended Senate', 'Enrolled',
       'Proposed', 'Amended', 'Vetoed') NOT NULL,
@@ -215,6 +215,7 @@ CHARACTER SET utf8 COLLATE utf8_general_ci;
 CREATE TABLE IF NOT EXISTS Hearing (
    hid    INTEGER AUTO_INCREMENT,      -- Hearing id
    date   DATE,                        -- date of hearing
+   type ENUM('Regular', 'Budget', 'Informational', 'Summary') DEFAULT 'Regular',
    state  VARCHAR(2),
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
 
@@ -239,6 +240,22 @@ CREATE TABLE IF NOT EXISTS CommitteeHearings (
 
     PRIMARY KEY (cid, hid),
     FOREIGN KEY (cid) REFERENCES Committee(cid),
+    FOREIGN KEY (hid) REFERENCES Hearing(hid)
+)
+ENGINE = INNODB
+CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+
+-- Used to hold the many-to-many relationship btw Hearings and Bills. 
+CREATE TABLE IF NOT EXISTS HearingAgenda (
+    hid INTEGER,  -- Hearing id (ref. Hearing.hid)
+    bid VARCHAR(23),
+    date_created DATE, -- The date the agenda info was posted 
+    current_flag TINYINT(1), -- Whether this is the most recent agenda
+    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+
+    PRIMARY KEY (hid, bid, date_created),
+    FOREIGN KEY (bid) REFERENCES Bill(bid),
     FOREIGN KEY (hid) REFERENCES Hearing(hid)
 )
 ENGINE = INNODB
@@ -331,6 +348,7 @@ CREATE TABLE IF NOT EXISTS BillVoteSummary (
     naes        INTEGER,
     abstain     INTEGER,
     result      VARCHAR(20),
+    VoteDateSeq INT,
     lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
     
     PRIMARY KEY(voteId),
@@ -516,11 +534,10 @@ ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 CREATE TABLE IF NOT EXISTS Contribution (
-    RecordId INTEGER AUTO_INCREMENT,
+    id VARCHAR(20),
     pid INTEGER,
-    law_eid INTEGER,
-    d_id INTEGER,
     year INTEGER,
+    date DATETIME,
     house VARCHAR(10),
     donorName VARCHAR(255),
     donorOrg VARCHAR(255),
@@ -529,7 +546,7 @@ CREATE TABLE IF NOT EXISTS Contribution (
     state VARCHAR(2),
     lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
     
-    PRIMARY KEY(RecordId),
+    PRIMARY KEY(id),
     FOREIGN KEY (oid) REFERENCES Organizations(oid),
     FOREIGN KEY (pid) REFERENCES Person(pid),
     FOREIGN KEY (state) REFERENCES State(abbrev)
@@ -579,7 +596,7 @@ ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 CREATE TABLE IF NOT EXISTS LobbyingFirmState (
-   filer_id VARCHAR(9),  -- modified, given by state  
+   filer_id VARCHAR(50),  -- modified, given by state  
    rpt_date DATE,
    ls_beg_yr INTEGER,    -- modified (INT)
    ls_end_yr INTEGER,     -- modified (INT)
@@ -595,13 +612,13 @@ ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 CREATE TABLE IF NOT EXISTS LobbyistEmployer(
-   filer_id VARCHAR(9),  -- modified (PK)
+   filer_id VARCHAR(50),  -- modified (PK)
    oid INTEGER,
    coalition TINYINT(1),
    state VARCHAR(2),
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
    
-   PRIMARY KEY (oid, state),
+   PRIMARY KEY (oid),
    UNIQUE (filer_id, state),
    FOREIGN KEY (oid) REFERENCES Organizations(oid),
    FOREIGN KEY (state) REFERENCES State(abbrev)
@@ -613,7 +630,7 @@ CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 CREATE TABLE IF NOT EXISTS LobbyistEmployment(
    pid INT,                         -- modified (FK)
-   sender_id VARCHAR(9), 
+   sender_id VARCHAR(50), 
    rpt_date DATE,
    ls_beg_yr INTEGER,    -- modified (INT)
    ls_end_yr INTEGER,    -- modified (INT)
@@ -636,7 +653,7 @@ CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 CREATE TABLE IF NOT EXISTS LobbyistDirectEmployment(
    pid INT,
-   sender_id VARCHAR(9), -- no longer used
+   sender_id VARCHAR(50), -- no longer used
    rpt_date DATE,
    ls_beg_yr INTEGER,    -- modified (INT)
    ls_end_yr INTEGER,     -- modified (INT)
@@ -655,8 +672,8 @@ CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 
 CREATE TABLE IF NOT EXISTS LobbyingContracts(
-   filer_id VARCHAR(9),
-   sender_id VARCHAR(9), -- modified (FK)
+   filer_id VARCHAR(50),
+   sender_id VARCHAR(50), -- modified (FK)
    rpt_date DATE,
    ls_beg_yr INTEGER,    -- modified (INT)
    ls_end_yr INTEGER,     -- modified (INT)
@@ -951,61 +968,84 @@ CREATE TABLE IF NOT EXISTS BillAnalysis(
     PRIMARY KEY(analysis_id)
 );
 
--- These are the offices that staff work for 
-CREATE TABLE IF NOT EXISTS LegislativeOffices (
-  agency_name VARCHAR(100),
-  lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
-
-  PRIMARY KEY (agency_name)
-)
-ENGINE = INNODB
-CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 CREATE TABLE IF NOT EXISTS LegStaffGifts (
   year YEAR,
-  agency_name VARCHAR(100), -- The broad gov agency receiving the gift
+  agency_name VARCHAR(200), -- The broad gov agency receiving the gift
   staff_member INT, -- the staff member receiving the gift
-  person_type ENUM('Staff', 'Legislator'),
+  legislator INT, -- the legislator the staff member is associated with
   position VARCHAR(200),
   district_number INT,
   jurisdiction VARCHAR(200),
-  source_name VARCHAR(100),
-  source_city VARCHAR(100),
-  source_state VARCHAR(100),
-  source_business VARCHAR(100), -- business the source is involved in
+  source_name VARCHAR(200),
+  source_city VARCHAR(200),
+  source_state VARCHAR(200),
+  source_business VARCHAR(200), -- business the source is involved in
   date_given DATE, 
   gift_value DECIMAL,
   reimbursed BOOLEAN, -- this one is just a flag
   gift_description VARCHAR(200),
   speech_or_panel BOOLEAN, -- flag to see if was for a speech
   image_url VARCHAR(2000),
+  schedule ENUM('D', 'E'),
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
 
   FOREIGN KEY (staff_member) REFERENCES Person(pid),
-  FOREIGN KEY  (agency_name) REFERENCES LegislativeOffices(agency_name)
+  FOREIGN KEY  (legislator) REFERENCES Legislator(pid)
 )
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
--- This is really just a many-to-many relation between 
--- LegStaffGifts and Term
 CREATE TABLE IF NOT EXISTS LegOfficePersonnel (
   staff_member INT,
   legislator INT, -- pk for term
   term_year YEAR, -- pk for term
   house VARCHAR(100), -- pk for term 
-  state CHAR(2), -- pk for term 
   start_date DATE, -- When the staff member started at this office
   end_date DATE,  -- when staff member ended with that office
+  title VARCHAR(100),
+  state CHAR(2), -- pk for term 
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
 
-  PRIMARY KEY (staff_member, legislator, term_year, house, state), 
+  PRIMARY KEY (staff_member, legislator, term_year), 
   FOREIGN KEY (staff_member) REFERENCES LegislativeStaff(pid), 
   FOREIGN KEY (legislator, term_year, house, state) 
     REFERENCES Term(pid, year, house, state)
 )
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+
+CREATE TABLE IF NOT EXISTS LegislatureOffice (
+  lo_id INT AUTO_INCREMENT,
+  name VARCHAR(200),
+  house VARCHAR(200),
+  state CHAR(2), -- pk for term 
+  lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+
+  PRIMARY KEY (lo_id),
+  UNIQUE (name, house, state),
+  FOREIGN KEY (house, state) REFERENCES House(name, state)
+)
+ENGINE = INNODB
+CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+
+CREATE TABLE IF NOT EXISTS OfficePersonnel (
+  staff_member INT,
+  office INT, -- pk for term
+  start_date DATE, -- When the staff member started at this office
+  end_date DATE,  -- when staff member ended with that office
+  state CHAR(2), -- pk for term 
+  lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+
+  PRIMARY KEY (staff_member, office, start_date), 
+  FOREIGN KEY (staff_member) REFERENCES LegislativeStaff(pid), 
+  FOREIGN KEY (office) REFERENCES LegislatureOffice(lo_id)
+)
+ENGINE = INNODB
+CHARACTER SET utf8 COLLATE utf8_general_ci;
+
 
 /* Entity::DeprecatedPerson
 
@@ -1139,15 +1179,15 @@ CREATE TABLE IF NOT EXISTS TT_ServiceRequests (
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS TT_HostingUrl (
-   cutId INTEGER,
-   url VARCHAR(255),
-   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
-   PRIMARY KEY (cutId),
-   FOREIGN KEY (cutId) REFERENCES TT_Cuts(cutId)
-)
-ENGINE = INNODB
-CHARACTER SET utf8 COLLATE utf8_general_ci;
+  CREATE TABLE IF NOT EXISTS TT_HostingUrl (
+     cutId INTEGER,
+     url VARCHAR(255),
+     lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+     PRIMARY KEY (cutId),
+     FOREIGN KEY (cutId) REFERENCES TT_Cuts(cutId)
+  )
+  ENGINE = INNODB
+  CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 CREATE OR REPLACE VIEW TT_currentCuts 
 AS SELECT * FROM TT_Cuts 

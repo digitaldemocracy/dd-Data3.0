@@ -137,9 +137,9 @@ def main():
                          passwd='digitaldemocracy789') as dd_cursor:
     get_districts(dd_cursor)
     logger.info(__file__ + ' terminated successfully.', 
-        full_msg='Inserted ' + str(INSERTED) + ' rows',
+        full_msg='Inserted ' + str(INSERTED) + ' rows in District',
         additional_fields={'_affected_rows':str(INSERTED),
-                           '_inserted':str(INSERTED),
+                           '_inserted':'District:'+str(INSERTED),
                            '_state':'NY'})
 
 if __name__ == "__main__":

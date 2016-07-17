@@ -132,9 +132,9 @@ def main():
             charset='utf8') as dddb:
     add_committeeauthors_db(2015, dddb)
     logger.info(__file__ + ' terminated successfully.', 
-        full_msg='Inserted ' + str(INSERTED) + ' rows',
+        full_msg='Inserted ' + str(INSERTED) + ' rows in CommitteeAuthors',
         additional_fields={'_affected_rows':str(INSERTED),
-                           '_inserted':str(INSERTED),
+                           '_inserted':'CommitteeAuthors:'+str(INSERTED),
                            '_state':'NY'})
 
 if __name__ == '__main__':

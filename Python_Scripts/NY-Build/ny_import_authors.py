@@ -19,6 +19,8 @@ API_URL = 'http://development.digitaldemocracy.org:12202/gelf'
 logger = None
 logged_list = list()
 INSERTED = 0
+BS_INSERTED = 0
+A_UPDATE = 0
 
 counter = 0
 
@@ -130,19 +132,21 @@ If contribution is not in the DDDB then add.
 |contribution|: the person's contribution to the bill (ex: Lead Author)
 '''
 def add_sponsor(dd_cursor, pid, bid, vid, contribution):
+  global BS_INSERTED
   dd_cursor.execute(QS_BILLSPONSORS_CHECK, (bid, pid, vid, contribution))
 
   if dd_cursor.rowcount == 0:
     print pid, vid, contribution
     try:
       dd_cursor.execute(QI_BILLSPONSORS, (pid, bid, vid, contribution))
+      BS_INSERTED += dd_cursor.rowcount
     except MySQLdb.Error:
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
           additional_fields=create_payload('BillSponsors', (QI_BILLSPONSORS % (pid, bid, vid, contribution))))
 
 def insert_authors_db(bill, dddb):
   global counter
-  global INSERTED
+  global INSERTED, A_UPDATE
   
   for key in bill['versions'].keys():
     a = dict()
@@ -167,6 +171,7 @@ def insert_authors_db(bill, dddb):
       elif vid_check and dddb.fetchone()[0] != a['pid']:
         try:
           dddb.execute(QU_AUTHORS, a)
+          A_UPDATE += dddb.rowcount
         except MySQLdb.Error:
           logger.warning('Update Failed', full_msg=traceback.format_exc(),
               additional_fields=create_payload('authors', (QU_AUTHORS % a)))
@@ -268,7 +273,7 @@ def get_pid_db(first, last, dddb):
     return ret
   else:
 #    print first, last, 'not in database'
-    if last not in loggd_list:
+    if last not in logged_list:
       logged_list.append(last)
       logger.warning('Person not found ' + first + ' ' + last,
           additional_fields={'_state':'NY'})
@@ -300,9 +305,12 @@ def main():
 #   dddb_conn.autocommit(True)
     add_authors_db(2015, dddb)
     logger.info(__file__ + ' terminated successfully.', 
-        full_msg='Inserted ' + str(INSERTED) + ' rows',
-        additional_fields={'_affected_rows':str(INSERTED),
-                           '_inserted':str(INSERTED),
+        full_msg='Inserted ' + str(INSERTED) + ' and updated ' + str(A_UPDATE) + ' rows in authors and ' 
+                  + str(BS_INSERTED) + ' rows in BillSponsors',
+        additional_fields={'_affected_rows':str(INSERTED + BS_INSERTED + A_UPDATE),
+                           '_inserted':'authors:'+str(INSERTED)+
+                                       ', BillSponsors:'+str(BS_INSERTED),
+                           '_updated':'authors:'+str(A_UPDATE),
                            '_state':'NY'})
 #   call = call_senate_api("bills", 2015, "", 1)
 #   bills = call[0]

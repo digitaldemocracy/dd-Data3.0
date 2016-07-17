@@ -22,6 +22,8 @@ from bs4 import BeautifulSoup
 from graylogger.graylogger import GrayLogger
 GRAY_URL = 'http://development.digitaldemocracy.org:12202/gelf'
 logger = None
+VD_INSERTED = 0
+VS_INSERTED = 0
 
 insert_billvotedetail = '''INSERT INTO BillVoteDetail
                             (pid,voteId,result,state)
@@ -413,12 +415,14 @@ def is_bvd_in_db(dddb, bvd):
         return False
 
 def insert_bvd_db(dddb, votes, voteId, none_count):
+    global VD_INSERTED
     for bvd in votes:
             bvd['voteId'] = voteId            
            
             if not is_bvd_in_db(dddb, bvd) and bvd['pid'] is not None:
                 try:
                     dddb.execute(insert_billvotedetail, bvd)
+                    VD_INSERTED += dddb.rowcount
                 except MySQLdb.Error:
                     logger.warning('Insert Failed', full_msg=traceback.format_exc(),
                     additional_fields=create_payload('BillVoteDetail',(insert_billvotedetail%bvd)))
@@ -428,6 +432,7 @@ def insert_bvd_db(dddb, votes, voteId, none_count):
     return none_count
 
 def insert_billvotesums_db(dddb, bills):
+    global VS_INSERTED
     none_count = 0
     sum_count = 0
 
@@ -438,6 +443,7 @@ def insert_billvotesums_db(dddb, bills):
             if not voteId:                
                 try:
                     dddb.execute(insert_billvotesummary, bv)
+                    VS_INSERTED += dddb.rowcount
                     sum_count = sum_count + 1
                 except MySQLdb.Error:
                     logger.warning('Insert Failed', full_msg=traceback.format_exc(),
@@ -459,6 +465,13 @@ def main():
                         passwd='digitaldemocracy789',
                         charset='utf8') as dddb:
         insert_billvotesums_db(dddb, get_bills_api(dddb))   
+        logger.info(__file__ + ' terminated successfully.', 
+            full_msg='Inserted ' + str(VS_INSERTED) + ' rows in BillVoteSummary and inserted' 
+                      + str(VD_INSERTED) + ' rows in BillVoteDetail',
+            additional_fields={'_affected_rows':str(VS_INSERTED + VD_INSERTED),
+                               '_inserted':'BillVoteSummary:'+str(VS_INSERTED)+
+                                           ', BillVoteDetail:'+str(VD_INSERTED),
+                               '_state':'NY'})
 
 if __name__ == '__main__':
     with GrayLogger(GRAY_URL) as _logger:
