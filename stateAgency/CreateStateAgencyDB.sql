@@ -14,11 +14,14 @@ CHARACTER SET utf8 COLLATE utf8_general_ci;
 CREATE TABLE IF NOT EXISTS StateAgency (
    sa_id INT AUTO_INCREMENT, -- pk for this datbase 
    name VARCHAR(255), -- the name of the state agency
+   acronym VARCHAR(20), -- the acronym of the state agency
    state VARCHAR(2),
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
 
    PRIMARY KEY (sa_id),
-   UNIQUE (name, state)
+   UNIQUE (name, state),
+   UNIQUE (acronym, state),
+   FOREIGN KEY (state) REFERENCES State(abbrev)
 )
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
@@ -41,7 +44,7 @@ CHARACTER SET utf8 COLLATE utf8_general_ci;
 CREATE TABLE IF NOT EXISTS servesOn (
    pid      INTEGER,                               -- Person id (ref. Person.pid)
    year     YEAR,                                  -- year served
-   agency INT,
+   agency INTEGER,
    position ENUM('Boardmember', 'Executive Staff'),
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
 
@@ -64,8 +67,8 @@ CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 CREATE TABLE IF NOT EXISTS represents (
    pid      INTEGER,
-   organization INT,
-   agenda_item INT,
+   organization INTEGER,
+   agenda_item INTEGER,
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
 
    PRIMARY KEY (pid, agenda_item),
@@ -83,7 +86,7 @@ CHARACTER SET utf8 COLLATE utf8_general_ci;
 CREATE TABLE IF NOT EXISTS Hearing (
    hid    INTEGER AUTO_INCREMENT,      -- Hearing id
    date   DATE,                        -- date of hearing
-   agency INT,
+   agency INTEGER,
    state  VARCHAR(2),
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
 
@@ -130,15 +133,42 @@ CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 CREATE TABLE IF NOT EXISTS Document (
    doc_id INTEGER AUTO_INCREMENT,
-   fileId VARCHAR(20),
+   documentName VARCHAR(255),
+   fileId VARCHAR(20), -- file name, no path
    hid INTEGER,
-   agency INT,
+   agency INTEGER,
+   collection_date DATE,
+   current BOOLEAN NOT NULL,
+   url VARCHAR(255), 
    state VARCHAR(2),
    doc_type ENUM("agenda","supplementary"),
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
 
    PRIMARY KEY (doc_id),
-   FOREIGN KEY (agency) REFERENCES StateAgency(sa_id)
+   FOREIGN KEY (agency) REFERENCES StateAgency(sa_id),
+   FOREIGN KEY (hid) REFERENCES Hearing(hid),
+   FOREIGN KEY (state) REFERENCES State(abbrev)
+)
+ENGINE = INNODB
+CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+CREATE OR REPLACE VIEW currentDocument 
+AS SELECT doc_id, documentName, fileId, hid, agency, collection_date, url, 
+  state, doc_type, lastTouched 
+FROM Document 
+WHERE current = TRUE ORDER BY collection_date DESC;
+
+-- specifies relationship between supplementary document
+-- and its associated agenda item
+CREATE TABLE IF NOT EXISTS AgendaDocument (
+   doc_id INTEGER,
+   hid INTEGER,
+   ai_id INTEGER,
+
+   PRIMARY KEY (doc_id, ai_id),
+   FOREIGN KEY (doc_id) REFERENCES Document(doc_id),
+   FOREIGN KEY (hid) REFERENCES Hearing(hid),
+   FOREIGN KEY (ai_id) REFERENCES AgendaItem(ai_id)
 )
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
@@ -148,6 +178,7 @@ CHARACTER SET utf8 COLLATE utf8_general_ci;
 CREATE TABLE IF NOT EXISTS AgendaItem (
    ai_id       INTEGER AUTO_INCREMENT,
    name        VARCHAR(255),
+   position    VARCHAR(20),
    hid         INTEGER,
    startVideo  INTEGER,
    startTime   INTEGER,
@@ -161,6 +192,20 @@ CREATE TABLE IF NOT EXISTS AgendaItem (
    FOREIGN KEY (hid) REFERENCES Hearing(hid),
    FOREIGN KEY (startVideo) REFERENCES Video(vid),
    FOREIGN KEY (endVideo) REFERENCES Video(vid)
+)
+ENGINE = INNODB
+CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+-- specifies parent-child relationship between agenda items
+CREATE TABLE IF NOT EXISTS AgendaHierarchy (
+   hid INTEGER,
+   parent INTEGER,
+   child INTEGER,
+
+   PRIMARY KEY (child),
+   FOREIGN KEY (hid) REFERENCES Hearing(hid),
+   FOREIGN KEY (parent) REFERENCES AgendaItem(ai_id),
+   FOREIGN KEY (child) REFERENCES AgendaItem(ai_id)
 )
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
@@ -179,7 +224,7 @@ CREATE TABLE IF NOT EXISTS Utterance (
    finalized BOOLEAN NOT NULL,
    dataFlag INTEGER DEFAULT 0,
    diarizationTag VARCHAR(5) DEFAULT '',
-   agenda_item INT,
+   agenda_item INTEGER,
    state VARCHAR(2),
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
 
@@ -200,29 +245,14 @@ AS SELECT uid, vid, speaker, time, endTime, text, state, agenda_item,
 FROM Utterance 
 WHERE current = TRUE AND finalized = TRUE ORDER BY time DESC;
 
-CREATE TABLE IF NOT EXISTS TT_Documents (
-   documentId INTEGER AUTO_INCREMENT,
-   documentName VARCHAR(255),
-   agency INT,
-   date DATE,
-   url VARCHAR(255), 
-   fileName VARCHAR(255),
-   status ENUM("downloading","downloaded","failed","skipped","queued","approved","tasked"),
-   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
-
-   PRIMARY KEY (documentId),
-   FOREIGN KEY (agency) REFERENCES StateAgency(sa_id)
-)
-ENGINE = INNODB
-CHARACTER SET utf8 COLLATE utf8_general_ci;
-
+-- Dropped sourceUrl
+-- Added agency reference instead
 CREATE TABLE IF NOT EXISTS TT_Videos (
    videoId INTEGER AUTO_INCREMENT,
    hearingName VARCHAR(255),
    hearingDate DATE,
-   agency INT,
-   url VARCHAR(255), 
-   sourceUrl VARCHAR(255), 
+   agency INTEGER,
+   url VARCHAR(255),
    fileName VARCHAR(255),
    duration FLOAT,
    state VARCHAR(2),
@@ -230,7 +260,8 @@ CREATE TABLE IF NOT EXISTS TT_Videos (
    glacierId VARCHAR(255),
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
    PRIMARY KEY (videoId),
-   FOREIGN KEY (agency) REFERENCES StateAgency(sa_id)
+   FOREIGN KEY (agency) REFERENCES StateAgency(sa_id),
+   FOREIGN KEY (state) REFERENCES State(abbrev)
 )
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
@@ -311,7 +342,7 @@ CREATE TABLE IF NOT EXISTS TT_Task (
    created DATE,
    assigned DATE, 
    completed DATE,
-   priority INT,
+   priority INTEGER,
    
    PRIMARY KEY (tid),
    FOREIGN KEY (agenda_item) REFERENCES AgendaItem(ai_id),
@@ -323,9 +354,9 @@ ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 CREATE TABLE IF NOT EXISTS TT_EditorStates (
-  tt_user INT,
+  tt_user INTEGER,
   state VARCHAR(2),
-  priority INT,
+  priority INTEGER,
 
   PRIMARY KEY (tt_user, state),
   FOREIGN KEY (tt_user) REFERENCES TT_Editor(id),
