@@ -177,7 +177,7 @@ def get_committee(dd_cursor, name, house):
     logged_list.append(name)
     logger.warning('Committee not found ' + name, 
         full_msg=(QS_COMMITTEE_GET, (name, house, STATE)),
-        additional_fields={'_state':'NY'})
+        additional_fields={'_state':'CA'})
   return None
 
 '''
@@ -248,7 +248,7 @@ def get_person(dd_cursor, filer_naml, house):
   if pid is None and temp not in logged_list:
     logged_list.append(temp)
     logger.warning('Person not found ' + ' '.join(temp),
-        additional_fields={'_state':'NY'})
+        additional_fields={'_state':'CA'})
   return pid
 
 '''
@@ -268,7 +268,7 @@ def get_bid(dd_cursor, vid):
     logged_list.append(vid)
     logger.warning('BillVersion not found '+vid, 
         full_msg=(QS_BILLVERSION_BID, (vid, STATE)),
-        additional_fields={'_state':'NY'})
+        additional_fields={'_state':'CA'})
   return None
 
 '''

@@ -26,6 +26,7 @@ from urllib import urlopen
 from graylogger.graylogger import GrayLogger                                    
 GRAY_URL = 'http://development.digitaldemocracy.org:12202/gelf'
 logger = None
+INSERTED = 0
 
 # U.S. State
 state = 'NY'
@@ -83,11 +84,13 @@ def format_to_string(geo_data):
 Attempts to insert a district into the DDDB. If already there, skip.
 '''
 def insert_district(dd_cursor, house, did, note, year, region, geoData):
+  global INSERTED
   dd_cursor.execute(QS_DISTRICT, {'did':did, 'house':house, 'state':state})
   if (dd_cursor.rowcount == 0):
     try:
       dd_cursor.execute(QI_DISTRICT,
                       (state, house, did, note, year, region, geoData))
+      INSERTED += dd_cursor.rowcount
     except MySQLdb.Error:
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
           additional_fields=create_payload('District', 
@@ -133,6 +136,11 @@ def main():
                          user='awsDB',
                          passwd='digitaldemocracy789') as dd_cursor:
     get_districts(dd_cursor)
+    logger.info(__file__ + ' terminated successfully.', 
+        full_msg='Inserted ' + str(INSERTED) + ' rows in District',
+        additional_fields={'_affected_rows':str(INSERTED),
+                           '_inserted':'District:'+str(INSERTED),
+                           '_state':'NY'})
 
 if __name__ == "__main__":
   with GrayLogger(GRAY_URL) as _logger:

@@ -28,6 +28,8 @@ from graylogger.graylogger import GrayLogger
 API_URL = 'http://development.digitaldemocracy.org:12202/gelf'
 logger = None
 logged_list = list()
+L_UPDATE = 0
+T_UPDATE = 0
 
 QS_PERSON = '''SELECT pid
                FROM Person
@@ -84,6 +86,7 @@ def get_pid_from_Person(dddb, legislator):
   This function populates the tables with the data
 '''
 def populate_table(dddb, legislator):
+  global L_UPDATE, T_UPDATE
   #Get legislator pid from Person table
   pid = get_pid_from_Person(dddb, legislator)
   
@@ -103,6 +106,7 @@ def populate_table(dddb, legislator):
 #      qu_stmt = QU_LEGISLATOR + (' WHERE pid = %d' % (pid))
 #      print qu_stmt
       dddb.execute(QU_LEGISLATOR, legislator)
+      L_UPDATE += dddb.rowcount
     except MySQLdb.Error:
       logger.warning('Update Failed', full_msg=traceback.format_exc(),
           additional_fields=create_payload('Legislator', (QU_LEGISLATOR % legislator)))
@@ -117,6 +121,7 @@ def populate_table(dddb, legislator):
     try:
 #      qu_stmt = QU_TERM + (' WHERE pid = %d' % (pid))
       dddb.execute(QU_TERM, legislator)
+      T_UPDATE += dddb.rowcount
     except MySQLdb.Error:
       logger.warning('Update Failed', full_msg=traceback.format_exc(),
           additional_fields=create_payload('Term', (QU_TERM % legislator)))
@@ -278,6 +283,13 @@ def main():
     scrape_legislator_data(dddb)
     #Delete Google spreadsheet
     delete_spreadsheet()
+    logger.info(__file__ + ' terminated successfully.', 
+        full_msg='Updated ' + str(L_UPDATE) + ' rows in Legislator and updated '
+                  + str(T_UPDATE) + ' rows in Term',
+        additional_fields={'_affected_rows':str(L_UPDATE + T_UPDATE),
+                           '_updated':'Legislator:'+str(L_UPDATE)+
+                                      ', Term:'+str(T_UPDATE),
+                           '_state':'NY'})
   
   #Close database connection
 # dddb_conn.close()

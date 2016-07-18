@@ -18,7 +18,10 @@ import MySQLdb
 from graylogger.graylogger import GrayLogger
 GRAY_URL = 'http://development.digitaldemocracy.org:12202/gelf'
 logger = None
-
+INSERTED = 0
+BV_INSERTED = 0
+UPDATED = 0
+BV_UPDATED = 0
 
 update_billversion = '''UPDATE BillVersion
                         SET bid = %(bid)s, date = %(date)s, state = %(state)s, 
@@ -36,12 +39,6 @@ insert_bill = '''INSERT INTO Bill
                  VALUES
                   (%(bid)s, %(number)s, %(type)s, %(status)s, %(house)s, %(state)s,
                   %(session)s, %(sessionYear)s);'''
-
-insert_billversion = '''INSERT INTO BillVersion
-                         (vid, bid, date, state, subject, title, text)
-                        VALUES
-                         (%(vid)s, %(bid)s, %(date)s, %(state)s, %(subject)s, %(title)s,
-                         %(text)s);'''
 
 insert_billversion = '''INSERT INTO BillVersion
                          (vid, bid, date, state, subject, title, text)
@@ -124,15 +121,18 @@ def get_bills_api(resolution):
 #function to insert a new bill or update an existing one. Returns true if
 #insertion occurs, false otherwise                          
 def insert_bill_db(bill, dddb):
+    global INSERTED, UPDATED
     if not is_bill_in_db(bill, dddb):                        
       try:
         dddb.execute(insert_bill, bill)
+        INSERTED += dddb.rowcount
       except MySQLdb.Error:
         logger.warning('Insert Failed', full_msg=traceback.format_exc(),
             additional_fields=create_payload('Bill', (insert_bill % bill)))
     else:        
       try:
         dddb.execute(update_bill, bill)
+        UPDATED += dddb.rowcount
       except MySQLdb.Error:
         logger.warning('Update Failed', full_msg=traceback.format_exc(),
               additional_fields=create_payload('Bill', (update_bill % bill)))
@@ -169,7 +169,7 @@ def is_bv_in_db(bv, dddb):
 #function to parse over and insert billversions. Called once per bill;
 #inserts or updates corresponding number of bill versions
 def insert_billversions_db(bill, dddb):    
-            
+    global BV_INSERTED, BV_UPDATED
     for key in bill['versions'].keys():
         bv = dict()
         bv['bid'] = bill['bid']        
@@ -183,15 +183,17 @@ def insert_billversions_db(bill, dddb):
         if not is_bv_in_db(bv, dddb):
           try:
             dddb.execute(insert_billversion, bv)
+            BV_INSERTED += dddb.rowcount
           except MySQLdb.Error:
             logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-                additional_fields=create_payload('Bill Version',( insert_billversion % bv)))
+                additional_fields=create_payload('BillVersion',( insert_billversion % bv)))
         else:            
           try:
             dddb.execute(update_billversion, bv)
+            BV_UPDATED += dddb.rowcount
           except MySQLdb.Error:
             logger.warning('Update Failed', full_msg=traceback.format_exc(),
-                additional_fields=create_payload('Bill Version', (update_billversion % bv)))
+                additional_fields=create_payload('BillVersion', (update_billversion % bv)))
         
 #function to loop over all bills and insert bills and bill versions        
 def add_bills_db( dddb):
@@ -215,6 +217,15 @@ def main():
                         passwd='digitaldemocracy789',
                         charset='utf8') as dddb:
       add_bills_db(dddb)
+      logger.info(__file__ + ' terminated successfully.', 
+          full_msg='Inserted ' + str(INSERTED) + ' and updated ' + str(UPDATED) + ' rows in Bill and inserted ' 
+                    + str(BV_INSERTED) + ' and updated ' + str(BV_UPDATED) + ' rows in BillVersion',
+          additional_fields={'_affected_rows':str(INSERTED + BV_INSERTED + UPDATED + BV_UPDATED),
+                             '_inserted':'Bill:'+str(INSERTED)+
+                                         ', BillVersion:'+str(BV_INSERTED),
+                             '_updated':'Bill:'+str(UPDATED)+
+                                        ', BillVersion:'+str(BV_UPDATED),
+                             '_state':'NY'})
     
 if __name__ == '__main__':
   with GrayLogger(GRAY_URL) as _logger:

@@ -12,9 +12,11 @@
 
 import requests
 import MySQLdb
+import traceback
 from graylogger.graylogger import GrayLogger
 GRAY_URL = 'http://development.digitaldemocracy.org:12202/gelf'
 logger = None
+INSERTED = 0
 
 insert_action = '''INSERT INTO Action 
                     (bid, date, text)
@@ -31,6 +33,13 @@ API_URL = "http://legislation.nysenate.gov/api/3/{0}/{1}{2}?full=true&"
 API_URL += "limit=1000&key=31kNDZZMhlEjCOV8zkBG1crgWAGxwDIS&offset={3}&"
 STATE = 'NY'                 
 BILL_API_INCREMENT = 1000
+
+def create_payload(table, sqlstmt):                                             
+    return {
+        '_table': table,
+        '_sqlstmt': sqlstmt,
+        '_state': 'NY'
+    }
 
 #calls NY Senate API and returns a tuple with the list of results and the total number of results                        
 def call_senate_api(restCall, house, offset, resolution):
@@ -86,7 +95,7 @@ def is_act_in_db(act, dddb):
     return False
 
 def insert_actions_db(bill, dddb):
-
+    global INSERTED
     for action in bill['actions']:
         act = dict()
         act['bid'] = bill['bid']
@@ -96,14 +105,15 @@ def insert_actions_db(bill, dddb):
         if not is_act_in_db(act, dddb):
             try:
                 dddb.execute(insert_action, act)
+                INSERTED += dddb.rowcount
             except MySQLdb.Error:
                 logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-                additional_fields=create_payload('Bill Action',( insert_action, act)))
+                additional_fields=create_payload('Action',(insert_action%act)))
             return True
         return False
 
 #function to loop over all bills and insert bill actions        
-def add_bill_actions_db( dddb):
+def add_bill_actions_db(dddb):
     #Resolution passed in, if 'True' then gets all the resolutions
     bills = get_bills_api(False)
     bills.extend(get_bills_api(True))
@@ -123,6 +133,11 @@ def main():
                         passwd='digitaldemocracy789',
                         charset='utf8') as dddb:
         add_bill_actions_db(dddb)      
+        logger.info(__file__ + ' terminated successfully.', 
+            full_msg='inserted ' + str(INSERTED) + ' rows in Action',
+            additional_fields={'_affected_rows':str(INSERTED),
+                               '_inserted':'Action:'+str(INSERTED),
+                               '_state':'NY'})
     
 if __name__ == '__main__':
     with GrayLogger(GRAY_URL) as _logger:

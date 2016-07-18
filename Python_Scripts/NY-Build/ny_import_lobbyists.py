@@ -9,8 +9,13 @@ Description:
 - Note that there is not filer ID in the NY data, which means LobbyingFirmState, LobbyistEmployment, LobbyistEmployer
   cannot be filled. We need to decide on a method to either create filer IDs or alter the schema. 
 '''
+
+import traceback
 import requests
 import MySQLdb
+from graylogger.graylogger import GrayLogger
+API_URL = 'http://development.digitaldemocracy.org:12202/gelf'
+logger = None
 
 insert_person = '''INSERT INTO Person
                 (last, first)
@@ -41,14 +46,6 @@ select_lobbyingfirm = '''SELECT filer_naml
                          FROM LobbyingFirm
                          WHERE filer_naml = %(filer_naml)s'''
                                                
-dddb_conn =  MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-                            user='awsDB',
-                            db='JohnTest',
-                            port=3306,
-                            passwd='digitaldemocracy789',
-                            charset='utf8')
-dddb = dddb_conn.cursor()
-dddb_conn.autocommit(True)                                                
 name_checks = ['(', '\\' ,'/', 'OFFICE', 'LLC']
 
 
@@ -88,55 +85,60 @@ def get_names(names):
     return ret_names
 
 def call_lobbyist_api():
-    url = 'https://data.ny.gov/resource/mbmr-kxth.json?$limit=50000'
+    url = 'https://data.ny.gov/resource/mbmr-kxth.json?$limit=500000'
     r = requests.get(url)
     lobbyists_api = r.json()
     return lobbyists_api
     
 def get_lobbyists_api(lobbyists_api):
-    lobbyists = dict()
-    for lbyst in lobbyists_api:    
-         
-        if lbyst['lobbyist_name'] in lobbyists:
-            if not lobbyist['person']: 
-                if 'additional_lobbyists_lr' in lbyst:
-                    lobbyist['lobbyists'] += get_names(lbyst['additional_lobbyists_lr'])
-                if 'additional_lobbyists_lbr' in lbyst:
-                    lobbyist['lobbyists'] += get_names(lbyst['additional_lobbyists_lbr'])
-                lobbyist['lobbyists'] = list(set(lobbyist['lobbyists']))
-        else:
-            lobbyist = dict()
-            lobbyist['person'] = False
-            try:
-                if lbyst['additional_lobbyists_lr'] == 'NULL' and lbyst['additional_lobbyists_lbr'] ==  'NULL' and \
-                lbyst['lr_responsible_party_first_name'] in lbyst['lobbyist_name'] and lbyst['lr_responsible_party_last_name'] in lbyst['lobbyist_name']:
-                    cont = True
-                    for name in name_checks:
-                        if name in lbyst['lobbyist_name']:
-                            cont = False         
-                    if cont:
-                        lobbyist['person'] = True                        
-                        lobbyist['first'] = lbyst['lr_responsible_party_first_name']
-                        lobbyist['last'] = lbyst['lr_responsible_party_last_name']                      
-            except:
-                pass                                
+  lobbyists = dict()
+  for lbyst in lobbyists_api:
+    if 'lobbyist_name' not in lbyst.keys():
+      print lbyst
+      exit(1)
+#    print 'one', lbyst['lobbyist_name'] 
+    if lbyst['lobbyist_name'] in lobbyists:
+#      print 'if ',  lobbyist['person']
+      if not lobbyist['person']: 
+        if 'additional_lobbyists_lr' in lbyst:
+          lobbyist['lobbyists'] += get_names(lbyst['additional_lobbyists_lr'])
+        if 'additional_lobbyists_lbr' in lbyst:
+          lobbyist['lobbyists'] += get_names(lbyst['additional_lobbyists_lbr'])
+        lobbyist['lobbyists'] = list(set(lobbyist['lobbyists']))
+    else:
+      lobbyist = dict()
+      lobbyist['person'] = False
+      try:
+        if lbyst['additional_lobbyists_lr'] == 'NULL' and lbyst['additional_lobbyists_lbr'] ==  'NULL' and \
+        lbyst['lr_responsible_party_first_name'] in lbyst['lobbyist_name'] and lbyst['lr_responsible_party_last_name'] in lbyst['lobbyist_name']:
+          cont = True
+          for name in name_checks:
+            if name in lbyst['lobbyist_name']:
+              cont = False         
+          if cont:
+            lobbyist['person'] = True                        
+            lobbyist['first'] = lbyst['lr_responsible_party_first_name']
+            lobbyist['last'] = lbyst['lr_responsible_party_last_name']                      
+      except:
+        print lbyst
+        print traceback.format_exc()
             
-            lobbyist['filer_naml'] = lbyst['lobbyist_name']
-            lobbyist['state'] = 'NY'
+      lobbyist['filer_naml'] = lbyst['lobbyist_name']
+      lobbyist['state'] = 'NY'
             
-            if not lobbyist['person']:
-                lobbyist['lobbyists'] = list()
-                if 'additional_lobbyists_lr' in lbyst:
-                    lobbyist['lobbyists'] += get_names(lbyst['additional_lobbyists_lr'])
-                if 'additional_lobbyists_lbr' in lbyst:
-                    lobbyist['lobbyists'] += get_names(lbyst['additional_lobbyists_lbr'])
-                lobbyist['lobbyists'] = list(set(lobbyist['lobbyists']))
+      if not lobbyist['person']:
+        lobbyist['lobbyists'] = list()
+        if 'additional_lobbyists_lr' in lbyst:
+          lobbyist['lobbyists'] += get_names(lbyst['additional_lobbyists_lr'])
+        if 'additional_lobbyists_lbr' in lbyst:
+          lobbyist['lobbyists'] += get_names(lbyst['additional_lobbyists_lbr'])
+        lobbyist['lobbyists'] = list(set(lobbyist['lobbyists']))
                         
-            lobbyists[lbyst['lobbyist_name']] = lobbyist            
+      lobbyists[lbyst['lobbyist_name']] = lobbyist            
     
-    return lobbyists
+  return lobbyists
     
-def is_lobbyist_in_db(lobbyist):
+def is_lobbyist_in_db(dddb, lobbyist):
     dddb.execute(select_lobbyist, lobbyist)
     query = dddb.fetchone()
     
@@ -145,7 +147,7 @@ def is_lobbyist_in_db(lobbyist):
 
     return True
     
-def is_lobbyingfirm_in_db(lobbyist):
+def is_lobbyingfirm_in_db(dddb, lobbyist):
     dddb.execute(select_lobbyingfirm, lobbyist)
     query = dddb.fetchone()
     
@@ -154,16 +156,16 @@ def is_lobbyingfirm_in_db(lobbyist):
 
     return True 
        
-def insert_lobbyist_db(lobbyist):
-    if not is_lobbyist_in_db(lobbyist):
+def insert_lobbyist_db(dddb, lobbyist):
+    if not is_lobbyist_in_db(dddb, lobbyist):
         
         dddb.execute(insert_person, lobbyist)
         pid = dddb.lastrowid   
         lobbyist['pid'] = pid
         dddb.execute(insert_lobbyist, lobbyist)  
 
-def insert_lobbyingfirm_db(lobbyist):
-    if not is_lobbyingfirm_in_db(lobbyist):
+def insert_lobbyingfirm_db(dddb, lobbyist):
+    if not is_lobbyingfirm_in_db(dddb, lobbyist):
         dddb.execute(insert_lobbyingfirm, lobbyist)
         for person in lobbyist['lobbyists']:
             per = dict()
@@ -174,18 +176,28 @@ def insert_lobbyingfirm_db(lobbyist):
                 per['last'] = name[1]
                 insert_lobbyist_db(per)
             except:
-                print name
+                pass
+#                print name
     
-def insert_lobbyists_db(lobbyists):
+def insert_lobbyists_db(dddb, lobbyists):
     for lobbyist in lobbyists.values():
         if lobbyist['person']:            
-            insert_lobbyist_db(lobbyist)
+            insert_lobbyist_db(dddb, lobbyist)
         else:
-            insert_lobbyingfirm_db(lobbyist)
+            insert_lobbyingfirm_db(dddb, lobbyist)
             
-def main():    
+def main():
+  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+      user='awsDB',
+      db='EricTest',
+      port=3306,
+      passwd='digitaldemocracy789',
+      charset='utf8') as dddb:
     lobbyists_api = call_lobbyist_api()
     lobbyists = get_lobbyists_api(lobbyists_api)
-    insert_lobbyists_db(lobbyists)
-    
-main()
+    insert_lobbyists_db(dddb, lobbyists)
+
+if __name__ == '__main__':
+  with GrayLogger(API_URL) as _logger:
+    logger = _logger 
+    main()
