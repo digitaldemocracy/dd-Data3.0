@@ -35,6 +35,8 @@ import MySQLdb
 from graylogger.graylogger import GrayLogger                                    
 API_URL = 'http://development.digitaldemocracy.org:12202/gelf'                  
 logger = None
+B_INSERT = 0
+BV_INSERT = 0
 
 US_STATE = 'CA'
 
@@ -86,14 +88,16 @@ Checks if bill exists. If not, adds the bill.
   |sessionYear|: The year the bill was created
 '''
 def add_bill(dd_cursor, values):
+  global B_INSERT
   dd_cursor.execute(QS_BILL_CHECK, (values[0], values[2]))
 
   if dd_cursor.rowcount == 0:
     try:
       dd_cursor.execute(QI_BILL, values)
+      B_INSERT += dd_cursor.rowcount
     except MySQLdb.Error:
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-          additional_fields=create_payload('Bill', (QS_BILL_CHECK % (values[0], values[2]))))
+          additional_fields=create_payload('Bill', (QI_BILL % (values))))
 
 '''
 Checks if BillVersion exists. If not, adds the BillVersion.
@@ -110,15 +114,17 @@ Checks if BillVersion exists. If not, adds the BillVersion.
   |state|: U.S. state the bill resides in
 '''
 def add_bill_version(dd_cursor, values):
+  global BV_INSERT
   dd_cursor.execute(QS_BILLVERSION_CHECK, (values[0],))
 
   if dd_cursor.rowcount == 0:
     try:
       dd_cursor.execute(QI_BILLVERSION, values)
+      BV_INSERT += dd_cursor.rowcount
     except MySQLdb.Error:
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
           additional_fields=create_payload('BillVersion', 
-            (QS_BILLVERSION_CHECK % (values[0],))))
+            (QI_BILLVERSION % (values))))
 
 '''
 Gets all of the Bills, then adds them as necessary
@@ -179,6 +185,13 @@ def main():
                          passwd='python') as ca_cursor:
       get_bills(ca_cursor, dd_cursor)
       get_bill_versions(ca_cursor, dd_cursor)
+      logger.info(__file__ + ' terminated successfully.', 
+        full_msg='Inserted ' + str(B_INSERT) + ' rows in Bill and inserted ' 
+                    + str(BV_INSERT) + ' rows in BillVersion',
+          additional_fields={'_affected_rows':str(B_INSERT + BV_INSERT),
+                             '_inserted':'Bill:'+str(B_INSERT)+
+                                         ', BillVersion:'+str(BV_INSERT),
+                             '_state':'CA'})
 
 if __name__ == "__main__":
   with GrayLogger(API_URL) as _logger:                                          

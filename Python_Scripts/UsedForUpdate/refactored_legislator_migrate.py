@@ -36,6 +36,9 @@ from Name_Fixes_Legislator_Migrate import clean_name_legislator_migrate
 from graylogger.graylogger import GrayLogger
 
 logger = None
+P_INSERT = 0
+L_INSERT = 0
+T_INSERT = 0
 
 # U.S. State
 STATE = 'CA'
@@ -117,6 +120,7 @@ def check_name(cursor, last, first):
 Gets the legislators from Leginfo (capublic DB) and migrate them to DDDB
 '''
 def migrate_legislators(ca_cursor, dd_cursor):
+  global P_INSERT, L_INSERT, T_INSERT
   ca_cursor.execute(QS_CPUB_LEGISLATOR)
 
   # Check each legislator in capublic
@@ -130,6 +134,7 @@ def migrate_legislators(ca_cursor, dd_cursor):
       logger.info('New Member: first: {0} last: {1}'.format(first, last))
       try:
         dd_cursor.execute(QI_PERSON, (last, first))
+        P_INSERT += dd_cursor.rowcount
       except MySQLdb.Error:
         logger.warning('Insert Failed', full_msg=traceback.format_exc(),
             additional_fields=create_payload('Person', (QI_PERSON % (last, first))))
@@ -141,11 +146,13 @@ def migrate_legislators(ca_cursor, dd_cursor):
               (pid, year, district, house, party, STATE)))
         try:
           dd_cursor.execute(QI_LEGISLATOR, (pid, STATE))
+          L_INSERT += dd_cursor.rowcount
         except MySQLdb.Error:
            logger.warning('Insert Failed', full_msg=traceback.format_exc(),
                additional_fields=create_payload('Legislator' % (QI_LEGISLATOR, (pid, STATE))))
         try:
           dd_cursor.execute(QI_TERM, (pid, year, district, house, party, STATE))
+          T_INSERT += dd_cursor.insert
         except MySQLdb.Error:
           logger.warning('Insert Failed', full_msg=traceback.format_exc(),
               additional_fields=create_payload('Term', 
@@ -159,13 +166,15 @@ def migrate_legislators(ca_cursor, dd_cursor):
       if result is None and active == 'Y':
         try:
           dd_cursor.execute(QI_LEGISLATOR, (pid, STATE))
+          L_INSERT += dd_cursor.rowcount
         except MySQLdb.Error:
           logger.warning('Insert Failed', full_msg=traceback.format_exc(),
               additional_fields=create_payload('Legislator', (QI_LEGISLATOR % (pid, STATE))))
       result = check_term(dd_cursor, pid, year, district, house)
       if result is None and active == 'Y':
         try:
-          result = dd.execute(QI_TERM, (pid, year, district, house, party, STATE))
+          result = dd_cursor.execute(QI_TERM, (pid, year, district, house, party, STATE))
+          T_INSERT += dd_cursor.rowcount
         except MySQLdb.Error:
           logger.warning('Insert Failed', full_msg=traceback.format_exc(),
               additional_fields=create_payload('Term',
@@ -182,6 +191,15 @@ def main():
                            user='awsDB',
                            passwd='digitaldemocracy789') as dd_cursor:
       migrate_legislators(ca_cursor, dd_cursor)
+      logger.info(__file__ + ' terminated successfully.', 
+          full_msg='Inserted ' + str(P_INSERT) + ' rows in Person, inserted ' +
+                   str(L_INSERT) + ' rows in Legislator and inserted '
+                    + str(T_INSERT) + ' rows in Term',
+          additional_fields={'_affected_rows':str(P_INSERT + L_INSERT + T_INSERT),
+                             '_inserted':'Person:'+str(P_INSERT)+
+                                         ', Legislator:'+str(L_INSERT)+
+                                         ', Term:'+str(T_INSERT),
+                             '_state':'CA'})
 
 if __name__ == "__main__":
   with GrayLogger('http://development.digitaldemocracy.org:12202/gelf') as _logger:

@@ -36,6 +36,9 @@ from graylogger.graylogger import GrayLogger
 API_URL = 'http://development.digitaldemocracy.org:12202/gelf'
 logger = None
 logged_list = list()
+AU_INSERT = 0
+CA_INSERT = 0
+BS_INSERT = 0
 
 # U.S. State
 STATE = 'CA'
@@ -129,11 +132,13 @@ If the committee author for this bill is not in DDDB, add. Otherwise, skip.
 |vid|: Bill Version id
 '''
 def add_committee_author(dd_cursor, cid, bid, vid):
+  global CA_INSERT
   dd_cursor.execute(QS_COMMITTEEAUTHORS_CHECK, (cid, bid, vid, STATE))
 
   if dd_cursor.rowcount == 0:
     try:
       dd_cursor.execute(QI_COMMITTEEAUTHORS, (cid, bid, vid, STATE))
+      CA_INSERT += dd_cursor.rowcount
     except MySQLdb.Error:
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
           additional_fields=create_payload('CommitteeAuthors', 
@@ -281,11 +286,13 @@ If the author for this bill is not in DDDB, add author. Otherwise, skip.
 |contribution|: How the person contributed to the bill (ex: Lead Author)
 '''
 def add_author(dd_cursor, pid, bid, vid, contribution):
+  global AU_INSERT
   dd_cursor.execute(QS_AUTHORS_CHECK, (bid, pid, vid))
 
   if dd_cursor.rowcount == 0:
     try:
       dd_cursor.execute(QI_AUTHORS, (pid, bid, vid, contribution))
+      AU_INSERT += dd_cursor.rowcount
     except MySQLdb.Error:
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
           additional_fields=create_payload('Authors', 
@@ -301,6 +308,7 @@ If contribution is not in the DDDB then add.
 |contribution|: the person's contribution to the bill (ex: Lead Author)
 '''
 def add_sponsor(dd_cursor, pid, bid, vid, contribution):
+  global BS_INSERT
   dd_cursor.execute(QS_BILLSPONSORROLL_CHECK, (contribution,))
 
   if dd_cursor.rowcount == 0:
@@ -317,6 +325,7 @@ def add_sponsor(dd_cursor, pid, bid, vid, contribution):
 #    print pid, vid, contribution
     try:
       dd_cursor.execute(QI_BILLSPONSORS, (pid, bid, vid, contribution))
+      BS_INSERT += dd_cursor.rowcount
     except MySQLdb.Error as error:                                              
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
         additional_fields=create_payload('BillSponsors', 
@@ -371,6 +380,15 @@ def main():
                        db='capublic',
                        passwd='python') as ca_cursor:
       get_authors(ca_cursor, dd_cursor)
+      logger.info(__file__ + ' terminated successfully.', 
+          full_msg='Inserted ' + str(AU_INSERT) + ' rows in authors, ' 
+                    + str(BS_INSERT) + ' rows in BillSponsors and ' 
+                    + str(CA_INSERT) + ' rows in CommitteeAuthors.',
+          additional_fields={'_affected_rows':str(AU_INSERT + BS_INSERT + CA_INSERT),
+                             '_inserted':'authors:'+str(AU_INSERT)+
+                                         ', BillSponsors:'+str(BS_INSERT)+
+                                         ', CommitteeAuthors:'+str(CA_INSERT),
+                             '_state':'CA'})
 
 if __name__ == '__main__':
   with GrayLogger(API_URL) as _logger:
