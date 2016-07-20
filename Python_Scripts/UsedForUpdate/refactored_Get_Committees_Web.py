@@ -358,6 +358,12 @@ def scan_page(url, pattern):
     if error.getcode() == 403:
     # TO DO: Implement logic to retry page retrieval (using wget?)
       sys.stderr.write("{0}: {1}\n".format(url, error))
+      try:
+        comm_name = url.split('//')[1].split('.')[0]
+        html = open('html_pages/'+comm_name, 'r').read()
+        return re.finditer(pattern, html)
+      except IOError:
+        sys.stderr.write("Error: File %s does not appear to exist."%comm_name)
     else:
       sys.stderr.write("{0}: {1}\n".format(url, error))
     return []
