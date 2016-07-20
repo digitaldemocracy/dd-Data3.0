@@ -160,7 +160,8 @@ def is_leg_in_db(senator, dddb):
 #checks if Term + Person is in database.
 # UPDATES the Term if the district has changed. 
 #returns true/false as expected
-def is_term_in_db(senator, dddb):                                            
+def is_term_in_db(senator, dddb):
+    global T_UPDATE
     try:
         dddb.execute(select_term, senator)
         query = dddb.fetchone()
@@ -170,6 +171,7 @@ def is_term_in_db(senator, dddb):
             #print 'updated', senator
             try:
               dddb.execute(QU_TERM, senator)
+              T_UPDATE += dddb.rowcount
             except MySQLdb.Error:
               logger.warning('Update Failed', full_msg=traceback.format_exc(),
                   additional_fields=create_payload('Term', (QU_TERM % senator)))
