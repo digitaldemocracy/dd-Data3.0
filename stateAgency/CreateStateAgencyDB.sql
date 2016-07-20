@@ -65,19 +65,6 @@ CREATE TABLE IF NOT EXISTS Organization (
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS represents (
-   pid      INTEGER,
-   organization INTEGER,
-   agenda_item INTEGER,
-   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
-
-   PRIMARY KEY (pid, agenda_item),
-   FOREIGN KEY (organization) REFERENCES Organization(oid),
-   FOREIGN KEY (agenda_item) REFERENCES AgendaItem(ai_id)
-)
-ENGINE = INNODB
-CHARACTER SET utf8 COLLATE utf8_general_ci;
-
 -- Hearing
 -- add fk to StateAgency because we have no CommitteeHearing
 -- equivalent
@@ -158,21 +145,6 @@ AS SELECT doc_id, documentName, fileId, hid, agency, collection_date, url,
 FROM Document 
 WHERE current = TRUE ORDER BY collection_date DESC;
 
--- specifies relationship between supplementary document
--- and its associated agenda item
-CREATE TABLE IF NOT EXISTS AgendaDocument (
-   doc_id INTEGER,
-   hid INTEGER,
-   ai_id INTEGER,
-
-   PRIMARY KEY (doc_id, ai_id),
-   FOREIGN KEY (doc_id) REFERENCES Document(doc_id),
-   FOREIGN KEY (hid) REFERENCES Hearing(hid),
-   FOREIGN KEY (ai_id) REFERENCES AgendaItem(ai_id)
-)
-ENGINE = INNODB
-CHARACTER SET utf8 COLLATE utf8_general_ci;
-
 -- similar to DDDB2015.BillDiscussion but includes a name
 -- * this is the one change Darius will need to make
 CREATE TABLE IF NOT EXISTS AgendaItem (
@@ -192,6 +164,34 @@ CREATE TABLE IF NOT EXISTS AgendaItem (
    FOREIGN KEY (hid) REFERENCES Hearing(hid),
    FOREIGN KEY (startVideo) REFERENCES Video(vid),
    FOREIGN KEY (endVideo) REFERENCES Video(vid)
+)
+ENGINE = INNODB
+CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS represents (
+   pid      INTEGER,
+   organization INTEGER,
+   agenda_item INTEGER,
+   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+
+   PRIMARY KEY (pid, agenda_item),
+   FOREIGN KEY (organization) REFERENCES Organization(oid),
+   FOREIGN KEY (agenda_item) REFERENCES AgendaItem(ai_id)
+)
+ENGINE = INNODB
+CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+-- specifies relationship between supplementary document
+-- and its associated agenda item
+CREATE TABLE IF NOT EXISTS AgendaDocument (
+   doc_id INTEGER,
+   hid INTEGER,
+   ai_id INTEGER,
+
+   PRIMARY KEY (doc_id, ai_id),
+   FOREIGN KEY (doc_id) REFERENCES Document(doc_id),
+   FOREIGN KEY (hid) REFERENCES Hearing(hid),
+   FOREIGN KEY (ai_id) REFERENCES AgendaItem(ai_id)
 )
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
