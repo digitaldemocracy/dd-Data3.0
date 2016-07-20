@@ -42,6 +42,9 @@ from bs4 import BeautifulSoup
 from graylogger.graylogger import GrayLogger                                    
 API_URL = 'http://development.digitaldemocracy.org:12202/gelf'                  
 logger = None
+C_INSERT = 0
+S_INSERT = 0
+S_DELETE = 0
 
 # U.S. State
 STATE = 'CA'
@@ -187,15 +190,17 @@ Inserts committee
 Returns the new cid.
 '''
 def insert_committee(cursor, house, name, commType):
+  global C_INSERT
   try:
     # Get the next available cid
     cursor.execute(QS_COMMITTEE_MAX_CID)
     cid = cursor.fetchone()[0] + 1
     cursor.execute(QI_COMMITTEE, (cid, house, name, commType, STATE))
+    C_INSERT += cursor.rowcount
     return cid
   except MySQLdb.Error:
     logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-    additional_fields=create_payload('Committee',(QI_COMMITTEE%(cid, house, name, commType, STATE))))
+      additional_fields=create_payload('Committee',(QI_COMMITTEE%(cid, house, name, commType, STATE))))
     return -1
 
 '''
@@ -215,6 +220,7 @@ Checks if the legislator is already in database, otherwise input them in servesO
 Returns insert servesOn count
 '''
 def insert_serveson(cursor, pid, year, house, cid, position, serve_count):
+  global S_INSERT
   try:
     # First get year of Term served by Person represented by pid
     cursor.execute(QS_TERM_2, (pid, house, year, STATE))
@@ -224,6 +230,7 @@ def insert_serveson(cursor, pid, year, house, cid, position, serve_count):
       #print 'About to insert pid:{0} year:{1} house:{2} cid:{3} position:{4} \
              #state:{5}'.format(pid, termYear, house, cid, position, STATE)
       cursor.execute(QI_SERVESON, (pid, termYear, house, cid, position, STATE))
+      S_INSERT += cursor.rowcount
       serve_count = serve_count + 1
   except MySQLdb.Error:
     logger.warning('Insert Failed', full_msg=traceback.format_exc(),
@@ -351,6 +358,12 @@ def scan_page(url, pattern):
     if error.getcode() == 403:
     # TO DO: Implement logic to retry page retrieval (using wget?)
       sys.stderr.write("{0}: {1}\n".format(url, error))
+      try:
+        comm_name = url.split('//')[1].split('.')[0]
+        html = open('html_pages/'+comm_name, 'r').read()
+        return re.finditer(pattern, html)
+      except IOError:
+        sys.stderr.write("Error: File %s does not appear to exist."%comm_name)
     else:
       sys.stderr.write("{0}: {1}\n".format(url, error))
     return []
@@ -487,9 +500,11 @@ That way they can insert the latest data in servesOn.
 |year|: year of term
 '''
 def clean_servesOn(cursor, cid, house, year):
+  global S_DELETE
   try:
     # Delete previous entries in order to insert the latest ones
     cursor.execute(QD_SERVESON, (cid, house, year, STATE))
+    S_DELETE += cursor.rowcount
   except MySQLdb.Error:
     logger.warning('Delete Failed', full_msg=traceback.format_exc(),
     additional_fields=create_payload('servesOn',(QD_SERVESON%(cid, house, year, STATE))))
@@ -543,6 +558,14 @@ def main():
     year = datetime.datetime.now().year
     for house in ['Assembly', 'Senate']:
       comm_count, serve_count = update_committees(dd, house, year, comm_count, serve_count)
+    logger.info(__file__ + ' terminated successfully.', 
+        full_msg='Inserted ' + str(C_INSERT) + ' rows in Committee and inserted ' 
+                  + str(S_INSERT) + ' and deleted ' + str(S_DELETE) + ' rows in servesOn',
+        additional_fields={'_affected_rows':str(C_INSERT + S_INSERT),
+                           '_inserted':'Committee:'+str(C_INSERT)+
+                                       ', servesOn:'+str(S_INSERT),
+                           '_deleted':'servesOn:'+str(S_DELETE),
+                           '_state':'CA'})
     print 'Inserted %d entries to Committee'%comm_count
     print 'Inserted %d entries to servesOn'%serve_count
     

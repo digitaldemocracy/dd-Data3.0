@@ -35,6 +35,7 @@ import re
 from graylogger.graylogger import GrayLogger                                    
 API_URL = 'http://development.digitaldemocracy.org:12202/gelf'                  
 logger = None
+UPDATE = 0
 
 # U.S. State
 STATE = 'CA'
@@ -126,6 +127,7 @@ def get_bill_versions(ca_cursor):
     yield '%s_%s' % (STATE, vid), sanitize_xml(xml)
 
 def billparse(ca_cursor, dd_cursor):
+  global UPDATE
   for vid, xml in get_bill_versions(ca_cursor):
     # This line will fail if |xml| is not valid XML.
     try:
@@ -149,6 +151,7 @@ def billparse(ca_cursor, dd_cursor):
       body = extract_caml('Content')
     try:
       dd_cursor.execute(QU_BILL_VERSION, (title, digest, body, STATE, vid))
+      UPDATE += dd_cursor.rowcount
     except MySQLdb.Error:
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
           additional_fields=create_payload('BillVersion', 
@@ -170,3 +173,8 @@ if __name__ == "__main__":
       with GrayLogger(API_URL) as _logger:                                          
         logger = _logger 
         billparse(ca_cursor, dd_cursor)
+        logger.info(__file__ + ' terminated successfully.', 
+            full_msg='Updated ' + str(UPDATE) + ' rows in BillVersion',
+            additional_fields={'_affected_rows':str(UPDATE),
+                               '_updated':'BillVersion:'+str(UPDATE),
+                               '_state':'CA'})

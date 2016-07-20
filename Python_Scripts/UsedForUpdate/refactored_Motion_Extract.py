@@ -29,6 +29,7 @@ import MySQLdb
 from graylogger.graylogger import GrayLogger
 API_URL = 'http://development.digitaldemocracy.org:12202/gelf'
 logger = None
+INSERTED = 0
 
 QI_MOTION = '''INSERT INTO Motion (mid, date, text, doPass) 
                VALUES (%s, %s, %s, %s)'''
@@ -49,11 +50,13 @@ def create_payload(table, sqlstmt):
 
 # Insert the Motion row into DDDB if none is found
 def insert_motion(cursor, mid, date, text):
+  global INSERTED
   cursor.execute(QS_MOTION, {'mid':mid, 'date':date})
   if(cursor.rowcount == 0):
     do_pass_flag = 1 if 'do pass' in text.lower() else 0
     try:
       cursor.execute(QI_MOTION, (mid, date, text, do_pass_flag))
+      INSERTED += cursor.rowcount
     except MySQLdb.Error as error:
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
           additional_fields=create_payload('Motion', 
@@ -74,6 +77,11 @@ def get_motions():
         date = update.strftime('%Y-%m-%d %H:%M:%S')
         if date:
           insert_motion(dddb_cursor, mid, date, text)
+      logger.info(__file__ + ' terminated successfully.', 
+          full_msg='inserted ' + str(INSERTED) + ' rows in Motion',
+          additional_fields={'_affected_rows':str(INSERTED),
+                             '_inserted':'Motion:'+str(INSERTED),
+                             '_state':'CA'})
 
 if __name__ == "__main__":
   with GrayLogger(API_URL) as _logger:

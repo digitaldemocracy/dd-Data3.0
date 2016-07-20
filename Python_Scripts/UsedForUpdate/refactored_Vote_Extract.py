@@ -38,6 +38,8 @@ from graylogger.graylogger import GrayLogger
 API_URL = 'http://development.digitaldemocracy.org:12202/gelf'
 logger = None
 logged_list = list()
+S_INSERT = 0
+D_INSERT = 0
 
 # U.S. State
 STATE = 'CA'
@@ -268,10 +270,12 @@ def get_vote_id(cursor, bid, mid, date, seq):
 If Bill Vote Summary is not in DDDB, add. Otherwise, skip
 '''
 def insert_bill_vote_summary(cursor, bid, mid, cid, vote_date, ayes, naes, abstain, result, seq):
+  global S_INSERT
   cursor.execute(QS_VOTE_SUMMARY, {'bid':bid, 'mid':mid, 'vote_date':vote_date, 'seq':seq})
   if cursor.rowcount == 0:
     try:
       cursor.execute(QI_SUMMARY, (bid, mid, cid, vote_date, ayes, naes, abstain, result, seq))
+      S_INSERT += cursor.rowcount
     except MySQLdb.Error:
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
           additional_fields=create_payload('BillVoteSummary', 
@@ -281,10 +285,12 @@ def insert_bill_vote_summary(cursor, bid, mid, cid, vote_date, ayes, naes, absta
 If Bill Vote Detail is not in DDDB, add. Otherwise, skip
 '''
 def insert_bill_vote_detail(cursor, pid, voteId, result):
+  global D_INSERT
   cursor.execute(QS_VOTE_DETAIL, {'pid':pid, 'voteId':voteId, 'state':STATE})
   if cursor.rowcount == 0:
     try:
       cursor.execute(QI_DETAIL, (pid, voteId, result, STATE))
+      D_INSERT += cursor.rowcount
     except MySQLdb.Error:
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
           additional_fields=create_payload('BillVoteDetail',
@@ -356,6 +362,13 @@ def main():
                            passwd='digitaldemocracy789') as dd_cursor:
       get_summary_votes(ca_cursor, dd_cursor)
       get_detail_votes(ca_cursor, dd_cursor)
+      logger.info(__file__ + ' terminated successfully.', 
+          full_msg='Inserted ' + str(S_INSERT) + ' rows in BillVoteSummary and inserted ' 
+                    + str(D_INSERT) + ' rows in BillVoteDetail',
+          additional_fields={'_affected_rows':str(S_INSERT + D_INSERT),
+                             '_inserted':'BillVoteSummary:'+str(S_INSERT)+
+                                         ', BillVoteDetail:'+str(D_INSERT),
+                             '_state':'CA'})
 
 if __name__ == "__main__":
   with GrayLogger(API_URL) as _logger:

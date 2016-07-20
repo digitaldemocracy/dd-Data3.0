@@ -1,0 +1,419 @@
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" version="XHTML+RDFa 1.0" dir="ltr"
+  xmlns:content="http://purl.org/rss/1.0/modules/content/"
+  xmlns:dc="http://purl.org/dc/terms/"
+  xmlns:foaf="http://xmlns.com/foaf/0.1/"
+  xmlns:og="http://ogp.me/ns#"
+  xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+  xmlns:sioc="http://rdfs.org/sioc/ns#"
+  xmlns:sioct="http://rdfs.org/sioc/types#"
+  xmlns:skos="http://www.w3.org/2004/02/skos/core#"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema#">
+
+<head profile="http://www.w3.org/1999/xhtml/vocab">
+
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="shortcut icon" href="http://apro.assembly.ca.gov/sites/all/themes/acg_committee/favicon.ico" type="image/vnd.microsoft.icon" />
+<link rel="shortlink" href="/node/56" />
+<link rel="canonical" href="/membersstaff" />
+<meta name="Generator" content="Drupal 7 (http://drupal.org)" />
+  <title>Members | Committee on Appropriations</title>
+
+  <style type="text/css" media="all">
+@import url("http://apro.assembly.ca.gov/modules/system/system.base.css?oac7z3");
+@import url("http://apro.assembly.ca.gov/modules/system/system.menus.css?oac7z3");
+@import url("http://apro.assembly.ca.gov/modules/system/system.messages.css?oac7z3");
+@import url("http://apro.assembly.ca.gov/modules/system/system.theme.css?oac7z3");
+</style>
+<style type="text/css" media="all">
+@import url("http://apro.assembly.ca.gov/sites/all/modules/contrib/ldap/ldap_user/ldap_user.css?oac7z3");
+@import url("http://apro.assembly.ca.gov/sites/all/modules/contrib/date/date_api/date.css?oac7z3");
+@import url("http://apro.assembly.ca.gov/modules/field/theme/field.css?oac7z3");
+@import url("http://apro.assembly.ca.gov/modules/node/node.css?oac7z3");
+@import url("http://apro.assembly.ca.gov/modules/user/user.css?oac7z3");
+@import url("http://apro.assembly.ca.gov/sites/all/modules/contrib/views/css/views.css?oac7z3");
+@import url("http://apro.assembly.ca.gov/sites/all/modules/contrib/ckeditor/css/ckeditor.css?oac7z3");
+</style>
+<style type="text/css" media="all">
+@import url("http://apro.assembly.ca.gov/sites/all/modules/custom/acgcommitteeagendadisplay/dfdisplay.css?oac7z3");
+@import url("http://apro.assembly.ca.gov/sites/all/modules/contrib/ctools/css/ctools.css?oac7z3");
+@import url("http://apro.assembly.ca.gov/sites/all/modules/contrib/ldap/ldap_servers/ldap_servers.admin.css?oac7z3");
+@import url("http://apro.assembly.ca.gov/sites/all/modules/custom/lwpgooglesearch/lwpgooglesearch.css?oac7z3");
+@import url("http://apro.assembly.ca.gov/sites/all/modules/custom/wasusermenu/css/wasusermenu.css?oac7z3");
+@import url("http://apro.assembly.ca.gov/sites/all/themes/acg_committee/global/global_css/content_1_column.css?oac7z3");
+</style>
+<style type="text/css" media="all">
+@import url("http://apro.assembly.ca.gov/sites/all/themes/acg_committee/global/global_css/reset.css?oac7z3");
+@import url("http://apro.assembly.ca.gov/sites/all/themes/acg_committee/global/global_css/ca_master.css?oac7z3");
+@import url("http://apro.assembly.ca.gov/sites/all/themes/acg_committee/global/global_css/navigation_2_level.css?oac7z3");
+@import url("http://apro.assembly.ca.gov/sites/all/themes/acg_committee/common/css/drupal_override.css?oac7z3");
+@import url("http://apro.assembly.ca.gov/sites/all/themes/acg_committee/common/css/asmINTER_master.css?oac7z3");
+</style>
+
+  <link type="text/css" rel="stylesheet" media="screen and (max-width:1000px)" href="/sites/all/themes/acg_committee/common/css/mobile.css"/>
+      
+  <!--[if lte IE 8]><link rel="stylesheet" type="text/css" href="/sites/all/themes/acg_committee/common/css/ie8.css" /><![endif]-->
+
+  <script type="text/javascript" src="http://apro.assembly.ca.gov/misc/jquery.js?v=1.4.4"></script>
+<script type="text/javascript" src="http://apro.assembly.ca.gov/misc/jquery.once.js?v=1.2"></script>
+<script type="text/javascript" src="http://apro.assembly.ca.gov/misc/drupal.js?oac7z3"></script>
+<script type="text/javascript" src="http://apro.assembly.ca.gov/sites/all/themes/acg_committee/global/jquery-ui/js/jquery-1.10.2.js?oac7z3"></script>
+<script type="text/javascript" src="http://apro.assembly.ca.gov/sites/all/themes/acg_committee/global/jquery-ui/js/jquery-ui-1.10.4.custom.min.js?oac7z3"></script>
+<script type="text/javascript" src="http://apro.assembly.ca.gov/sites/all/themes/acg_committee/global/javascript/jquery.noconflict.js?oac7z3"></script>
+<script type="text/javascript" src="http://apro.assembly.ca.gov/sites/all/themes/acg_committee/global/jquery-ui/js/jquery-migrate-1.2.1.min.js?oac7z3"></script>
+<script type="text/javascript" src="http://apro.assembly.ca.gov/sites/all/themes/acg_committee/includes/disclaimer.js?oac7z3"></script>
+<script type="text/javascript" src="http://apro.assembly.ca.gov/sites/all/themes/acg_committee/global/javascript/toggle.js?oac7z3"></script>
+<script type="text/javascript" src="http://apro.assembly.ca.gov/sites/all/modules/custom/wasusermenu/js/wasusermenu.js?oac7z3"></script>
+<script type="text/javascript">
+<!--//--><![CDATA[//><!--
+jQuery.extend(Drupal.settings, {"basePath":"\/","pathPrefix":"","ajaxPageState":{"theme":"acg_committee","theme_token":"C2Q-kT1bmkbq-dqxu2kn7S7akU-dvZsrqA31MR_Xk-o","js":{"misc\/jquery.js":1,"misc\/jquery.once.js":1,"misc\/drupal.js":1,"sites\/all\/themes\/acg_committee\/global\/jquery-ui\/js\/jquery-1.10.2.js":1,"sites\/all\/themes\/acg_committee\/global\/jquery-ui\/js\/jquery-ui-1.10.4.custom.min.js":1,"sites\/all\/themes\/acg_committee\/global\/javascript\/jquery.noconflict.js":1,"sites\/all\/themes\/acg_committee\/global\/jquery-ui\/js\/jquery-migrate-1.2.1.min.js":1,"sites\/all\/themes\/acg_committee\/includes\/disclaimer.js":1,"sites\/all\/themes\/acg_committee\/global\/javascript\/toggle.js":1,"sites\/all\/modules\/custom\/wasusermenu\/js\/wasusermenu.js":1},"css":{"modules\/system\/system.base.css":1,"modules\/system\/system.menus.css":1,"modules\/system\/system.messages.css":1,"modules\/system\/system.theme.css":1,"sites\/all\/modules\/contrib\/ldap\/ldap_user\/ldap_user.css":1,"sites\/all\/modules\/contrib\/date\/date_api\/date.css":1,"modules\/field\/theme\/field.css":1,"modules\/node\/node.css":1,"modules\/user\/user.css":1,"sites\/all\/modules\/contrib\/views\/css\/views.css":1,"sites\/all\/modules\/contrib\/ckeditor\/css\/ckeditor.css":1,"sites\/all\/modules\/custom\/acgcommitteeagendadisplay\/dfdisplay.css":1,"sites\/all\/modules\/contrib\/ctools\/css\/ctools.css":1,"sites\/all\/modules\/contrib\/ldap\/ldap_servers\/ldap_servers.admin.css":1,"sites\/all\/modules\/custom\/lwpgooglesearch\/lwpgooglesearch.css":1,"sites\/all\/modules\/custom\/wasusermenu\/css\/wasusermenu.css":1,"sites\/all\/themes\/acg_committee\/global\/global_css\/content_1_column.css":1,"sites\/all\/themes\/acg_committee\/global\/global_css\/reset.css":1,"sites\/all\/themes\/acg_committee\/global\/global_css\/ca_master.css":1,"sites\/all\/themes\/acg_committee\/global\/global_css\/navigation_2_level.css":1,"sites\/all\/themes\/acg_committee\/global\/global_css\/jquery.superbox.css":1,"sites\/all\/themes\/acg_committee\/common\/css\/drupal_override.css":1,"sites\/all\/themes\/acg_committee\/common\/css\/asmINTER_master.css":1}},"wasusermenu":{"wasusermenu_menu":"\u003Cdiv id=\u0027was-user-menu-toggle\u0027 \u003E\u003Cspan class=\u0027icon-container\u0027\u003E+\u003C\/span\u003E\u003Cul id=\u0027was-user-menu\u0027\u003E\u003Cli class=\u0027user-menu-title\u0027\u003EUser Menu\u003C\/li\u003E\u003Cli class=\u0027edit-mode-toggle normal-mode\u0027\u003EEnter Edit Mode\u003C\/li\u003E\u003C\/ul\u003E\u003C\/div\u003E","wasusermenu_edit_mode":"normal-mode","wasusermenu_elements":".tabs.primary, .contextual-links-wrapper","wasusermenu_access":false}});
+//--><!]]>
+</script>
+
+</head>
+
+<body class="html not-front not-logged-in no-sidebars page-node page-node- page-node-56 node-type-ctd-syspage" >
+  <div id="skip-link" class="sr-only">
+    <a href="#main-content" class="element-invisible element-focusable">Skip to main content</a>
+  </div>
+    	<div id="heading_container" class="scc_page_tpl_php">
+	    <!-- ***********BEGIN header **************************************** -->
+<a name="top"></a>
+<div id="skipto" class="horznavigation scc_header_tpl_php"><!-- Begin SkipTo Navigation -->		
+	<div class="center">
+		<ul>
+			<li>Skip to: <a href="#middle_column">Content</a> | </li>
+			<li><a href="#footer">Footer</a></li>
+			<li><a href="http://translate.google.com/#auto|es|www.assembly.ca.gov" class="translate" onclick="return googletranslatedisclaimer();">Translate this website on Google Translate</a></li>
+		</ul>
+	</div>
+</div><!-- End skipto  -->
+   
+<div class="center">
+	<div id="searchcontainer">
+		<input type="text" id="search" title="Search the Assembly Internet" onkeydown="if (event.keyCode == 13) document.getElementById('searchbutton').click();" />
+		<label for="searchbutton"><input type="submit" value="" id="searchbutton" class="button" title="Search button" onclick="location.href='/search?qs=' + (document.getElementById('search').value); return false;"/></label>
+	</div><!-- END: searchcontainer div -->
+</div><!-- END: center div -->
+<div class="clear"></div>
+
+
+<div id="committee_heading">
+	<div class="logo">
+		<a href="http://assembly.ca.gov"><img src="/sites/all/themes/acg_committee/common/images/seal.gif"  alt="California State Assembly Seal" /></a>
+		<p><a href="http://assembly.ca.gov">California State Assembly</a>
+		<a href="http://apro.assembly.ca.gov" class="com">Committee on Appropriations</a></p>
+		
+	</div><!-- END: logo div -->
+</div><!-- END: committee_heading div -->
+<!-- **************************************************************** -->
+	    
+<nav id="navigation_container">
+  <div id="navigation">
+    <div class="row top-bar">
+      <div class="row bottom-bar">
+        <div class="navbar-main-menu">
+											<ul class="menu"><li class="first expanded"><a href="/committeehome" title="Welcome to Committee on Appropriations">Committee Home</a><ul class="menu"><li class="first leaf"><a href="/overview" title="Overview">Overview</a></li>
+<li class="last leaf"><a href="/appropriationscommitteerules" title="Appropriations Committee Rules">Committee Rules</a></li>
+</ul></li>
+<li class="expanded active-trail"><a href="/membersstaff" title="Members &amp; Staff" class="active-trail active">Members &amp; Staff</a><ul class="menu"><li class="first last leaf"><a href="/committeestaff" title="Committee Staff">Committee Staff</a></li>
+</ul></li>
+<li class="last expanded"><a href="/hearings" title="Hearings">Hearings</a><ul class="menu"><li class="first last leaf"><a href="/content/suspense-file-documents">Suspense Documents</a></li>
+</ul></li>
+</ul>									</div>
+			</div>
+		</div>
+	</div>
+</nav>
+
+
+
+	<div class="clear"></div>
+	</div>
+
+	<div id="main_content_1">
+	    <div id="main_content_2">		
+		    <a name="content"></a> 
+		
+	 	<!-- left column -->
+		<div id="left_column">
+			<div class="column_inner vertnavigation">
+						</div>
+		</div>
+		
+		<!-- right column -->
+		<div id="right_column">
+			<div class="column_inner vertnavigation">
+				
+								</div>
+		</div>
+ 
+ 		<!-- middle column -->
+		<div id="middle_column">
+		<div class="column_inner">
+			<h2 class="element-invisible">You are here</h2><div class="breadcrumb"><a href="/">Home</a> » Members</div>			<h1 class="title">Members</h1>
+
+        	        		<div class="tabs"></div>
+        				
+			 			  <div class="region region-content">
+    <div id="block-system-main" class="block block-system">
+
+    
+  <div class="content">
+    <div id="node-56" class="node node-ctd-syspage node-promoted clearfix" about="/membersstaff" typeof="sioc:Item foaf:Document">
+
+  
+      <span property="dc:title" content="Members" class="rdf-meta element-hidden"></span>
+  
+  <div class="content">
+    <div class="field field-name-body field-type-text-with-summary field-label-hidden"><div class="field-items"><div class="field-item even" property="content:encoded"><p><a href="/committeestaff">View the Committee Staff</a></p>
+<table border="0" cellpadding="1" cellspacing="1" style="width: 100%;"><thead><tr><th scope="col">Committee Members</th>
+<th scope="col">District</th>
+<th scope="col">Office &amp; Contact Information</th>
+</tr></thead><tbody><tr><td><a href="http://asmdc.org/members/a80/">Lorena S. Gonzalez (Chair)</a></td>
+<td>Dem - 80</td>
+<td>
+<p><a href="https://lcmspubcontact.lc.ca.gov/PublicLCMS/ContactPopup.php?district=AD80">Contact Assembly Member Lorena S. Gonzalez</a></p>
+<h3>Capitol Office</h3>
+<p>			P.O. Box 942849, Room 2114, Sacramento, CA CA 94249-0080; (916) 319-2080</p></td>
+</tr><tr><td><a href="http://assembly.ca.gov/a05">Frank Bigelow (Vice Chair)</a></td>
+<td>Rep - 05</td>
+<td><a href="https://lcmspubcontact.lc.ca.gov/PublicLCMS/ContactPopup.php?district=AD05">Contact Assembly Member Frank Bigelow</a>
+<h3>Capitol Office</h3>
+<p>P.O. Box 942849, Room 6027, Sacramento, CA 94249-0005; (916) 319-2005</p>
+</td>
+</tr><tr><td><a href="http://asmdc.org/members/a50">Richard Bloom</a></td>
+<td>Dem - 50</td>
+<td><a href="https://lcmspubcontact.lc.ca.gov/PublicLCMS/ContactPopup.php?district=AD50">Contact Assembly Member Richard Bloom</a>
+<h3>Capitol Office</h3>
+<p>P.O. Box 942849, Room 2003, Sacramento, CA 94249-0050; (916) 319-2050</p>
+</td>
+</tr><tr><td><a href="http://asmdc.org/members/a14/">Susan A. Bonilla</a></td>
+<td>Dem - 14</td>
+<td><a href="http://lcmspubcontact.lc.ca.gov/PublicLCMS/ContactPopup.php?district=AD14">Contact Assembly Member Susan A. Bonilla</a>
+<h3>Capitol Office</h3>
+<p>P.O. Box 942849, Room 4140, Sacramento, CA 94249-0014; (916) 319-2014</p>
+</td>
+</tr><tr><td><a href="http://asmdc.org/members/a18">Rob Bonta</a></td>
+<td>Dem - 18</td>
+<td><a href="https://lcmspubcontact.lc.ca.gov/PublicLCMS/ContactPopup.php?district=AD18">Contact Assembly Member Rob Bonta</a>
+<h3>Capitol Office</h3>
+<p>P.O. Box 942849, Room 6012, Sacramento, CA 94249-0018; (916) 319-2018</p>
+</td>
+</tr><tr><td><a href="http://asmdc.org/members/a57">Ian C. Calderon</a></td>
+<td>Dem - 57</td>
+<td><a href="https://lcmspubcontact.lc.ca.gov/PublicLCMS/ContactPopup.php?district=AD57">Contact Assembly Member Ian C. Calderon</a>
+<h3>Capitol Office</h3>
+<p>P.O. Box 942849, Room 2148, Sacramento, CA 94249-0057; (916) 319-2057</p>
+</td>
+</tr><tr><td><a href="http://assembly.ca.gov/a55">Ling Ling Chang</a></td>
+<td>Rep - 55</td>
+<td><a href="https://lcmspubcontact.lc.ca.gov/PublicLCMS/ContactPopup.php?district=AD55">Contact Assembly Member Ling Ling Chang</a>
+<h3>Capitol Office</h3>
+<p>P.O. Box 942849, Room 3149, Sacramento, CA 94249-0055; (916) 319-2055</p>
+</td>
+</tr><tr><td><a href="http://asmdc.org/members/a69">Tom Daly</a></td>
+<td>Dem - 69</td>
+<td><a href="https://lcmspubcontact.lc.ca.gov/PublicLCMS/ContactPopup.php?district=AD69">Contact Assembly Member Tom Daly</a>
+<h3>Capitol Office</h3>
+<p>P.O. Box 942849, Room 3120, Sacramento, CA 94249-0069; (916) 319-2069</p>
+</td>
+</tr><tr><td><a href="http://asmdc.org/members/a13">Susan Talamantes Eggman</a></td>
+<td>Dem - 13</td>
+<td><a href="https://lcmspubcontact.lc.ca.gov/PublicLCMS/ContactPopup.php?district=AD13">Contact Assembly Member Susan Talamantes Eggman</a>
+<h3>Capitol Office</h3>
+<p>P.O. Box 942849, Room 3173, Sacramento, CA 94249-0013; (916) 319-2013</p>
+</td>
+</tr><tr><td><a href="http://assembly.ca.gov/a03">James Gallagher</a></td>
+<td>Rep - 03</td>
+<td><a href="https://lcmspubcontact.lc.ca.gov/PublicLCMS/ContactPopup.php?district=AD03">Contact Assembly Member James Gallagher</a>
+<h3>Capitol Office</h3>
+<p>P.O. Box 942849, Room 5128, Sacramento, CA 94249-0003; (916) 319-2003</p>
+</td>
+</tr><tr><td><a href="http://asmdc.org/members/a56">Eduardo Garcia</a></td>
+<td>Dem - 56</td>
+<td><a href="https://lcmspubcontact.lc.ca.gov/PublicLCMS/ContactPopup.php?district=AD56">Contact Assembly Member Eduardo Garcia</a>
+<h3>Capitol Office</h3>
+<p>P.O. Box 942849, Room 4162, Sacramento, CA 94249-0056; (916) 319-2056</p>
+</td>
+</tr><tr><td><a href="http://asmdc.org/members/a41">Chris R. Holden</a></td>
+<td>Dem - 41</td>
+<td><a href="https://lcmspubcontact.lc.ca.gov/PublicLCMS/ContactPopup.php?district=AD41">Contact Assembly Member Chris R. Holden</a>
+<h3>Capitol Office</h3>
+<p>P.O. Box 942849, Room 3152, Sacramento, CA 94249-0041; (916) 319-2041</p>
+</td>
+</tr><tr><td><a href="http://assembly.ca.gov/a71">Brian W. Jones</a></td>
+<td>Rep - 71</td>
+<td><a href="https://lcmspubcontact.lc.ca.gov/PublicLCMS/ContactPopup.php?district=AD71">Contact Assembly Member Brian W. Jones</a>
+<h3>Capitol Office</h3>
+<p>P.O. Box 942849, Room 3141, Sacramento, CA 94249-0071; (916) 319-2071</p>
+</td>
+</tr><tr><td><a href="https://ad33.asmrc.org/">Jay Obernolte</a></td>
+<td>Rep - 33</td>
+<td><a href="https://lcmspubcontact.lc.ca.gov/PublicLCMS/ContactPopup.php?district=AD33">Contact Assembly Member Jay Obernolte</a>
+<h3>Capitol Office</h3>
+<p>			P.O. Box 942849, Room 4116, Sacramento, CA 94249-0033; (916) 319-2033</p></td>
+</tr><tr><td><a href="http://asmdc.org/members/a20">Bill Quirk</a></td>
+<td>Dem - 20</td>
+<td><a href="https://lcmspubcontact.lc.ca.gov/PublicLCMS/ContactPopup.php?district=AD20">Contact Assembly Member Bill Quirk</a>
+<h3>Capitol Office</h3>
+<p>P.O. Box 942849, Room 2163, Sacramento, CA 94249-0020; (916) 319-2020</p>
+</td>
+</tr><tr><td><a href="http://asmdc.org/members/a53">Miguel Santiago</a></td>
+<td>Dem - 53</td>
+<td><a href="https://lcmspubcontact.lc.ca.gov/PublicLCMS/ContactPopup.php?district=AD53">Contact Assembly Member Miguel Santiago</a>
+<h3>Capitol Office</h3>
+<p>			P.O. Box 942849, Room 5119, Sacramento, CA 94249-0053; (916) 319-2053</p></td>
+</tr><tr><td><a href="http://assembly.ca.gov/a68">Donald P. Wagner</a></td>
+<td>Rep - 68</td>
+<td><a href="https://lcmspubcontact.lc.ca.gov/PublicLCMS/ContactPopup.php?district=AD68">Contact Assembly Member Donald P. Wagner</a>
+<h3>Capitol Office</h3>
+<p>P.O. Box 942849, Room 3098, Sacramento, CA 94249-0068; (916) 319-2068</p>
+</td>
+</tr><tr><td><a href="http://asmdc.org/members/a79">Shirley N. Weber</a></td>
+<td>Dem - 79</td>
+<td><a href="https://lcmspubcontact.lc.ca.gov/PublicLCMS/ContactPopup.php?district=AD79">Contact Assembly Member Shirley N. Weber</a>
+<h3>Capitol Office</h3>
+<p>P.O. Box 942849, Room 3123, Sacramento, CA 94249-0079; (916) 319-2079</p>
+</td>
+</tr><tr><td><a href="http://asmdc.org/members/a02">Jim Wood</a></td>
+<td>Dem - 02</td>
+<td><a href="https://lcmspubcontact.lc.ca.gov/PublicLCMS/ContactPopup.php?district=AD02">Contact Assembly Member Jim Wood</a>
+<h3>Capitol Office</h3>
+<p>P.O. Box 942849, Room 6005, Sacramento, CA 94249-0002; (916) 319-2002</p>
+</td>
+</tr><tr><td>Vacant</td>
+<td> </td>
+<td> </td>
+</tr></tbody></table></div></div></div>  </div>
+
+  
+  
+</div>
+  </div>
+</div>
+  </div>
+
+		</div>
+		<div class="clear"></div>
+		</div>
+ 	
+ 		</div>
+	</div>
+	
+    <!-- BEGIN: Footer -->
+<!-- BEGIN: footer_container -->
+<div id="footer_container">
+	<div id="footer">
+		  <div class="region region-footer">
+    <div id="block-acgfooterfeedimport-acgfooterfeedimport-block" class="block block-acgfooterfeedimport">
+
+    
+  <div class="content">
+    <div class="column_inner">
+<div class="left vertnavigation">
+<h4>Find my Representative</h4>
+
+<ul>
+	<li><a href="http://assembly.ca.gov/assemblymembers" title="Assembly Roster">Assembly Roster</a></li>
+	<li><a class="newwin" href="http://findyourrep.legislature.ca.gov/" title="By Your Address">By Your Address</a></li>
+	<li><a href="http://assembly.ca.gov/assemblymembers?order=field_member_district_value&amp;sort=asc" title="By District">By District</a></li>
+	<li>&nbsp;</li>
+</ul>
+</div>
+<!-- END: left div -->
+
+<div class="left vertnavigation">
+<h4>Search for Legislation</h4>
+
+<ul>
+	<li><a class="external" href="http://leginfo.legislature.ca.gov/" target="_blank" title="Bill Search (New LegInfo)">Bill Search (New LegInfo)</a></li>
+	<li><a class="external" href="http://www.leginfo.ca.gov/bilinfo.html" target="_blank" title="Bill Search (LegInfo)">Bill Search (LegInfo)</a></li>
+	<li><a class="external" href="http://leginfo.legislature.ca.gov/faces/codes.xhtml" target="_blank" title="California Law">California Law</a></li>
+</ul>
+</div>
+<!-- END: left div -->
+
+<div class="left vertnavigation">
+<h4>Related Sites</h4>
+
+<ul>
+	<li><a class="external" href="http://gov.ca.gov/home.php" target="_blank" title="Governor of California">Governor of California</a></li>
+	<li><a class="external" href="http://www.ltg.ca.gov/" target="_blank" title="Lieutenant Governor">Lieutenant Governor</a></li>
+	<li><a href="http://senate.ca.gov" target="_blank" title="California State Senate">California State Senate</a></li>
+	<li><a class="external" href="http://capitolmuseum.ca.gov/" target="_blank" title="Capitol Museum">Capitol Museum</a></li>
+	<li><a class="external" href="http://www.sos.ca.gov/" target="_blank" title="Secretary of State">Secretary of State</a></li>
+	<li><a class="external" href="http://www.ca.gov/" target="_blank" title="State of California">State of California</a></li>
+</ul>
+</div>
+<!-- END: left div -->
+
+<div class="left vertnavigation">
+<h4>Quick Links</h4>
+
+<ul>
+	<li><a class="external" href="http://www.assembly.ca.gov" title="Assembly Home Page">Assembly Home Page</a></li>
+	<li><a href="http://assembly.ca.gov/todaysevents" title="Today's Assembly Events">Today's Assembly Events</a></li>
+	<li><a href="http://assembly.ca.gov/dailyfile" title="Assembly Daily File">Assembly Daily File</a></li>
+	<li><a href="http://assembly.ca.gov/legislativedeadlines" title="Legislative Calendar">Legislative Calendar</a></li>
+	<li><a href="http://assembly.ca.gov/salariesandexpenditures" title="Member &amp; Staff Salaries">Member &amp; Staff Salaries</a></li>
+	<li><a href="http://assembly.ca.gov/salariesandexpenditures" title="Expenditure Reports">Expenditure Reports</a></li>
+</ul>
+</div>
+<!-- END: left div -->
+
+<div class="left vertnavigation">
+<h4>Downloads</h4>
+
+<ul>
+	<li><a class="external" href="http://get.adobe.com/reader/" title="Download Acrobat Reader">Download Acrobat Reader</a></li>
+	<li><a class="external" href="http://windows.microsoft.com/en-US/windows/downloads/windows-media-player" title="Download Media Player">Download Media Player</a></li>
+	<li><a class="external" href="http://www.apple.com/quicktime/" title="Download Quick Time">Download Quick Time</a></li>
+	<li><a href="http://www.sos.ca.gov/elections/elections_vr.htm"><img alt="Register To Vote" src="/sites/assembly.ca.gov/files/imagefield_thumbs/register-to-vote.png" style="width: 116px; height: 40px;" /></a></li>
+</ul>
+</div>
+<!-- END: left div --></div>
+<!-- END: column_inner div -->
+
+<p>&nbsp;</p>
+  </div>
+</div>
+  </div>
+	</div>
+</div><!-- End footer_container -->
+<div class="clear"></div>
+
+<!-- BEGIN: subfooter -->
+<div id="subfooter" class="horznavigation">
+       <div class="region region-subfooter">
+    <div id="block-acgfooterfeedimport-acgsubfooterfeedimport-block" class="block block-acgfooterfeedimport">
+
+    
+  <div class="content">
+    <ul>
+	<li><a href="/faq" title="Help">Help</a> ::</li>
+	<li><a href="/sitemap" title="Site Map">Site Map</a> ::</li>
+	<li><a href="/accessibility">Accessibility</a> ::</li>
+	<li><a href="http://www.legislature.ca.gov/footer/use_privacy_policy.html" title="Privacy and Conditions of Use">Privacy and Conditions of Use</a></li>
+</ul>
+
+<ul>
+	<li><a href="#top" title="Back to Top">Back to Top</a></li>
+</ul>
+
+<p>Copyright © 2011 State of California</p>
+  </div>
+</div>
+  </div>
+</div>
+<!-- END: subfooter div -->
+<!-- END: Footer -->
+
+   
+</body>
+</html>

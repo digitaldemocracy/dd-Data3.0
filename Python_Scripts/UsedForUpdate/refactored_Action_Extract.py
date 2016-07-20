@@ -32,6 +32,7 @@ import MySQLdb
 from graylogger.graylogger import GrayLogger
 API_URL = 'http://development.digitaldemocracy.org:12202/gelf' 
 logger = None
+INSERTED = 0
 
 STATE = 'CA'
 
@@ -65,6 +66,7 @@ Checks if the Action is in DDDB. If it isn't, insert it. Otherwise, skip.
   |text|: Text of action
 '''
 def insert_Action(dd_cursor, values):
+  global INSERTED
   values[0] = '%s_%s' % (STATE, values[0])
 
   # Check if DDDB already has this action
@@ -74,6 +76,7 @@ def insert_Action(dd_cursor, values):
 #    logger.info('New Action %s %s %s' % (values[0], values[1], values[2]))
     try:
       dd_cursor.execute(QI_ACTION, values)
+      INSERTED += dd_cursor.rowcount
     except MySQLdb.Error:
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
           additional_fields=create_payload('Action', (QI_ACTION % (values[0], values[1], values[2]))))
@@ -96,6 +99,11 @@ def main():
 
       for record in ca_cursor.fetchall():
         insert_Action(dd_cursor, list(record))
+      logger.info(__file__ + ' terminated successfully.', 
+          full_msg='Inserted ' + str(INSERTED) + ' rows in Action',
+          additional_fields={'_affected_rows':str(INSERTED),
+                             '_inserted':'Action:'+str(INSERTED),
+                             '_state':'CA'})
 
 if __name__ == "__main__":
   with GrayLogger(API_URL) as _logger:
