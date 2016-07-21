@@ -49,6 +49,7 @@ CREATE TABLE IF NOT EXISTS servesOn (
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
 
    PRIMARY KEY (pid, year, agency, position),
+   FOREIGN KEY (pid) REFERENCES Person(pid),
    FOREIGN KEY (agency) REFERENCES StateAgency(sa_id)
 )
 ENGINE = INNODB
@@ -175,6 +176,7 @@ CREATE TABLE IF NOT EXISTS represents (
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
 
    PRIMARY KEY (pid, agenda_item),
+   FOREIGN KEY (pid) REFERENCES Person(pid),
    FOREIGN KEY (organization) REFERENCES Organization(oid),
    FOREIGN KEY (agenda_item) REFERENCES AgendaItem(ai_id)
 )
