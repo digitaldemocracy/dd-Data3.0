@@ -44,6 +44,7 @@ CREATE TABLE IF NOT EXISTS State (
   country  VARCHAR(200), -- eg United States
   name   VARCHAR(200), -- eg Caliornia, Arizona
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(), 
+  dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
   PRIMARY KEY (abbrev)
   )
@@ -59,6 +60,7 @@ CREATE TABLE IF NOT EXISTS House (
   state VARCHAR(2),
   type VARCHAR(100),
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+  dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
   PRIMARY KEY (name, state),
   FOREIGN KEY (state) REFERENCES State(abbrev)
@@ -84,6 +86,25 @@ CREATE TABLE IF NOT EXISTS Person (
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+
+/* Entity::Organizations
+
+   Organizations are companies or organizations.
+*/
+CREATE TABLE IF NOT EXISTS Organizations (
+    oid INTEGER AUTO_INCREMENT,  -- Organization id
+    name VARCHAR(200),           -- name
+    type INTEGER DEFAULT 0,      -- type (not fleshed out yet)
+    city VARCHAR(200),           -- city
+    stateHeadquartered VARCHAR(2), -- U.S. state, where it's based
+    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+
+    PRIMARY KEY (oid)
+    )
+ENGINE = INNODB
+CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+
 /* Entity::Legislator
 
    A legislator has a description and bio and several contact information.
@@ -99,6 +120,7 @@ CREATE TABLE IF NOT EXISTS Legislator (
    OfficialBio TEXT,             -- bio
    state    VARCHAR(2), -- state where term was served
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+   dr_id INTEGER UNIQUE AUTO_INCREMENT,
    
    PRIMARY KEY (pid, state),
    FOREIGN KEY (pid) REFERENCES Person(pid), 
@@ -125,6 +147,7 @@ CREATE TABLE IF NOT EXISTS Term (
    -- caucus   VARCHAR(200), -- group that generally votes together. Not 
                              -- currently in use
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+   dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
    PRIMARY KEY (pid, year, house, state),
    FOREIGN KEY (pid) REFERENCES Legislator(pid), -- change to 
@@ -147,9 +170,11 @@ CREATE TABLE IF NOT EXISTS Committee (
    cid    INTEGER(3),               -- Committee id
    house  VARCHAR(200) NOT NULL,
    name   VARCHAR(200) NOT NULL,    -- committee name
+   short_name   VARCHAR(200) NOT NULL,    -- committee name
    type   VARCHAR(100),
    state VARCHAR(2),
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+   dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
    PRIMARY KEY (cid),
    FOREIGN KEY (state) REFERENCES State(abbrev), 
@@ -170,6 +195,7 @@ CREATE TABLE IF NOT EXISTS servesOn (
    position ENUM('Chair', 'Vice-Chair', 'Co-Chair', 'Member'),
    state    VARCHAR(2),
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+   dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
    PRIMARY KEY (pid, year, house, state, cid),
    FOREIGN KEY (cid) REFERENCES Committee(cid), 
@@ -198,6 +224,7 @@ CREATE TABLE IF NOT EXISTS Bill (
    sessionYear YEAR(4), 
    state VARCHAR(2),
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+   dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
    PRIMARY KEY (bid),
    FOREIGN KEY (state) REFERENCES State(abbrev),
@@ -219,6 +246,7 @@ CREATE TABLE IF NOT EXISTS Hearing (
    state  VARCHAR(2),
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
 
+
    PRIMARY KEY (hid),
    FOREIGN KEY (state) REFERENCES State(abbrev)
 )
@@ -237,6 +265,7 @@ CREATE TABLE IF NOT EXISTS CommitteeHearings (
     cid INTEGER,  -- Committee id (ref. Committee.cid)
     hid INTEGER,  -- Hearing id (ref. Hearing.hid)
     lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+    dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
     PRIMARY KEY (cid, hid),
     FOREIGN KEY (cid) REFERENCES Committee(cid),
@@ -253,6 +282,7 @@ CREATE TABLE IF NOT EXISTS HearingAgenda (
     date_created DATE, -- The date the agenda info was posted 
     current_flag TINYINT(1), -- Whether this is the most recent agenda
     lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+    dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
     PRIMARY KEY (hid, bid, date_created),
     FOREIGN KEY (bid) REFERENCES Bill(bid),
@@ -267,6 +297,7 @@ CREATE TABLE IF NOT EXISTS Action (
    date   DATE,
    text   TEXT,
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+   dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
    FOREIGN KEY (bid) REFERENCES Bill(bid)
 )
@@ -298,6 +329,7 @@ CREATE TABLE IF NOT EXISTS Video_ttml (
    ttml MEDIUMTEXT,
    source VARCHAR(4) DEFAULT 0,
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+   dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
    FOREIGN KEY (vid) REFERENCES Video(vid)
 )
@@ -332,6 +364,7 @@ CREATE TABLE IF NOT EXISTS Motion (
    text   TEXT,
    doPass TINYINT(1),
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+   dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
    PRIMARY KEY (mid, date)
 )
@@ -350,6 +383,7 @@ CREATE TABLE IF NOT EXISTS BillVoteSummary (
     result      VARCHAR(20),
     VoteDateSeq INT,
     lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+    dr_id INTEGER UNIQUE AUTO_INCREMENT,
     
     PRIMARY KEY(voteId),
     FOREIGN KEY (mid) REFERENCES Motion(mid),
@@ -374,6 +408,7 @@ CREATE TABLE IF NOT EXISTS BillVersion (
    text                MEDIUMTEXT,
    state               VARCHAR(2),
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+   dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
    PRIMARY KEY (vid),
    FOREIGN KEY (bid) REFERENCES Bill(bid),
@@ -390,6 +425,7 @@ CREATE TABLE IF NOT EXISTS authors (
    vid          VARCHAR(33),
    contribution ENUM('Lead Author', 'Principal Coauthor', 'Coauthor') DEFAULT 'Coauthor',
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+   dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
    PRIMARY KEY (pid, bid, vid),
    FOREIGN KEY (pid) REFERENCES Legislator(pid), -- change to Person
@@ -401,6 +437,7 @@ CHARACTER SET utf8 COLLATE utf8_general_ci;
 CREATE TABLE IF NOT EXISTS BillSponsorRolls (
     roll VARCHAR(100),
     lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+    dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
     PRIMARY KEY (roll)
     )
@@ -416,6 +453,7 @@ CREATE TABLE IF NOT EXISTS BillSponsors (
    vid          VARCHAR(33),
    contribution VARCHAR(100),
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+   dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
    PRIMARY KEY (pid, bid, vid, contribution),
    FOREIGN KEY (pid) REFERENCES Legislator(pid), 
@@ -432,6 +470,7 @@ CREATE TABLE IF NOT EXISTS CommitteeAuthors(
     vid VARCHAR(33),
     state VARCHAR(2),
     lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+    dr_id INTEGER UNIQUE AUTO_INCREMENT,
     
     PRIMARY KEY(cid, bid, vid),
     FOREIGN KEY (bid) REFERENCES Bill(bid),
@@ -460,7 +499,7 @@ CREATE TABLE IF NOT EXISTS Utterance (
    state VARCHAR(2),
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
 
-   PRIMARY KEY (uid, current),
+   PRIMARY KEY (uid),
    UNIQUE KEY (uid, vid, pid, current, time),
    FOREIGN KEY (pid) REFERENCES Person(pid),
    FOREIGN KEY (vid) REFERENCES Video(vid),
@@ -472,7 +511,7 @@ CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 CREATE OR REPLACE VIEW currentUtterance 
 AS SELECT uid, vid, pid, time, endTime, text, type, alignment, state, did, 
-  lastTouched 
+  lastTouched
 FROM Utterance 
 WHERE current = TRUE AND finalized = TRUE ORDER BY time DESC;
 
@@ -482,6 +521,7 @@ CREATE TABLE IF NOT EXISTS BillVoteDetail (
     result  VARCHAR(20),
     state   VARCHAR(2),
     lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+    dr_id INTEGER UNIQUE AUTO_INCREMENT,
     
     PRIMARY KEY(pid, voteId),
     FOREIGN KEY (state) REFERENCES State(abbrev),
@@ -525,6 +565,7 @@ CREATE TABLE IF NOT EXISTS District (
     region TEXT,
     geoData MEDIUMTEXT,
     lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+    dr_id INTEGER UNIQUE AUTO_INCREMENT,
     
     PRIMARY KEY(state, house, did, year),
     FOREIGN KEY (state) REFERENCES State(abbrev),
@@ -554,22 +595,6 @@ CREATE TABLE IF NOT EXISTS Contribution (
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
-/* Entity::Organizations
-
-   Organizations are companies or organizations.
-*/
-CREATE TABLE IF NOT EXISTS Organizations (
-    oid INTEGER AUTO_INCREMENT,  -- Organization id
-    name VARCHAR(200),           -- name
-    type INTEGER DEFAULT 0,      -- type (not fleshed out yet)
-    city VARCHAR(200),           -- city
-    stateHeadquartered VARCHAR(2), -- U.S. state, where it's based
-    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
-
-    PRIMARY KEY (oid)
-    )
-ENGINE = INNODB
-CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 CREATE TABLE IF NOT EXISTS Lobbyist(
    pid INTEGER,   -- added
@@ -578,6 +603,7 @@ CREATE TABLE IF NOT EXISTS Lobbyist(
    filer_id VARCHAR(9) UNIQUE,         -- modified, start with state prefix   
    state VARCHAR(2), 
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+   dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
    PRIMARY KEY (pid, state),                    -- added
    FOREIGN KEY (pid) REFERENCES Person(pid),
@@ -589,6 +615,7 @@ CHARACTER SET utf8 COLLATE utf8_general_ci;
 CREATE TABLE IF NOT EXISTS LobbyingFirm(
    filer_naml VARCHAR(200),
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+   dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
    PRIMARY KEY (filer_naml)
 )
@@ -603,6 +630,7 @@ CREATE TABLE IF NOT EXISTS LobbyingFirmState (
    filer_naml VARCHAR(200),
    state VARCHAR(2),
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+   dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
    PRIMARY KEY (filer_id, state),
    FOREIGN KEY (state) REFERENCES State(abbrev),
@@ -617,6 +645,7 @@ CREATE TABLE IF NOT EXISTS LobbyistEmployer(
    coalition TINYINT(1),
    state VARCHAR(2),
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+   dr_id INTEGER UNIQUE AUTO_INCREMENT,
    
    PRIMARY KEY (oid),
    UNIQUE (filer_id, state),
@@ -636,6 +665,7 @@ CREATE TABLE IF NOT EXISTS LobbyistEmployment(
    ls_end_yr INTEGER,    -- modified (INT)
    state VARCHAR(2),
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+   dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
    PRIMARY KEY (pid, sender_id, rpt_date, ls_end_yr), -- modified (May 21)
    FOREIGN KEY (sender_id, state) REFERENCES LobbyingFirmState(filer_id, state),
@@ -659,6 +689,7 @@ CREATE TABLE IF NOT EXISTS LobbyistDirectEmployment(
    ls_end_yr INTEGER,     -- modified (INT)
    state VARCHAR(2),
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+   dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
    PRIMARY KEY (pid, sender_id, rpt_date, ls_end_yr, state), -- modified (May 21)
    FOREIGN KEY (pid) REFERENCES Person(pid),
@@ -679,6 +710,7 @@ CREATE TABLE IF NOT EXISTS LobbyingContracts(
    ls_end_yr INTEGER,     -- modified (INT)
    state VARCHAR(2),
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+   dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
    PRIMARY KEY (filer_id, sender_id, rpt_date, state), -- modified (May 21) 
    FOREIGN KEY (sender_id, state) REFERENCES LobbyistEmployer(filer_id, state),
@@ -697,6 +729,7 @@ CREATE TABLE IF NOT EXISTS LobbyistRepresentation(
    did INTEGER,
    state VARCHAR(2),
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+   dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
    PRIMARY KEY(pid, oid, hid, did),                 -- added
    FOREIGN KEY (hid) REFERENCES Hearing(hid),
@@ -734,6 +767,7 @@ CREATE TABLE IF NOT EXISTS LegislativeStaff(
    committee INTEGER,
    state VARCHAR(2),
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+   dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
    PRIMARY KEY (pid),                    -- added
    FOREIGN KEY (pid) REFERENCES Person(pid),
@@ -754,6 +788,7 @@ CREATE TABLE IF NOT EXISTS LegislativeStaffRepresentation(
    state VARCHAR(2),
    did INT,
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+   dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
    PRIMARY KEY (pid, hid, did),                    -- added
    FOREIGN KEY (pid) REFERENCES Person(pid),
@@ -771,6 +806,7 @@ CREATE TABLE IF NOT EXISTS LegAnalystOffice(
    pid INTEGER REFERENCES Person(pid), 
    state VARCHAR(2),
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+   dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
    PRIMARY KEY (pid),                    -- added
    FOREIGN KEY (pid) REFERENCES Person(pid),
@@ -784,6 +820,7 @@ CREATE TABLE IF NOT EXISTS LegAnalystOfficeRepresentation(
    hid   INTEGER,                       -- added
    state VARCHAR(2),
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+   dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
    PRIMARY KEY (pid, hid),                    -- added
    FOREIGN KEY (pid) REFERENCES Person(pid),
@@ -797,6 +834,7 @@ CREATE TABLE IF NOT EXISTS StateAgency (
   name VARCHAR(200),
   state VARCHAR(2),
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+  dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
   PRIMARY KEY (name, state),
   FOREIGN KEY (state) REFERENCES State(abbrev)
@@ -810,6 +848,7 @@ CREATE TABLE IF NOT EXISTS StateAgencyRep(
    position VARCHAR(100),
    state VARCHAR(2),
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+   dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
    PRIMARY KEY (pid),                    -- added
    FOREIGN KEY (pid) REFERENCES Person(pid),
@@ -826,6 +865,7 @@ CREATE TABLE IF NOT EXISTS StateAgencyRepRepresentation(
    hid   INTEGER,                       -- added
    state VARCHAR(2),
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+   dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
    PRIMARY KEY (pid, hid),                    -- added
    FOREIGN KEY (pid) REFERENCES Person(pid),
@@ -841,6 +881,7 @@ CREATE TABLE IF NOT EXISTS StateConstOffice (
   name VARCHAR(200),
   state VARCHAR(2),
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+  dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
   PRIMARY KEY (name, state),
   FOREIGN KEY (state) REFERENCES State(abbrev)
@@ -854,6 +895,7 @@ CREATE TABLE IF NOT EXISTS StateConstOfficeRep(
    position VARCHAR(200),
    state VARCHAR(2),
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+   dr_id INTEGER UNIQUE AUTO_INCREMENT,
    
    PRIMARY KEY (pid),                    -- added
    FOREIGN KEY (pid) REFERENCES Person(pid),
@@ -870,6 +912,7 @@ CREATE TABLE IF NOT EXISTS StateConstOfficeRepRepresentation(
    hid INTEGER,
    state VARCHAR(2),
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+   dr_id INTEGER UNIQUE AUTO_INCREMENT,
    
    PRIMARY KEY (pid, hid),                    -- added
    FOREIGN KEY (pid) REFERENCES Person(pid),
@@ -916,6 +959,7 @@ CREATE TABLE IF NOT EXISTS Behests(
     noticeReceieved DATE,  -- when the behest was filed
     state VARCHAR(2),
     lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+    dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
     PRIMARY KEY(official, payor, payee, datePaid),
     FOREIGN KEY(official) REFERENCES Person(pid), 
@@ -932,7 +976,8 @@ CREATE TABLE IF NOT EXISTS BillTypes (
   Label VARCHAR(10),
   House VARCHAR(100),
   State VARCHAR(2),
-  lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW()
+  lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+  dr_id INTEGER UNIQUE AUTO_INCREMENT
   )
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
@@ -941,7 +986,8 @@ CREATE TABLE IF NOT EXISTS SpeakerProfileTypes  (
   SpeakerType VARCHAR(50),
   Label VARCHAR(50),
   State VARCHAR(2),
-  lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW()
+  lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+  dr_id INTEGER UNIQUE AUTO_INCREMENT
   )
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
@@ -964,6 +1010,7 @@ CREATE TABLE IF NOT EXISTS BillAnalysis(
     trans_uid VARCHAR(20),
     trans_update DATETIME,
     lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+    dr_id INTEGER UNIQUE AUTO_INCREMENT
 
     PRIMARY KEY(analysis_id)
 );
@@ -989,6 +1036,7 @@ CREATE TABLE IF NOT EXISTS LegStaffGifts (
   image_url VARCHAR(2000),
   schedule ENUM('D', 'E'),
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+  dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
   FOREIGN KEY (staff_member) REFERENCES Person(pid),
   FOREIGN KEY  (legislator) REFERENCES Legislator(pid)
@@ -1006,6 +1054,7 @@ CREATE TABLE IF NOT EXISTS LegOfficePersonnel (
   title VARCHAR(100),
   state CHAR(2), -- pk for term 
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+  dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
   PRIMARY KEY (staff_member, legislator, term_year), 
   FOREIGN KEY (staff_member) REFERENCES LegislativeStaff(pid), 
@@ -1038,6 +1087,7 @@ CREATE TABLE IF NOT EXISTS OfficePersonnel (
   end_date DATE,  -- when staff member ended with that office
   state CHAR(2), -- pk for term 
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+  dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
   PRIMARY KEY (staff_member, office, start_date), 
   FOREIGN KEY (staff_member) REFERENCES LegislativeStaff(pid), 
