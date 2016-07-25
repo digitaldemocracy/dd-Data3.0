@@ -1232,6 +1232,7 @@ CHARACTER SET utf8 COLLATE utf8_general_ci;
   CREATE TABLE IF NOT EXISTS TT_HostingUrl (
      cutId INTEGER,
      url VARCHAR(255),
+     streamUrl VARCHAR(255) DEFAULT NULL,
      lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
      PRIMARY KEY (cutId),
      FOREIGN KEY (cutId) REFERENCES TT_Cuts(cutId)
