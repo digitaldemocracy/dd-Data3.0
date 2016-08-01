@@ -1097,6 +1097,46 @@ ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 
+/* Following 3 tables are dropped and re-added each night. Should probably be views,
+   but we want the imports to run quickly.
+ */
+CREATE TABLE OrgAlignments (
+  oid int(11) DEFAULT NULL,
+  bid varchar(23) CHARACTER SET utf8 DEFAULT NULL,
+  hid int(11) DEFAULT NULL,
+  alignment char(20) CHARACTER SET utf8 DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+CREATE TABLE LegParticipation
+(
+    hid INT(11),
+    did INT(11) DEFAULT '0',
+    bid VARCHAR(23),
+    pid INT(11),
+    first VARCHAR(50) NOT NULL,
+    last VARCHAR(50) NOT NULL,
+    party ENUM('Republican', 'Democrat', 'Other'),
+    LegBillWordCount DECIMAL(32) DEFAULT '0' NOT NULL,
+    LegBillTime DECIMAL(33) DEFAULT '0' NOT NULL,
+    LegBillPercentWord DECIMAL(36,4) DEFAULT '0.0000' NOT NULL,
+    LegBillPercentTime DECIMAL(37,4) DEFAULT '0.0000' NOT NULL,
+    LegHearingWordCount DECIMAL(32) DEFAULT '0' NOT NULL,
+    LegHearingTime DECIMAL(33) DEFAULT '0' NOT NULL,
+    LegHearingPercentWord DECIMAL(36,4) DEFAULT '0.0000' NOT NULL,
+    LegHearingPercentTime DECIMAL(37,4) DEFAULT '0.0000' NOT NULL,
+    LegHearingAvg DECIMAL(58,4) DEFAULT '0.0000' NOT NULL,
+    BillWordCount DECIMAL(54) DEFAULT '0' NOT NULL,
+    HearingWordCount DECIMAL(54) DEFAULT '0' NOT NULL
+);
+
+CREATE TABLE LegAvgPercentParticipation
+(
+    pid INT(11),
+    first VARCHAR(50) NOT NULL,
+    last VARCHAR(50) NOT NULL,
+    AvgPercentParticipation DECIMAL(58,4)
+);
+
 /* Entity::DeprecatedPerson
 
    This is used for tracking what people are deprecated and will flush them 
