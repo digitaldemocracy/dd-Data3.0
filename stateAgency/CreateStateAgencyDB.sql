@@ -122,7 +122,7 @@ CHARACTER SET utf8 COLLATE utf8_general_ci;
 CREATE TABLE IF NOT EXISTS Document (
    doc_id INTEGER AUTO_INCREMENT,
    documentName VARCHAR(255),
-   fileId VARCHAR(20), -- file name, no path
+   fileName VARCHAR(255),
    hid INTEGER,
    agency INTEGER,
    collection_date DATE,
@@ -133,6 +133,8 @@ CREATE TABLE IF NOT EXISTS Document (
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
 
    PRIMARY KEY (doc_id),
+   UNIQUE KEY (fileName),
+   UNIQUE KEY (url),
    FOREIGN KEY (agency) REFERENCES StateAgency(sa_id),
    FOREIGN KEY (hid) REFERENCES Hearing(hid),
    FOREIGN KEY (state) REFERENCES State(abbrev)
@@ -141,7 +143,7 @@ ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 CREATE OR REPLACE VIEW currentDocument 
-AS SELECT doc_id, documentName, fileId, hid, agency, collection_date, url, 
+AS SELECT doc_id, documentName, fileName, hid, agency, collection_date, url, 
   state, doc_type, lastTouched 
 FROM Document 
 WHERE current = TRUE ORDER BY collection_date DESC;
