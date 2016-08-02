@@ -71,7 +71,12 @@ QI_ORGANIZATIONS = '''INSERT INTO Organizations
                           (name, city, stateHeadquartered)
                           VALUES
                           (%s, %s, %s)''' 
-                    
+QI_LOBBYISTEMPLOYER = '''INSERT INTO LobbyistEmployer
+                         (oid, filer_id, state)
+                         VALUES
+                         (%s, %s, 'NY')'''
+
+# SELECT
 QS_LOBBYIST = '''SELECT p.pid 
                      FROM Person p, Lobbyist l
                      WHERE p.first = %(first)s AND p.last = %(last)s
@@ -96,7 +101,7 @@ QS_LOBBYISTEMPLOYER = '''SELECT *
                           FROM LobbyistEmployer
                           WHERE oid = %s
                           AND filer_id = %s
-                          AND state = %s'''
+                          AND state = "NY"'''
                                                
 name_checks = ['(', '\\' ,'/', 'OFFICE', 'LLC', 'INC', 'PLLC', 'LP', 'PC', 'CO', 'LTD']
 reporting_period = {'JF':0, 'MA':1, 'MJ':2, 'JA':3, 'SO':4, 'ND':5}
@@ -137,7 +142,7 @@ def get_names(names):
     return ret_names
 
 def call_lobbyist_api():
-    url = 'https://data.ny.gov/resource/mbmr-kxth.json?$limit=500000'
+    url = 'https://data.ny.gov/resource/mbmr-kxth.json?$limit=5'#00000'
     r = requests.get(url)
     lobbyists_api = r.json()
 
@@ -145,7 +150,11 @@ def call_lobbyist_api():
     
 
 def insert_lobbyistEmployer_db(dddb, lobby):
-  dddb.execute(QS)
+  dddb.execute(QS_LOBBYISTEMPLOYER, (lobby['client_oid'], lobby['filer_id']))
+  
+  if dddb.rowcount == 0:
+    dddb.execute(QI_LOBBYISTEMPLOYER, (lobby['client_oid'], lobby['filer_id']))
+
 
 def insert_organization_db(dddb, lobby):
   client_name = ' '.join([n.lower().capitalize() if n not in name_checks \
@@ -183,70 +192,76 @@ def get_lobbyists_api(dddb, lobbyists_api):
     if 'lobbyist_name' in entry.keys():
 
       if entry['lobbyist_name'] in lobbyists:
-        lobby = lobbyists[entry['lobbyist_name']]
+        if (entry['client_name'], entry['reporting_year']) not in lobbyists[entry['lobbyist_name']]:
+          client = lobbyists[entry['lobbyist_name']]
+          client[(entry['client_name'], entry['reporting_year'])] = get_lobby_info(dddb, entry)
 
-        if reporting_period[entry['reporting_period']] > lobby['rpt_period'] \
-          and entry['client_name'] == lobby['client_name']:
-          lobby['rpt_period'] = reporting_period[entry['reporting_period']]
-          if lobby['rpt_period'] == 5:
-            lobby['rpt_year'] += 1
+#          if reporting_period[entry['reporting_period']] > lobby['rpt_period'] \
+#            and entry['client_name'] == lobby['client_name']:
+#            lobby['rpt_period'] = reporting_period[entry['reporting_period']]
+#            if lobby['rpt_period'] == 5:
+#              lobby['rpt_year'] += 1
 
-        if 'additional_lobbyists_lr' in entry and entry['additional_lobbyists_lr'] != 'NULL':
-          lobby['lobbyists'] += get_names(entry['additional_lobbyists_lr'])
-        if 'additional_lobbyists_lbr' in entry and entry['additional_lobbyists_lbr'] != 'NULL':
-          lobby['lobbyists'] += get_names(entry['additional_lobbyists_lbr'])
-        lobby['lobbyists'] = list(set(lobby['lobbyists']))
-
+#         if 'additional_lobbyists_lr' in entry and entry['additional_lobbyists_lr'] != 'NULL':
+#            lobby['lobbyists'] += get_names(entry['additional_lobbyists_lr'])
+#          if 'additional_lobbyists_lbr' in entry and entry['additional_lobbyists_lbr'] != 'NULL':
+#            lobby['lobbyists'] += get_names(entry['additional_lobbyists_lbr'])
+#          lobby['lobbyists'] = list(set(lobby['lobbyists']))
       else:
         #entry['lobbyist_name'],  entry['additional_lobbyists_lr'],  entry['additional_lobbyists_lbr']
         #entry['client_name'],  entry['lr_responsible_party_first_name'],  entry['lr_responsible_party_last_name']
         #entry['client_state'], entry['client_city'],  entry['client_bussiness_nature'],  entry['reporting_year']
         #entry['reporting_period'],
 
-        lobby = dict()
-
-        cleaned_name = re.sub(r'\(.*', '', entry['lobbyist_name'])
-        lobby['person'] = is_person(cleaned_name)
-
-        if lobby['person'] and entry['lr_responsible_party_first_name'] in entry['lobbyist_name'] \
-          and entry['lr_responsible_party_last_name'] in entry['lobbyist_name']:
-          lobby['first'] = entry['lr_responsible_party_first_name']
-          lobby['last'] = entry['lr_responsible_party_last_name']
-
-        # CLEAN NAME for ID (a bit more)
-        # Some names are about VARCHAR(100) length
-        # ALSO Double check with Andrew to change all lobbying tables 
-        # to VARCHAR(100) for filer_id
-        lobby['filer_id'] = cleaned_name
-        lobby['filer_naml'] = ' '.join([n.lower().capitalize() if n not in name_checks \
-                                        else n for n in cleaned_name.split()])
-        lobby['state'] = entry['lobbyist_state']
-
-        lobby['rpt_period'] = reporting_period[entry['reporting_period']]
-        lobby['rpt_year'] = int(entry['reporting_year'])
-        if lobby['rpt_period'] == 5:
-          lobby['rpt_year'] += 1
-
-        lobby['client_name'] = entry['client_name']
-        lobby['client_state'] = entry['client_state']
-        lobby['client_city'] = entry['client_city']
-        lobby['client_type'] = entry['client_business_nature']
-
-        lobby['client_oid'] = insert_organization_db(dddb, lobby)
-        insert_lobbyistEmployer_db(dddb, lobby)
-
-        lobby['lobbyists'] = list()
-        if 'additional_lobbyists_lr' in entry and entry['additional_lobbyists_lr'] != 'NULL':
-          lobby['lobbyists'] += get_names(entry['additional_lobbyists_lr'])
-        if 'additional_lobbyists_lbr' in entry and entry['additional_lobbyists_lbr'] != 'NULL':
-          lobby['lobbyists'] += get_names(entry['additional_lobbyists_lbr'])
-        lobby['lobbyists'] = list(set(lobby['lobbyists']))
-
-        lobbyists[entry['lobbyist_name']] = lobby
+        clients = dict()
+        
+        clients[(entry['lobbyist_name'], entry['reporting_year'])] = get_lobby_info(dddb, entry)
+        lobbyists[entry['lobbyist_name']] = clients
 
 
   return lobbyists
 
+def get_lobby_info(dddb, entry):
+  lobby = dict()
+
+  cleaned_name = re.sub(r'\(.*', '', entry['lobbyist_name'])
+  lobby['person'] = is_person(cleaned_name)
+
+  if lobby['person'] and entry['lr_responsible_party_first_name'] in entry['lobbyist_name'] \
+    and entry['lr_responsible_party_last_name'] in entry['lobbyist_name']:
+    lobby['first'] = entry['lr_responsible_party_first_name']
+    lobby['last'] = entry['lr_responsible_party_last_name']
+
+  # CLEAN NAME for ID (a bit more)
+  # Some names are about VARCHAR(100) length
+  # ALSO Double check with Andrew to change all lobbying tables 
+  # to VARCHAR(100) for filer_id
+  lobby['filer_id'] = cleaned_name
+  lobby['filer_naml'] = ' '.join([n.lower().capitalize() if n not in name_checks \
+                                  else n for n in cleaned_name.split()])
+  lobby['state'] = entry['lobbyist_state']
+
+  lobby['rpt_period'] = reporting_period[entry['reporting_period']]
+  lobby['rpt_year'] = int(entry['reporting_year'])
+  if lobby['rpt_period'] == 5:
+    lobby['rpt_year'] += 1
+
+  lobby['client_name'] = entry['client_name']
+  lobby['client_state'] = entry['client_state']
+  lobby['client_city'] = entry['client_city']
+  lobby['client_type'] = entry['client_business_nature']
+
+  lobby['client_oid'] = insert_organization_db(dddb, lobby)
+  insert_lobbyistEmployer_db(dddb, lobby)
+
+  lobby['lobbyists'] = list()
+  if 'additional_lobbyists_lr' in entry and entry['additional_lobbyists_lr'] != 'NULL':
+    lobby['lobbyists'] += get_names(entry['additional_lobbyists_lr'])
+  if 'additional_lobbyists_lbr' in entry and entry['additional_lobbyists_lbr'] != 'NULL':
+    lobby['lobbyists'] += get_names(entry['additional_lobbyists_lbr'])
+  lobby['lobbyists'] = list(set(lobby['lobbyists']))
+
+  return lobby
 
 
 '''
@@ -360,6 +375,6 @@ def main():
     #insert_lobbyists_db(dddb, lobbyists)
 
 if __name__ == '__main__':
-  with GrayLogger(API_URL) as _logger:
-    logger = _logger 
+#  with GrayLogger(API_URL) as _logger:
+#    logger = _logger 
     main()
