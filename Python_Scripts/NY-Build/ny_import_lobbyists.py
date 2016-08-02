@@ -74,7 +74,7 @@ QI_ORGANIZATIONS = '''INSERT INTO Organizations
 QI_LOBBYISTEMPLOYER = '''INSERT INTO LobbyistEmployer
                          (oid, filer_id, state)
                          VALUES
-                         (%s, %s, 'NY')'''
+                         (%s, %s, %s)'''
 
 # SELECT
 QS_LOBBYIST = '''SELECT p.pid 
@@ -101,7 +101,7 @@ QS_LOBBYISTEMPLOYER = '''SELECT *
                           FROM LobbyistEmployer
                           WHERE oid = %s
                           AND filer_id = %s
-                          AND state = "NY"'''
+                          AND state = %s'''
                                                
 name_checks = ['(', '\\' ,'/', 'OFFICE', 'LLC', 'INC', 'PLLC', 'LP', 'PC', 'CO', 'LTD']
 reporting_period = {'JF':0, 'MA':1, 'MJ':2, 'JA':3, 'SO':4, 'ND':5}
@@ -150,10 +150,14 @@ def call_lobbyist_api():
     
 
 def insert_lobbyistEmployer_db(dddb, lobby):
-  dddb.execute(QS_LOBBYISTEMPLOYER, (lobby['client_oid'], lobby['filer_id']))
+  dddb.execute(QS_LOBBYISTEMPLOYER, (lobby['client_oid'], lobby['filer_id'], lobby['state']))
+  query = dddb.fetchone()
   
-  if dddb.rowcount == 0:
-    dddb.execute(QI_LOBBYISTEMPLOYER, (lobby['client_oid'], lobby['filer_id']))
+  try:
+    if query is None:
+      dddb.execute(QI_LOBBYISTEMPLOYER, (lobby['client_oid'], lobby['filer_id'], lobby['state']))
+  except MySQLdb.Error:
+    print QI_LOBBYISTEMPLOYER%(lobby['client_oid'], lobby['filer_id'], lobby['state'])
 
 
 def insert_organization_db(dddb, lobby):
