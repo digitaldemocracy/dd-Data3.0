@@ -52,6 +52,8 @@ from graylogger.graylogger import GrayLogger
 API_URL = 'http://development.digitaldemocracy.org:12202/gelf'
 logger = None
 
+# INSERTS
+
 QI_PERSON = '''INSERT INTO Person
                 (last, first)
                 VALUES
@@ -81,7 +83,22 @@ QI_LOBBYISTEMPLOYER = '''INSERT INTO LobbyistEmployer
                          VALUES
                          (%s, %s, %s)'''
 
-# SELECT
+QI_LOBBYINGEMPLOYMENT = '''INSERT INTO LobbyistEmployment
+                          (pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr, state)
+                          VALUES
+                          (%s, %s, %s, %s, %s, %s)'''
+
+QI_LOBBYINGDIRECTEMPLOYMENT = '''INSERT INTO LobbyistDirectEmployment
+                                  (pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr, state)
+                                  VALUES
+                                  (%s, %s, %s, %s, %s, %s)'''
+
+QI_LOBBYINGCONTRACTS = '''INSERT INTO LobbyingContracts
+                          (filer_id, sender_id, rpt_date, ls_beg_yr, ls_end_yr, state)
+                          VALUES
+                          (%s, %s, %s, %s, %s, %s)'''
+
+# SELECTS
 
 QS_PERSON = '''SELECT pid
                 FROM Person
@@ -93,9 +110,19 @@ QS_LOBBYIST = '''SELECT p.pid
                      WHERE p.first = %(first)s AND p.last = %(last)s
                       AND p.pid = l.pid'''
 
+QS_LOBBYIST_2 = '''SELECT pid
+                    FROM Lobbyist
+                    WHERE filer_id = %s
+                    AND state = %s'''
+
 QS_LOBBYINGFIRM = '''SELECT filer_naml
                          FROM LobbyingFirm
                          WHERE filer_naml = %(filer_naml)s'''
+
+QS_LOBBYINGFIRMSTATE = '''SELECT filer_id
+                          FROM LobbyingFirmState
+                          WHERE filer_naml = %s
+                          AND state = %s'''
 
 QS_ORGANIZATIONS = '''SELECT oid
                           FROM Organizations
@@ -113,7 +140,32 @@ QS_LOBBYISTEMPLOYER = '''SELECT filer_id
                           WHERE oid = %s
                           AND filer_id = %s
                           AND state = %s'''
-                                               
+
+QS_LOBBYISTEMPLOYMENT = '''SELECT pid
+                          FROM LobbyistEmployment
+                          WHERE pid = %s
+                          AND sender_id = %s
+                          AND ls_beg_yr = %s
+                          AND ls_end_yr = %s
+                          AND state = %s'''
+
+QS_LOBBYISTDIRECTEMPLOYMENT = '''SELECT pid
+                                FROM LobbyistEmployment
+                                WHERE pid = %s
+                                AND sender_id = %s
+                                AND ls_beg_yr = %s
+                                AND ls_end_yr = %s
+                                AND state = %s'''
+
+QS_LOBBYINGCONTRACTS = '''SELECT *
+                          FROM LobbyingContracts
+                          WHERE filer_id = %s
+                          AND sender_id = %s
+                          AND ls_beg_yr = %s
+                          AND ls_end_yr = %s
+                          AND state = %s'''
+                                 
+
 name_checks = ['(', '\\' ,'/', 'OFFICE', 'LLC', 'INC', 'PLLC', 'LP', 'PC', 'CO', 'LTD']
 reporting_period = {'JF':0, 'MA':1, 'MJ':2, 'JA':3, 'SO':4, 'ND':5}
 
@@ -169,8 +221,6 @@ def insert_lobbyistEmployer_db(dddb, lobby):
       dddb.execute(QI_LOBBYISTEMPLOYER, (lobby['client_oid'], lobby['filer_id'], lobby['state']))
   except MySQLdb.Error:
     print traceback.format_exc()
-    #print QS_LOBBYISTEMPLOYER%(lobby['client_oid'], lobby['filer_id'], lobby['state'])
-    #print QI_LOBBYISTEMPLOYER%(lobby['client_oid'], lobby['filer_id'], lobby['state'])
 
 
 def insert_organization_db(dddb, lobby):
@@ -286,6 +336,7 @@ def get_lobby_info(dddb, entry):
        
 def insert_lobbyist_db(dddb, lobbyist):
   dddb.execute(QS_LOBBYIST, lobbyist)
+  pid = dddb.fetchone()[0]
        
   if dddb.rowcount == 0:
     dddb.execute(QS_PERSON, lobbyist)
@@ -295,10 +346,58 @@ def insert_lobbyist_db(dddb, lobbyist):
       pid = dddb.lastrowid   
     lobbyist['pid'] = pid
 
-    dddb.execute(QI_LOBBYIST, lobbyist)  
+    dddb.execute(QI_LOBBYIST, lobbyist)
+
+  return pid
+
+
+def insert_direct_employment_db(dddb, lobbyist):
+  #HOW DOES ONE GET A pid FOR A FIRM??
+  for person in lobbyist['lobbyists']:
+    per = dict()
+    try:
+      name = clean_name(person)
+      #NOT SURE IF IT'S ALWAYS GONNA BE NY; NO DATA FOR IT
+      per['state'] = 'NY'
+      per['first'] = name[0]
+      per['last'] = name[1]
+      #MAKE FILER_ID just the name of the person
+      per['filer_id'] = person
+      pid = insert_lobbyist_db(dddb, per)
+
+      dddb.execute(QI_LOBBYINGDIRECTEMPLOYMENT, (pid, lobbyist['filer_id'], '''rpt_date''', '''ls_beg_yr''', '''ls_end_yr''', lobbyist['state']))
+    except:
+      print traceback.format_exc()
+
+
+
+#FIX THIS / FINISH THIS
+def insert_additional_lobbyists_db(dddb, lobbyist):
+  for person in lobbyist['lobbyists']:
+    per = dict()
+    try:
+      name = clean_name(person)
+      #NOT SURE IF IT'S ALWAYS GONNA BE NY; NO DATA FOR IT
+      per['state'] = 'NY'
+      per['first'] = name[0]
+      per['last'] = name[1]
+      #MAKE FILER_ID just the name of the person
+      per['filer_id'] = person
+      insert_lobbyist_db(dddb, per)
+    except:
+      print traceback.format_exc()
+
 
 def insert_lobbying_contracts_db(dddb, lobbyist):
-  pass
+  #SENDER_ID AND FILER_ID
+  dddb.execute(QS_LOBBYINGFIRMSTATE, (lobbyist['client_name'], lobbyist['client_state']))
+  sender_id = dddb.fetchone()[0]
+
+  dddb.execute(QS_LOBBYINGCONTRACTS, (lobbyist['filer_id'], sender_id, '''ls_beg_yr''', '''ls_end_yr''', lobbyist['state']))
+
+  if dddb.rowcount == 0:
+    dddb.execute(QI_LOBBYINGCONTRACTS, (lobbyist['filer_id'], sender_id, '''RPT_DATE''', '''ls_beg_yr''', '''ls_end_yr''', lobbyist['state']))
+
 
 def insert_lobbyingfirm_db(dddb, lobbyist):
   dddb.execute(QS_LOBBYINGFIRM, lobbyist)
@@ -309,20 +408,12 @@ def insert_lobbyingfirm_db(dddb, lobbyist):
     if dddb.rowcount == 0:
       dddb.execute(QI_LOBBYINGFIRMSTATE, lobbyists)
 
-  for person in lobbyist['lobbyists']:
-    per = dict()
-    try:
-      name = clean_name(person)
-      #NOT SURE IF IT'S ALWAYS GONNA BE NY; NO DATA FOR IT
-      per['state'] = 'NY'
-      per['first'] = name[0]
-      per['last'] = name[1]
-      insert_lobbyist_db(per)
-    except:
-      print per
+  insert_additional_lobbyists_db(dddb, lobbyist)
 
   if lobbyist['client_name'] != lobbyist['lobbyist_name']:
     insert_lobbying_contracts_db(dddb, lobbyist)
+  else:
+    insert_direct_employment_db(dddb, lobbyist)
     
 def insert_lobbyists_db(dddb, lobbyists):
   for lobby_key, lobby_val in lobbyists.iteritems():
