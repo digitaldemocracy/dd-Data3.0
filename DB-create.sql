@@ -306,7 +306,7 @@ CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 CREATE TABLE IF NOT EXISTS Video (
    vid INTEGER AUTO_INCREMENT,
-   fileId VARCHAR(20), -- formerly youtubeId. Our name for file 
+   fileId VARCHAR(50), -- formerly youtubeId. Our name for file 
    hid INTEGER,
    position INTEGER,
    startOffset INTEGER,
