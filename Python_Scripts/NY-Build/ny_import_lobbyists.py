@@ -12,27 +12,31 @@ Description:
   - Imports NY lobbyist data using NY API
   - Note that there is not filer ID in the NY data, which means LobbyingFirmState, LobbyistEmployment, LobbyistEmployer
     cannot be filled. We need to decide on a method to either create filer IDs or alter the schema. 
-    - We decided on: blahh blahh blahh
+    - We decided on: filer_id and sender_id being the name of the NY lobbyist (either person name or firm name)
 
 Fills:
+  
+  - LobbyistEmployment
+    - (pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr, state)
+  - LobbyistDirectEmployment
+    - (pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr, state)
+  - LobbyingContracts
+    - (filer_id, sender_id, rpt_date, ls_beg_yr, ls_end_yr, state)
+
   - Person
     - (first, last)
+    - Get pid
   - Lobbyist
-    - ()
+    - (pid, filer_id, state)
   - LobbyingFirm
-    - ()
+    - (filer_naml)
   - LobbyingFirmState
-    - ()
-  - LobbyistEmployment
-    - ()
-  - LobbyistDirectEmployment
-    - ()
-  - Organizations
-    - ()
+    - (filer_id, rpt_date, ls_beg_yr, ls_end_yr, filer_naml, state)
   - LobbyistEmployer
-    - ()
-  - LobbyingContracts
-    - ()
+    - (filer_id, oid, state)
+  - Organizations
+    - (name, city, stateHeadquartered, type)
+    - Get oid
 
 Source:
   - data.ny.gov API
@@ -40,6 +44,7 @@ Source:
 '''
 
 import re
+import sys
 import traceback
 import requests
 import MySQLdb
@@ -77,6 +82,12 @@ QI_LOBBYISTEMPLOYER = '''INSERT INTO LobbyistEmployer
                          (%s, %s, %s)'''
 
 # SELECT
+
+QS_PERSON = '''SELECT pid
+                FROM Person
+                WHERE first = %(first)s
+                AND last = %(last)s'''
+
 QS_LOBBYIST = '''SELECT p.pid 
                      FROM Person p, Lobbyist l
                      WHERE p.first = %(first)s AND p.last = %(last)s
@@ -97,7 +108,7 @@ QS_ORGANIZATIONS_MAX_OID = '''SELECT oid
                               ORDER BY oid DESC
                               LIMIT 1'''
 
-QS_LOBBYISTEMPLOYER = '''SELECT *
+QS_LOBBYISTEMPLOYER = '''SELECT filer_id
                           FROM LobbyistEmployer
                           WHERE oid = %s
                           AND filer_id = %s
@@ -142,7 +153,7 @@ def get_names(names):
     return ret_names
 
 def call_lobbyist_api():
-    url = 'https://data.ny.gov/resource/mbmr-kxth.json?$limit=5'#00000'
+    url = 'https://data.ny.gov/resource/mbmr-kxth.json?$limit=300000'
     r = requests.get(url)
     lobbyists_api = r.json()
 
@@ -157,7 +168,9 @@ def insert_lobbyistEmployer_db(dddb, lobby):
     if query is None:
       dddb.execute(QI_LOBBYISTEMPLOYER, (lobby['client_oid'], lobby['filer_id'], lobby['state']))
   except MySQLdb.Error:
-    print QI_LOBBYISTEMPLOYER%(lobby['client_oid'], lobby['filer_id'], lobby['state'])
+    print traceback.format_exc()
+    #print QS_LOBBYISTEMPLOYER%(lobby['client_oid'], lobby['filer_id'], lobby['state'])
+    #print QI_LOBBYISTEMPLOYER%(lobby['client_oid'], lobby['filer_id'], lobby['state'])
 
 
 def insert_organization_db(dddb, lobby):
@@ -193,12 +206,15 @@ def get_lobbyists_api(dddb, lobbyists_api):
   lobbyists = dict()
 
   for entry in lobbyists_api:
-    if 'lobbyist_name' in entry.keys():
+    if 'lobbyist_name' in entry:
 
       if entry['lobbyist_name'] in lobbyists:
         if (entry['client_name'], entry['reporting_year']) not in lobbyists[entry['lobbyist_name']]:
           client = lobbyists[entry['lobbyist_name']]
           client[(entry['client_name'], entry['reporting_year'])] = get_lobby_info(dddb, entry)
+        else:
+          pass
+          #ASK CHRISTINE ABOUT THE REPORTING YEAR FOR CONTINUOUS YEARS
 
 #          if reporting_period[entry['reporting_period']] > lobby['rpt_period'] \
 #            and entry['client_name'] == lobby['client_name']:
@@ -219,7 +235,7 @@ def get_lobbyists_api(dddb, lobbyists_api):
 
         clients = dict()
         
-        clients[(entry['lobbyist_name'], entry['reporting_year'])] = get_lobby_info(dddb, entry)
+        clients[(entry['client_name'], entry['reporting_year'])] = get_lobby_info(dddb, entry)
         lobbyists[entry['lobbyist_name']] = clients
 
 
@@ -267,105 +283,54 @@ def get_lobby_info(dddb, entry):
 
   return lobby
 
-
-'''
-def get_lobbyists_api2(lobbyists_api):
-  lobbyists = dict()
-  for lbyst in lobbyists_api:
-    if 'lobbyist_name' not in lbyst.keys():
-      print lbyst
-      exit(1)
-#    print 'one', lbyst['lobbyist_name'] 
-    if lbyst['lobbyist_name'] in lobbyists:
-#      print 'if ',  lobbyist['person']
-      if not lobbyist['person']: 
-        if 'additional_lobbyists_lr' in lbyst:
-          lobbyist['lobbyists'] += get_names(lbyst['additional_lobbyists_lr'])
-        if 'additional_lobbyists_lbr' in lbyst:
-          lobbyist['lobbyists'] += get_names(lbyst['additional_lobbyists_lbr'])
-        lobbyist['lobbyists'] = list(set(lobbyist['lobbyists']))
-    else:
-      lobbyist = dict()
-      lobbyist['person'] = False
-      try:
-        if lbyst['additional_lobbyists_lr'] == 'NULL' and lbyst['additional_lobbyists_lbr'] ==  'NULL' and \
-        lbyst['lr_responsible_party_first_name'] in lbyst['lobbyist_name'] and lbyst['lr_responsible_party_last_name'] in lbyst['lobbyist_name']:
-          cont = True
-          for name in name_checks:
-            if name in lbyst['lobbyist_name']:
-              cont = False         
-          if cont:
-            lobbyist['person'] = True                        
-            lobbyist['first'] = lbyst['lr_responsible_party_first_name']
-            lobbyist['last'] = lbyst['lr_responsible_party_last_name']                      
-      except:
-        print lbyst
-        print traceback.format_exc()
-            
-      lobbyist['filer_naml'] = lbyst['lobbyist_name']
-      lobbyist['state'] = 'NY'
-            
-      if not lobbyist['person']:
-        lobbyist['lobbyists'] = list()
-        if 'additional_lobbyists_lr' in lbyst:
-          lobbyist['lobbyists'] += get_names(lbyst['additional_lobbyists_lr'])
-        if 'additional_lobbyists_lbr' in lbyst:
-          lobbyist['lobbyists'] += get_names(lbyst['additional_lobbyists_lbr'])
-        lobbyist['lobbyists'] = list(set(lobbyist['lobbyists']))
-                        
-      lobbyists[lbyst['lobbyist_name']] = lobbyist            
-    
-  return lobbyists
-'''
-
-    
-def is_lobbyist_in_db(dddb, lobbyist):
-    dddb.execute(QS_LOBBYIST, lobbyist)
-    query = dddb.fetchone()
-    
-    if query is None:            
-        return False       
-
-    return True
-    
-def is_lobbyingfirm_in_db(dddb, lobbyist):
-    dddb.execute(QS_LOBBYINGFIRM, lobbyist)
-    query = dddb.fetchone()
-    
-    if query is None:            
-        return False       
-
-    return True 
        
 def insert_lobbyist_db(dddb, lobbyist):
-    if not is_lobbyist_in_db(dddb, lobbyist):
-        
-        dddb.execute(QI_PERSON, lobbyist)
-        pid = dddb.lastrowid   
-        lobbyist['pid'] = pid
-        dddb.execute(QI_LOBBYIST, lobbyist)  
+  dddb.execute(QS_LOBBYIST, lobbyist)
+       
+  if dddb.rowcount == 0:
+    dddb.execute(QS_PERSON, lobbyist)
+    pid = dddb.fetchone()[0]
+    if dddb.rowcount == 0:
+      dddb.execute(QI_PERSON, lobbyist)
+      pid = dddb.lastrowid   
+    lobbyist['pid'] = pid
+
+    dddb.execute(QI_LOBBYIST, lobbyist)  
+
+def insert_lobbying_contracts_db(dddb, lobbyist):
+  pass
 
 def insert_lobbyingfirm_db(dddb, lobbyist):
-    if not is_lobbyingfirm_in_db(dddb, lobbyist):
-        dddb.execute(QI_LOBBYINGFIRM, lobbyist)
-        for person in lobbyist['lobbyists']:
-            per = dict()
-            try:
-                name = clean_name(person)
-                per['state'] = 'NY'
-                per['first'] = name[0]
-                per['last'] = name[1]
-                insert_lobbyist_db(per)
-            except:
-                pass
-#                print name
+  dddb.execute(QS_LOBBYINGFIRM, lobbyist)
+  if dddb.rowcount == 0:
+    dddb.execute(QI_LOBBYINGFIRM, lobbyist)
+
+    dddb.execute(QS_LOBBYINGFIRMSTATE, lobbyist)
+    if dddb.rowcount == 0:
+      dddb.execute(QI_LOBBYINGFIRMSTATE, lobbyists)
+
+  for person in lobbyist['lobbyists']:
+    per = dict()
+    try:
+      name = clean_name(person)
+      #NOT SURE IF IT'S ALWAYS GONNA BE NY; NO DATA FOR IT
+      per['state'] = 'NY'
+      per['first'] = name[0]
+      per['last'] = name[1]
+      insert_lobbyist_db(per)
+    except:
+      print per
+
+  if lobbyist['client_name'] != lobbyist['lobbyist_name']:
+    insert_lobbying_contracts_db(dddb, lobbyist)
     
 def insert_lobbyists_db(dddb, lobbyists):
-    for lobbyist in lobbyists.values():
-        if lobbyist['person']:            
-            insert_lobbyist_db(dddb, lobbyist)
+  for lobby_key, lobby_val in lobbyists.iteritems():
+    for client_year_key, client_year_val in lobby_val.iteritems():
+        if client_year_val['person']:            
+            insert_lobbyist_db(dddb, client_year_val)
         else:
-            insert_lobbyingfirm_db(dddb, lobbyist)
+            insert_lobbyingfirm_db(dddb, client_year_val)
             
 def main():
   with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
@@ -376,7 +341,7 @@ def main():
       charset='utf8') as dddb:
     lobbyists_api = call_lobbyist_api()
     lobbyists = get_lobbyists_api(dddb, lobbyists_api)
-    #insert_lobbyists_db(dddb, lobbyists)
+    insert_lobbyists_db(dddb, lobbyists)
 
 if __name__ == '__main__':
 #  with GrayLogger(API_URL) as _logger:
