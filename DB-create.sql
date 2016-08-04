@@ -600,7 +600,7 @@ CREATE TABLE IF NOT EXISTS Lobbyist(
    pid INTEGER,   -- added
    -- FILER_NAML VARCHAR(50),               modified, needs to be same as Person.last
    -- FILER_NAMF VARCHAR(50),               modified, needs to be same as Person.first  
-   filer_id VARCHAR(9) UNIQUE,         -- modified, start with state prefix   
+   filer_id VARCHAR(200) UNIQUE,         -- modified, start with state prefix
    state VARCHAR(2), 
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
    dr_id INTEGER UNIQUE AUTO_INCREMENT,
@@ -623,7 +623,7 @@ ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 CREATE TABLE IF NOT EXISTS LobbyingFirmState (
-   filer_id VARCHAR(50),  -- modified, given by state  
+   filer_id VARCHAR(200),  -- modified, given by state
    rpt_date DATE,
    ls_beg_yr INTEGER,    -- modified (INT)
    ls_end_yr INTEGER,     -- modified (INT)
@@ -640,7 +640,7 @@ ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 CREATE TABLE IF NOT EXISTS LobbyistEmployer(
-   filer_id VARCHAR(50),  -- modified (PK)
+   filer_id VARCHAR(200),  -- modified (PK)
    oid INTEGER,
    coalition TINYINT(1),
    state VARCHAR(2),
@@ -659,7 +659,7 @@ CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 CREATE TABLE IF NOT EXISTS LobbyistEmployment(
    pid INT,                         -- modified (FK)
-   sender_id VARCHAR(50), 
+   sender_id VARCHAR(200),
    rpt_date DATE,
    ls_beg_yr INTEGER,    -- modified (INT)
    ls_end_yr INTEGER,    -- modified (INT)
@@ -683,7 +683,7 @@ CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 CREATE TABLE IF NOT EXISTS LobbyistDirectEmployment(
    pid INT,
-   sender_id VARCHAR(50), -- no longer used
+   sender_id VARCHAR(200), -- no longer used
    rpt_date DATE,
    ls_beg_yr INTEGER,    -- modified (INT)
    ls_end_yr INTEGER,     -- modified (INT)
@@ -701,10 +701,9 @@ CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 -- end new table
 
-
 CREATE TABLE IF NOT EXISTS LobbyingContracts(
-   filer_id VARCHAR(50),
-   sender_id VARCHAR(50), -- modified (FK)
+   filer_id VARCHAR(200),
+   sender_id VARCHAR(200), -- modified (FK)
    rpt_date DATE,
    ls_beg_yr INTEGER,    -- modified (INT)
    ls_end_yr INTEGER,     -- modified (INT)
@@ -1010,7 +1009,7 @@ CREATE TABLE IF NOT EXISTS BillAnalysis(
     trans_uid VARCHAR(20),
     trans_update DATETIME,
     lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
-    dr_id INTEGER UNIQUE AUTO_INCREMENT
+    dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
     PRIMARY KEY(analysis_id)
 );
@@ -1136,6 +1135,18 @@ CREATE TABLE LegAvgPercentParticipation
     last VARCHAR(50) NOT NULL,
     AvgPercentParticipation DECIMAL(58,4)
 );
+
+-- Creates the alignments view toshi needs for his
+-- query.
+CREATE VIEW BillAlignments
+AS
+  SELECT MAX(u.uid) AS uid, l.pid, u.alignment, u.did
+  FROM Lobbyist l
+    JOIN currentUtterance u
+      ON l.pid = u.pid
+  WHERE u.did IS NOT NULL
+  GROUP BY l.pid, u.alignment, u.did;
+
 
 /* Entity::DeprecatedPerson
 
