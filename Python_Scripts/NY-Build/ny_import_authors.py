@@ -307,7 +307,8 @@ def main():
     logger.info(__file__ + ' terminated successfully.', 
         full_msg='Inserted ' + str(INSERTED) + ' and updated ' + str(A_UPDATE) + ' rows in authors and ' 
                   + str(BS_INSERTED) + ' rows in BillSponsors',
-        additional_fields={'_affected_rows':str(INSERTED + BS_INSERTED + A_UPDATE),
+        additional_fields={'_affected_rows':'authors:'+str(INSERTED+A_UPDATE)+
+                                            ', BillSponsors:'+str(BS_INSERTED),
                            '_inserted':'authors:'+str(INSERTED)+
                                        ', BillSponsors:'+str(BS_INSERTED),
                            '_updated':'authors:'+str(A_UPDATE),

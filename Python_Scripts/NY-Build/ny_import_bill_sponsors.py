@@ -290,7 +290,7 @@ def main():
     logger.info(__file__ + ' terminated', 
         full_msg='inserted ' + str(INSERTED) + ' in BillSponsors',
         additional_fields={'_table':'BillSponsors',
-                           '_affected_rows':INSERTED,
+                           '_affected_rows':'BillSponsors:'+str(INSERTED),
                            '_inserted':'BillSponsors:'+str(INSERTED),
                            '_state':'NY'})
     print counter
