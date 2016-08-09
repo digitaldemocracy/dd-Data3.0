@@ -79,7 +79,7 @@ def get_motions():
           insert_motion(dddb_cursor, mid, date, text)
       logger.info(__file__ + ' terminated successfully.', 
           full_msg='inserted ' + str(INSERTED) + ' rows in Motion',
-          additional_fields={'_affected_rows':str(INSERTED),
+          additional_fields={'_affected_rows':'Motion:'+str(INSERTED),
                              '_inserted':'Motion:'+str(INSERTED),
                              '_state':'CA'})
 

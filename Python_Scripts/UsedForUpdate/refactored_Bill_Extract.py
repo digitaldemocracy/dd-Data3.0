@@ -188,7 +188,8 @@ def main():
       logger.info(__file__ + ' terminated successfully.', 
         full_msg='Inserted ' + str(B_INSERT) + ' rows in Bill and inserted ' 
                     + str(BV_INSERT) + ' rows in BillVersion',
-          additional_fields={'_affected_rows':str(B_INSERT + BV_INSERT),
+          additional_fields={'_affected_rows':'Bill:'+str(B_INSERT)+
+                                            ', BillVersion:'+str(BV_INSERT),
                              '_inserted':'Bill:'+str(B_INSERT)+
                                          ', BillVersion:'+str(BV_INSERT),
                              '_state':'CA'})
