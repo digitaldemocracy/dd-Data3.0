@@ -220,7 +220,8 @@ def main():
       logger.info(__file__ + ' terminated successfully.', 
           full_msg='Inserted ' + str(INSERTED) + ' and updated ' + str(UPDATED) + ' rows in Bill and inserted ' 
                     + str(BV_INSERTED) + ' and updated ' + str(BV_UPDATED) + ' rows in BillVersion',
-          additional_fields={'_affected_rows':str(INSERTED + BV_INSERTED + UPDATED + BV_UPDATED),
+          additional_fields={'_affected_rows':'Bill:'+str(INSERTED+UPDATED)+
+                                              ', BillVersion:'+str(BV_INSERTED+BV_UPDATED),
                              '_inserted':'Bill:'+str(INSERTED)+
                                          ', BillVersion:'+str(BV_INSERTED),
                              '_updated':'Bill:'+str(UPDATED)+

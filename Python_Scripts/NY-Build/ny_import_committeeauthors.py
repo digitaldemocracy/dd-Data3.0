@@ -133,7 +133,7 @@ def main():
     add_committeeauthors_db(2015, dddb)
     logger.info(__file__ + ' terminated successfully.', 
         full_msg='Inserted ' + str(INSERTED) + ' rows in CommitteeAuthors',
-        additional_fields={'_affected_rows':str(INSERTED),
+        additional_fields={'_affected_rows':'CommitteeAuthors:'+str(INSERTED),
                            '_inserted':'CommitteeAuthors:'+str(INSERTED),
                            '_state':'NY'})
 

@@ -384,7 +384,9 @@ def main():
           full_msg='Inserted ' + str(AU_INSERT) + ' rows in authors, ' 
                     + str(BS_INSERT) + ' rows in BillSponsors and ' 
                     + str(CA_INSERT) + ' rows in CommitteeAuthors.',
-          additional_fields={'_affected_rows':str(AU_INSERT + BS_INSERT + CA_INSERT),
+     additional_fields={'_affected_rows':'authos:'+str(AU_INSERT)+
+                                         ', BillSponsors:'+str(BS_INSERT)+
+                                         ', CommitteeAuthors:'+str(CA_INSERT),
                              '_inserted':'authors:'+str(AU_INSERT)+
                                          ', BillSponsors:'+str(BS_INSERT)+
                                          ', CommitteeAuthors:'+str(CA_INSERT),

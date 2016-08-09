@@ -286,7 +286,8 @@ def main():
     logger.info(__file__ + ' terminated successfully.', 
         full_msg='Updated ' + str(L_UPDATE) + ' rows in Legislator and updated '
                   + str(T_UPDATE) + ' rows in Term',
-        additional_fields={'_affected_rows':str(L_UPDATE + T_UPDATE),
+        additional_fields={'_affected_rows':'Legislator:'+str(L_UPDATE)+
+                                      ', Term:'+str(T_UPDATE),
                            '_updated':'Legislator:'+str(L_UPDATE)+
                                       ', Term:'+str(T_UPDATE),
                            '_state':'NY'})

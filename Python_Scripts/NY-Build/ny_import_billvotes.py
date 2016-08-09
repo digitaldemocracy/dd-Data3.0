@@ -468,7 +468,8 @@ def main():
         logger.info(__file__ + ' terminated successfully.', 
             full_msg='Inserted ' + str(VS_INSERTED) + ' rows in BillVoteSummary and inserted ' 
                       + str(VD_INSERTED) + ' rows in BillVoteDetail',
-            additional_fields={'_affected_rows':str(VS_INSERTED + VD_INSERTED),
+            additional_fields={'_affected_rows':'BillVoteSummary:'+str(VS_INSERTED)+
+                                           ', BillVoteDetail:'+str(VD_INSERTED),
                                '_inserted':'BillVoteSummary:'+str(VS_INSERTED)+
                                            ', BillVoteDetail:'+str(VD_INSERTED),
                                '_state':'NY'})

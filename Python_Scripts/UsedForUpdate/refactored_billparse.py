@@ -175,6 +175,6 @@ if __name__ == "__main__":
         billparse(ca_cursor, dd_cursor)
         logger.info(__file__ + ' terminated successfully.', 
             full_msg='Updated ' + str(UPDATE) + ' rows in BillVersion',
-            additional_fields={'_affected_rows':str(UPDATE),
+            additional_fields={'_affected_rows':'BillVersion:'+str(UPDATE),
                                '_updated':'BillVersion:'+str(UPDATE),
                                '_state':'CA'})

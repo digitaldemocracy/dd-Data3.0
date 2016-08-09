@@ -101,7 +101,7 @@ def main():
         insert_Action(dd_cursor, list(record))
       logger.info(__file__ + ' terminated successfully.', 
           full_msg='Inserted ' + str(INSERTED) + ' rows in Action',
-          additional_fields={'_affected_rows':str(INSERTED),
+          additional_fields={'_affected_rows':'Action:'+str(INSERTED),
                              '_inserted':'Action:'+str(INSERTED),
                              '_state':'CA'})
 

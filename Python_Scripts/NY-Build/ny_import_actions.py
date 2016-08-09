@@ -135,7 +135,7 @@ def main():
         add_bill_actions_db(dddb)      
         logger.info(__file__ + ' terminated successfully.', 
             full_msg='inserted ' + str(INSERTED) + ' rows in Action',
-            additional_fields={'_affected_rows':str(INSERTED),
+            additional_fields={'_affected_rows':'Action:'+str(INSERTED),
                                '_inserted':'Action:'+str(INSERTED),
                                '_state':'NY'})
     

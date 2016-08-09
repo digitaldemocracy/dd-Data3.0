@@ -135,7 +135,7 @@ def main():
     get_districts(dd_cursor)
     logger.info(__file__ + ' terminated successfully.', 
         full_msg='Inserted ' + str(INSERTED) + ' rows in District',
-        additional_fields={'_affected_rows':str(INSERTED),
+        additional_fields={'_affected_rows':'District:'+str(INSERTED),
                            '_inserted':'District:'+str(INSERTED),
                            '_state':'CA'})
 
