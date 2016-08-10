@@ -625,7 +625,15 @@ def main():
                   + str(EM_INSERT) + ' rows in LobbyistEmployment, inserted ' 
                   + str(DE_INSERT) + ' rows in LobbyistDirectEmployment, and inserted'
                   + str(LC_INSERT) + ' rows in LobbyingContracts.',
-        additional_fields={'_affected_rows':str(LF_INSERT + FS_INSERT + L_INSERT + P_INSERT + O_INSERT + ER_INSERT + EM_INSERT + DE_INSERT + LC_INSERT),
+        additional_fields={'_affected_rows':'LobbingFirm:'+str(LF_INSERT)
+                                       +', LobbyingFirmState:'+str(FS_INSERT)
+                                       +', Lobbyist:'+str(L_INSERT)
+                                       +', Person:'+str(P_INSERT)
+                                       +', Organizations:'+str(O_INSERT)
+                                       +', LobbyistEmployer:'+str(ER_INSERT)
+                                       +', LobbyistEmployment:'+str(EM_INSERT)
+                                       +', LobbyistDirectEmployment:'+str(DE_INSERT)
+                                       +', LobbyingContracts.:'+str(LC_INSERT),
                            '_inserted':'LobbingFirm:'+str(LF_INSERT)
                                        +', LobbyingFirmState:'+str(FS_INSERT)
                                        +', Lobbyist:'+str(L_INSERT)

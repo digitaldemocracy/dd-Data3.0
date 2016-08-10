@@ -256,7 +256,8 @@ def main():
       logger.info(__file__ + ' terminated successfully.', 
           full_msg='Inserted ' + str(C_INSERTED) + ' rows in Committee and inserted ' 
                     + str(S_INSERTED) + ' rows in servesOn',
-          additional_fields={'_affected_rows':str(C_INSERTED + S_INSERTED),
+          additional_fields={'_affected_rows':'Committee:'+str(C_INSERTED)+
+                                         ', servesOn:'+str(S_INSERTED),
                              '_inserted':'Committee:'+str(C_INSERTED)+
                                          ', servesOn:'+str(S_INSERTED),
                              '_state':'NY'})
