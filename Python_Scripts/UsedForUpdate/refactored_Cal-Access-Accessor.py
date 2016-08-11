@@ -98,9 +98,9 @@ QS_ORGANIZATIONS_MAX = '''SELECT oid
                           FROM Organizations
                           ORDER BY oid DESC
                           LIMIT 1'''
-QS_LOBBYIST_EMPLOYER = '''SELECT filer_id
+QS_LOBBYIST_EMPLOYER = '''SELECT oid
                           FROM LobbyistEmployer
-                          WHERE filer_id = %s
+                          WHERE oid = %s
                            AND state = %s'''
 QS_LOBBYING_FIRM = '''SELECT filer_naml
                       FROM LobbyingFirm
@@ -247,9 +247,9 @@ Given a person's information, check if it's in DDDB. Otherwise, add.
 |filer_id|: Person's identification number
 |coalition|: Person's coalition
 '''
-def insert_lobbyist_employer(dd_cursor, filer_naml, filer_id, bus_city, bus_state, coalition):
+def insert_lobbyist_employer(dd_cursor, filer_naml, filer_id, oid, bus_city, bus_state, coalition):
   global ER_INSERT
-  dd_cursor.execute(QS_LOBBYIST_EMPLOYER, (filer_id, state))
+  dd_cursor.execute(QS_LOBBYIST_EMPLOYER, (oid, state))
   if dd_cursor.rowcount == 0:
     filer_naml = clean_name(filer_naml, refactored_Lobbying_Firm_Name_Fix.clean)
     dd_cursor.execute(QS_ORGANIZATIONS, (filer_naml, bus_city, bus_state))
@@ -421,7 +421,8 @@ def find_lobbyist_employment(dd_cursor, index):
               Lobbyist[index][1], Lobbyist[index][2],
               Lobbyist[index][3], Lobbyist[index][4], state))))
 
-  dd_cursor.execute(QS_LOBBYIST_EMPLOYER, (Lobbyist[index][5], state))
+  oid = get_organization(dd_cursor, Lobbyist[index][5])
+  dd_cursor.execute(QS_LOBBYIST_EMPLOYER, (oid, state))
   if dd_cursor.rowcount > 0:
     
     dd_cursor.execute(QS_LOBBYIST_DIRECT_EMPLOYMENT,
@@ -518,7 +519,7 @@ def main():
           Lobbyist[index][2] = rpt_date
           Lobbyist[index][3] = ls_beg_yr
           Lobbyist[index][4] = ls_end_yr
-          Lobbyist[index][5] = filer_id
+          Lobbyist[index][5] = firm_name
           Lobbyist[index][6] = filer_naml
           index += 1
         #case 5 - Found an employer who is under a contract
@@ -537,7 +538,7 @@ def main():
           coalition = (filer_id[:1] == 'C') * 1
 #          print 'filer_naml = {0}, filer_id = {1}, coalition = {2}\n'.format(filer_naml, filer_id, coalition)
           oid = insert_organization(dd_cursor, filer_naml, bus_city, bus_state)
-          insert_lobbyist_employer(dd_cursor, filer_naml, oid, bus_city, bus_state, coalition)
+          insert_lobbyist_employer(dd_cursor, filer_naml, filer_id, oid, bus_city, bus_state, coalition)
           insert_lobbyist_contracts(dd_cursor, filer_id, oid, rpt_date, ls_beg_yr, ls_end_yr)
         #case 6 - Lobbyist Employer and Organization
         elif form == 'F603' and entity_cd == 'LEM':
@@ -559,10 +560,10 @@ def main():
 #          print 'filer_naml = {0}, filer_id = {1}, coalition = {2}\n'.format(filer_naml, filer_id, coalition)
           if ind_cb == 'X':
             oid = insert_organization(dd_cursor, filer_naml + filer_namf, bus_city, bus_state)
-            insert_lobbyist_employer(dd_cursor, filer_naml + filer_namf, oid, bus_city, bus_state, coalition)
+            insert_lobbyist_employer(dd_cursor, filer_naml + filer_namf, filer_id, oid, bus_city, bus_state, coalition)
           else:
             oid = insert_organization(dd_cursor, filer_naml, bus_city, bus_state)
-            insert_lobbyist_employer(dd_cursor, filer_naml, oid, bus_city, bus_state, coalition)
+            insert_lobbyist_employer(dd_cursor, filer_naml, filer_id, oid, bus_city, bus_state, coalition)
         #case 7 - IGNORE
         elif form == 'F606':
           print 'case 7'
