@@ -6,7 +6,7 @@ File: import_lobbyists_ny.py
 Author: John Alkire
 Maintained: Miguel Aguilar
 Date: 5/20/2016
-Last Modified: 8/08/2016
+Last Modified: 8/11/2016
 
 Description:
   - Imports NY lobbyist data using NY API
@@ -23,7 +23,7 @@ Populates:
     - (filer_naml)
   - LobbyingFirmState
     - (filer_id, rpt_date, ls_beg_yr, ls_end_yr, filer_naml, state)
-  - LobbyistEmployment
+  - LobbyistEmployment (X not populated X)
     - (pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr, state)
   - LobbyistDirectEmployment
     - (pid, lobbyist_employer, rpt_date, ls_beg_yr, ls_end_yr, state)
@@ -48,6 +48,18 @@ import MySQLdb
 from graylogger.graylogger import GrayLogger
 API_URL = 'http://development.digitaldemocracy.org:12202/gelf'
 logger = None
+
+# GLOBALS
+
+P_INSERT = 0
+L_INSERT = 0
+O_INSERT = 0
+LFS_INSERT = 0
+LF_INSERT = 0
+LE_INSERT = 0
+LDE_INSERT = 0
+LC_INSERT = 0
+
 
 # INSERTS
 
@@ -183,8 +195,7 @@ def clean_name(name):
     
     while len(name_arr) > 1:
         first = first + ' ' + name_arr.pop(0)
-                 
-    #INDEX OUT OF BOUNDS ERROR HERE: SOME NAMES DON'T HAVE LAST NAME
+    
     if len(name_arr) >= 1: 
       last = name_arr[0] + suffix
     else:
@@ -237,24 +248,36 @@ def call_lobbyist_api():
     
 
 def insert_lobbyistEmployer_db(dddb, lobby):
+  global LE_INSERT
+
   dddb.execute(QS_LOBBYISTEMPLOYER, (lobby['client_oid'], 'NY'))
   query = dddb.fetchone()
   
-  try:
-    if query is None:
+  if query is None:
+    try:
       dddb.execute(QI_LOBBYISTEMPLOYER, (lobby['client_oid'], lobby['client_name'], 'NY'))
-  except MySQLdb.Error:
-    print lobby
-    print QS_LOBBYISTEMPLOYER%(lobby['client_oid'], 'NY')
-    print traceback.format_exc()
+      LE_INSERT += dddb.rowcount
+    except MySQLdb.Error:
+      logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+                      additional_fields=create_payload('LobbyistEmployer', 
+                        (QI_LOBBYISTEMPLOYER%(lobby['client_oid'], lobby['client_name'], 'NY'))))
 
 
 def insert_organization_db(dddb, lobby):
+  global O_INSERT
+
   dddb.execute(QS_ORGANIZATIONS, (lobby['client_name']))
   query = dddb.fetchone()
 
-  if query is None:              
-    dddb.execute(QI_ORGANIZATIONS, (lobby['client_name'], lobby['client_city'], lobby['client_state']))
+  if query is None:
+    try:
+      dddb.execute(QI_ORGANIZATIONS, (lobby['client_name'], lobby['client_city'], lobby['client_state']))
+      O_INSERT += dddb.rowcount
+    except MySQLdb.Error:
+      logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+                      additional_fields=create_payload('Organizations', 
+                        (QI_ORGANIZATIONS%(lobby['client_name'], lobby['client_city'], lobby['client_state']))))
+
     dddb.execute(QS_ORGANIZATIONS_MAX_OID)
     query = dddb.fetchone()
 
@@ -333,7 +356,6 @@ def get_lobby_info(dddb, entry):
   if lobby['state'] == 'NU':
     lobby['state'] = 'NJ'
 
-  #MUST HANDLE CASE WHERE THE PERSON IS NOT THE REPONSIBLE ONE 
   if lobby['person'] and entry['lr_responsible_party_first_name'] in entry['lobbyist_name'] \
     and entry['lr_responsible_party_last_name'] in entry['lobbyist_name']:
     lobby['first'] = entry['lr_responsible_party_first_name'].title()
@@ -378,29 +400,39 @@ def get_lobby_info(dddb, entry):
 
        
 def insert_lobbyist_db(dddb, lobbyist):
-  try:
-    dddb.execute(QS_LOBBYIST, lobbyist)
-       
+  global L_INSERT
+  global P_INSERT
+
+  dddb.execute(QS_LOBBYIST, lobbyist)
+  if dddb.rowcount == 0:
+    dddb.execute(QS_PERSON, lobbyist)
     if dddb.rowcount == 0:
-      dddb.execute(QS_PERSON, lobbyist)
-      if dddb.rowcount == 0:
+      try:
         dddb.execute(QI_PERSON, lobbyist)
         pid = dddb.lastrowid
-      else:
-        pid = dddb.fetchone()[0]
-      lobbyist['pid'] = pid
-      dddb.execute(QI_LOBBYIST, lobbyist)
+        P_INSERT += dddb.rowcount
+      except MySQLdb.Error:
+        logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+                      additional_fields=create_payload('Person', 
+                        (QI_PERSON%lobbyist)))
     else:
       pid = dddb.fetchone()[0]
+    lobbyist['pid'] = pid
+    try:
+      dddb.execute(QI_LOBBYIST, lobbyist)
+      L_INSERT += dddb.rowcount
+    except MySQLdb.Error:
+      logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+                      additional_fields=create_payload('Lobbyist', 
+                        (QI_LOBBYIST%lobbyist)))
+  else:
+    pid = dddb.fetchone()[0]
 
-    return pid
-
-  except KeyError:
-    print lobbyist
-    print 'EORR'
+  return pid
 
 def insert_direct_employment_db(dddb, lobbyist):
-  #MIGHT NEED TO COMMENT THIS FOR LOOP OUT
+  global LDE_INSERT
+
   for person in lobbyist['lobbyists']:
     per = dict()
     try:
@@ -420,10 +452,11 @@ def insert_direct_employment_db(dddb, lobbyist):
           rpt_period = 1
         rpt_date = date(lobbyist['rpt_year'], rpt_period, 1)
         dddb.execute(QI_LOBBYISTDIRECTEMPLOYMENT, (pid, lobbyist['client_oid'], rpt_date, lobbyist['ls_beg_yr'], lobbyist['ls_end_yr'], 'NY'))
-    except:
-      print lobbyist
-      print QS_LOBBYISTDIRECTEMPLOYMENT%(pid, lobbyist['client_oid'], lobbyist['ls_beg_yr'], lobbyist['ls_end_yr'], 'NY')
-      print traceback.format_exc()
+        LDE_INSERT += dddb.rowcount
+    except MySQLdb.Error:
+      logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+                      additional_fields=create_payload('LobbyistDirectEmployment', 
+                        (QI_LOBBYISTDIRECTEMPLOYMENT%(pid, lobbyist['client_oid'], rpt_date, lobbyist['ls_beg_yr'], lobbyist['ls_end_yr'], 'NY'))))
 
 
 def insert_additional_lobbyists_db(dddb, lobbyist):
@@ -443,6 +476,8 @@ def insert_additional_lobbyists_db(dddb, lobbyist):
 
 
 def insert_lobbying_contracts_db(dddb, lobbyist):
+  global LC_INSERT
+
   dddb.execute(QS_ORGANIZATIONS, (lobbyist['client_name']))
   oid = dddb.fetchone()[0]
   dddb.execute(QS_LOBBYISTEMPLOYER, (oid, 'NY'))
@@ -457,26 +492,35 @@ def insert_lobbying_contracts_db(dddb, lobbyist):
     rpt_date = date(lobbyist['rpt_year'], rpt_period, 1)
     try:
       dddb.execute(QI_LOBBYINGCONTRACTS, (lobbyist['filer_id'], lobbyist_employer, rpt_date, lobbyist['ls_beg_yr'], lobbyist['ls_end_yr'], 'NY'))
+      LC_INSERT += dddb.rowcount
     except MySQLdb.Error:
-      print lobbyist
-      print QS_LOBBYINGCONTRACTS%(lobbyist['filer_id'], lobbyist_employer, lobbyist['ls_beg_yr'], lobbyist['ls_end_yr'], 'NY')
-      print traceback.format_exc()
+      logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+                      additional_fields=create_payload('LobbyingContracts', 
+                        (QI_LOBBYINGCONTRACTS%(lobbyist['filer_id'], lobbyist_employer, rpt_date, lobbyist['ls_beg_yr'], lobbyist['ls_end_yr'], 'NY'))))
 
 
 def insert_lobbyingfirm_db(dddb, lobbyist):
+  global LF_INSERT
+  global LFS_INSERT
+
   dddb.execute(QS_LOBBYINGFIRM, lobbyist)
   if dddb.rowcount == 0:
-    dddb.execute(QI_LOBBYINGFIRM, lobbyist)
+    try:
+      dddb.execute(QI_LOBBYINGFIRM, lobbyist)
+      LF_INSERT += dddb.rowcount
+    except MySQLdb.Error:
+      logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+                      additional_fields=create_payload('LobbyingFirm', (QI_LOBBYINGFIRM%lobbyist)))
 
-  #CHECK THIS LOGIC IF IT MAKES SENSE
   dddb.execute(QS_LOBBYINGFIRMSTATE, (lobbyist['filer_naml'], 'NY'))
   if dddb.rowcount == 0:
     try:
       dddb.execute(QI_LOBBYINGFIRMSTATE, (lobbyist['filer_id'], lobbyist['filer_naml'], 'NY'))
+      LFS_INSERT += dddb.rowcount
     except MySQLdb.Error:
-      print lobbyist
-      print traceback.format_exc()
-      print 'EOOO'
+      logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+                      additional_fields=create_payload('LobbyingFirmState', 
+                        (QI_LOBBYINGFIRMSTATE%(lobbyist['filer_id'], lobbyist['filer_naml'], 'NY'))))
 
   insert_additional_lobbyists_db(dddb, lobbyist)
 
@@ -497,7 +541,7 @@ def insert_lobbyists_db(dddb, lobbyists):
 def main():
   with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
       user='awsDB',
-      db='MikeyTest',
+      db='DDDB2015Dec',
       port=3306,
       passwd='digitaldemocracy789',
       charset='utf8') as dddb:
@@ -505,7 +549,34 @@ def main():
     lobbyists = get_lobbyists_api(dddb, lobbyists_api)
     insert_lobbyists_db(dddb, lobbyists)
 
+    logger.info(__file__ + ' terminated successfully.', 
+          full_msg='Inserted ' + str(P_INSERT) + ' rows in Person, inserted ' 
+                    + str(L_INSERT) + ' rows in Lobbyist, inserted '
+                    + str(O_INSERT) + ' rows in Organizations, inserted ' 
+                    + str(LFS_INSERT) + ' rows in LobbyingFirmState, inserted '
+                    + str(LF_INSERT) + ' rows in LobbyingFirm, inserted ' 
+                    + str(LE_INSERT) + ' rows in LobbyistEmployer, inserted '
+                    + str(LDE_INSERT) + ' rows in LobbyistDirectEmployment, and inserted ' 
+                    + str(LC_INSERT) + ' rows in LobbyingContracts',
+          additional_fields={'_affected_rows':'Person:'+str(P_INSERT)+
+                                         ', Lobbyist:'+str(L_INSERT)+
+                                         ', Organizations:'+str(O_INSERT)+
+                                         ', LobbyingFirmState:'+str(LFS_INSERT)+
+                                         ', LobbyingFirm:'+str(LF_INSERT)+
+                                         ', LobbyistEmployer:'+str(LE_INSERT)+
+                                         ', LobbyistDirectEmployment:'+str(LDE_INSERT)+
+                                         ', LobbyingContracts:'+str(LC_INSERT),
+                             '_inserted':'Person:'+str(P_INSERT)+
+                                         ', Lobbyist:'+str(L_INSERT)+
+                                         ', Organizations:'+str(O_INSERT)+
+                                         ', LobbyingFirmState:'+str(LFS_INSERT)+
+                                         ', LobbyingFirm:'+str(LF_INSERT)+
+                                         ', LobbyistEmployer:'+str(LE_INSERT)+
+                                         ', LobbyistDirectEmployment:'+str(LDE_INSERT)+
+                                         ', LobbyingContracts:'+str(LC_INSERT),
+                             '_state':'NY'})
+
 if __name__ == '__main__':
-#  with GrayLogger(API_URL) as _logger:
-#    logger = _logger 
+  with GrayLogger(API_URL) as _logger:
+    logger = _logger 
     main()
