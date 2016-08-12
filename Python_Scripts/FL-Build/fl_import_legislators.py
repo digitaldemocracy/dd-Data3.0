@@ -6,7 +6,7 @@ File: fl_import_legislators.py
 Author: Miguel Aguilar
 Maintained: Miguel Aguilar
 Date: 07/05/2016
-Last Updated: 07/17/2016
+Last Updated: 08/12/2016
 
 Description:
   - This script populates the database with the Florida state legislators
@@ -29,6 +29,13 @@ GRAY_URL = 'http://development.digitaldemocracy.org:12202/gelf'
 logger = None
 API_URL = 'http://openstates.org/api/v1/legislators/?state=fl&chamber={0}&apikey=c12c4c7e02c04976865f3f9e95c3275b'
 
+#Globals
+P_INSERT = 0
+L_INSERT = 0
+T_INSERT = 0
+T_UPDATE = 0
+
+#Selects
 QS_LEGISLATOR = '''
                 SELECT p.pid
                 FROM Legislator l, Person p
@@ -47,6 +54,7 @@ QS_TERM = '''
           AND house=%(house)s
           '''
 
+#Inserts
 QI_LEGISLATOR = '''
                 INSERT INTO Legislator
                   (pid,state,capitol_phone,website_url,room_number)
@@ -94,7 +102,7 @@ def clean_name(name):
     "Mike Hill":("Walter Bryan", "Hill"), 
     "Bob Cortes":("Robert","Cortes"), 
     "Danny Burgess, Jr.":("Daniel Wright","Burgess, Jr."),
-    "Coach P Plasencia":("Rene","Plasencia"),
+    "Coach P Plasencia":("Rene","Plasencia"), 
     }
     
   #IF THERE IS ONE OR TWO COMMAS THEN FLIP THE NAME
@@ -135,7 +143,7 @@ def clean_name(name):
              
   last = name_arr[0]
   last = last.replace(' ' ,'') + suffix
-  
+
   if (first + ' ' + last) in problem_names.keys():             
     return problem_names[(first + ' ' + last)]
 
@@ -159,8 +167,8 @@ def get_legislators_api(dddb, house):
     if leg['middle'] is not None:
       if len(leg['middle']) > 1 and leg['middle'] in clean_leg_name[0]:
         leg['first'] = clean_leg_name[0].split()[0]
-    elif len(leg['middle'])==1:
-      leg['middle'] = leg['middle'] + '.'
+      if len(leg['middle'])==1:
+        leg['middle'] = leg['middle'] + '.'
 
     if ' "' in leg['first']:
       if len(leg['first'].split()[0]) > 1:
@@ -171,8 +179,8 @@ def get_legislators_api(dddb, house):
     leg['state'] = entry['state'].upper()
     leg['website_url'] = entry['url']
 
-    #Not sure what the term year should be, did one year before so 2015
-    leg['year'] = datetime.datetime.now().year-1
+    #Not sure what the term year should be, so I did the current year
+    leg['year'] = datetime.datetime.now().year
 
     if entry['party'] == 'Republican':
       leg['party'] = entry['party']
@@ -194,18 +202,23 @@ def get_legislators_api(dddb, house):
   return leg_list
 
 def is_term_in_db(dddb, leg):
-  try:
-    dddb.execute(QS_TERM, leg)
-    query = dddb.fetchone()
+  global T_UPDATE
 
-    if query is None:
-      return False
+  dddb.execute(QS_TERM, leg)
+  query = dddb.fetchone()
 
-    if query[0] != leg['district']:
-      dddb.execute(QU_TERM, leg)
-      return True
-  except:
+  if query is None:
     return False
+
+  if query[0] != leg['district']:
+    try:
+      dddb.execute(QU_TERM, leg)
+      T_UPDATE += dddb.rowcount
+      return True
+    except MySQLdb.Error:
+      logger.warning('Update Failed', full_msg=traceback.format_exc(),
+                  additional_fields=create_payload('Term', (QU_TERM%leg)))
+      return False
 
   return True
 
@@ -222,8 +235,10 @@ def is_leg_in_db(dddb, leg):
   return query[0]
 
 def add_legislators_db(dddb, leg_list):
-  #Person Insert Count and Term Insert Count
-  pi_count = ti_count = 0
+  global P_INSERT
+  global T_INSERT
+  global L_INSERT
+
   for leg in leg_list:
     pid = is_leg_in_db(dddb, leg)
     leg['pid'] = pid
@@ -233,13 +248,14 @@ def add_legislators_db(dddb, leg_list):
         dddb.execute(QI_PERSON, leg)
         pid = dddb.lastrowid
         leg['pid'] = pid
-        pi_count = pi_count + 1
+        P_INSERT += dddb.rowcount
       except MySQLdb.Error:
         logger.warning('Insert Failed', full_msg=traceback.format_exc(),
             additional_fields=create_payload('Person', (QI_PERSON%leg)))
 
       try:
         dddb.execute(QI_LEGISLATOR, leg)
+        L_INSERT += dddb.rowcount
       except MySQLdb.Error:
         logger.warning('Insert Failed', full_msg=traceback.format_exc(),
             additional_fields=create_payload('Legislator', (QI_LEGISLATOR%leg)))
@@ -247,12 +263,11 @@ def add_legislators_db(dddb, leg_list):
     if is_term_in_db(dddb, leg) == False:
       try:
         dddb.execute(QI_TERM, leg)
-        ti_count = ti_count + 1
+        T_INSERT += dddb.rowcount
       except MySQLdb.Error:
         logger.warning('Insert Failed', full_msg=traceback.format_exc(),
             additional_fields=create_payload('Term', (QI_TERM%leg)))
 
-  return pi_count, ti_count 
 
 def main():
   with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
@@ -264,12 +279,20 @@ def main():
     #Insert Counter for Person and Term
     pi_count = ti_count = 0
     for house in ['upper', 'lower']:
-      ret_count = add_legislators_db(dddb, get_legislators_api(dddb, house))
-      pi_count = pi_count + ret_count[0]
-      ti_count = ti_count + ret_count[1]
+      add_legislators_db(dddb, get_legislators_api(dddb, house))
 
-    print 'Inserted %d Persons and Legislators'%pi_count
-    print 'Inserted %d Terms'%ti_count
+    logger.info(__file__ + ' terminated successfully.', 
+          full_msg='Inserted ' + str(P_INSERT) + ' rows in Person, inserted ' +
+                   str(L_INSERT) + ' rows in Legislator and inserted '
+                    + str(T_INSERT) + ' and updated ' + str(T_UPDATE) + ' rows in Term',
+          additional_fields={'_affected_rows':'Person:'+str(P_INSERT)+
+                                         ', Legislator:'+str(L_INSERT)+
+                                         ', Term:'+str(T_INSERT+T_UPDATE),
+                             '_inserted':'Person:'+str(P_INSERT)+
+                                         ', Legislator:'+str(L_INSERT)+
+                                         ', Term:'+str(T_INSERT),
+                             '_updated':'Term:'+str(T_UPDATE),
+                             '_state':'FL'})
 
 if __name__ == '__main__':
   with GrayLogger(GRAY_URL) as _logger:
