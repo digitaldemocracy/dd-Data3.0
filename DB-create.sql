@@ -10,31 +10,6 @@ End Usage:
 Description: Used to create all of the tables for Digital Democracy
 note: this will only work on the currently used database
 
-Change Log: DDDB2015July Initial Schema
-   Added:
-      - Behests Table
-      - Payors  Table
-      - Organizations Table
-      - DeprecatedOrganization Table
-
-   Modified:
-      - LobbyistEmployer
-         - filer_naml & le_id -> Organizations(oid)
-      - LobbyistRepresentation
-         - le_id -> Organizations(oid)
-         - Added column: did
-      - GeneralPublic
-         - affiliation -> Organizations(oid)
-         - Added column: did
-
-Explanation:
-      - Added Behest data into DDDB
-      - Added Organization table and modified several tables to
-         point to that table
-      - Modified Lobbyist and General Public Representations to
-         be by bill discussion and not by hearing
-*/
-
 /*****************************************************************************/
 /*
   Represents a state. e.g. California, Arizona
@@ -99,7 +74,8 @@ CREATE TABLE IF NOT EXISTS Organizations (
   stateHeadquartered VARCHAR(2), -- U.S. state, where it's based
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
 
-  PRIMARY KEY (oid)
+  PRIMARY KEY (oid),
+  FOREIGN KEY (stateHeadquarterd) REFERENCES State(abbrev)
 )
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
@@ -360,7 +336,6 @@ CREATE TABLE IF NOT EXISTS BillDiscussion (
 
 CREATE TABLE IF NOT EXISTS Motion (
   mid    INTEGER(20),
-  date   DATETIME,
   text   TEXT,
   doPass TINYINT(1),
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
@@ -383,7 +358,6 @@ CREATE TABLE IF NOT EXISTS BillVoteSummary (
   result      VARCHAR(20),
   VoteDateSeq INT,
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
-  dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
   PRIMARY KEY(voteId),
   FOREIGN KEY (mid) REFERENCES Motion(mid),
@@ -639,7 +613,7 @@ CREATE TABLE IF NOT EXISTS LobbyingFirmState (
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS LobbyistEmployer(
+CREATE TABLE IF NOT EXISTS LobbyistEmployer (
    filer_id VARCHAR(200),  -- modified (PK)
    oid INTEGER,
    coalition TINYINT(1),
@@ -657,7 +631,7 @@ CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 -- LOBBYIST_EMPLOYED_BY_LOBBYING_FIRM
 
-CREATE TABLE IF NOT EXISTS LobbyistEmployment(
+CREATE TABLE IF NOT EXISTS LobbyistEmployment (
   pid INT,                         -- modified (FK)
   sender_id VARCHAR(200),
   rpt_date DATE,
@@ -719,8 +693,8 @@ ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 
-CREATE TABLE IF NOT EXISTS LobbyistRepresentation(
-   pid INTEGER REFERENCES Person(pid),                  -- modified
+CREATE TABLE IF NOT EXISTS LobbyistRepresentation (
+   pid INTEGER,
    oid INTEGER, -- modified (renamed)
    hearing_date DATE,                                       -- modified (renamed)
    hid INTEGER,              -- added
@@ -730,6 +704,7 @@ CREATE TABLE IF NOT EXISTS LobbyistRepresentation(
    dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
    PRIMARY KEY(pid, oid, hid, did),                 -- added
+   FOREIGN KEY (pid) REFERENCES Lobbyist(pid),
    FOREIGN KEY (hid) REFERENCES Hearing(hid),
    FOREIGN KEY (oid, state) REFERENCES LobbyistEmployer(oid, state),
    FOREIGN KEY (did) REFERENCES BillDiscussion(did),
@@ -767,7 +742,7 @@ CREATE TABLE IF NOT EXISTS LegislativeStaff(
 
   PRIMARY KEY (pid),                    -- added
   FOREIGN KEY (pid) REFERENCES Person(pid),
-  FOREIGN KEY (state) REFERENCES State(abbrev),
+  FOREIGN KEY (state) REFERENCES State(abbrev)
 )
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
@@ -784,8 +759,8 @@ CREATE TABLE IF NOT EXISTS LegislativeStaffRepresentation(
   dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
   PRIMARY KEY (pid, hid, did),                    -- added
-  FOREIGN KEY (pid) REFERENCES Person(pid),
-  FOREIGN KEY (legislator) REFERENCES Person(pid),
+  FOREIGN KEY (pid) REFERENCES LegislativeStaff(pid),
+  FOREIGN KEY (legislator) REFERENCES Legislator(pid),
   FOREIGN KEY (hid) REFERENCES Hearing(hid),
   FOREIGN KEY (committee) REFERENCES Committee(cid),
   FOREIGN KEY (state) REFERENCES State(abbrev),
@@ -817,7 +792,7 @@ CREATE TABLE IF NOT EXISTS LegAnalystOfficeRepresentation(
   dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
   PRIMARY KEY (pid, hid, did),                    -- added
-  FOREIGN KEY (pid) REFERENCES Person(pid),
+  FOREIGN KEY (pid) REFERENCES LegAnalystOffice(pid),
   FOREIGN KEY (hid) REFERENCES Hearing(hid),
   FOREIGN KEY (state) REFERENCES State(abbrev)
 )
@@ -861,7 +836,7 @@ CREATE TABLE IF NOT EXISTS StateAgencyRepRepresentation(
   dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
   PRIMARY KEY (pid, hid, did),                    -- added
-  FOREIGN KEY (pid) REFERENCES Person(pid),
+  FOREIGN KEY (pid) REFERENCES StateAgencyRep(pid),
   FOREIGN KEY (hid) REFERENCES Hearing(hid),
   FOREIGN KEY (state) REFERENCES State(abbrev),
   FOREIGN KEY (employer, state) REFERENCES StateAgency(name, state)
@@ -889,8 +864,7 @@ CREATE TABLE IF NOT EXISTS StateConstOfficeRep(
 
   PRIMARY KEY (pid),                    -- added
   FOREIGN KEY (pid) REFERENCES Person(pid),
-  FOREIGN KEY (state) REFERENCES State(abbrev),
-  FOREIGN KEY (office, state) REFERENCES StateConstOffice(name, state)
+  FOREIGN KEY (state) REFERENCES State(abbrev)
 )
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
@@ -906,7 +880,7 @@ CREATE TABLE IF NOT EXISTS StateConstOfficeRepRepresentation(
   dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
   PRIMARY KEY (pid, hid, did),                    -- added
-  FOREIGN KEY (pid) REFERENCES Person(pid),
+  FOREIGN KEY (pid) REFERENCES StateConstOfficeRep(pid),
   FOREIGN KEY (hid) REFERENCES Hearing(hid),
   FOREIGN KEY (state) REFERENCES State(abbrev),
   FOREIGN KEY (office, state) REFERENCES StateConstOffice(name, state)
@@ -919,15 +893,17 @@ CREATE TABLE IF NOT EXISTS StateConstOfficeRepRepresentation(
    Payors are persons or organizations that pay for another organization
    on the behest of a legislator.
 */
-CREATE TABLE IF NOT EXISTS Payors(
+CREATE TABLE IF NOT EXISTS Payors (
   prid INT AUTO_INCREMENT,  -- Payor id
   name VARCHAR(200),        -- name
   city VARCHAR(50),         -- city
+  state VARCHAR(2),
   addressState VARCHAR(2),         -- U.S. state
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
 
   PRIMARY KEY(prid),
-  FOREIGN KEY (addressState) REFERENCES State(abbrev)
+  FOREIGN KEY (addressState) REFERENCES State(abbrev),
+  FOREIGN KEY (state) REFERENCES State(abbrev)
 )
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
@@ -1047,7 +1023,7 @@ CREATE TABLE IF NOT EXISTS LegOfficePersonnel (
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
   dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
-  PRIMARY KEY (staff_member, legislator, term_year),
+  PRIMARY KEY (staff_member, legislator, term_year, start_date),
   FOREIGN KEY (staff_member) REFERENCES LegislativeStaff(pid),
   FOREIGN KEY (legislator, term_year, house, state)
   REFERENCES Term(pid, year, house, state)
@@ -1149,6 +1125,7 @@ AS
 */
 CREATE TABLE IF NOT EXISTS DeprecatedPerson(
   pid INTEGER,     -- Person id (ref. Person.pid)
+  dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
   PRIMARY KEY(pid)
 )
@@ -1163,6 +1140,7 @@ CREATE TABLE IF NOT EXISTS DeprecatedPerson(
 */
 CREATE TABLE IF NOT EXISTS DeprecatedOrganization(
   oid INTEGER,      -- Organization id (ref. Organization.oid)
+  dr_id INTEGER UNIQUE AUTO_INCREMENT,
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
 
   PRIMARY KEY(oid)
@@ -1250,6 +1228,7 @@ CREATE TABLE IF NOT EXISTS TT_Cuts (
   current BOOLEAN NOT NULL,
   created TIMESTAMP DEFAULT NOW(),
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+
   PRIMARY KEY (cutId),
   FOREIGN KEY (videoId) REFERENCES TT_Videos(videoId)
 )
