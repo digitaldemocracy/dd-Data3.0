@@ -66,16 +66,12 @@ def query_ES():
   return response
 
 def script_not_in_db(name):
-  #middb_cursor.execute('''SELECT * FROM Script WHERE name = %s''', (name,))
-  #if middb_cursor.rowcount == 0:
   overlorddb_cursor.execute('''SELECT * FROM Script WHERE name = %s''', (name,))
   if overlorddb_cursor.rowcount == 0:
     return True
   return False
 
 def sv_not_in_db(sid):
-  #middb_cursor.execute('''SELECT * FROM ScriptVersion WHERE sid = %s''', (sid,))
-  #if middb_cursor.rowcount ==0:
   overlorddb_cursor.execute('''SELECT * FROM ScriptVersion WHERE sid = %s''', (sid,))
   if overlorddb_cursor.rowcount ==0:
     return True
@@ -88,24 +84,17 @@ def db_magic(hit):
     print("Script not in DB")
     return
   # Retrieve sid
-  #middb_cursor.execute('''SELECT sid FROM Script WHERE name=%s''' , (scriptName,))
-  #sid = middb_cursor.fetchone()[0]
   overlorddb_cursor.execute('''SELECT sid FROM Script WHERE name=%s''' , (scriptName,))
   sid = overlorddb_cursor.fetchone()[0]
   if sv_not_in_db(sid):
     print("ScriptVersion not in DB")
     return
   # Retrieve svid
-  #middb_cursor.execute('''SELECT max(sv_id) FROM ScriptVersion WHERE sid=%s''', (sid,))
-  #svid = middb_cursor.fetchone()[0]
   overlorddb_cursor.execute('''SELECT max(sv_id) FROM ScriptVersion WHERE sid=%s''', (sid,))
   svid = overlorddb_cursor.fetchone()[0]
   # Retrieve timestamp
-  #middb_cursor.execute('''SELECT max(end_time) FROM ScriptRunHistory WHERE sv_id=%s''', (svid,))
-  #timestamp = middb_cursor.fetchone()[0]
   visualizerdb_cursor.execute('''SELECT max(end_time) FROM ScriptRunHistory WHERE sv_id=%s''', (svid,))
   timestamp = visualizerdb_cursor.fetchone()[0]
-  print timestamp
   # Retrieve tids
   tids = table_names_to_tids(hit)
   
@@ -114,13 +103,9 @@ def db_magic(hit):
     # Log looked at by hit is the same as the most recent log in Elasticsearch
     print("Queried result is the same as the most recent log in the database")
   else:
-    print("In else statement, svid = ")
-    print svid
     update_script_run_history(hit, svid)
     update_status_history(hit, tids)
     # Retrieve hid
-    #middb_cursor.execute('''SELECT max(hid) FROM ScriptRunHistory WHERE sv_id=%s''', (svid,))
-    #hid = middb_cursor.fetchone()[0]
     visualizerdb_cursor.execute('''SELECT max(hid) FROM ScriptRunHistory WHERE sv_id=%s''', (svid,))
     hid = visualizerdb_cursor.fetchone()[0]
     # Update run modifies using that hid
@@ -135,32 +120,19 @@ def extract_name_from_source(source):
 # Query and insert to ScriptRunHistory
 def update_script_run_history(hit, svid):
   statusString = set_status_string(hit)
-  #middb_cursor.execute('''SELECT max(run) FROM ScriptRunHistory WHERE sv_id=%s''', (svid,))
-  #maxRun = middb_cursor.fetchone()[0]
   visualizerdb_cursor.execute('''SELECT max(run) FROM ScriptRunHistory WHERE sv_id=%s''', (svid,))
   maxRun = visualizerdb_cursor.fetchone()[0]
-  print(maxRun)
   if (maxRun == None):
     maxRun = 0
   statusString = set_status_string(hit)
-  #middb_cursor.execute('''INSERT INTO ScriptRunHistory (sv_id, run, end_time, exec_type, status)
-  print("Should insert here")
-  print("Insert into ScriptRunHistory (sv_id, run, end_time, exec_type, status ")
-  print svid
-  print maxRun
-  print hit.timestamp
-  print("Manual")
-  print statusString
   visualizerdb_cursor.execute('''INSERT INTO ScriptRunHistory (sv_id, run, end_time, exec_type, status)
    VALUES (%s,%s,%s,%s,%s)''', (svid, maxRun + 1, hit.timestamp, 'Manual', statusString))
-  print 'rowcount', visualizerdb_cursor.rowcount
   return
 
 # Insert into StatusHistory
 def update_status_history(hit, tids):
   statusString = set_status_string(hit)
   for tid in tids:
-    #middb_cursor.execute('''INSERT INTO StatusHistory (tid, time, exec_type, status)
     visualizerdb_cursor.execute('''INSERT INTO StatusHistory (tid, time, exec_type, status)
      VALUES (%s,%s,%s,%s)''', (tid[0], hit.timestamp, 'Manual', statusString))
   return
@@ -169,12 +141,9 @@ def update_status_history(hit, tids):
 def update_run_modifies(hit, hid, tids):
   statusString = set_status_string(hit)
   for tid in tids:
-    #middb_cursor.execute('''SELECT name FROM DD_Table WHERE tid=%s''', (tid[0],))
-    #table_name = middb_cursor.fetchone()[0]
     overlorddb_cursor.execute('''SELECT name FROM DD_Table WHERE tid=%s''', (tid[0],))
     table_name = overlorddb_cursor.fetchone()[0]
     total_rows = get_total_rows(table_name)
-    #middb_cursor.execute('''INSERT INTO runModifies (hid, tid, status, affected_rows, total_rows)
     visualizerdb_cursor.execute('''INSERT INTO runModifies (hid, tid, status, affected_rows, total_rows)
      VALUES (%s,%s,%s,%s,%s)''', (hid, tid[0], statusString, tid[1], total_rows))
   return
@@ -188,20 +157,16 @@ def set_status_string(hit):
   return statusString
 
 def table_names_to_tids(hit):
-  # also need function to 
   tid_array = []
   table_couple = []
   if hasattr(hit, 'affected_rows'):
     tables_with_numbers = hit.affected_rows.split(",")
     for tables in tables_with_numbers:
       table_affected = tables.split(":")
-      #middb_cursor.execute('''SELECT tid FROM DD_Table WHERE name = %s''', (table_affected[0],))
       overlorddb_cursor.execute('''SELECT tid FROM DD_Table WHERE name = %s''', (table_affected[0],))
-      #if middb_cursor.rowcount == 0:
       if overlorddb_cursor.rowcount == 0:
         print table_affected[0] + ' not found'
       else:
-        #tid_array.append((middb_cursor.fetchone()[0], table_affected[1]))
         tid_array.append((overlorddb_cursor.fetchone()[0], table_affected[1]))
   return tid_array
 
@@ -223,25 +188,18 @@ def update_logs_main():
   main()
 
 def main():
-  #global middb_cursor
   global overlorddb_cursor
   global visualizerdb_cursor
   response = query_ES()
   # Initialize OverlordDB cursor
-  # (DD_Table, Schedule, Script, ScriptVersion, State, affects, runs)
   overlorddb = MySQLdb.connect(host="localhost", user="root", passwd="", db="OverlordDB")
   overlorddb_cursor = overlorddb.cursor()
   # Initialize VisualizerDB cursor
-  # (ScriptRunHistory, StatusHistory, runModifies)
   with MySQLdb.connect(host="localhost", user="root", passwd="", db="VisualizerDB") as visualizerdb:
     visualizerdb_cursor = visualizerdb
 
     for hit in response:
       db_magic(hit)
-  #with MySQLdb.connect(host="localhost", user="root", passwd="", db="MidDB") as cursor:
-  #  middb_cursor = cursor
-  #  for hit in response:
-  #    db_magic(hit)
 
 if __name__ == '__main__':
     main()
