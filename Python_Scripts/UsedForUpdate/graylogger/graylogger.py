@@ -3,6 +3,9 @@ import json
 import requests
 import traceback
 
+import time
+from update_logs import update_logs_main 
+
 from functools import partial
 from os.path import abspath
 
@@ -51,8 +54,13 @@ class GrayLogger(object):
   def __exit__(self, exc_type, exc_val, exc_tb):
     if exc_type:
       self.error('Uncaught Exception', full_msg=traceback.format_exc())
-      #self.error('Uncaught Exception', traceback.format_exc(), None)
+      self.error('Uncaught Exception', full_msg=traceback.format_exc())
+      time.sleep(2)
+      update_logs_main()
       return False
+    else:
+      time.sleep(2)
+      update_logs_main()
 
   def _json(self, data):
     data = json.dumps(data)
