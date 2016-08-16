@@ -195,7 +195,9 @@ def main():
           full_msg='Inserted ' + str(P_INSERT) + ' rows in Person, inserted ' +
                    str(L_INSERT) + ' rows in Legislator and inserted '
                     + str(T_INSERT) + ' rows in Term',
-          additional_fields={'_affected_rows':str(P_INSERT + L_INSERT + T_INSERT),
+          additional_fields={'_affected_rows':'Person:'+str(P_INSERT)+
+                                         ', Legislator:'+str(L_INSERT)+
+                                         ', Term:'+str(T_INSERT),
                              '_inserted':'Person:'+str(P_INSERT)+
                                          ', Legislator:'+str(L_INSERT)+
                                          ', Term:'+str(T_INSERT),

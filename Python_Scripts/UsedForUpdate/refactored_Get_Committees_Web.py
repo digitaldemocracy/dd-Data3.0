@@ -561,7 +561,8 @@ def main():
     logger.info(__file__ + ' terminated successfully.', 
         full_msg='Inserted ' + str(C_INSERT) + ' rows in Committee and inserted ' 
                   + str(S_INSERT) + ' and deleted ' + str(S_DELETE) + ' rows in servesOn',
-        additional_fields={'_affected_rows':str(C_INSERT + S_INSERT),
+        additional_fields={'_affected_rows':'Committee:'+str(C_INSERT)+
+                                       ', servesOn:'+str(S_INSERT),
                            '_inserted':'Committee:'+str(C_INSERT)+
                                        ', servesOn:'+str(S_INSERT),
                            '_deleted':'servesOn:'+str(S_DELETE),
