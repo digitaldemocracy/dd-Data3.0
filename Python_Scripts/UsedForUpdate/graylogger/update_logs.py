@@ -5,7 +5,7 @@ Author: Chauncey Neyman
 Date: 7/18/2016
 
 Description:
-- Reads Graylog logs from Elasticsearch and writes it to the database MidDB
+- Reads Graylog logs from Elasticsearch and writes them to VisualizerDB
 
 Notes:
   - Uses Python 3.4 for timeout
