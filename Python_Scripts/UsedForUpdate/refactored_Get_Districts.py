@@ -107,7 +107,7 @@ def get_districts(dd_cursor):
     url = urlopen(url_string % {'chamber': 'l', 'district_num': j}).read()
     result = json.loads(url)
     state = result['abbr']
-    house = result['chamber']
+    house = 'Assembly'
     did = int(result['name'])
     note = result['id']
     region = get_region(result['region'])
@@ -119,7 +119,7 @@ def get_districts(dd_cursor):
     url = urlopen(url_string % {'chamber': 'u', 'district_num': j}).read()
     result = json.loads(url)
     state = result['abbr']
-    house = result['chamber']
+    house = 'Senate'
     did = int(result['name'])
     note = result['id']
     region = get_region(result['region'])

@@ -37,6 +37,7 @@ API_URL = 'http://development.digitaldemocracy.org:12202/gelf'
 logger = None
 B_INSERT = 0
 BV_INSERT = 0
+B_UPDATE = 0
 
 US_STATE = 'CA'
 
@@ -65,6 +66,14 @@ QS_BILL_VERSION_TBL = '''SELECT bill_version_id, bill_id,
                                 subject, appropriation, substantive_changes 
                          FROM bill_version_tbl'''
 
+# UPDATE
+QU_BILL = '''UPDATE Bill
+             SET billState = %s, status = %s
+             WHERE bid = %s
+              AND (billState != %s
+              OR status != %s)'''
+
+
 def create_payload(table, sqlstmt):
   return {
     '_table': table,
@@ -88,7 +97,7 @@ Checks if bill exists. If not, adds the bill.
   |sessionYear|: The year the bill was created
 '''
 def add_bill(dd_cursor, values):
-  global B_INSERT
+  global B_INSERT, B_UPDATE
   dd_cursor.execute(QS_BILL_CHECK, (values[0], values[2]))
 
   if dd_cursor.rowcount == 0:
@@ -98,6 +107,15 @@ def add_bill(dd_cursor, values):
     except MySQLdb.Error:
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
           additional_fields=create_payload('Bill', (QI_BILL % (values))))
+  else:
+    try:
+      dd_cursor.execute(QU_BILL, (values[3], values[4], values[0], values[3], values[4]))
+      B_UPDATE += dd_cursor.rowcount
+    except MySQLdb.Error:
+      logger.warning('Update Failed', full_msg=traceback.format_exc(),
+          additional_fields=create_payload('Bill',
+            (QU_BILL, (values[3], values[4], values[0], values[3], values[4]))))
+
 
 '''
 Checks if BillVersion exists. If not, adds the BillVersion.
@@ -188,10 +206,11 @@ def main():
       logger.info(__file__ + ' terminated successfully.', 
         full_msg='Inserted ' + str(B_INSERT) + ' rows in Bill and inserted ' 
                     + str(BV_INSERT) + ' rows in BillVersion',
-          additional_fields={'_affected_rows':'Bill:'+str(B_INSERT)+
+          additional_fields={'_affected_rows':'Bill:'+str(B_INSERT+B_UPDATE)+
                                             ', BillVersion:'+str(BV_INSERT),
                              '_inserted':'Bill:'+str(B_INSERT)+
                                          ', BillVersion:'+str(BV_INSERT),
+                             '_updated':'Bill:'+str(B_UPDATE),
                              '_state':'CA'})
 
 if __name__ == "__main__":
