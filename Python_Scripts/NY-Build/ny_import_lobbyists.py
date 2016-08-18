@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.6
+#!/usr/bin/env python
 # -*- coding: utf8 -*-
 
 '''
@@ -541,7 +541,7 @@ def insert_lobbyists_db(dddb, lobbyists):
 def main():
   with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
       user='awsDB',
-      db='DDDB2015Dec',
+      db='MikeyTest',
       port=3306,
       passwd='digitaldemocracy789',
       charset='utf8') as dddb:
