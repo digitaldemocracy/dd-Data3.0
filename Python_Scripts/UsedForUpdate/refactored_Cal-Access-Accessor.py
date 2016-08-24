@@ -5,7 +5,7 @@
 File: Cal-Access-Accessor.py
 Author: Daniel Mangin
 Modified By: Mandy Chan, Freddy Hernandez, Matt Versaggi, Miguel Aguilar
-Last Modified: August 18th, 2016
+Last Modified: August 24th, 2016
 
 Description:
 - Goes through the file CVR_REGISTRATION_CD.TSV and places the data into DDDB
@@ -94,6 +94,9 @@ QS_PERSON_MAX_PID = '''SELECT pid
                        FROM Person
                        ORDER BY Person.pid DESC
                        LIMIT 1'''
+QS_STATE = '''SELECT abbrev
+              FROM State
+              WHERE abbrev = %s'''
 QS_ORGANIZATIONS = '''SELECT oid
                       FROM Organizations
                       WHERE name = %s
@@ -221,6 +224,15 @@ def insert_organization(dd_cursor, filer_naml, bus_city, bus_state):
   global O_INSERT
   filer_naml = clean_name(filer_naml, refactored_Lobbying_Firm_Name_Fix.clean)
   filer_naml = re.sub(r'[^a-zA-Z0-9 ]', '', filer_naml)
+  #In case the city has the state too like => Sacramento, Ca
+  if len(bus_city.split(',')) == 2:
+    bus_city = bus_city.split(',')[0]
+  #In case the state is not a real state or another country other than US and Canada
+  dd_cursor.execute(QS_STATE, (bus_state))
+  if dd_cursor.rowcount == 0:
+    print bus_state
+    bus_state = 'UN'
+
   dd_cursor.execute(QS_ORGANIZATIONS, (filer_naml, bus_state))
   if dd_cursor.rowcount == 0:
     try:
