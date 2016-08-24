@@ -1,0 +1,33 @@
+agenda_driver.py:
+
+This is a scalable driver which can run any number of scripts and format the data to be added to the database.
+
+It should be run every day after the bill script (Or at the end, it doesn't matter as long as bids are in the database)
+
+It runs all of the scrapers separately, tells the logger which ones have failed if any, aggregates the data into a list of dictionaries, inserts new hearings and committee hearings, and then inserts the agendas.  There is plenty of checking going on to make sure that duplicates aren't added to the database.  
+
+
+TODO:  Add another function to run at the end for additional (optional) data that may be added later.
+Currently all that is needed is the bid, state, committee, and date but more may be needed as what interests
+users evolves.  
+
+Scraper Instructions:
+
+Each scraper needs several different pieces of data gathered, by what means it doesn't matter (as long as it
+is legitimate and legal obviously).  In the future optional information may prove useful.  As long as it conforms
+to the standards below it is considered sufficient by the driver.
+
+Return type: list of dict items.
+
+Required dict keys:
+-date (datetime)
+-state (State's actual name, driver finds it's correct abbreviation)
+-c_name (Name of Committee, must be in database)
+-bid (Bill ID, must be in database but as long as this is run after the script that gets bills it should be fine)
+
+Optional keys:
+None
+
+Once you have made sure the return type of your scraper function conforms to the above standards:
+1. import the scraper function into the agenda_driver.py: "from [scraper_file] import [scraper_function]"
+2. add the scraper function to the list labeled scrapers, which should be right underneath the import statements
