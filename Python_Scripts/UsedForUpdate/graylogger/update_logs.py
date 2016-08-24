@@ -25,7 +25,7 @@ logger = None
 # Elasticsearch Connection
 
 client = Elasticsearch(
-	['localhost:9200'
+	['dw.digitaldemocracy.org:9200'
 	]
 )
 
@@ -192,10 +192,10 @@ def main():
   global visualizerdb_cursor
   response = query_ES()
   # Initialize OverlordDB cursor
-  overlorddb = MySQLdb.connect(host="localhost", user="root", passwd="", db="OverlordDB")
+  overlorddb = MySQLdb.connect(host="dw.digitaldemocracy.org", user="monty", passwd="python", db="OverlordDB")
   overlorddb_cursor = overlorddb.cursor()
   # Initialize VisualizerDB cursor
-  with MySQLdb.connect(host="localhost", user="root", passwd="", db="VisualizerDB") as visualizerdb:
+  with MySQLdb.connect(host="dw.digitaldemocracy.org", user="monty", passwd="python", db="VisualizerDB") as visualizerdb:
     visualizerdb_cursor = visualizerdb
 
     for hit in response:
