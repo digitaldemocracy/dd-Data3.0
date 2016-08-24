@@ -230,7 +230,7 @@ def insert_organization(dd_cursor, filer_naml, bus_city, bus_state):
   #In case the state is not a real state or another country other than US and Canada
   dd_cursor.execute(QS_STATE, (bus_state))
   if dd_cursor.rowcount == 0:
-    print bus_state
+    #print bus_state
     bus_state = 'UN'
 
   dd_cursor.execute(QS_ORGANIZATIONS, (filer_naml, bus_state))
