@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.6
+#!/usr/bin/env python
 # -*- coding: utf8 -*-
 
 '''
@@ -6,7 +6,7 @@ File: import_lobbyists_ny.py
 Author: John Alkire
 Maintained: Miguel Aguilar
 Date: 5/20/2016
-Last Modified: 8/11/2016
+Last Modified: 8/24/2016
 
 Description:
   - Imports NY lobbyist data using NY API
@@ -43,7 +43,8 @@ import re
 import sys
 from datetime import date
 import traceback
-import requests
+import urllib2
+import json
 import MySQLdb
 from graylogger.graylogger import GrayLogger
 API_URL = 'http://development.digitaldemocracy.org:12202/gelf'
@@ -241,8 +242,8 @@ def get_names(names):
 
 def call_lobbyist_api():
     url = 'https://data.ny.gov/resource/mbmr-kxth.json?$limit=300000'
-    r = requests.get(url)
-    lobbyists_api = r.json()
+    r = urllib2.urlopen(url)
+    lobbyists_api = json.load(r)
 
     return lobbyists_api
     
@@ -541,7 +542,7 @@ def insert_lobbyists_db(dddb, lobbyists):
 def main():
   with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
       user='awsDB',
-      db='DDDB2015Dec',
+      db='MikeyTest',
       port=3306,
       passwd='digitaldemocracy789',
       charset='utf8') as dddb:
