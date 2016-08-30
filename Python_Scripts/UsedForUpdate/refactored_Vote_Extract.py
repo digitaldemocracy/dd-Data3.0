@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf8 -*-
 '''
 File: Vote_Extract.py
 Authored By: Daniel Mangin
@@ -102,26 +103,34 @@ QS_VOTE_ID = '''SELECT voteId
                  AND mid = %(mid)s
                  AND VoteDate = %(date)s
                  AND VoteDateSeq = %(seq)s'''
-QS_PERSON_FL = '''SELECT pid, last, first
-                  FROM Person
-                  WHERE last = %(filer_naml)s
-                   AND first = %(filer_namf)s
-                   AND pid < 130
-                  ORDER BY Person.pid'''
-QS_PERSON_L = '''SELECT pid, last, first
-                  FROM Person
-                  WHERE last = %(filer_naml)s
-                   AND pid < 130
-                  ORDER BY Person.pid'''
-QS_PERSON_LIKE_L = '''SELECT pid, last, first
-                      FROM Person
-                      WHERE last LIKE %(filer_naml)s
-                      ORDER BY Person.pid'''    
+QS_PERSON_FL = '''SELECT DISTINCT p.pid, p.last, p.first
+                  FROM Person p JOIN Legislator l
+                  ON p.pid = l.pid
+                  WHERE p.last = %(filer_naml)s
+                   AND p.first = %(filer_namf)s
+                   AND l.state = 'CA'
+                  ORDER BY p.pid'''
+QS_PERSON_L = '''SELECT DISTINCT p.pid, p.last, p.first
+                  FROM Person p JOIN Legislator l
+                  ON p.pid = l.pid
+                  WHERE p.last = %(filer_naml)s
+                   AND l.state = 'CA'
+                  ORDER BY p.pid'''
+QS_PERSON_LIKE_L = '''SELECT DISTINCT p.pid, p.last, p.first
+                      FROM Person p JOIN Legislator l
+                      ON p.pid = l.pid
+                      JOIN Term t
+                      ON p.pid = t.pid
+                      WHERE p.last LIKE %(filer_naml)s
+                       AND t.house = %(house)s
+                       AND l.state = 'CA'
+                      ORDER BY p.pid'''    
 QS_TERM = '''SELECT pid, house
              FROM Term
              WHERE pid = %(pid)s
               AND house = %(house)s
-              AND state = %(state)s'''
+              AND state = %(state)s
+              AND year BETWEEN %(start)s AND %(end)s'''
 QS_LOCATION_CODE = '''SELECT description, long_description 
                       FROM location_code_tbl 
                       WHERE location_code = %(location_code)s'''
@@ -211,10 +220,11 @@ def clean_name(name):
 
 '''
 '''
-def get_person(cursor, filer_naml, floor, state):
+def get_person(cursor, filer_naml, floor, state, voteDate):
   pid = None 
   filer_naml = clean_name(filer_naml)
   temp = filer_naml.split(' ')
+  year = voteDate.year
 
   if(floor == 'AFLOOR'):
     floor = "Assembly"
@@ -225,28 +235,32 @@ def get_person(cursor, filer_naml, floor, state):
     filer_naml = temp[len(temp)-1]
     filer_namf = temp[0]
 #    print 'They had a first name!!!'
-    cursor.execute(QS_PERSON_FL, {'filer_naml':filer_naml, 'filer_namf':filer_namf})
+    cursor.execute(QS_PERSON_FL, {'filer_naml':filer_naml, 'filer_namf':filer_namf, 'house':floor})
   else:
-#    print 'Only a last name...'
-    cursor.execute(QS_PERSON_L, {'filer_naml':filer_naml, 'filer_namf':filer_namf})
+    #print 'Only a last name...'
+    #print 'last:', filer_naml
+    cursor.execute(QS_PERSON_L, {'filer_naml':filer_naml, 'house':floor})
   if cursor.rowcount == 1:
     pid = cursor.fetchone()[0]
+    #print pid
   elif cursor.rowcount > 1:
     a = []
     for j in range(0, cursor.rowcount):
       temp = cursor.fetchone()
       a.append(temp[0])
     for j in range(0, cursor.rowcount):
-      cursor.execute(QS_TERM, {'pid':a[j],'house':floor,'state':state})
+      cursor.execute(QS_TERM, 
+          {'pid':a[j],'house':floor,'state':state, 'start':(year-1), 'end':(year+1)})
       if(cursor.rowcount == 1):
         pid = cursor.fetchone()[0]
   else:
     filer_naml = '%' + filer_naml + '%'
-    cursor.execute(QS_PERSON_LIKE_L, {'filer_naml':filer_naml, 'filer_namf':filer_namf})
+    cursor.execute(QS_PERSON_LIKE_L, {'filer_naml':filer_naml, 'filer_namf':filer_namf, 'house':floor})
     if(cursor.rowcount > 0):
       pid = cursor.fetchone()[0]
     else:
-      sys.stderr.write("WARNING: Unable to find person {0}".format(filer_naml))
+      print filer_naml, filer_namf, floor
+      sys.stderr.write("WARNING: Unable to find person {0}\n".format(filer_naml))
   return pid
 
 '''
@@ -330,7 +344,7 @@ def get_detail_votes(ca_cursor, dd_cursor):
   for bid, loc_code, legislator, vote_code, mid, trans_update, seq in rows:
     bid = '%s_%s' % (STATE, bid)
     date = trans_update.strftime('%Y-%m-%d')
-    pid = get_person(dd_cursor, legislator, loc_code, STATE)
+    pid = get_person(dd_cursor, legislator, loc_code, STATE, trans_update)
     vote_id = get_vote_id(dd_cursor, bid, mid, trans_update, seq)
     result = vote_code
 
@@ -357,7 +371,8 @@ def main():
                        passwd='python') as ca_cursor:
     with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                            port=3306,
-                           db='DDDB2015Dec',
+                           #db='DDDB2015Dec',
+                           db='EricTest',
                            user='awsDB',
                            passwd='digitaldemocracy789') as dd_cursor:
       get_summary_votes(ca_cursor, dd_cursor)
