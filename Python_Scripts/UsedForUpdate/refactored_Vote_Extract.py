@@ -371,8 +371,7 @@ def main():
                        passwd='python') as ca_cursor:
     with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                            port=3306,
-                           #db='DDDB2015Dec',
-                           db='EricTest',
+                           db='DDDB2015Dec',
                            user='awsDB',
                            passwd='digitaldemocracy789') as dd_cursor:
       get_summary_votes(ca_cursor, dd_cursor)
