@@ -65,6 +65,10 @@ QS_BILL_VERSION_TBL = '''SELECT bill_version_id, bill_id,
                                 bill_version_action_date, bill_version_action, 
                                 subject, appropriation, substantive_changes 
                          FROM bill_version_tbl'''
+QS_BILL_TITLE = '''SELECT subject, bill_version_action_date
+                   FROM bill_version_tbl
+                   WHERE bill_id = %s
+                    AND bill_version_action = "Introduced"'''
 
 # UPDATE
 QU_BILL = '''UPDATE Bill
@@ -96,14 +100,28 @@ Checks if bill exists. If not, adds the bill.
   |state|: U.S. state the bill resides in
   |sessionYear|: The year the bill was created
 '''
-def add_bill(dd_cursor, values):
+def add_bill(dd_cursor, ca_cursor, values):
   global B_INSERT, B_UPDATE
   dd_cursor.execute(QS_BILL_CHECK, (values[0], values[2]))
 
   if dd_cursor.rowcount == 0:
     try:
       dd_cursor.execute(QI_BILL, values)
-      B_INSERT += dd_cursor.rowcount
+      row = dd_cursor.rowcount
+      if row == 1:
+        ca_cursor.execute(QS_BILL_TITLE, (values[0][3:],))
+        info = ca_cursor.fetchone()
+        if info is None:
+          title = ''
+          date = ''
+        else:
+          title = info[0]
+          date = str(info[1].date)
+        logger.info('Inserted bill ' + values[0],
+            additional_fields={'_bill_id':values[0],
+                               '_subject':title,
+                               '_date':date})
+      B_INSERT += row
     except MySQLdb.Error:
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
           additional_fields=create_payload('Bill', (QI_BILL % (values))))
@@ -163,7 +181,7 @@ def get_bills(ca_cursor, dd_cursor):
     if session != '0':
       type_ = '%sX%s' % (type_, session)
 
-    add_bill(dd_cursor, 
+    add_bill(dd_cursor, ca_cursor,
        (bid, type_, number, state, status, house, session, US_STATE,
        session_yr))
 
