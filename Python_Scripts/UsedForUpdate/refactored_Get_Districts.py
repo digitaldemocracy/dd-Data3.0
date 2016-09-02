@@ -50,7 +50,8 @@ def create_payload(table, sqlstmt):
   return {
       '_table': table,
       '_sqlstmt': sqlstmt,
-      '_state': 'CA'
+      '_state': 'CA',
+      '_log_type':'Database'
   }
 
 '''
@@ -137,7 +138,8 @@ def main():
         full_msg='Inserted ' + str(INSERTED) + ' rows in District',
         additional_fields={'_affected_rows':'District:'+str(INSERTED),
                            '_inserted':'District:'+str(INSERTED),
-                           '_state':'CA'})
+                           '_state':'CA',
+                           '_log_type':'Database'})
 
 if __name__ == "__main__":
   with GrayLogger(API_URL) as _logger:                                          

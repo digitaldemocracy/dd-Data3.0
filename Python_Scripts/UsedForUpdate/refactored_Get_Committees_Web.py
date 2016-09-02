@@ -104,7 +104,8 @@ def create_payload(table, sqlstmt):
   return {
     '_table': table,
     '_sqlstmt': sqlstmt,
-    '_state': 'CA'
+    '_state': 'CA',
+    '_log_type':'Database'
       }
 
 '''
@@ -566,7 +567,8 @@ def main():
                            '_inserted':'Committee:'+str(C_INSERT)+
                                        ', servesOn:'+str(S_INSERT),
                            '_deleted':'servesOn:'+str(S_DELETE),
-                           '_state':'CA'})
+                           '_state':'CA',
+                           '_log_type':'Database'})
     print 'Inserted %d entries to Committee'%comm_count
     print 'Inserted %d entries to servesOn'%serve_count
     

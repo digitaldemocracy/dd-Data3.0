@@ -120,7 +120,8 @@ def create_payload(table, sqlstmt):
   return {
       '_table': table,
       '_sqlstmt': sqlstmt,
-      '_state': 'CA'
+      '_state': 'CA',
+      '_log_type':'Database'
   }
 
 '''
@@ -182,7 +183,8 @@ def get_committee(dd_cursor, name, house):
     logged_list.append(name)
     logger.warning('Committee not found ' + name, 
         full_msg=(QS_COMMITTEE_GET, (name, house, STATE)),
-        additional_fields={'_state':'CA'})
+        additional_fields={'_state':'CA',
+                           '_log_type':'Database'})
   return None
 
 '''
@@ -390,7 +392,8 @@ def main():
                              '_inserted':'authors:'+str(AU_INSERT)+
                                          ', BillSponsors:'+str(BS_INSERT)+
                                          ', CommitteeAuthors:'+str(CA_INSERT),
-                             '_state':'CA'})
+                             '_state':'CA',
+                             '_log_type':'Database'})
 
 if __name__ == '__main__':
   with GrayLogger(API_URL) as _logger:

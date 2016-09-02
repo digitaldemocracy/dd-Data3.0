@@ -82,7 +82,8 @@ def create_payload(table, sqlstmt):
   return {
     '_table': table,
     '_sqlstmt': sqlstmt,
-    '_state': 'CA'
+    '_state': 'CA',
+    '_log_type':'Database'
   }
 
 '''
@@ -120,7 +121,8 @@ def add_bill(dd_cursor, ca_cursor, values):
         logger.info('Inserted bill ' + values[0],
             additional_fields={'_bill_id':values[0],
                                '_subject':title,
-                               '_date':date})
+                               '_date':date,
+                               '_log_type':'Database'})
       B_INSERT += row
     except MySQLdb.Error:
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
@@ -229,7 +231,8 @@ def main():
                              '_inserted':'Bill:'+str(B_INSERT)+
                                          ', BillVersion:'+str(BV_INSERT),
                              '_updated':'Bill:'+str(B_UPDATE),
-                             '_state':'CA'})
+                             '_state':'CA',
+                             '_log_type':'Database'})
 
 if __name__ == "__main__":
   with GrayLogger(API_URL) as _logger:                                          

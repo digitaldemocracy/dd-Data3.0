@@ -158,7 +158,8 @@ def create_payload(table, sqlstmt):
   return {
       '_table': table,
       '_sqlstmt': sqlstmt,
-      '_state': 'CA'
+      '_state': 'CA',
+      '_log_type':'Database'
   }
 
 # Changes the date into a linux format for the database
@@ -699,7 +700,8 @@ def main():
                                        +', LobbyistEmployment:'+str(EM_INSERT)
                                        +', LobbyistDirectEmployment:'+str(DE_INSERT)
                                        +', LobbyingContracts:'+str(LC_INSERT),
-                           '_state':'CA'})
+                           '_state':'CA',
+                           '_log_type':'Database'})
       
 if __name__ == '__main__':
   with GrayLogger(API_URL) as _logger:                                          

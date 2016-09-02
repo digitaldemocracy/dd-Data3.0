@@ -51,7 +51,8 @@ def create_payload(table, sqlstmt):
   return {
       '_table': table,
       '_sqlstmt': sqlstmt,
-      '_state': 'CA'
+      '_state': 'CA',
+      '_log_type':'Database'
   }
 
 '''Tries to remove unmatched html tags from an xml string.
@@ -177,4 +178,5 @@ if __name__ == "__main__":
             full_msg='Updated ' + str(UPDATE) + ' rows in BillVersion',
             additional_fields={'_affected_rows':'BillVersion:'+str(UPDATE),
                                '_updated':'BillVersion:'+str(UPDATE),
-                               '_state':'CA'})
+                               '_state':'CA',
+                               '_log_type':'Database'})

@@ -150,7 +150,8 @@ def create_payload(table, sqlstmt):
   return {
     '_table': table,
     '_sqlstmt': sqlstmt,
-    '_state': 'CA'
+    '_state': 'CA',
+    '_log_type':'Database'
   }
 
 '''
@@ -329,7 +330,8 @@ def get_summary_votes(ca_cursor, dd_cursor):
     elif cid is None and loc_code not in logged_list:
       logged_list.append(loc_code)
       logger.warning('Committee not found ' + str(loc_code), 
-          additional_fields={'_state':'CA'})
+          additional_fields={'_state':'CA',
+                             '_log_type':'Database'})
 
 '''
 Get Bill Vote Details. If bill vote detail isn't found in DDDB, add.
@@ -357,11 +359,14 @@ def get_detail_votes(ca_cursor, dd_cursor):
       counter += 1
       logged_list.append((bid, mid))
       logger.warning('Vote ID not found', full_msg='vote_id for bid: ' + bid +
-          ' mid: ' + str(mid) + ' not found', additional_fields={'_state':'CA'})
+          ' mid: ' + str(mid) + ' not found', 
+          additional_fields={'_state':'CA',
+                             '_log_type':'Database'})
     elif pid is None and legislator not in logged_list:
       logged_list.append(legislator)
       logger.warning('Person not found ' + legislator, 
-          additional_fields={'_state':'CA'})
+          additional_fields={'_state':'CA',
+                             '_log_type':'Database'})
   print counter
 
 def main():
@@ -383,7 +388,8 @@ def main():
                                          ', BillVoteDetail:'+str(D_INSERT),
                              '_inserted':'BillVoteSummary:'+str(S_INSERT)+
                                          ', BillVoteDetail:'+str(D_INSERT),
-                             '_state':'CA'})
+                             '_state':'CA',
+                             '_log_type':'Database'})
 
 if __name__ == "__main__":
   with GrayLogger(API_URL) as _logger:

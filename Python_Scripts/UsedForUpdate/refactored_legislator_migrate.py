@@ -82,7 +82,8 @@ def create_payload(table, sqlstmt):
   return {
       '_table': table,
       '_sqlstmt': sqlstmt,
-      '_state': 'CA'
+      '_state': 'CA',
+      '_log_type':'Database'
   }
 
 '''
@@ -201,7 +202,8 @@ def main():
                              '_inserted':'Person:'+str(P_INSERT)+
                                          ', Legislator:'+str(L_INSERT)+
                                          ', Term:'+str(T_INSERT),
-                             '_state':'CA'})
+                             '_state':'CA',
+                             '_log_type':'Database'})
 
 if __name__ == "__main__":
   with GrayLogger('http://development.digitaldemocracy.org:12202/gelf') as _logger:
