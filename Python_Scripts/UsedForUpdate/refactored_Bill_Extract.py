@@ -1,4 +1,5 @@
 #!/usr/bin/env python2.6
+# -*- coding: utf8 -*-
 '''
 File: Bill_Extract.py
 Author: Daniel Mangin
@@ -109,20 +110,20 @@ def add_bill(dd_cursor, ca_cursor, values):
     try:
       dd_cursor.execute(QI_BILL, values)
       row = dd_cursor.rowcount
-      if row == 1:
-        ca_cursor.execute(QS_BILL_TITLE, (values[0][3:],))
-        info = ca_cursor.fetchone()
-        if info is None:
-          title = ''
-          date = ''
-        else:
-          title = info[0]
-          date = str(info[1].date)
-        logger.info('Inserted bill ' + values[0],
-            additional_fields={'_bill_id':values[0],
-                               '_subject':title,
-                               '_date':date,
-                               '_log_type':'Database'})
+#      if row == 1:
+#        ca_cursor.execute(QS_BILL_TITLE, (values[0][3:],))
+#        info = ca_cursor.fetchone()
+#        if info is None:
+#          title = ''
+#          date = ''
+#        else:
+#          title = info[0]
+#          date = str(info[1].date)
+#        logger.info('Inserted bill ' + values[0],
+#           additional_fields={'_bill_id':values[0],
+#                               '_subject':title,
+#                               '_date':date,
+#                               '_log_type':'Database'})
       B_INSERT += row
     except MySQLdb.Error:
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
@@ -158,7 +159,16 @@ def add_bill_version(dd_cursor, values):
   if dd_cursor.rowcount == 0:
     try:
       dd_cursor.execute(QI_BILLVERSION, values)
-      BV_INSERT += dd_cursor.rowcount
+      row = dd_cursor.rowcount
+      if row == 1:
+        logger.info('Inserted bill ' + values[1] + ' version ' + values[0] + ' ' + values[4],
+            additional_fields={'_bill_id':values[1],
+                               '_bill_version':values[0],
+                               '_subject':values[4],
+                               '_date':values[2].strftime('%y-%m-%d'),
+                               '_state':values[3],
+                               '_log_type':'Database'})
+      BV_INSERT += row
     except MySQLdb.Error:
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
           additional_fields=create_payload('BillVersion', 
@@ -202,6 +212,9 @@ def get_bill_versions(ca_cursor, dd_cursor):
     # Bill and Version Id keeps track of U.S. state
     record[0] = '%s_%s' % (US_STATE, record[0])
     record[1] = '%s_%s' % (US_STATE, record[1])
+    if record[4] is not None:
+      #record[4] = record[4].decode('windows-1252').replace(u'`', u"'").encode('ascii')
+      record[4] = record[4].decode('windows-1252').encode('utf-8').replace("\xe2\x80\x99", "'")
     # Appropriation is 'Yes' or 'No' in capublic, but an int in DDDB.
     if record[5] is not None: 
       record[5] = 0 if record[5] == 'No' else 1
