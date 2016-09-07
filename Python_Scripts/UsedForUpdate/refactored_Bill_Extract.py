@@ -155,12 +155,12 @@ Checks if BillVersion exists. If not, adds the BillVersion.
 def add_bill_version(dd_cursor, values):
   global BV_INSERT
   dd_cursor.execute(QS_BILLVERSION_CHECK, (values[0],))
-  values[4] = '' if values[4] is None else values[4]
   if dd_cursor.rowcount == 0:
     try:
       dd_cursor.execute(QI_BILLVERSION, values)
       row = dd_cursor.rowcount
       if row == 1:
+        values[4] = '' if values[4] is None else values[4]
         logger.info('Inserted bill ' + values[1] + ' version ' + values[0] + ' ' + values[4],
             additional_fields={'_bill_id':values[1],
                                '_bill_version':values[0],
