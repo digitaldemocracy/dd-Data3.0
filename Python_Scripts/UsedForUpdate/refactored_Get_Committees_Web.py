@@ -552,8 +552,7 @@ def update_committees(cursor, house, year, comm_count, serve_count, pfinder):
 def main():
   with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                        port=3306,
-                       #db='DDDB2015Dec',
-                       db='EricTest',
+                       db='DDDB2015Dec',
                        user='awsDB',
                        passwd='digitaldemocracy789',
                        charset='utf8') as dd:
