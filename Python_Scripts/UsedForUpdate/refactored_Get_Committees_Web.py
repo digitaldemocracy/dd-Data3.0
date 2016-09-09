@@ -30,7 +30,7 @@ Notes:
       - http://apro.assembly.ca.gov/membersstaff
       - http://smup.senate.ca.gov/
 '''
-
+import Find_Person
 import datetime
 import json
 import MySQLdb
@@ -60,7 +60,7 @@ QI_SERVESON = '''INSERT INTO servesOn (pid, year, house, cid, position, state)
 QS_TERM = '''SELECT pid
              FROM Term
              WHERE house = %s
-              AND year <= %s
+              AND year BETWEEN %s AND %s
               AND state = %s'''
 QS_TERM_2 = '''SELECT year
                FROM Term
@@ -278,7 +278,7 @@ Finds the id of a person.
 
 Returns the id, or None if the person is not in the database.
 '''
-def get_person_id(cursor, name):
+def get_person_id(cursor, name, house, year, pfinder):
   
   if not ' ' in name:
     name = name.replace('\xc2\xa0', ' ')
@@ -327,16 +327,18 @@ def get_person_id(cursor, name):
   first = clean_name(first)
   last = clean_name(last)
   
-  try:
-    cursor.execute(QS_LEGISLATOR, (last, first))
-  except MySQLdb.Error:
-    logger.warning('Select Failed', full_msg=traceback.format_exc(),
-    additional_fields=create_payload('Legislator',(QS_LEGISLATOR%(last, first))))
+  #try:
+  #  cursor.execute(QS_LEGISLATOR, (last, first))
+  #except MySQLdb.Error:
+  #  logger.warning('Select Failed', full_msg=traceback.format_exc(),
+  #  additional_fields=create_payload('Legislator',(QS_LEGISLATOR%(last, first))))
 
-  if cursor.rowcount > 0:
-    res = cursor.fetchone()[0]
-  else:
-    res = None
+  #if cursor.rowcount > 0:
+  #  res = cursor.fetchone()[0]
+  #else:
+  #  res = None
+
+  res = pfinder.findLegislator(first, last, house, year)
   return res
 
 '''
@@ -381,7 +383,7 @@ Generates member names.
 '''
 def get_committee_members(url, house):
   if house == 'Assembly':
-    member_pat = '<td>\s*<a.*?>(.*?)</a>(<a.*?>.*?</a>)*.*?</td>'
+    member_pat = '<td>\s*(<h3>|)<a.*?>(.*?)</a>(<a.*?>.*?</a>)*.*?(</h3>\s*|)</td>'
   else:
     member_pat = '<a href=.*?>Senator\s+(.*?)</a>'
 
@@ -522,10 +524,9 @@ to DDDB if it does not already exist.
 
 Returns insert counts
 '''
-def update_committees(cursor, house, year, comm_count, serve_count):
-  cursor.execute(QS_TERM, (house, year, STATE))
+def update_committees(cursor, house, year, comm_count, serve_count, pfinder):
+  cursor.execute(QS_TERM, (house, year-1, year, STATE))
   term_pids = [row[0] for row in cursor.fetchall()]
-
   # Special case for floor committee.
   floor_cid, comm_count = get_committee_id(cursor, house, '%s Floor' % house, "Floor", comm_count)
   clean_servesOn(cursor, floor_cid, house, year)
@@ -540,7 +541,7 @@ def update_committees(cursor, house, year, comm_count, serve_count):
 
     for member in get_committee_members(url, house):
       cleanMember, position = get_member_position(member)
-      pid = get_person_id(cursor, cleanMember)
+      pid = get_person_id(cursor, cleanMember, house, year,  pfinder)
       if pid is not None and pid in term_pids:
         serve_count = insert_serveson(cursor, pid, year, house, cid, position, serve_count)
       else:
@@ -551,14 +552,16 @@ def update_committees(cursor, house, year, comm_count, serve_count):
 def main():
   with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                        port=3306,
-                       db='DDDB2015Dec',
+                       #db='DDDB2015Dec',
+                       db='EricTest',
                        user='awsDB',
                        passwd='digitaldemocracy789',
                        charset='utf8') as dd:
     comm_count = serve_count = 0
     year = datetime.datetime.now().year
+    pfinder = Find_Person.FindPerson(dd, 'CA')
     for house in ['Assembly', 'Senate']:
-      comm_count, serve_count = update_committees(dd, house, year, comm_count, serve_count)
+      comm_count, serve_count = update_committees(dd, house, year, comm_count, serve_count, pfinder)
     logger.info(__file__ + ' terminated successfully.', 
         full_msg='Inserted ' + str(C_INSERT) + ' rows in Committee and inserted ' 
                   + str(S_INSERT) + ' and deleted ' + str(S_DELETE) + ' rows in servesOn',
