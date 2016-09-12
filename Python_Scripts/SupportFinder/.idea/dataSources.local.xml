@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="dataSourceStorageLocal">
+    <data-source name="RDS Server" uuid="7780d9a9-5dd7-408a-9c46-48df5bdf5d68">
+      <secret-storage>master_key</secret-storage>
+      <user-name>awsDB</user-name>
+      <ssh-properties>
+        <enabled>false</enabled>
+        <proxy-host>digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com</proxy-host>
+        <proxy-port>3306</proxy-port>
+        <secret-storage>master_key</secret-storage>
+        <user>awsDB</user>
+        <use-password>true</use-password>
+      </ssh-properties>
+    </data-source>
+  </component>
+</project>

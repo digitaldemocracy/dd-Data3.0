@@ -1,0 +1,10 @@
+pickle.dump(bill_info_df, open('bill_info_df.p', 'wb'))
+pickle.dump(file_info, open('file_info.p', 'wb'))
+pickle.dump(matched_hearing, open('matched_hearing.p', 'wb'))
+pickle.dump(org_df, open('org_df.p', 'wb'))
+
+
+Somehow, some of these bills have literally no bill discussions associated with them. This is frustrating.
+Figure out why this happens. Eg AB 944
+
+Add alter OrgAlignments and Org stuff to your DB-Create as well as your Aug alter tables
