@@ -1,0 +1,40 @@
+Look through the missed staff file you created
+
+The people with last seens > than end dates occur when the OCR fucked up. These shouldn't create a huge problem
+
+You have very few overlaps, and these can likely be corrected by simply checking for the proper house when name
+matching.
+
+
+ImportGiftDataRefactored:
+
+No more fuzzy matching, just go ahead adn get all the matches you can. She'll brute force the rest
+
+Stuff for row checking:
+Ignore all uncleaned dates
+
+Guess the assoc from the leg agency_name field
+
+
+Notes for checking errors:
+- If the year of the gift was 2010, you'll probably miss it
+- When matching the some of the late 2015 data, your end dates are pretty much just guesses because your data
+  is not current.
+
+
+pickle.dump(staff_info, open('staff_info.p', 'wb'))
+pickle.dump(matched_leg_terms_df, open('matched_leg_terms_df.p', 'wb'))
+pickle.dump(matched_rows_df, open('matched_rows_df.p', 'wb'))
+pickle.dump(leg_lop_df, open('leg_lop_df.p', 'wb'))
+pickle.dump(cpy_leg_lop_df, open('cpy_leg_lop_df.p', 'wb'))
+pickle.dump(leg_lop_row, open('leg_lop_row.p', 'wb'))
+pickle.dump(existing_staff_df, open('existing_staff_df.p', 'wb'))
+pickle.dump(e_gift_df, open('e_gift_df.p', 'wb'))
+pickle.dump(d_gift_df, open('d_gift_df.p', 'wb'))
+pickle.dump(d_sample, open('d_sample.p', 'wb'))
+pickle.dump(e_sample, open('e_sample.p', 'wb'))
+pickle.dump(offices_df, open('offices_df.p', 'wb'))
+pickle.dump(db_leg_term_df, open('db_leg_term_df.p', 'wb'))
+pickle.dump(gift_row, open('gift_row.p', 'wb'))
+
+

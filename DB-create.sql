@@ -272,6 +272,7 @@ CREATE TABLE IF NOT EXISTS Action (
   bid    VARCHAR(23),
   date   DATE,
   text   TEXT,
+  seq_num INT,
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
   dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
@@ -282,7 +283,7 @@ CREATE TABLE IF NOT EXISTS Action (
 
 CREATE TABLE IF NOT EXISTS Video (
   vid INTEGER AUTO_INCREMENT,
-  fileId VARCHAR(20), -- formerly youtubeId. Our name for file
+  fileId VARCHAR(50), -- formerly youtubeId. Our name for file
   hid INTEGER,
   position INTEGER,
   startOffset INTEGER,
@@ -341,7 +342,7 @@ CREATE TABLE IF NOT EXISTS Motion (
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
   dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
-  PRIMARY KEY (mid, date)
+  PRIMARY KEY (mid)
 )
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
@@ -498,6 +499,7 @@ CREATE TABLE IF NOT EXISTS BillVoteDetail (
   dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
   PRIMARY KEY(pid, voteId),
+  FOREIGN KEY (pid) REFERENCES Legislator(pid),
   FOREIGN KEY (state) REFERENCES State(abbrev),
   FOREIGN KEY (voteId) REFERENCES BillVoteSummary(voteId)
 )
@@ -1068,11 +1070,16 @@ CREATE TABLE IF NOT EXISTS OfficePersonnel (
    but we want the imports to run quickly.
  */
 CREATE TABLE OrgAlignments (
+  oa_id INT AUTO_INCREMENT,
   oid int(11) DEFAULT NULL,
   bid varchar(23) CHARACTER SET utf8 DEFAULT NULL,
   hid int(11) DEFAULT NULL,
-  alignment char(20) CHARACTER SET utf8 DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+  alignment char(20) CHARACTER SET utf8 DEFAULT NULL,
+  analysis_flag BOOL,
+
+  PRIMARY KEY(oa_id),
+  UNIQUE (oid, bid, hid, alignment, analysis_flag)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE LegParticipation
 (

@@ -1,0 +1,21 @@
+Organizations (oid)
+Gift (oid)
+Contribution (oid)
+LobbyistEmployer (oid)
+LobbyistRepresentation (oid)
+GeneralPublic (oid)
+Behests (payee)
+OrgAlignments (oid)
+
+
+You ran this to delete an empty organization from Organizations. It's sorta really annoying. Only ran it in
+AndrewTest
+
+delete from Behests
+where payee = 10775;
+
+delete from Organizations
+where oid = 10775;
+
+
+Make sure you discuss with Hans some common abbreviations you might want for duplicate removal

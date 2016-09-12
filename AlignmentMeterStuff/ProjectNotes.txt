@@ -1,0 +1,15 @@
+Project Notes:
+
+You need to import all your extra alignments from, after correcting your alignment scraping script
+
+
+AlignmentsMeter.py:
+
+    - Correct votes fetcher so that you are certain you are only looking at passing votes
+
+
+    - Rewrite logic to use vote dates instead of hids, because these don't always appear in order
+
+Group by: pid then count the distinct votes, return the scores
+
+
