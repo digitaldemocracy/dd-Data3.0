@@ -658,7 +658,7 @@ CREATE TABLE IF NOT EXISTS LobbyistEmployment (
 --  LOBBYIST_EMPLOYED_BY_LOBBYIST_EMPLOYER
 CREATE TABLE IF NOT EXISTS LobbyistDirectEmployment(
    pid INT,
-   lobbyist_employer INTEGER, -- no longer used
+   lobbyist_employer INTEGER,
    rpt_date DATE,
    ls_beg_yr INTEGER,    -- modified (INT)
    ls_end_yr INTEGER,     -- modified (INT)
@@ -1121,6 +1121,74 @@ AS
       ON l.pid = u.pid
   WHERE u.did IS NOT NULL
   GROUP BY l.pid, u.alignment, u.did;
+
+
+-- Used by Kristian to affiliate people to their proper labels
+CREATE TABLE IF NOT EXISTS `PersonAffiliations` (
+  `pid` int(11) DEFAULT NULL,
+  `affiliation` varchar(255) DEFAULT NULL,
+  `state` varchar(2) DEFAULT NULL,
+  `source` varchar(255) DEFAULT NULL,
+  `dr_id` int(11) NOT NULL AUTO_INCREMENT,
+  PRIMARY KEY (`dr_id`),
+  KEY `state` (`state`),
+  KEY `pid_state` (`pid`,`state`),
+  KEY `affiliation` (`affiliation`),
+  KEY `pid` (`pid`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+-- Used by Kristian for Drupal. Rebuilt by a mysql event every night
+CREATE TABLE IF NOT EXISTS `PersonClassifications` (
+  `pid` int(11) DEFAULT NULL,
+  `classification` varchar(255) DEFAULT NULL,
+  `state` varchar(2) DEFAULT NULL,
+  `dr_id` int(11) NOT NULL AUTO_INCREMENT,
+  PRIMARY KEY (`dr_id`),
+  KEY `pid` (`pid`),
+  KEY `pid_state` (`pid`,`state`),
+  KEY `state` (`state`),
+  KEY `classification` (`classification`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+
+-- A combination of Gift and LegStaffGifts. Rebuilds each night from a mysql event
+CREATE TABLE `GiftCombined` (
+  `RecordId` int(11) NOT NULL AUTO_INCREMENT,
+  `recipientPid` int(11) DEFAULT NULL,
+  `legislatorPid` int(11) DEFAULT NULL,
+  `giftDate` date DEFAULT NULL,
+  `giftDate_ts` int(11) DEFAULT NULL,
+  `year` year(4) DEFAULT NULL,
+  `description` varchar(150) DEFAULT NULL,
+  `giftValue` double DEFAULT NULL,
+  `agencyName` varchar(100) DEFAULT NULL,
+  `sourceName` varchar(150) DEFAULT NULL,
+  `sourceBusiness` varchar(100) DEFAULT NULL,
+  `sourceCity` varchar(50) DEFAULT NULL,
+  `sourceState` varchar(30) DEFAULT NULL,
+  `imageUrl` varchar(200) DEFAULT NULL,
+  `oid` int(11) DEFAULT NULL,
+  `activity` varchar(256) DEFAULT NULL,
+  `position` varchar(200) DEFAULT NULL,
+  `schedule` enum('D','E') DEFAULT NULL,
+  `jurisdiction` varchar(200) DEFAULT NULL,
+  `distictNumber` int(11) DEFAULT NULL,
+  `reimbursed` tinyint(1) DEFAULT NULL,
+  `giftIncomeFlag` tinyint(1) DEFAULT '0',
+  `speechFlag` tinyint(1) DEFAULT '0',
+  `speechOrPanel` tinyint(1) DEFAULT NULL,
+  `state` varchar(2) DEFAULT NULL,
+  `lastTouched` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`RecordId`),
+  KEY `giftDate_ts` (`giftDate_ts`),
+  KEY `recipientPid` (`recipientPid`),
+  KEY `legislatorPid` (`legislatorPid`),
+  KEY `agencyName` (`agencyName`),
+  KEY `sourceName` (`sourceName`),
+  KEY `giftValue` (`giftValue`),
+  KEY `state` (`state`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 
 
 /* Entity::DeprecatedPerson
