@@ -12,26 +12,25 @@
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="ChangesViewManager" flattened_view="true" show_ignored="false" />
   <component name="CoverageDataManager">
-    <SUITE FILE_PATH="coverage/ImportLegStaffData$d_2013.coverage" NAME="d_2013 Coverage Results" MODIFIED="1473440702839" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/ImportLegStaffData$ScrapeDirectoriesAlternative.coverage" NAME="ScrapeDirectoriesAlternative Coverage Results" MODIFIED="1468360851748" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/ImportLegStaffData$ScrapeStaffBestRefactored.coverage" NAME="ScrapeStaffBestRefactored Coverage Results" MODIFIED="1472921364676" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/ImportLegStaffData$ImportGiftDataRefactored.coverage" NAME="ImportGiftDataRefactored Coverage Results" MODIFIED="1473428890443" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/ImportLegStaffData$LoadPickledFiles.coverage" NAME="LoadPickledFiles Coverage Results" MODIFIED="1468354939280" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/ImportLegStaffData$e_2011_2013.coverage" NAME="e_2011-2013 Coverage Results" MODIFIED="1473431727215" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/ImportLegStaffData$e_2014_2015.coverage" NAME="e_2014-2015 Coverage Results" MODIFIED="1473431672610" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/ImportLegStaffData$TestLegMatch.coverage" NAME="TestLegMatch Coverage Results" MODIFIED="1468340545632" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/ImportLegStaffData$d_2012.coverage" NAME="d_2012 Coverage Results" MODIFIED="1473440693270" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/ImportLegStaffData$ScrapeStaff.coverage" NAME="ScrapeStaff Coverage Results" MODIFIED="1469041023337" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/ImportLegStaffData$ScrapeDirectoriesAlternative.coverage" NAME="ScrapeDirectoriesAlternative Coverage Results" MODIFIED="1468360851748" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/ImportLegStaffData$d_2014.coverage" NAME="d_2014 Coverage Results" MODIFIED="1473440726778" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/ImportLegStaffData$d_2015.coverage" NAME="d_2015 Coverage Results" MODIFIED="1473440732070" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/ImportLegStaffData$ImportLegOfficeDataXlsx.coverage" NAME="ImportLegOfficeDataXlsx Coverage Results" MODIFIED="1468364745989" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/ImportLegStaffData$e_2011_2013.coverage" NAME="e_2011-2013 Coverage Results" MODIFIED="1473431727215" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/ImportLegStaffData$d_2011.coverage" NAME="d_2011 Coverage Results" MODIFIED="1473440654031" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/ImportLegStaffData$test.coverage" NAME="test Coverage Results" MODIFIED="1471475158883" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/ImportLegStaffData$ScrapeStaff.coverage" NAME="ScrapeStaff Coverage Results" MODIFIED="1469041023337" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/ImportLegStaffData$d_2011.coverage" NAME="d_2011 Coverage Results" MODIFIED="1473440654031" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/ImportLegStaffData$LoadPickledFiles.coverage" NAME="LoadPickledFiles Coverage Results" MODIFIED="1468354939280" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/ImportLegStaffData$ScrapeStaffSecondary.coverage" NAME="ScrapeStaffSecondary Coverage Results" MODIFIED="1470757600919" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/ImportLegStaffData$d_2014.coverage" NAME="d_2014 Coverage Results" MODIFIED="1473440726778" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/ImportLegStaffData$d_2013.coverage" NAME="d_2013 Coverage Results" MODIFIED="1473440702839" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/ImportLegStaffData$ImportGiftDataRefactored.coverage" NAME="ImportGiftDataRefactored Coverage Results" MODIFIED="1473428890443" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/ImportLegStaffData$ScrapeStaffBestRefactored.coverage" NAME="ScrapeStaffBestRefactored Coverage Results" MODIFIED="1472921364676" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/ImportLegStaffData$d_2012.coverage" NAME="d_2012 Coverage Results" MODIFIED="1473440693270" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/ImportLegStaffData$ImportGiftData.coverage" NAME="ImportGiftData Coverage Results" MODIFIED="1468362166986" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/ImportLegStaffData$InsertGiftDataDummy.coverage" NAME="InsertGiftDataDummy Coverage Results" MODIFIED="1471463777608" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/ImportLegStaffData$TestLegMatch.coverage" NAME="TestLegMatch Coverage Results" MODIFIED="1468340545632" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
   <component name="CreatePatchCommitExecutor">
     <option name="PATCH_PATH" value="" />
@@ -50,46 +49,30 @@
   <component name="FileEditorManager">
     <splitter split-orientation="horizontal" split-proportion="0.50558656">
       <split-first>
-        <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file leaf-file-name="ImportGiftDataRefactored.py" pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/ImportGiftDataRefactored.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="428">
-                  <caret line="476" column="29" selection-start-line="476" selection-start-column="0" selection-end-line="477" selection-end-column="0" />
-                  <folding>
-                    <element signature="e#239#253#0" expanded="true" />
-                    <marker date="1473428602311" expanded="true" signature="2634:3262" ph="SELECT staff... LegOfficePersonnel" />
-                    <marker date="1473428602311" expanded="true" signature="3487:3876" ph="SELECT staff... OfficePersonnel" />
-                    <marker date="1473428602311" expanded="true" signature="11431:11652" ph="SELECT p.pid... Legislator" />
-                    <marker date="1473428602311" expanded="true" signature="13546:13631" ph="SELECT pid, " />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="e_2014-2015.py" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/e_2014-2015.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="561">
-                  <caret line="47" column="0" selection-start-line="47" selection-start-column="0" selection-end-line="47" selection-end-column="0" />
-                  <folding>
-                    <marker date="1473431510184" expanded="true" signature="56:3261" ph="..." />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-        </leaf>
-      </split-first>
-      <split-second>
-        <splitter split-orientation="vertical" split-proportion="0.512685">
+        <splitter split-orientation="vertical" split-proportion="0.5">
           <split-first>
             <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-              <file leaf-file-name="console.sql" pinned="false" current-in-tab="true">
-                <entry file="file://$APPLICATION_CONFIG_DIR$/consoles/db/6717978e-5447-4888-abc1-3ba4837eb7a3/console.sql">
+              <file leaf-file-name="ImportGiftDataRefactored.py" pinned="false" current-in-tab="true">
+                <entry file="file://$PROJECT_DIR$/ImportGiftDataRefactored.py">
                   <provider selected="true" editor-type-id="text-editor">
-                    <state relative-caret-position="204">
-                      <caret line="24" column="14" selection-start-line="24" selection-start-column="14" selection-end-line="24" selection-end-column="14" />
+                    <state relative-caret-position="374">
+                      <caret line="490" column="0" selection-start-line="443" selection-start-column="0" selection-end-line="489" selection-end-column="0" />
+                      <folding>
+                        <element signature="e#239#253#0" expanded="true" />
+                        <marker date="1473825510819" expanded="true" signature="2634:3262" ph="SELECT staff... LegOfficePersonnel" />
+                        <marker date="1473825510819" expanded="true" signature="3487:3876" ph="SELECT staff... OfficePersonnel" />
+                        <marker date="1473825510819" expanded="true" signature="11431:11652" ph="SELECT p.pid... Legislator" />
+                        <marker date="1473825510819" expanded="true" signature="13546:13631" ph="SELECT pid, " />
+                      </folding>
+                    </state>
+                  </provider>
+                </entry>
+              </file>
+              <file leaf-file-name="e_2014-2015.py" pinned="false" current-in-tab="false">
+                <entry file="file://$PROJECT_DIR$/e_2014-2015.py">
+                  <provider selected="true" editor-type-id="text-editor">
+                    <state relative-caret-position="799">
+                      <caret line="47" column="0" selection-start-line="47" selection-start-column="0" selection-end-line="47" selection-end-column="0" />
                       <folding />
                     </state>
                   </provider>
@@ -99,10 +82,34 @@
           </split-first>
           <split-second>
             <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+              <file leaf-file-name="ImportGiftDataRefactored.py" pinned="false" current-in-tab="true">
+                <entry file="file://$PROJECT_DIR$/ImportGiftDataRefactored.py">
+                  <provider selected="true" editor-type-id="text-editor">
+                    <state relative-caret-position="632">
+                      <caret line="488" column="47" selection-start-line="443" selection-start-column="0" selection-end-line="489" selection-end-column="0" />
+                      <folding>
+                        <element signature="e#239#253#0" expanded="true" />
+                        <marker date="1473825510819" expanded="true" signature="2634:3262" ph="SELECT staff... LegOfficePersonnel" />
+                        <marker date="1473825510819" expanded="true" signature="3487:3876" ph="SELECT staff... OfficePersonnel" />
+                        <marker date="1473825510819" expanded="true" signature="11431:11652" ph="SELECT p.pid... Legislator" />
+                        <marker date="1473825510819" expanded="true" signature="13546:13631" ph="SELECT pid, " />
+                      </folding>
+                    </state>
+                  </provider>
+                </entry>
+              </file>
+            </leaf>
+          </split-second>
+        </splitter>
+      </split-first>
+      <split-second>
+        <splitter split-orientation="vertical" split-proportion="0.5">
+          <split-first>
+            <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
               <file leaf-file-name="ProjectNotes.txt" pinned="false" current-in-tab="false">
                 <entry file="file://$PROJECT_DIR$/ProjectNotes.txt">
                   <provider selected="true" editor-type-id="text-editor">
-                    <state relative-caret-position="85">
+                    <state relative-caret-position="187">
                       <caret line="11" column="0" selection-start-line="11" selection-start-column="0" selection-end-line="11" selection-end-column="0" />
                       <folding />
                     </state>
@@ -112,7 +119,7 @@
               <file leaf-file-name="e_2011-2013.py" pinned="false" current-in-tab="false">
                 <entry file="file://$PROJECT_DIR$/e_2011-2013.py">
                   <provider selected="true" editor-type-id="text-editor">
-                    <state relative-caret-position="255">
+                    <state relative-caret-position="884">
                       <caret line="52" column="27" selection-start-line="52" selection-start-column="27" selection-end-line="52" selection-end-column="27" />
                       <folding />
                     </state>
@@ -122,7 +129,7 @@
               <file leaf-file-name="d_2015.py" pinned="false" current-in-tab="false">
                 <entry file="file://$PROJECT_DIR$/d_2015.py">
                   <provider selected="true" editor-type-id="text-editor">
-                    <state relative-caret-position="408">
+                    <state relative-caret-position="1190">
                       <caret line="70" column="4" selection-start-line="70" selection-start-column="4" selection-end-line="70" selection-end-column="4" />
                       <folding />
                     </state>
@@ -132,7 +139,7 @@
               <file leaf-file-name="d_2014.py" pinned="false" current-in-tab="false">
                 <entry file="file://$PROJECT_DIR$/d_2014.py">
                   <provider selected="true" editor-type-id="text-editor">
-                    <state relative-caret-position="68">
+                    <state relative-caret-position="850">
                       <caret line="50" column="33" selection-start-line="50" selection-start-column="33" selection-end-line="50" selection-end-column="33" />
                       <folding />
                     </state>
@@ -142,8 +149,8 @@
               <file leaf-file-name="d_2013.py" pinned="false" current-in-tab="true">
                 <entry file="file://$PROJECT_DIR$/d_2013.py">
                   <provider selected="true" editor-type-id="text-editor">
-                    <state relative-caret-position="68">
-                      <caret line="43" column="45" selection-start-line="43" selection-start-column="45" selection-end-line="43" selection-end-column="45" />
+                    <state relative-caret-position="326">
+                      <caret line="42" column="42" selection-start-line="42" selection-start-column="42" selection-end-line="42" selection-end-column="42" />
                       <folding />
                     </state>
                   </provider>
@@ -152,7 +159,7 @@
               <file leaf-file-name="d_2012.py" pinned="false" current-in-tab="false">
                 <entry file="file://$PROJECT_DIR$/d_2012.py">
                   <provider selected="true" editor-type-id="text-editor">
-                    <state relative-caret-position="255">
+                    <state relative-caret-position="833">
                       <caret line="49" column="35" selection-start-line="49" selection-start-column="35" selection-end-line="49" selection-end-column="35" />
                       <folding />
                     </state>
@@ -162,8 +169,22 @@
               <file leaf-file-name="d_2011.py" pinned="false" current-in-tab="false">
                 <entry file="file://$PROJECT_DIR$/d_2011.py">
                   <provider selected="true" editor-type-id="text-editor">
-                    <state relative-caret-position="59">
+                    <state relative-caret-position="697">
                       <caret line="41" column="26" selection-start-line="41" selection-start-column="26" selection-end-line="41" selection-end-column="26" />
+                      <folding />
+                    </state>
+                  </provider>
+                </entry>
+              </file>
+            </leaf>
+          </split-first>
+          <split-second>
+            <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+              <file leaf-file-name="d_2013.py" pinned="false" current-in-tab="true">
+                <entry file="file://$PROJECT_DIR$/d_2013.py">
+                  <provider selected="true" editor-type-id="text-editor">
+                    <state relative-caret-position="343">
+                      <caret line="43" column="45" selection-start-line="43" selection-start-column="45" selection-end-line="43" selection-end-column="45" />
                       <folding />
                     </state>
                   </provider>
@@ -229,10 +250,10 @@
     <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="1" />
-    <option name="y" value="1" />
-    <option name="width" value="1364" />
-    <option name="height" value="726" />
+    <option name="x" value="-8" />
+    <option name="y" value="-8" />
+    <option name="width" value="1936" />
+    <option name="height" value="1056" />
   </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">
     <entry key="Project Default">
@@ -261,7 +282,7 @@
     <ConfirmationsSetting value="0" id="Remove" />
   </component>
   <component name="ProjectView">
-    <navigator proportions="" version="1">
+    <navigator currentView="ProjectPane" proportions="" version="1">
       <flattenPackages />
       <showMembers />
       <showModules />
@@ -274,12 +295,25 @@
       <manualOrder />
       <foldersAlwaysOnTop value="true" />
     </navigator>
-    <panes />
+    <panes>
+      <pane id="Scratches" />
+      <pane id="ProjectPane">
+        <subPane>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="ImportLegStaffData" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+          </PATH>
+        </subPane>
+      </pane>
+      <pane id="Scope" />
+    </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="WebServerToolWindowFactoryState" value="true" />
-    <property name="settings.editor.selected.configurable" value="web.server" />
+    <property name="settings.editor.selected.configurable" value="preferences.keymap" />
     <property name="settings.editor.splitter.proportion" value="0.2" />
     <property name="SearchEverywhereHistoryKey" value=":w&#9;null&#9;null" />
     <property name="ToolWindowDebug.ShowToolbar" value="false" />
@@ -637,30 +671,30 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="1" y="1" width="1364" height="726" extended-state="6" />
-    <editor active="true" />
+    <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
+    <editor active="false" />
     <layout>
+      <window_info id="Remote Host" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32916668" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.17552084" sideWeight="0.47780126" order="1" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32991803" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="true" content_ui="tabs" />
-      <window_info id="File Transfer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32980973" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32875264" sideWeight="0.49635416" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32875264" sideWeight="0.50364584" order="1" side_tool="true" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32875264" sideWeight="0.496875" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Remote Host" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32916668" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.17552084" sideWeight="0.47780126" order="1" side_tool="false" content_ui="combo" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25833333" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32875264" sideWeight="0.50364584" order="1" side_tool="true" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.067708336" sideWeight="0.48463115" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="SLIDING" type="WINDOWED" visible="false" show_stripe_button="true" weight="0.74524313" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" x="-8" y="-8" width="1382" height="744" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32875264" sideWeight="0.496875" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.17552084" sideWeight="0.52219874" order="0" side_tool="true" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
+      <window_info id="File Transfer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32980973" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32875264" sideWeight="0.49635416" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Database Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="WINDOWED" visible="true" show_stripe_button="true" weight="1.0" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" x="1635" y="-170" width="1382" height="744" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="combo" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32980973" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="SLIDING" type="WINDOWED" visible="false" show_stripe_button="true" weight="0.74524313" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" x="-8" y="-8" width="1382" height="744" />
     </layout>
     <layout-to-restore>
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32991803" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
@@ -744,20 +778,8 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/pymysql/cursors.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="306">
-          <caret line="109" column="0" selection-start-line="109" selection-start-column="0" selection-end-line="109" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/pymysql/converters.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="204">
-          <caret line="67" column="0" selection-start-line="67" selection-start-column="0" selection-end-line="67" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/pymysql/cursors.py" />
+    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/pymysql/converters.py" />
     <entry file="file://$USER_HOME$/OneDrive/DigitalDemocracy/SupportFinder/GetBillAnalysisWeb.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-255">
@@ -765,106 +787,27 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/pymysql/connections.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="301">
-          <caret line="918" column="0" selection-start-line="918" selection-start-column="0" selection-end-line="918" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/pandas/core/internals.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="306">
-          <caret line="3852" column="0" selection-start-line="3852" selection-start-column="0" selection-end-line="3852" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/pandas/core/series.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="306">
-          <caret line="559" column="0" selection-start-line="559" selection-start-column="0" selection-end-line="559" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/pandas/core/frame.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="306">
-          <caret line="4097" column="0" selection-start-line="4097" selection-start-column="0" selection-end-line="4097" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/pandas/indexes/base.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="306">
-          <caret line="989" column="0" selection-start-line="989" selection-start-column="0" selection-end-line="989" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/pandas/core/common.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="202">
-          <caret line="80" column="0" selection-start-line="80" selection-start-column="0" selection-end-line="80" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/pandas/core/dtypes.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="306">
-          <caret line="125" column="0" selection-start-line="125" selection-start-column="0" selection-end-line="125" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/pandas/core/generic.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="306">
-          <caret line="886" column="0" selection-start-line="886" selection-start-column="0" selection-end-line="886" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="dbDummy://dbtable:/a7ed085c/6717978e-5447-4888-abc1-3ba4837eb7a3/AndrewTest.LegislatureOffice">
-      <provider editor-type-id="com.intellij.database.editor.DatabaseTableFileEditorProvider">
-        <state>
-          <filtering enabled="true" />
-        </state>
-      </provider>
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/pymysql/connections.py" />
+    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/pandas/core/internals.py" />
+    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/pandas/core/series.py" />
+    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/pandas/core/frame.py" />
+    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/pandas/indexes/base.py" />
+    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/pandas/core/common.py" />
+    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/pandas/core/dtypes.py" />
+    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/pandas/core/generic.py" />
+    <entry file="dbDummy://dbtable:/a7ed085c/6717978e-5447-4888-abc1-3ba4837eb7a3/AndrewTest.LegislatureOffice" />
     <entry file="file://$PROJECT_DIR$/ScrapeStaff.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#0#18#0" expanded="false" />
-            <marker date="1470614005375" expanded="true" signature="1495:1666" ph="SELECT p.pid... LegislativeStaff" />
-            <marker date="1470614005375" expanded="true" signature="2270:2414" ph="INSERT INTO Person... " />
-            <marker date="1470614005375" expanded="true" signature="2656:2817" ph="INSERT INTO LegislativeStaff... " />
-            <marker date="1470614005375" expanded="true" signature="9903:10094" ph="INSERT INTO LegOfficePersonnel... " />
-            <marker date="1470614005375" expanded="true" signature="10576:10734" ph="INSERT INTO OfficePersonnel... " />
-            <marker date="1470614005375" expanded="true" signature="12494:12734" ph="UPDATE LegOf... " />
-            <marker date="1470614005375" expanded="true" signature="12986:13132" ph="UPDATE LegOf... " />
-            <marker date="1470614005375" expanded="true" signature="15070:15205" ph="INSERT INTO LegislatureOffice... " />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/pandas/core/indexing.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="233">
-          <caret line="1208" column="29" selection-start-line="1208" selection-start-column="29" selection-end-line="1208" selection-end-column="29" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/pymysql/err.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="240">
-          <caret line="114" column="0" selection-start-line="114" selection-start-column="0" selection-end-line="114" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/pandas/core/indexing.py" />
+    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/pymysql/err.py" />
     <entry file="file://$PROJECT_DIR$/../Bill_Extract.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
@@ -894,13 +837,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/.PyCharm2016.1/system/remote_sources/355428310/942361161/pymysql/connections.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="306">
-          <caret line="816" column="0" selection-start-line="816" selection-start-column="0" selection-end-line="816" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$USER_HOME$/.PyCharm2016.1/system/remote_sources/355428310/942361161/pymysql/connections.py" />
     <entry file="file://$PROJECT_DIR$/ImportGiftDataRefactored.ipynb">
       <provider selected="true" editor-type-id="ipnb-editor">
         <state>
@@ -915,127 +852,40 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/.PyCharm2016.1/system/remote_sources/355428310/942361161/pymysql/err.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="663">
-          <caret line="111" column="0" selection-start-line="111" selection-start-column="0" selection-end-line="111" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/.PyCharm2016.1/system/remote_sources/355428310/1646052551/codecs.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="306">
-          <caret line="318" column="0" selection-start-line="318" selection-start-column="0" selection-end-line="318" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/.PyCharm2016.1/system/remote_sources/355428310/-208329236/numpy/lib/function_base.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="306">
-          <caret line="1879" column="0" selection-start-line="1879" selection-start-column="0" selection-end-line="1879" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$USER_HOME$/.PyCharm2016.1/system/remote_sources/355428310/942361161/pymysql/err.py" />
+    <entry file="file://$USER_HOME$/.PyCharm2016.1/system/remote_sources/355428310/1646052551/codecs.py" />
+    <entry file="file://$USER_HOME$/.PyCharm2016.1/system/remote_sources/355428310/-208329236/numpy/lib/function_base.py" />
     <entry file="file://$PROJECT_DIR$/../../../DB-create.sql">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="884">
           <caret line="361" column="0" selection-start-line="361" selection-start-column="0" selection-end-line="361" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/.PyCharm2016.1/system/remote_sources/355428310/1038532262/pandas/compat/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="144">
-          <caret line="167" column="0" selection-start-line="167" selection-start-column="0" selection-end-line="167" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/.PyCharm2016.1/system/remote_sources/355428310/999681006/dateutil/relativedelta.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="357">
-          <caret line="395" column="0" selection-start-line="395" selection-start-column="0" selection-end-line="395" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/.PyCharm2016.1/system/remote_sources/355428310/1038532262/pandas/core/common.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="306">
-          <caret line="1209" column="0" selection-start-line="1209" selection-start-column="0" selection-end-line="1209" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$USER_HOME$/.PyCharm2016.1/system/remote_sources/355428310/1038532262/pandas/compat/__init__.py" />
+    <entry file="file://$USER_HOME$/.PyCharm2016.1/system/remote_sources/355428310/999681006/dateutil/relativedelta.py" />
+    <entry file="file://$USER_HOME$/.PyCharm2016.1/system/remote_sources/355428310/1038532262/pandas/core/common.py" />
     <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/_pydev_imps/_pydev_execfile.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="289">
           <caret line="17" column="0" selection-start-line="17" selection-start-column="0" selection-end-line="17" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/.PyCharm2016.1/system/remote_sources/355428310/1038532262/pandas/core/ops.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="306">
-          <caret line="842" column="0" selection-start-line="842" selection-start-column="0" selection-end-line="842" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/.PyCharm2016.1/system/remote_sources/355428310/1038532262/pandas/core/frame.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="306">
-          <caret line="4116" column="0" selection-start-line="4116" selection-start-column="0" selection-end-line="4116" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/.PyCharm2016.1/system/remote_sources/355428310/1038532262/pandas/tools/merge.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="306">
-          <caret line="859" column="0" selection-start-line="859" selection-start-column="0" selection-end-line="859" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/.PyCharm2016.1/system/remote_sources/355428310/1038532262/pandas/indexes/base.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="391">
-          <caret line="2297" column="73" selection-start-line="2297" selection-start-column="72" selection-end-line="2297" selection-end-column="74" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/.PyCharm2016.1/system/remote_sources/355428310/1038532262/pandas/core/indexing.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="306">
-          <caret line="1800" column="0" selection-start-line="1800" selection-start-column="0" selection-end-line="1800" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/.PyCharm2016.1/system/remote_sources/355428310/1038532262/pandas/io/excel.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="306">
-          <caret line="1244" column="0" selection-start-line="1244" selection-start-column="0" selection-end-line="1244" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$USER_HOME$/.PyCharm2016.1/system/remote_sources/355428310/1038532262/pandas/core/ops.py" />
+    <entry file="file://$USER_HOME$/.PyCharm2016.1/system/remote_sources/355428310/1038532262/pandas/core/frame.py" />
+    <entry file="file://$USER_HOME$/.PyCharm2016.1/system/remote_sources/355428310/1038532262/pandas/tools/merge.py" />
+    <entry file="file://$USER_HOME$/.PyCharm2016.1/system/remote_sources/355428310/1038532262/pandas/indexes/base.py" />
+    <entry file="file://$USER_HOME$/.PyCharm2016.1/system/remote_sources/355428310/1038532262/pandas/core/indexing.py" />
+    <entry file="file://$USER_HOME$/.PyCharm2016.1/system/remote_sources/355428310/1038532262/pandas/io/excel.py" />
     <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/pydevd.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="714">
           <caret line="1530" column="0" selection-start-line="1530" selection-start-column="0" selection-end-line="1530" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/.PyCharm2016.1/system/remote_sources/355428310/1038532262/pandas/core/generic.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="306">
-          <caret line="2671" column="0" selection-start-line="2671" selection-start-column="0" selection-end-line="2671" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$USER_HOME$/.PyCharm2016.1/system/remote_sources/355428310/1038532262/pandas/core/generic.py" />
     <entry file="file://$PROJECT_DIR$/MatchingFunctions.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="5372">
@@ -1048,7 +898,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/ProjectNotes.txt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="85">
+        <state relative-caret-position="187">
           <caret line="11" column="0" selection-start-line="11" selection-start-column="0" selection-end-line="11" selection-end-column="0" />
           <folding />
         </state>
@@ -1059,39 +909,16 @@
         <state relative-caret-position="269">
           <caret line="1097" column="24" selection-start-line="1097" selection-start-column="24" selection-end-line="1097" selection-end-column="24" />
           <folding>
-            <element signature="e#0#18#0" expanded="true" />
-            <marker date="1472846755230" expanded="true" signature="3622:3793" ph="SELECT p.pid... LegislativeStaff" />
-            <marker date="1472846755230" expanded="true" signature="8455:8599" ph="INSERT INTO Person... " />
-            <marker date="1472846755230" expanded="true" signature="8841:8993" ph="INSERT INTO LegislativeStaff... " />
-            <marker date="1472846755230" expanded="true" signature="18481:18672" ph="INSERT INTO LegOfficePersonnel... " />
-            <marker date="1472846755230" expanded="true" signature="19274:19432" ph="INSERT INTO OfficePersonnel... " />
-            <marker date="1472846755230" expanded="true" signature="22866:23001" ph="INSERT INTO LegislatureOffice... " />
-            <marker date="1472846755230" expanded="true" signature="39559:39751" ph="UPDATE LegOf... " />
-            <marker date="1472846755230" expanded="true" signature="40013:40159" ph="UPDATE Offic... " />
-            <marker date="1472846755230" expanded="true" signature="42401:42655" ph="..." />
+            <element signature="e#0#18#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/.PyCharm2016.1/system/remote_sources/355428310/1038532262/pandas/core/internals.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="306">
-          <caret line="1152" column="0" selection-start-line="1152" selection-start-column="0" selection-end-line="1152" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$APPLICATION_CONFIG_DIR$/consoles/db/6717978e-5447-4888-abc1-3ba4837eb7a3/console.sql">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="204">
-          <caret line="24" column="14" selection-start-line="24" selection-start-column="14" selection-end-line="24" selection-end-column="14" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$USER_HOME$/.PyCharm2016.1/system/remote_sources/355428310/1038532262/pandas/core/internals.py" />
+    <entry file="file://$APPLICATION_CONFIG_DIR$/consoles/db/6717978e-5447-4888-abc1-3ba4837eb7a3/console.sql" />
     <entry file="file://$PROJECT_DIR$/e_2011-2013.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
+        <state relative-caret-position="884">
           <caret line="52" column="27" selection-start-line="52" selection-start-column="27" selection-end-line="52" selection-end-column="27" />
           <folding />
         </state>
@@ -1099,7 +926,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/d_2015.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="408">
+        <state relative-caret-position="1190">
           <caret line="70" column="4" selection-start-line="70" selection-start-column="4" selection-end-line="70" selection-end-column="4" />
           <folding />
         </state>
@@ -1107,7 +934,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/d_2014.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="68">
+        <state relative-caret-position="850">
           <caret line="50" column="33" selection-start-line="50" selection-start-column="33" selection-end-line="50" selection-end-column="33" />
           <folding />
         </state>
@@ -1115,7 +942,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/d_2012.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
+        <state relative-caret-position="833">
           <caret line="49" column="35" selection-start-line="49" selection-start-column="35" selection-end-line="49" selection-end-column="35" />
           <folding />
         </state>
@@ -1123,43 +950,44 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/d_2011.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="59">
+        <state relative-caret-position="697">
           <caret line="41" column="26" selection-start-line="41" selection-start-column="26" selection-end-line="41" selection-end-column="26" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/d_2013.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="68">
-          <caret line="43" column="45" selection-start-line="43" selection-start-column="45" selection-end-line="43" selection-end-column="45" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/e_2014-2015.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="561">
+        <state relative-caret-position="799">
           <caret line="47" column="0" selection-start-line="47" selection-start-column="0" selection-end-line="47" selection-end-column="0" />
-          <folding>
-            <marker date="1473431510184" expanded="true" signature="56:3261" ph="..." />
-          </folding>
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/d_2013.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="326">
+          <caret line="42" column="42" selection-start-line="42" selection-start-column="42" selection-end-line="42" selection-end-column="42" />
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/ImportGiftDataRefactored.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="428">
-          <caret line="476" column="29" selection-start-line="476" selection-start-column="0" selection-end-line="477" selection-end-column="0" />
+        <state relative-caret-position="632">
+          <caret line="488" column="47" selection-start-line="443" selection-start-column="0" selection-end-line="489" selection-end-column="0" />
           <folding>
             <element signature="e#239#253#0" expanded="true" />
-            <marker date="1473428602311" expanded="true" signature="2634:3262" ph="SELECT staff... LegOfficePersonnel" />
-            <marker date="1473428602311" expanded="true" signature="3487:3876" ph="SELECT staff... OfficePersonnel" />
-            <marker date="1473428602311" expanded="true" signature="11431:11652" ph="SELECT p.pid... Legislator" />
-            <marker date="1473428602311" expanded="true" signature="13546:13631" ph="SELECT pid, " />
+            <marker date="1473825510819" expanded="true" signature="2634:3262" ph="SELECT staff... LegOfficePersonnel" />
+            <marker date="1473825510819" expanded="true" signature="3487:3876" ph="SELECT staff... OfficePersonnel" />
+            <marker date="1473825510819" expanded="true" signature="11431:11652" ph="SELECT p.pid... Legislator" />
+            <marker date="1473825510819" expanded="true" signature="13546:13631" ph="SELECT pid, " />
           </folding>
         </state>
       </provider>
     </entry>
+  </component>
+  <component name="webServersAuthStorage">
+    <data>AAAAsGiVrziAOXe5SgtKQ+enVdXHID/+brSLKDM17mna8Y+rd8hxnlrtg2WmWzhoAkbX8GDEZHsIl+2XlHwzekjGDtvIYrRC8JXY5fxFI80zSf3hMAd9ihQb0brv7BSRRBpEYpwYW1XxmqWrg8Y1yP4bqUWhXKofX9RjPDp3QNzDvi7kEfvcHqUvvMwDGij5jNsy0K4Iguftm/vNaHl/O5e/QiCPn85dXBXV7wuzDc01WK+FS29fI7xcuxzadmJg70Oudw==</data>
   </component>
 </project>

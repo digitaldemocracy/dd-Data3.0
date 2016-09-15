@@ -118,10 +118,12 @@ CREATE TABLE IF NOT EXISTS Term (
   house    VARCHAR(100), -- house they serve in,
   party    ENUM('Republican', 'Democrat', 'Other'),
   start    DATE,       -- start date of term
+  start_ts INT(11) AS (UNIX_TIMESTAMP(start)), -- Used by Drupal
   end      DATE,       -- end date of term
+  end_ts INT(11) AS (UNIX_TIMESTAMP(end)), -- Used by Drupal
+  current_term TINYINT(4), -- Whether this is a current term
   state    VARCHAR(2), -- state where term was served
-  -- caucus   VARCHAR(200), -- group that generally votes together. Not
-  -- currently in use
+  -- caucus   VARCHAR(200), -- group that generally votes together. Not currently in use
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
   dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
@@ -218,6 +220,7 @@ CREATE TABLE IF NOT EXISTS Bill (
 CREATE TABLE IF NOT EXISTS Hearing (
   hid    INTEGER AUTO_INCREMENT,      -- Hearing id
   date   DATE,                        -- date of hearing
+  date_ts INT(11) AS (UNIX_TIMESTAMP(date)), -- Used by Drupal
   type ENUM('Regular', 'Budget', 'Informational', 'Summary') DEFAULT 'Regular',
   state  VARCHAR(2),
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
@@ -256,6 +259,7 @@ CREATE TABLE IF NOT EXISTS HearingAgenda (
   hid INTEGER,  -- Hearing id (ref. Hearing.hid)
   bid VARCHAR(23),
   date_created DATE, -- The date the agenda info was posted
+  date_created_ts INT(11) AS (UNIX_TIMESTAMP(date_created)), -- Used by Drupal
   current_flag TINYINT(1), -- Whether this is the most recent agenda
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
   dr_id INTEGER UNIQUE AUTO_INCREMENT,
@@ -271,6 +275,7 @@ CREATE TABLE IF NOT EXISTS HearingAgenda (
 CREATE TABLE IF NOT EXISTS Action (
   bid    VARCHAR(23),
   date   DATE,
+  date_ts   INT(11) AS (UNIX_TIMESTAMP(date)), -- Used by Drupal
   text   TEXT,
   seq_num INT,
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
@@ -353,6 +358,7 @@ CREATE TABLE IF NOT EXISTS BillVoteSummary (
   mid     INTEGER(20),
   cid     INTEGER,
   VoteDate    DATETIME,
+  VoteDate_ts INT(11) AS (UNIX_TIMESTAMP(VoteDate)), -- Used by Drupal
   ayes        INTEGER,
   naes        INTEGER,
   abstain     INTEGER,
@@ -373,6 +379,7 @@ CREATE TABLE IF NOT EXISTS BillVersion (
   vid                 VARCHAR(33),
   bid                 VARCHAR(23),
   date                DATE,
+  date_ts  INT(11) AS (UNIX_TIMESTAMP(date_ts)), -- Used by Drupal
   billState               ENUM('Chaptered', 'Introduced', 'Amended Assembly', 'Amended Senate',
                                'Enrolled', 'Proposed', 'Amended', 'Vetoed') NOT NULL,
   subject             TEXT,
@@ -516,6 +523,7 @@ CREATE TABLE IF NOT EXISTS Gift (
   cityState VARCHAR(10),
   value DOUBLE,
   giftDate DATE,
+  giftDate_ts INT(11) AS (UNIX_TIMESTAMP(giftDate)), -- Used by Drupal
   reimbursed TINYINT(1),
   giftIncomeFlag TINYINT(1) DEFAULT 0,
   speechFlag TINYINT(1) DEFAULT 0,
@@ -555,6 +563,7 @@ CREATE TABLE IF NOT EXISTS Contribution (
   pid INTEGER,
   year INTEGER,
   date DATETIME,
+  date_ts INT(11) AS (UNIX_TIMESTAMP(date)), -- Used by Drupal
   house VARCHAR(10),
   donorName VARCHAR(255),
   donorOrg VARCHAR(255),
@@ -601,6 +610,7 @@ CREATE TABLE IF NOT EXISTS LobbyingFirm(
 CREATE TABLE IF NOT EXISTS LobbyingFirmState (
   filer_id VARCHAR(200),  -- modified, given by state
   rpt_date DATE,
+  rpt_date_ts INT(11) AS (UNIX_TIMESTAMP(rpt_date)), -- Used by Drupal
   ls_beg_yr INTEGER,    -- modified (INT)
   ls_end_yr INTEGER,     -- modified (INT)
   filer_naml VARCHAR(200),
@@ -637,6 +647,7 @@ CREATE TABLE IF NOT EXISTS LobbyistEmployment (
   pid INT,                         -- modified (FK)
   sender_id VARCHAR(200),
   rpt_date DATE,
+  rpt_date_ts INT(11) AS (UNIX_TIMESTAMP(rpt_date)), -- Used by Drupal
   ls_beg_yr INTEGER,    -- modified (INT)
   ls_end_yr INTEGER,    -- modified (INT)
   state VARCHAR(2),
@@ -660,6 +671,7 @@ CREATE TABLE IF NOT EXISTS LobbyistDirectEmployment(
    pid INT,
    lobbyist_employer INTEGER,
    rpt_date DATE,
+   rpt_date_ts INT(11) AS (UNIX_TIMESTAMP(rpt_date)), -- Used by Drupal
    ls_beg_yr INTEGER,    -- modified (INT)
    ls_end_yr INTEGER,     -- modified (INT)
    state VARCHAR(2),
@@ -680,6 +692,7 @@ CREATE TABLE IF NOT EXISTS LobbyingContracts(
    filer_id VARCHAR(200),
    lobbyist_employer INTEGER, -- modified (FK)
    rpt_date DATE,
+   rpt_date_ts INT(11) AS (UNIX_TIMESTAMP(rpt_date)), -- Used by Drupal
    ls_beg_yr INTEGER,    -- modified (INT)
    ls_end_yr INTEGER,     -- modified (INT)
    state VARCHAR(2),
@@ -699,6 +712,7 @@ CREATE TABLE IF NOT EXISTS LobbyistRepresentation (
    pid INTEGER,
    oid INTEGER, -- modified (renamed)
    hearing_date DATE,                                       -- modified (renamed)
+   hearing_date_ts INT(11) AS (UNIX_TIMESTAMP(hearing_date)), -- Used by Drupal
    hid INTEGER,              -- added
    did INTEGER,
    state VARCHAR(2),
@@ -917,15 +931,17 @@ CREATE TABLE IF NOT EXISTS Payors (
    good publicity for helping the payee. Later on, the payor can influence
    the legislator on certain bills because they helped out before.
 */
-CREATE TABLE IF NOT EXISTS Behests(
+CREATE TABLE IF NOT EXISTS Behests (
   official INT,          -- legislator (ref. Legislator.pid)
   datePaid DATE,         -- date the payor paid
+  datePaid_ts INT(11) AS (UNIX_TIMESTAMP(datePaid)), -- Used by Drupal
   payor INT,             -- organization/person that paid (ref. Payors.pid)
   amount INT,            -- amount given to payee in USD
   payee INT,             -- organization that was paid (ref. Organizations.oid)
   description TEXT,      -- description of the exchange
   purpose VARCHAR(200),  -- purpose of behest (ex. Charitable)
   noticeReceieved DATE,  -- when the behest was filed
+  noticeReceived_ts INT(11) AS (UNIX_TIMESTAMP(noticeReceived)), -- Used by Drupal
   state VARCHAR(2),
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
   dr_id INTEGER UNIQUE AUTO_INCREMENT,
@@ -998,6 +1014,7 @@ CREATE TABLE IF NOT EXISTS LegStaffGifts (
   source_state VARCHAR(200),
   source_business VARCHAR(200), -- business the source is involved in
   date_given DATE,
+  date_given_ts INT(11) AS (UNIX_TIMESTAMP(date_given)), -- Used by Drupal
   gift_value DECIMAL,
   reimbursed BOOLEAN, -- this one is just a flag
   gift_description VARCHAR(200),
@@ -1019,7 +1036,9 @@ CREATE TABLE IF NOT EXISTS LegOfficePersonnel (
   term_year YEAR, -- pk for term
   house VARCHAR(100), -- pk for term
   start_date DATE, -- When the staff member started at this office
+  start_date_ts INT(11) AS (UNIX_TIMESTAMP(start_date)), -- Used by Drupal
   end_date DATE,  -- when staff member ended with that office
+  end_date_ts INT(11) AS (UNIX_TIMESTAMP(end_date)), -- Used by Drupal
   title VARCHAR(100),
   state CHAR(2), -- pk for term
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
@@ -1188,6 +1207,31 @@ CREATE TABLE `GiftCombined` (
   KEY `giftValue` (`giftValue`),
   KEY `state` (`state`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+# Basically like current utterance. Rebuilt every night
+CREATE TABLE IF NOT EXISTS BillVersionCurrent (
+  vid                 VARCHAR(33),
+  bid                 VARCHAR(23),
+  date                DATE,
+  date_ts  INT(11) AS (UNIX_TIMESTAMP(date_ts)), -- Used by Drupal
+  billState               ENUM('Chaptered', 'Introduced', 'Amended Assembly', 'Amended Senate',
+                               'Enrolled', 'Proposed', 'Amended', 'Vetoed') NOT NULL,
+  subject             TEXT,
+  appropriation       BOOLEAN,
+  substantive_changes BOOLEAN,
+  title               TEXT,
+  digest              MEDIUMTEXT,
+  text                MEDIUMTEXT,
+  state               VARCHAR(2),
+  lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+  dr_id INTEGER UNIQUE AUTO_INCREMENT,
+
+  PRIMARY KEY (vid),
+  FOREIGN KEY (bid) REFERENCES Bill(bid),
+  FOREIGN KEY (state) REFERENCES State(abbrev)
+)
+  ENGINE = INNODB
+  CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 
 

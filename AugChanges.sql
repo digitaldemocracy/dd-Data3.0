@@ -1,7 +1,7 @@
 # Script stuff for modifying db
-alter table LobbyistEmployer
-  drop primary key,
-  add primary key (oid, state);
+ALTER TABLE LobbyistEmployer
+  DROP PRIMARY KEY,
+  ADD PRIMARY KEY (oid, state);
 
 create table FoundSenderIds
 as
@@ -75,8 +75,8 @@ alter table OrgAlignments
 	
 
 -- Added for the transcription tool
-alter table TT_Videos
-  add hid int REFERENCES Hearing(hid);
+# alter table TT_Videos
+#   add hid int REFERENCES Hearing(hid);
 
 
 # The following comes from Kristian
@@ -177,27 +177,55 @@ TRUNCATE TABLE PersonClassifications;
 
 INSERT INTO PersonClassifications (pid, state, classification) select `gp`.`pid` AS `pid`,`gp`.`state` AS `state`,'General Public' AS `classification` from `GeneralPublic` `gp` union select `lao`.`pid` AS `pid`,`lao`.`state` AS `state`,'Legislative Analyst Office' AS `classification` from `LegAnalystOffice` `lao` union select `ls`.`pid` AS `pid`,`ls`.`state` AS `state`,'Legislative Staff' AS `classification` from `LegislativeStaff` `ls` union select `lsr`.`pid` AS `pid`,`lsr`.`state` AS `state`,'Legislative Staff Representation' AS `classification` from `LegislativeStaffRepresentation` `lsr` union select `l`.`pid` AS `pid`,`l`.`state` AS `state`,'Legislator' AS `classification` from `Legislator` `l` union select `lob`.`pid` AS `pid`,`lob`.`state` AS `state`,'Lobbyist' AS `classification` from `Lobbyist` `lob` union select `lobr`.`pid` AS `pid`,`lobr`.`state` AS `state`,'Lobbyist Representation' AS `classification` from `LobbyistRepresentation` `lobr` union select `sar`.`pid` AS `pid`,`sar`.`state` AS `state`,'State Agency Rep' AS `classification` from `StateAgencyRep` `sar` union select `sarr`.`pid` AS `pid`,`sarr`.`state` AS `state`,'State Agency Rep Representative' AS `classification` from `StateAgencyRepRepresentation` `sarr` union select `scor`.`pid` AS `pid`,`scor`.`state` AS `state`,'State Constitutional Office Rep' AS `classification` from `StateConstOfficeRep` `scor` union select `scorr`.`pid` AS `pid`,`scorr`.`state` AS `state`,'State Constitutional Office Rep Representative' AS `classification` from `StateConstOfficeRepRepresentation` `scorr`;
 
+
 -- Date Timestamp Table Modifications
 SELECT 'Adding *_ts date columns to tables...' AS '';
-ALTER TABLE Action ADD COLUMN date_ts int(11);
-ALTER TABLE Behests ADD COLUMN datePaid_ts int(11);
-ALTER TABLE Behests ADD COLUMN noticeReceived_ts int(11);
-ALTER TABLE BillVersion ADD COLUMN date_ts int(11);
-ALTER TABLE BillVoteSummary ADD COLUMN VoteDate_ts int(11);
-ALTER TABLE Contribution ADD COLUMN date_ts int(11);
-ALTER TABLE Gift ADD COLUMN giftDate_ts int(11);
-ALTER TABLE Hearing ADD COLUMN date_ts int(11);
-ALTER TABLE HearingAgenda ADD COLUMN date_created_ts int(11);
-ALTER TABLE LegOfficePersonnel ADD COLUMN start_date_ts int(11);
-ALTER TABLE LegOfficePersonnel ADD COLUMN end_date_ts int(11);
-ALTER TABLE LegStaffGifts ADD COLUMN date_given_ts int(11);
-ALTER TABLE LobbyingContracts ADD COLUMN rpt_date_ts int(11);
-ALTER TABLE LobbyingFirmState ADD COLUMN rpt_date_ts int(11);
-ALTER TABLE LobbyistDirectEmployment ADD COLUMN rpt_date_ts int(11);
-ALTER TABLE LobbyistEmployment ADD COLUMN rpt_date_ts int(11);
-ALTER TABLE LobbyistRepresentation ADD COLUMN hearing_date_ts int(11);
-ALTER TABLE Term ADD COLUMN start_ts int(11);
-ALTER TABLE Term ADD COLUMN end_ts int(11);
+ALTER TABLE Action ADD COLUMN date_ts int(11) AS (TO_SECONDS(date_ts) - TO_SECONDS('1970-01-01'));
+ALTER TABLE Behests ADD COLUMN datePaid_ts int(11) AS (TO_SECONDS(datePaid) - TO_SECONDS('1970-01-01'));
+ALTER TABLE Behests ADD COLUMN noticeReceived_ts int(11) AS (TO_SECONDS(noticeReceived) - TO_SECONDS('1970-01-01'));
+ALTER TABLE BillVersion ADD COLUMN date_ts int(11) AS (TO_SECONDS(date) - TO_SECONDS('1970-01-01'));
+ALTER TABLE BillVoteSummary ADD COLUMN VoteDate_ts int(11) AS (TO_SECONDS(VoteDate) - TO_SECONDS('1970-01-01'));
+ALTER TABLE Contribution ADD COLUMN date_ts int(11) AS (TO_SECONDS(date) - TO_SECONDS('1970-01-01'));
+ALTER TABLE Gift ADD COLUMN giftDate_ts int(11) AS (TO_SECONDS(giftDate) - TO_SECONDS('1970-01-01'));
+ALTER TABLE Hearing ADD COLUMN date_ts int(11) AS (TO_SECONDS(date) - TO_SECONDS('1970-01-01'));
+ALTER TABLE HearingAgenda ADD COLUMN date_created_ts int(11) AS (TO_SECONDS(date_created) - TO_SECONDS('1970-01-01'));
+ALTER TABLE LegOfficePersonnel ADD COLUMN start_date_ts int(11) AS (TO_SECONDS(start_date) - TO_SECONDS('1970-01-01'));
+ALTER TABLE LegOfficePersonnel ADD COLUMN end_date_ts int(11) AS (TO_SECONDS(end_date) - TO_SECONDS('1970-01-01'));
+ALTER TABLE LegStaffGifts ADD COLUMN date_given_ts int(11) AS (TO_SECONDS(date_given) - TO_SECONDS('1970-01-01'));
+ALTER TABLE LobbyingContracts ADD COLUMN rpt_date_ts int(11) AS (TO_SECONDS(rpt_date) - TO_SECONDS('1970-01-01'));
+ALTER TABLE LobbyingFirmState ADD COLUMN rpt_date_ts int(11) AS (TO_SECONDS(rpt_date) - TO_SECONDS('1970-01-01'));
+ALTER TABLE LobbyistDirectEmployment ADD COLUMN rpt_date_ts int(11) AS (TO_SECONDS(rpt_date) - TO_SECONDS('1970-01-01'));
+ALTER TABLE LobbyistEmployment ADD COLUMN rpt_date_ts int(11) AS (TO_SECONDS(rpt_date) - TO_SECONDS('1970-01-01'));
+ALTER TABLE LobbyistRepresentation ADD COLUMN hearing_date_ts int(11) AS (TO_SECONDS(hearing_date) - TO_SECONDS('1970-01-01'));
+ALTER TABLE Term ADD COLUMN start_ts int(11) AS (TO_SECONDS(start) - TO_SECONDS('1970-01-01'));
+ALTER TABLE Term ADD COLUMN end_ts int(11) AS (TO_SECONDS(end) - TO_SECONDS('1970-01-01'));
+
+# Clean some bad data
+DELETE FROM Contribution
+WHERE year(date) > 2020;
+
+DELETE FROM Gift
+WHERE year(giftDate) > 2020
+      or year(giftDate) < 1950;
+
+DELETE FROM LobbyingContracts
+WHERE year(rpt_date) > 2020
+      or year(rpt_date) < 1950;
+
+DELETE FROM LobbyistEmployment
+WHERE year(rpt_date) > 2020
+      or year(rpt_date) < 1950;
+
+DELETE FROM LobbyistEmployment
+WHERE sender_id = '1282555';
+
+DELETE FROM LobbyingFirmState
+WHERE year(rpt_date) > 2020
+      or year(rpt_date) < 1950;
+
+DELETE FROM LobbyistDirectEmployment
+WHERE year(rpt_date) > 2020
+      or year(rpt_date) < 1950;
 
 SELECT 'Adding *_ts date columns indexes to tables...' AS '';
 
@@ -221,27 +249,27 @@ ALTER TABLE LobbyistRepresentation ADD INDEX hearing_date_ts (`hearing_date_ts`)
 ALTER TABLE Term ADD INDEX start_ts (`start_ts`);
 ALTER TABLE Term ADD INDEX end_ts (`end_ts`);
 
-SELECT 'Setting *_ts date column values...' AS '';
-
-UPDATE Action SET date_ts=UNIX_TIMESTAMP(date);
-UPDATE Behests SET datePaid_ts=UNIX_TIMESTAMP(datePaid);
-UPDATE Behests SET noticeReceived_ts=UNIX_TIMESTAMP(noticeReceived);
-UPDATE BillVersion SET date_ts=UNIX_TIMESTAMP(date);
-UPDATE BillVoteSummary SET VoteDate_ts=UNIX_TIMESTAMP(VoteDate);
-UPDATE Contribution SET date_ts=UNIX_TIMESTAMP(date);
-UPDATE Gift SET giftDate_ts=UNIX_TIMESTAMP(giftDate);
-UPDATE Hearing SET date_ts=UNIX_TIMESTAMP(date);
-UPDATE HearingAgenda SET date_created_ts=UNIX_TIMESTAMP(date_created);
-UPDATE LegOfficePersonnel SET start_date_ts=UNIX_TIMESTAMP(start_date);
-UPDATE LegOfficePersonnel SET end_date_ts=UNIX_TIMESTAMP(end_date);
-UPDATE LegStaffGifts SET date_given_ts=UNIX_TIMESTAMP(date_given);
-UPDATE LobbyingContracts SET rpt_date_ts=UNIX_TIMESTAMP(rpt_date);
-UPDATE LobbyingFirmState SET rpt_date_ts=UNIX_TIMESTAMP(rpt_date);
-UPDATE LobbyistDirectEmployment SET rpt_date_ts=UNIX_TIMESTAMP(rpt_date);
-UPDATE LobbyistEmployment SET rpt_date_ts=UNIX_TIMESTAMP(rpt_date);
-UPDATE LobbyistRepresentation SET hearing_date_ts=UNIX_TIMESTAMP(hearing_date);
-UPDATE Term SET start_ts=UNIX_TIMESTAMP(start);
-UPDATE Term SET end_ts=UNIX_TIMESTAMP(end);
+# SELECT 'Setting *_ts date column values...' AS '';
+#
+# UPDATE Action SET date_ts=TO_SECONDS(date) - TO_SECONDS('1970-01-01');
+# UPDATE Behests SET datePaid_ts=TO_SECONDS(datePaid) - TO_SECONDS('1970-01-01');
+# UPDATE Behests SET noticeReceived_ts=TO_SECONDS(noticeReceived) - TO_SECONDS('1970-01-01');
+# UPDATE BillVersion SET date_ts=TO_SECONDS(date) - TO_SECONDS('1970-01-01');
+# UPDATE BillVoteSummary SET VoteDate_ts=TO_SECONDS(VoteDate) - TO_SECONDS('1970-01-01');
+# UPDATE Contribution SET date_ts=TO_SECONDS(date) - TO_SECONDS('1970-01-01');
+# UPDATE Gift SET giftDate_ts=TO_SECONDS(giftDate) - TO_SECONDS('1970-01-01');
+# UPDATE Hearing SET date_ts=TO_SECONDS(date) - TO_SECONDS('1970-01-01');
+# UPDATE HearingAgenda SET date_created_ts=TO_SECONDS(date_created) - TO_SECONDS('1970-01-01');
+# UPDATE LegOfficePersonnel SET start_date_ts=TO_SECONDS(start_date) - TO_SECONDS('1970-01-01');
+# UPDATE LegOfficePersonnel SET end_date_ts=TO_SECONDS(end_date) - TO_SECONDS('1970-01-01');
+# UPDATE LegStaffGifts SET date_given_ts=TO_SECONDS(date_given) - TO_SECONDS('1970-01-01');
+# UPDATE LobbyingContracts SET rpt_date_ts=TO_SECONDS(rpt_date) - TO_SECONDS('1970-01-01');
+# UPDATE LobbyingFirmState SET rpt_date_ts=TO_SECONDS(rpt_date) - TO_SECONDS('1970-01-01');
+# UPDATE LobbyistDirectEmployment SET rpt_date_ts=TO_SECONDS(rpt_date) - TO_SECONDS('1970-01-01');
+# UPDATE LobbyistEmployment SET rpt_date_ts=TO_SECONDS(rpt_date) - TO_SECONDS('1970-01-01');
+# UPDATE LobbyistRepresentation SET hearing_date_ts=TO_SECONDS(hearing_date) - TO_SECONDS('1970-01-01');
+# UPDATE Term SET start_ts=TO_SECONDS(start) - TO_SECONDS('1970-01-01');
+# UPDATE Term SET end_ts=TO_SECONDS(end) - TO_SECONDS('1970-01-01');
 
 
 -- current_term flag for Term table, current only contains a single term per legislator.
@@ -257,7 +285,14 @@ WHERE year = 2015;
 SELECT 'Creating BillVersionCurrent table...' AS '';
 DROP TABLE IF EXISTS BillVersionCurrent;
 CREATE TABLE BillVersionCurrent LIKE BillVersion;
-INSERT INTO BillVersionCurrent SELECT * FROM (SELECT * FROM BillVersion bv ORDER BY bv.date DESC, bv.vid ASC) bvc GROUP BY bvc.bid;
+INSERT INTO BillVersionCurrent
+(vid, bid, date, billState, subject, appropriation, substantive_changes, title, digest, text, state)
+  SELECT vid, bid, date, billState, subject, appropriation, substantive_changes, title, digest, text, state
+  FROM
+    (SELECT *
+     FROM BillVersion bv
+     ORDER BY bv.date DESC, bv.vid ASC) bvc
+  GROUP BY bvc.bid;
 
 
 -- GiftCombined Table
@@ -283,7 +318,7 @@ CREATE TABLE `GiftCombined` (
   `position` varchar(200) DEFAULT NULL,
   `schedule` enum('D','E') DEFAULT NULL,
   `jurisdiction` varchar(200) DEFAULT NULL,
-  `distictNumber` int(11) DEFAULT NULL,
+  `districtNumber` int(11) DEFAULT NULL,
   `reimbursed` tinyint(1) DEFAULT NULL,
   `giftIncomeFlag` tinyint(1) DEFAULT '0',
   `speechFlag` tinyint(1) DEFAULT '0',
