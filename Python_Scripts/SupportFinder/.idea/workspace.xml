@@ -15,14 +15,15 @@
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="ChangesViewManager" flattened_view="true" show_ignored="false" />
   <component name="CoverageDataManager">
-    <SUITE FILE_PATH="coverage/SupportFinder$InsertAlignments.coverage" NAME="InsertAlignments Coverage Results" MODIFIED="1472193342872" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/SupportFinder$TestCases.coverage" NAME="TestCases Coverage Results" MODIFIED="1469846553880" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/SupportFinder$GetBillAnalysis.coverage" NAME="GetBillAnalysis Coverage Results" MODIFIED="1467262349278" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/SupportFinder$ScrapeSupport.coverage" NAME="ScrapeSupport Coverage Results" MODIFIED="1469850633713" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/SupportFinder$ScrapeSupport.coverage" NAME="ScrapeSupport Coverage Results" MODIFIED="1474484645127" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/SupportFinder$TestCases.coverage" NAME="TestCases Coverage Results" MODIFIED="1474307424525" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/SupportFinder$temp.coverage" NAME="temp Coverage Results" MODIFIED="1471365542006" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/SupportFinder$GetBillAnalysisWeb.coverage" NAME="GetBillAnalysisWeb Coverage Results" MODIFIED="1469841640466" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/SupportFinder$RenameBillFiles.coverage" NAME="RenameBillFiles Coverage Results" MODIFIED="1474306810311" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/SupportFinder$InsertAlignments.coverage" NAME="InsertAlignments Coverage Results" MODIFIED="1472193342872" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/SupportFinder$GetBillAnalysisCapublic.coverage" NAME="GetBillAnalysisCapublic Coverage Results" MODIFIED="1474248865349" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/SupportFinder$GetBillAnalysisWeb.coverage" NAME="GetBillAnalysisWeb Coverage Results" MODIFIED="1474498165494" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/SupportFinder$GetBillAnalysis.coverage" NAME="GetBillAnalysis Coverage Results" MODIFIED="1467262349278" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
   <component name="CreatePatchCommitExecutor">
     <option name="PATCH_PATH" value="" />
@@ -42,22 +43,18 @@
     <splitter split-orientation="horizontal" split-proportion="0.5">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file leaf-file-name="ScrapeSupport.py" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/ScrapeSupport.py">
+          <file leaf-file-name="GetBillAnalysisWeb.py" pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/GetBillAnalysisWeb.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="102">
-                  <caret line="7" column="9" selection-start-line="7" selection-start-column="9" selection-end-line="7" selection-end-column="9" />
-                  <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="SupportFinder.py" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/SupportFinder.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="17">
-                  <caret line="94" column="18" selection-start-line="94" selection-start-column="18" selection-end-line="94" selection-end-column="18" />
-                  <folding />
+                <state relative-caret-position="649">
+                  <caret line="188" column="27" selection-start-line="188" selection-start-column="27" selection-end-line="188" selection-end-column="27" />
+                  <folding>
+                    <element signature="e#0#14#0" expanded="true" />
+                    <marker date="1474497931717" expanded="true" signature="3959:4062" ph="SELECT bill_... " />
+                    <marker date="1474497931717" expanded="true" signature="4768:4965" ph="SELECT DISTI... authors" />
+                    <marker date="1474497931717" expanded="true" signature="4768:5217" ph="SELECT DISTI... " />
+                    <marker date="1474497931717" expanded="true" signature="5012:5217" ph="SELECT DISTI... CommitteeAuthors" />
+                  </folding>
                 </state>
               </provider>
             </entry>
@@ -65,66 +62,8 @@
           <file leaf-file-name="TestCases.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/TestCases.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="102">
-                  <caret line="7" column="17" selection-start-line="7" selection-start-column="17" selection-end-line="7" selection-end-column="17" />
-                  <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="GetBillAnalysisWeb.py" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/GetBillAnalysisWeb.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="255">
-                  <caret line="15" column="29" selection-start-line="15" selection-start-column="29" selection-end-line="15" selection-end-column="29" />
-                  <folding>
-                    <element signature="e#0#14#0" expanded="true" />
-                    <marker date="1469746966157" expanded="true" signature="3846:3934" ph="SELECT bill_... bill_analysis_tbl" />
-                    <marker date="1469746966157" expanded="true" signature="3846:3949" ph="SELECT bill_... bill_analysis_tbl" />
-                    <marker date="1469746966157" expanded="true" signature="4656:4853" ph="SELECT DISTI... authors" />
-                    <marker date="1469746966157" expanded="true" signature="4656:5105" ph="SELECT DISTI... " />
-                    <marker date="1469746966157" expanded="true" signature="4900:5105" ph="SELECT DISTI... CommitteeAuthors" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="InsertAlignments.py" pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/InsertAlignments.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="408">
-                  <caret line="64" column="0" selection-start-line="64" selection-start-column="0" selection-end-line="64" selection-end-column="0" />
-                  <folding>
-                    <element signature="e#0#18#0" expanded="true" />
-                    <marker date="1472181985482" expanded="true" signature="516:651" ph="SELECT bd.bi... BillDiscussion" />
-                    <marker date="1472181985482" expanded="true" signature="516:688" ph="SELECT bd.bi... BillDiscussion" />
-                    <marker date="1472181985482" expanded="true" signature="796:831" ph="SELECT bid F... Bill" />
-                    <marker date="1472181985482" expanded="true" signature="796:865" ph="SELECT bid F... Bill" />
-                    <marker date="1472181985482" expanded="true" signature="796:869" ph="SELECT bid F... Bill" />
-                    <marker date="1472181985482" expanded="true" signature="796:1058" ph="SELECT bid F... Bill" />
-                    <marker date="1472181985482" expanded="true" signature="1062:1112" ph="SELECT oid, Organizations" />
-                    <marker date="1472181985482" expanded="true" signature="2215:2336" ph="INSERT INTO Organizations... " />
-                    <marker date="1472181985482" expanded="true" signature="3358:3501" ph="INSERT INTO OrgAlignments... " />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="pydevd.py" pinned="false" current-in-tab="false">
-            <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/pydevd.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="714">
-                  <caret line="1530" column="0" selection-start-line="1530" selection-start-column="0" selection-end-line="1530" selection-end-column="0" />
-                  <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="ProjectNotes.txt" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/ProjectNotes.txt">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="153">
-                  <caret line="9" column="88" selection-start-line="9" selection-start-column="88" selection-end-line="9" selection-end-column="88" />
+                <state relative-caret-position="-714">
+                  <caret line="4" column="7" selection-start-line="4" selection-start-column="7" selection-end-line="4" selection-end-column="7" />
                   <folding />
                 </state>
               </provider>
@@ -133,71 +72,64 @@
         </leaf>
       </split-first>
       <split-second>
-        <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file leaf-file-name="GetBillAnalysis.py" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/GetBillAnalysis.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="561">
-                  <caret line="36" column="12" selection-start-line="36" selection-start-column="12" selection-end-line="36" selection-end-column="12" />
-                  <folding>
-                    <marker date="1467251240970" expanded="true" signature="210:313" ph="&quot;...&quot;" />
-                    <marker date="1467251240970" expanded="true" signature="213:311" ph="SELECT field... field_data_field_analysis" />
-                    <marker date="1467251240970" expanded="true" signature="213:312" ph="SELECT field... field_data_field_analysis" />
-                    <marker date="1467251240970" expanded="true" signature="844:1767" ph="..." />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="GetBillAnalysisWeb.py" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/GetBillAnalysisWeb.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="340">
-                  <caret line="20" column="29" selection-start-line="20" selection-start-column="29" selection-end-line="20" selection-end-column="29" />
-                  <folding>
-                    <element signature="e#0#14#0" expanded="true" />
-                    <marker date="1469746966157" expanded="true" signature="3846:3934" ph="SELECT bill_... bill_analysis_tbl" />
-                    <marker date="1469746966157" expanded="true" signature="3846:3949" ph="SELECT bill_... bill_analysis_tbl" />
-                    <marker date="1469746966157" expanded="true" signature="4656:4853" ph="SELECT DISTI... authors" />
-                    <marker date="1469746966157" expanded="true" signature="4656:5105" ph="SELECT DISTI... " />
-                    <marker date="1469746966157" expanded="true" signature="4900:5105" ph="SELECT DISTI... CommitteeAuthors" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="InsertAlignments.py" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/InsertAlignments.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="748">
-                  <caret line="183" column="0" selection-start-line="183" selection-start-column="0" selection-end-line="183" selection-end-column="0" />
-                  <folding>
-                    <element signature="e#0#18#0" expanded="true" />
-                    <marker date="1472181985482" expanded="true" signature="516:651" ph="SELECT bd.bi... BillDiscussion" />
-                    <marker date="1472181985482" expanded="true" signature="516:688" ph="SELECT bd.bi... BillDiscussion" />
-                    <marker date="1472181985482" expanded="true" signature="796:862" ph="SELECT bid F... Bill" />
-                    <marker date="1472181985482" expanded="true" signature="796:865" ph="SELECT bid F... Bill" />
-                    <marker date="1472181985482" expanded="true" signature="796:869" ph="SELECT bid F... Bill" />
-                    <marker date="1472181985482" expanded="true" signature="796:1058" ph="SELECT bid F... Bill" />
-                    <marker date="1472181985482" expanded="true" signature="1062:1112" ph="SELECT oid, Organizations" />
-                    <marker date="1472181985482" expanded="true" signature="2215:2336" ph="INSERT INTO Organizations... " />
-                    <marker date="1472181985482" expanded="true" signature="3358:3501" ph="INSERT INTO OrgAlignments... " />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="console.sql" pinned="false" current-in-tab="true">
-            <entry file="file://$APPLICATION_CONFIG_DIR$/consoles/db/7780d9a9-5dd7-408a-9c46-48df5bdf5d68/console.sql">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="510">
-                  <caret line="30" column="14" selection-start-line="30" selection-start-column="14" selection-end-line="30" selection-end-column="14" />
-                  <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
-        </leaf>
+        <splitter split-orientation="vertical" split-proportion="0.5">
+          <split-first>
+            <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+              <file leaf-file-name="SupportFinder.py" pinned="false" current-in-tab="false">
+                <entry file="file://$PROJECT_DIR$/SupportFinder.py">
+                  <provider selected="true" editor-type-id="text-editor">
+                    <state relative-caret-position="148">
+                      <caret line="173" column="0" selection-start-line="173" selection-start-column="0" selection-end-line="173" selection-end-column="0" />
+                      <folding>
+                        <element signature="e#0#9#0" expanded="true" />
+                      </folding>
+                    </state>
+                  </provider>
+                </entry>
+              </file>
+              <file leaf-file-name="ProjectNotes.txt" pinned="false" current-in-tab="false">
+                <entry file="file://$PROJECT_DIR$/ProjectNotes.txt">
+                  <provider selected="true" editor-type-id="text-editor">
+                    <state relative-caret-position="255">
+                      <caret line="15" column="0" selection-start-line="15" selection-start-column="0" selection-end-line="15" selection-end-column="0" />
+                      <folding />
+                    </state>
+                  </provider>
+                </entry>
+              </file>
+              <file leaf-file-name="GetBillAnalysisWeb.py" pinned="false" current-in-tab="true">
+                <entry file="file://$PROJECT_DIR$/GetBillAnalysisWeb.py">
+                  <provider selected="true" editor-type-id="text-editor">
+                    <state relative-caret-position="811">
+                      <caret line="128" column="0" selection-start-line="128" selection-start-column="0" selection-end-line="128" selection-end-column="0" />
+                      <folding>
+                        <element signature="e#0#14#0" expanded="true" />
+                        <marker date="1474497931717" expanded="true" signature="3959:4062" ph="SELECT bill_... " />
+                        <marker date="1474497931717" expanded="true" signature="4768:4965" ph="SELECT DISTI... authors" />
+                        <marker date="1474497931717" expanded="true" signature="4768:5217" ph="SELECT DISTI... " />
+                        <marker date="1474497931717" expanded="true" signature="5012:5217" ph="SELECT DISTI... CommitteeAuthors" />
+                      </folding>
+                    </state>
+                  </provider>
+                </entry>
+              </file>
+            </leaf>
+          </split-first>
+          <split-second>
+            <leaf>
+              <file leaf-file-name="ProjectNotes.txt" pinned="false" current-in-tab="true">
+                <entry file="file://$PROJECT_DIR$/ProjectNotes.txt">
+                  <provider selected="true" editor-type-id="text-editor">
+                    <state relative-caret-position="255">
+                      <caret line="15" column="0" selection-start-line="15" selection-start-column="0" selection-end-line="15" selection-end-column="0" />
+                      <folding />
+                    </state>
+                  </provider>
+                </entry>
+              </file>
+            </leaf>
+          </split-second>
+        </splitter>
       </split-second>
     </splitter>
   </component>
@@ -212,16 +144,18 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/GetBillAnalysisText.py" />
-        <option value="$PROJECT_DIR$/GetBillAnalysis.py" />
         <option value="$PROJECT_DIR$/temp.sql" />
-        <option value="$PROJECT_DIR$/GetBillAnalysisWeb.py" />
         <option value="$PROJECT_DIR$/TestCases.py" />
-        <option value="$PROJECT_DIR$/SupportFinder.py" />
         <option value="$PROJECT_DIR$/ScrapeSupport.py" />
         <option value="$PROJECT_DIR$/temp.py" />
-        <option value="$PROJECT_DIR$/ProjectNotes.txt" />
         <option value="$PROJECT_DIR$/InsertAlignments.py" />
         <option value="$APPLICATION_CONFIG_DIR$/consoles/db/7780d9a9-5dd7-408a-9c46-48df5bdf5d68/console.sql" />
+        <option value="$PROJECT_DIR$/GetBillAnalysisCapublic.py" />
+        <option value="$PROJECT_DIR$/GetBillAnalysis.py" />
+        <option value="$PROJECT_DIR$/RenameBillFiles.py" />
+        <option value="$PROJECT_DIR$/SupportFinder.py" />
+        <option value="$PROJECT_DIR$/ProjectNotes.txt" />
+        <option value="$PROJECT_DIR$/GetBillAnalysisWeb.py" />
       </list>
     </option>
   </component>
@@ -232,10 +166,10 @@
     <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="1366" />
-    <option name="y" value="-58" />
-    <option name="width" value="1024" />
-    <option name="height" value="726" />
+    <option name="x" value="-8" />
+    <option name="y" value="-8" />
+    <option name="width" value="1936" />
+    <option name="height" value="1056" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="false">
     <OptionsSetting value="true" id="Add" />
@@ -248,7 +182,7 @@
     <ConfirmationsSetting value="0" id="Remove" />
   </component>
   <component name="ProjectView">
-    <navigator proportions="" version="1">
+    <navigator currentView="ProjectPane" proportions="" version="1">
       <flattenPackages />
       <showMembers />
       <showModules />
@@ -261,12 +195,35 @@
       <manualOrder />
       <foldersAlwaysOnTop value="true" />
     </navigator>
-    <panes />
+    <panes>
+      <pane id="Scope" />
+      <pane id="ProjectPane">
+        <subPane>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="SupportFinder" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="SupportFinder" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="SupportFinder" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+        </subPane>
+      </pane>
+      <pane id="Scratches" />
+    </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="last_opened_file_path" value="$USER_HOME$/Documents/GitHub/dd-Data3.0/Python_Scripts/UsedForUpdate/ImportLegStaffData" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="WebServerToolWindowFactoryState" value="true" />
-    <property name="settings.editor.selected.configurable" value="web.server" />
+    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
     <property name="settings.editor.splitter.proportion" value="0.2" />
     <property name="WebServerToolWindowPanel.toolwindow.show.size" value="false" />
     <property name="WebServerToolWindowPanel.toolwindow.show.date" value="false" />
@@ -274,8 +231,27 @@
     <property name="WebServerToolWindowPanel.toolwindow.highlight.symlinks" value="true" />
     <property name="WebServerToolWindowPanel.toolwindow.highlight.mappings" value="true" />
     <property name="com.intellij.database.dataSource.DataSourceTemplate" value="MySQL" />
+    <property name="js-jscs-nodeInterpreter" value="C:\Program Files (x86)\nodejs\node.exe" />
   </component>
-  <component name="RunManager" selected="Python.InsertAlignments">
+  <component name="RunManager" selected="Python.GetBillAnalysisWeb">
+    <configuration default="false" name="GetBillAnalysisCapublic" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="SupportFinder" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/GetBillAnalysisCapublic.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <method />
+    </configuration>
     <configuration default="false" name="GetBillAnalysisWeb" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -294,7 +270,7 @@
       <option name="SHOW_COMMAND_LINE" value="false" />
       <method />
     </configuration>
-    <configuration default="false" name="ScrapeSupport" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration default="false" name="RenameBillFiles" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -307,7 +283,7 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <module name="SupportFinder" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ScrapeSupport.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/RenameBillFiles.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <method />
@@ -330,7 +306,7 @@
       <option name="SHOW_COMMAND_LINE" value="false" />
       <method />
     </configuration>
-    <configuration default="false" name="temp" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration default="false" name="ScrapeSupport" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -343,25 +319,7 @@
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <module name="SupportFinder" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/temp.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <method />
-    </configuration>
-    <configuration default="false" name="InsertAlignments" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <module name="SupportFinder" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/InsertAlignments.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/ScrapeSupport.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <method />
@@ -575,19 +533,19 @@
       <method />
     </configuration>
     <list size="5">
-      <item index="0" class="java.lang.String" itemvalue="Python.GetBillAnalysisWeb" />
-      <item index="1" class="java.lang.String" itemvalue="Python.ScrapeSupport" />
-      <item index="2" class="java.lang.String" itemvalue="Python.TestCases" />
-      <item index="3" class="java.lang.String" itemvalue="Python.temp" />
-      <item index="4" class="java.lang.String" itemvalue="Python.InsertAlignments" />
+      <item index="0" class="java.lang.String" itemvalue="Python.GetBillAnalysisCapublic" />
+      <item index="1" class="java.lang.String" itemvalue="Python.GetBillAnalysisWeb" />
+      <item index="2" class="java.lang.String" itemvalue="Python.RenameBillFiles" />
+      <item index="3" class="java.lang.String" itemvalue="Python.TestCases" />
+      <item index="4" class="java.lang.String" itemvalue="Python.ScrapeSupport" />
     </list>
     <recent_temporary>
       <list size="5">
-        <item index="0" class="java.lang.String" itemvalue="Python.InsertAlignments" />
-        <item index="1" class="java.lang.String" itemvalue="Python.temp" />
-        <item index="2" class="java.lang.String" itemvalue="Python.ScrapeSupport" />
-        <item index="3" class="java.lang.String" itemvalue="Python.TestCases" />
-        <item index="4" class="java.lang.String" itemvalue="Python.GetBillAnalysisWeb" />
+        <item index="0" class="java.lang.String" itemvalue="Python.GetBillAnalysisWeb" />
+        <item index="1" class="java.lang.String" itemvalue="Python.ScrapeSupport" />
+        <item index="2" class="java.lang.String" itemvalue="Python.TestCases" />
+        <item index="3" class="java.lang.String" itemvalue="Python.RenameBillFiles" />
+        <item index="4" class="java.lang.String" itemvalue="Python.GetBillAnalysisCapublic" />
       </list>
     </recent_temporary>
   </component>
@@ -613,27 +571,27 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="1366" y="-58" width="1024" height="726" extended-state="0" />
-    <editor active="true" />
+    <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
+    <editor active="false" />
     <layout>
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="true" content_ui="tabs" />
       <window_info id="File Transfer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32980973" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
-      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32980973" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32980973" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32980973" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32875264" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Remote Host" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3296875" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
-      <window_info id="Database Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="WINDOWED" visible="true" show_stripe_button="true" weight="1.0" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.125" sideWeight="0.5" order="1" side_tool="false" content_ui="combo" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="WINDOWED" visible="true" show_stripe_button="true" weight="0.32875264" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" x="2656" y="31" width="1183" height="1008" />
+      <window_info id="Remote Host" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3296875" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.125" sideWeight="0.5" order="1" side_tool="false" content_ui="combo" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3296875" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.0625" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="true" internal_type="SLIDING" type="WINDOWED" visible="false" show_stripe_button="true" weight="0.74524313" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" x="-8" y="-8" width="1382" height="744" />
+      <window_info id="Debug" active="true" anchor="bottom" auto_hide="true" internal_type="SLIDING" type="WINDOWED" visible="true" show_stripe_button="true" weight="0.74524313" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" x="1921" y="31" width="733" height="1008" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
+      <window_info id="Database Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="WINDOWED" visible="true" show_stripe_button="true" weight="1.0" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="3" side_tool="false" content_ui="combo" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
@@ -678,33 +636,23 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="python-line">
           <url>file://$PROJECT_DIR$/GetBillAnalysisWeb.py</url>
-          <line>122</line>
+          <line>126</line>
           <option name="timeStamp" value="6" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="python-line">
           <url>file://$PROJECT_DIR$/GetBillAnalysisWeb.py</url>
-          <line>118</line>
+          <line>122</line>
           <option name="timeStamp" value="7" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="python-line">
           <url>file://$PROJECT_DIR$/GetBillAnalysisWeb.py</url>
-          <line>184</line>
+          <line>189</line>
           <option name="timeStamp" value="20" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="python-line">
           <url>file://$PROJECT_DIR$/GetBillAnalysisWeb.py</url>
-          <line>187</line>
+          <line>192</line>
           <option name="timeStamp" value="21" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="python-line">
-          <url>file://$PROJECT_DIR$/GetBillAnalysisWeb.py</url>
-          <line>176</line>
-          <option name="timeStamp" value="24" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="python-line">
-          <url>file://$PROJECT_DIR$/GetBillAnalysisWeb.py</url>
-          <line>172</line>
-          <option name="timeStamp" value="27" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="python-line">
           <url>file://$PROJECT_DIR$/SupportFinder.py</url>
@@ -726,90 +674,50 @@
           <line>183</line>
           <option name="timeStamp" value="47" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" type="python-line">
+          <url>file://$PROJECT_DIR$/GetBillAnalysisCapublic.py</url>
+          <line>23</line>
+          <option name="timeStamp" value="49" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="python-line">
+          <url>file://$PROJECT_DIR$/RenameBillFiles.py</url>
+          <line>33</line>
+          <option name="timeStamp" value="53" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="python-line">
+          <url>file://$PROJECT_DIR$/RenameBillFiles.py</url>
+          <line>30</line>
+          <option name="timeStamp" value="54" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="python-line">
+          <url>file://$PROJECT_DIR$/TestCases.py</url>
+          <line>11</line>
+          <option name="timeStamp" value="55" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="python-line">
+          <url>file://$PROJECT_DIR$/SupportFinder.py</url>
+          <line>166</line>
+          <option name="timeStamp" value="56" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="python-line">
+          <url>file://$PROJECT_DIR$/GetBillAnalysisWeb.py</url>
+          <line>88</line>
+          <option name="timeStamp" value="64" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="python-line">
+          <url>file://$PROJECT_DIR$/GetBillAnalysisWeb.py</url>
+          <line>68</line>
+          <option name="timeStamp" value="73" />
+        </line-breakpoint>
       </breakpoints>
       <breakpoints-dialog>
         <breakpoints-dialog />
       </breakpoints-dialog>
-      <option name="time" value="49" />
+      <option name="time" value="74" />
     </breakpoint-manager>
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/ExampleOutput/FinishedBills.txt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ScrapeSupport.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="374">
-          <caret line="22" column="10" selection-start-line="22" selection-start-column="10" selection-end-line="22" selection-end-column="10" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/SupportFinder.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1598">
-          <caret line="94" column="18" selection-start-line="94" selection-start-column="18" selection-end-line="94" selection-end-column="18" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/TestCases.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="102">
-          <caret line="7" column="17" selection-start-line="7" selection-start-column="17" selection-end-line="7" selection-end-column="17" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/GetBillAnalysis.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="561">
-          <caret line="36" column="12" selection-start-line="36" selection-start-column="12" selection-end-line="36" selection-end-column="12" />
-          <folding>
-            <marker date="1467251240970" expanded="true" signature="210:313" ph="&quot;...&quot;" />
-            <marker date="1467251240970" expanded="true" signature="213:311" ph="SELECT field... field_data_field_analysis" />
-            <marker date="1467251240970" expanded="true" signature="213:312" ph="SELECT field... field_data_field_analysis" />
-            <marker date="1467251240970" expanded="true" signature="844:1767" ph="..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/GetBillAnalysisWeb.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1547">
-          <caret line="91" column="4" selection-start-line="91" selection-start-column="4" selection-end-line="91" selection-end-column="4" />
-          <folding>
-            <element signature="e#0#14#0" expanded="true" />
-            <marker date="1469746966157" expanded="true" signature="3846:3934" ph="SELECT bill_... bill_analysis_tbl" />
-            <marker date="1469746966157" expanded="true" signature="3846:3949" ph="SELECT bill_... bill_analysis_tbl" />
-            <marker date="1469746966157" expanded="true" signature="4656:4853" ph="SELECT DISTI... authors" />
-            <marker date="1469746966157" expanded="true" signature="4656:5105" ph="SELECT DISTI... " />
-            <marker date="1469746966157" expanded="true" signature="4900:5105" ph="SELECT DISTI... CommitteeAuthors" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/temp.sql">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="102">
-          <caret line="6" column="22" selection-start-line="6" selection-start-column="22" selection-end-line="6" selection-end-column="22" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ScrapeSupport.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="85">
-          <caret line="6" column="0" selection-start-line="6" selection-start-column="0" selection-end-line="6" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/pymysql/err.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1904">
@@ -822,10 +730,8 @@
         <state relative-caret-position="561">
           <caret line="36" column="12" selection-start-line="36" selection-start-column="12" selection-end-line="36" selection-end-column="12" />
           <folding>
-            <marker date="1467251240970" expanded="true" signature="210:313" ph="&quot;...&quot;" />
-            <marker date="1467251240970" expanded="true" signature="213:311" ph="SELECT field... field_data_field_analysis" />
-            <marker date="1467251240970" expanded="true" signature="213:312" ph="SELECT field... field_data_field_analysis" />
-            <marker date="1467251240970" expanded="true" signature="844:1767" ph="..." />
+            <element signature="e#0#14#0" expanded="true" />
+            <marker date="1474305672411" expanded="true" signature="213:312" ph="SELECT field... field_data_field_analysis" />
           </folding>
         </state>
       </provider>
@@ -836,11 +742,10 @@
           <caret line="175" column="37" selection-start-line="175" selection-start-column="37" selection-end-line="175" selection-end-column="37" />
           <folding>
             <element signature="e#0#14#0" expanded="true" />
-            <marker date="1469746966157" expanded="true" signature="3846:3934" ph="SELECT bill_... bill_analysis_tbl" />
-            <marker date="1469746966157" expanded="true" signature="3846:3949" ph="SELECT bill_... bill_analysis_tbl" />
-            <marker date="1469746966157" expanded="true" signature="4656:4853" ph="SELECT DISTI... authors" />
-            <marker date="1469746966157" expanded="true" signature="4656:5105" ph="SELECT DISTI... " />
-            <marker date="1469746966157" expanded="true" signature="4900:5105" ph="SELECT DISTI... CommitteeAuthors" />
+            <marker date="1474497931717" expanded="true" signature="3959:4062" ph="SELECT bill_... " />
+            <marker date="1474497931717" expanded="true" signature="4768:4965" ph="SELECT DISTI... authors" />
+            <marker date="1474497931717" expanded="true" signature="4768:5217" ph="SELECT DISTI... " />
+            <marker date="1474497931717" expanded="true" signature="5012:5217" ph="SELECT DISTI... CommitteeAuthors" />
           </folding>
         </state>
       </provider>
@@ -865,10 +770,8 @@
         <state relative-caret-position="0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <marker date="1467251240970" expanded="true" signature="210:313" ph="&quot;...&quot;" />
-            <marker date="1467251240970" expanded="true" signature="213:311" ph="SELECT field... field_data_field_analysis" />
-            <marker date="1467251240970" expanded="true" signature="213:312" ph="SELECT field... field_data_field_analysis" />
-            <marker date="1467251240970" expanded="true" signature="844:1767" ph="..." />
+            <element signature="e#0#14#0" expanded="true" />
+            <marker date="1474305672411" expanded="true" signature="213:312" ph="SELECT field... field_data_field_analysis" />
           </folding>
         </state>
       </provider>
@@ -881,7 +784,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/Documents/GitHub/dd-Data3.0/Python_Scripts/UsedForUpdate/ImportLegStaffData/ImportLegOfficeDataXlsx.py">
+    <entry file="file://$PROJECT_DIR$/../UsedForUpdate/ImportLegStaffData/ImportLegOfficeDataXlsx.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="445">
           <caret line="319" column="4" selection-start-line="315" selection-start-column="0" selection-end-line="319" selection-end-column="68" />
@@ -917,11 +820,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/Documents/GitHub/dd-Data3.0/Python_Scripts/UsedForUpdate/ImportLegStaffData/ScrapeStaff.py">
+    <entry file="file://$PROJECT_DIR$/../UsedForUpdate/ImportLegStaffData/ScrapeStaff.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="476">
           <caret line="474" column="4" selection-start-line="474" selection-start-column="4" selection-end-line="474" selection-end-column="4" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -974,27 +876,9 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ExampleOutput/AB_1_02-25-2016.txt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ExampleOutput/AB_1_04-15-2015.txt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/BillAnalysisText/AB_1_04-07-2015_Support.csv">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/ExampleOutput/AB_1_02-25-2016.txt" />
+    <entry file="file://$PROJECT_DIR$/ExampleOutput/AB_1_04-15-2015.txt" />
+    <entry file="file://$PROJECT_DIR$/BillAnalysisText/AB_1_04-07-2015_Support.csv" />
     <entry file="file://$PROJECT_DIR$/temp.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
@@ -1002,171 +886,163 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/.PyCharm2016.1/system/remote_sources/355428310/1646052551/tokenize.py">
+    <entry file="file://$USER_HOME$/.PyCharm2016.1/system/remote_sources/355428310/1646052551/tokenize.py" />
+    <entry file="file://$USER_HOME$/.PyCharm2016.1/system/remote_sources/355428310/1038532262/pandas/core/frame.py" />
+    <entry file="file://$PROJECT_DIR$/ExampleOutput/FinishedBills.txt" />
+    <entry file="file://$USER_HOME$/.PyCharm2016.1/system/remote_sources/355428310/1038532262/pandas/core/generic.py" />
+    <entry file="file://$USER_HOME$/.PyCharm2016.1/system/remote_sources/355428310/942361161/pymysql/cursors.py" />
+    <entry file="file://$USER_HOME$/.PyCharm2016.1/system/remote_sources/355428310/1038532262/pandas/core/series.py" />
+    <entry file="file://$USER_HOME$/.PyCharm2016.1/system/remote_sources/355428310/1646052551/codecs.py" />
+    <entry file="file://$USER_HOME$/.PyCharm2016.1/system/remote_sources/355428310/942361161/pymysql/connections.py" />
+    <entry file="file://$USER_HOME$/.PyCharm2016.1/system/remote_sources/355428310/942361161/pymysql/err.py" />
+    <entry file="file://$APPLICATION_CONFIG_DIR$/consoles/db/7780d9a9-5dd7-408a-9c46-48df5bdf5d68/console.sql" />
+    <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/pydevd.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="202">
+        <state relative-caret-position="714">
+          <caret line="1530" column="0" selection-start-line="1530" selection-start-column="0" selection-end-line="1530" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/.PyCharm2016.2/system/remote_sources/-1451774737/1646052551/tokenize.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="306">
           <caret line="437" column="0" selection-start-line="437" selection-start-column="0" selection-end-line="437" selection-end-column="0" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/.PyCharm2016.1/system/remote_sources/355428310/1038532262/pandas/core/frame.py">
+    <entry file="file://$PROJECT_DIR$/GetBillAnalysisCapublic.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="306">
-          <caret line="5488" column="0" selection-start-line="5488" selection-start-column="0" selection-end-line="5488" selection-end-column="0" />
-          <folding />
+        <state relative-caret-position="374">
+          <caret line="22" column="12" selection-start-line="22" selection-start-column="12" selection-end-line="22" selection-end-column="12" />
+          <folding>
+            <element signature="e#0#14#0" expanded="false" />
+            <marker date="1474250340452" expanded="true" signature="352:435" ph="SELECT bill_... bill_analysis_tbl" />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ScrapeSupport.py">
+    <entry file="file://$USER_HOME$/.PyCharm2016.2/system/remote_sources/-1451774737/942361161/pymysql/err.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="102">
-          <caret line="7" column="9" selection-start-line="7" selection-start-column="9" selection-end-line="7" selection-end-column="9" />
-          <folding />
+        <state relative-caret-position="714">
+          <caret line="114" column="0" selection-start-line="114" selection-start-column="0" selection-end-line="114" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/.PyCharm2016.2/system/remote_sources/-1451774737/942361161/bs4/element.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="306">
+          <caret line="196" column="0" selection-start-line="196" selection-start-column="0" selection-end-line="196" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/RenameBillFiles.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="544">
+          <caret line="32" column="0" selection-start-line="32" selection-start-column="0" selection-end-line="32" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#18#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/.PyCharm2016.2/system/remote_sources/-1451774737/1646052551/http/client.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="306">
+          <caret line="342" column="0" selection-start-line="342" selection-start-column="0" selection-end-line="342" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/.PyCharm2016.2/system/remote_sources/-1451774737/1646052551/codecs.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="306">
+          <caret line="318" column="0" selection-start-line="318" selection-start-column="0" selection-end-line="318" selection-end-column="0" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/GetBillAnalysis.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="561">
-          <caret line="36" column="12" selection-start-line="36" selection-start-column="12" selection-end-line="36" selection-end-column="12" />
-          <folding>
-            <marker date="1467251240970" expanded="true" signature="210:313" ph="&quot;...&quot;" />
-            <marker date="1467251240970" expanded="true" signature="213:311" ph="SELECT field... field_data_field_analysis" />
-            <marker date="1467251240970" expanded="true" signature="213:312" ph="SELECT field... field_data_field_analysis" />
-            <marker date="1467251240970" expanded="true" signature="844:1767" ph="..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ExampleOutput/FinishedBills.txt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/.PyCharm2016.1/system/remote_sources/355428310/1038532262/pandas/core/generic.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="306">
-          <caret line="2671" column="0" selection-start-line="2671" selection-start-column="0" selection-end-line="2671" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/GetBillAnalysisWeb.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="15" column="29" selection-start-line="15" selection-start-column="29" selection-end-line="15" selection-end-column="29" />
+        <state relative-caret-position="190">
+          <caret line="41" column="45" selection-start-line="41" selection-start-column="45" selection-end-line="41" selection-end-column="45" />
           <folding>
             <element signature="e#0#14#0" expanded="true" />
-            <marker date="1469746966157" expanded="true" signature="3846:3934" ph="SELECT bill_... bill_analysis_tbl" />
-            <marker date="1469746966157" expanded="true" signature="3846:3949" ph="SELECT bill_... bill_analysis_tbl" />
-            <marker date="1469746966157" expanded="true" signature="4656:4853" ph="SELECT DISTI... authors" />
-            <marker date="1469746966157" expanded="true" signature="4656:5105" ph="SELECT DISTI... " />
-            <marker date="1469746966157" expanded="true" signature="4900:5105" ph="SELECT DISTI... CommitteeAuthors" />
+            <marker date="1474305672411" expanded="true" signature="213:312" ph="SELECT field... field_data_field_analysis" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/TestCases.py">
+    <entry file="file://$PROJECT_DIR$/ScrapeSupport.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="102">
-          <caret line="7" column="17" selection-start-line="7" selection-start-column="17" selection-end-line="7" selection-end-column="17" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/SupportFinder.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="17">
-          <caret line="94" column="18" selection-start-line="94" selection-start-column="18" selection-end-line="94" selection-end-column="18" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/.PyCharm2016.1/system/remote_sources/355428310/942361161/pymysql/cursors.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="306">
-          <caret line="145" column="0" selection-start-line="145" selection-start-column="0" selection-end-line="145" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/.PyCharm2016.1/system/remote_sources/355428310/1038532262/pandas/core/series.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="306">
-          <caret line="2769" column="0" selection-start-line="2769" selection-start-column="0" selection-end-line="2769" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ProjectNotes.txt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="153">
-          <caret line="9" column="88" selection-start-line="9" selection-start-column="88" selection-end-line="9" selection-end-column="88" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/.PyCharm2016.1/system/remote_sources/355428310/1646052551/codecs.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="406">
-          <caret line="318" column="0" selection-start-line="318" selection-start-column="0" selection-end-line="318" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/.PyCharm2016.1/system/remote_sources/355428310/942361161/pymysql/connections.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="272">
-          <caret line="816" column="0" selection-start-line="816" selection-start-column="0" selection-end-line="816" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/pydevd.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="714">
-          <caret line="1530" column="0" selection-start-line="1530" selection-start-column="0" selection-end-line="1530" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/.PyCharm2016.1/system/remote_sources/355428310/942361161/pymysql/err.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="765">
-          <caret line="111" column="0" selection-start-line="111" selection-start-column="0" selection-end-line="111" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$APPLICATION_CONFIG_DIR$/consoles/db/7780d9a9-5dd7-408a-9c46-48df5bdf5d68/console.sql">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="510">
-          <caret line="30" column="14" selection-start-line="30" selection-start-column="14" selection-end-line="30" selection-end-column="14" />
+        <state relative-caret-position="136">
+          <caret line="9" column="9" selection-start-line="9" selection-start-column="9" selection-end-line="9" selection-end-column="9" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/InsertAlignments.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="408">
-          <caret line="64" column="0" selection-start-line="64" selection-start-column="0" selection-end-line="64" selection-end-column="0" />
+        <state relative-caret-position="884">
+          <caret line="146" column="18" selection-start-line="146" selection-start-column="18" selection-end-line="146" selection-end-column="18" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
-            <marker date="1472181985482" expanded="true" signature="516:651" ph="SELECT bd.bi... BillDiscussion" />
-            <marker date="1472181985482" expanded="true" signature="516:688" ph="SELECT bd.bi... BillDiscussion" />
-            <marker date="1472181985482" expanded="true" signature="796:831" ph="SELECT bid F... Bill" />
-            <marker date="1472181985482" expanded="true" signature="796:865" ph="SELECT bid F... Bill" />
-            <marker date="1472181985482" expanded="true" signature="796:869" ph="SELECT bid F... Bill" />
-            <marker date="1472181985482" expanded="true" signature="796:1058" ph="SELECT bid F... Bill" />
-            <marker date="1472181985482" expanded="true" signature="1062:1112" ph="SELECT oid, Organizations" />
-            <marker date="1472181985482" expanded="true" signature="2215:2336" ph="INSERT INTO Organizations... " />
-            <marker date="1472181985482" expanded="true" signature="3358:3501" ph="INSERT INTO OrgAlignments... " />
+            <marker date="1473825509532" expanded="true" signature="516:688" ph="SELECT bd.bi... BillDiscussion" />
+            <marker date="1473825509532" expanded="true" signature="796:865" ph="SELECT bid F... Bill" />
+            <marker date="1473825509532" expanded="true" signature="1062:1112" ph="SELECT oid, Organizations" />
+            <marker date="1473825509532" expanded="true" signature="2215:2336" ph="INSERT INTO Organizations... " />
+            <marker date="1473825509532" expanded="true" signature="3358:3501" ph="INSERT INTO OrgAlignments... " />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/TestCases.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-714">
+          <caret line="4" column="7" selection-start-line="4" selection-start-column="7" selection-end-line="4" selection-end-column="7" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/SupportFinder.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="148">
+          <caret line="173" column="0" selection-start-line="173" selection-start-column="0" selection-end-line="173" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#9#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ProjectNotes.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="255">
+          <caret line="15" column="0" selection-start-line="15" selection-start-column="0" selection-end-line="15" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/.PyCharm2016.2/system/remote_sources/355428310/1646052551/http/client.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="306">
+          <caret line="864" column="0" selection-start-line="864" selection-start-column="0" selection-end-line="864" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GetBillAnalysisWeb.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="649">
+          <caret line="188" column="27" selection-start-line="188" selection-start-column="27" selection-end-line="188" selection-end-column="27" />
+          <folding>
+            <element signature="e#0#14#0" expanded="true" />
+            <marker date="1474497931717" expanded="true" signature="3959:4062" ph="SELECT bill_... " />
+            <marker date="1474497931717" expanded="true" signature="4768:4965" ph="SELECT DISTI... authors" />
+            <marker date="1474497931717" expanded="true" signature="4768:5217" ph="SELECT DISTI... " />
+            <marker date="1474497931717" expanded="true" signature="5012:5217" ph="SELECT DISTI... CommitteeAuthors" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+  </component>
+  <component name="webServersAuthStorage">
+    <data>AAAAsPm0msgoG1WBA3jyADbXSRuASJNK47MNBdgisZet026sDHZclz1t3VHFKzqIXue7EMIU3kaky1dvIdjAAASY+a2TvrIf3LR/YKybhvVA2D/rjkrBfXx/PAfWiS8W0kFUHbFiZkNNzFbFKPun+KXRqfRvDiSonNm4f7bYnXC+oahttxsQvK8Zc1+/k6exLDVmvkgD+mGhdueLKQdsnQpk/xqzm4PnWWvj8XxO8Fe0iUOh4LA38rJnyw4kWkGOtrhylw==</data>
   </component>
 </project>

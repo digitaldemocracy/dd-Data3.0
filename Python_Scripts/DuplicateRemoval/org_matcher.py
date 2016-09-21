@@ -2,7 +2,6 @@
 
 
 import pandas as pd
-from unidecode import unidecode
 
 # This is all black magic to me, but I'm pretty sure it prevents multiple instantiations of an OrgMatcher class
 class SingletonType(type):

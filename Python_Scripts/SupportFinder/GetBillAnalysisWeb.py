@@ -5,13 +5,14 @@ from urllib.request import URLError
 from http.client import BadStatusLine
 import os
 from bs4 import BeautifulSoup
+import pickle
 
 
 
 URL_TEMPLATE = "http://www.leginfo.ca.gov/cgi-bin/postquery?bill_number={0}&sess=CUR&house=B&author={1}%3C{1}%3E"
 LEG_INFO = "http://www.leginfo.ca.gov"
-OUT_FOLDER = "ExampleOutput"
-FINISHED_BILLS_FILE = OUT_FOLDER + "\\" + "FinishedBills.txt"
+OUT_FOLDER = "BillAnalysisTextFixed"
+FINISHED_BILLS_FILE = OUT_FOLDER + "/" + "FinishedBills.txt"
 
 def clean_author_name(author):
     if author == "de leon":
@@ -60,7 +61,10 @@ def get_bill_page(bid, author):
     if soup.title.string != "Bill List":
         raise LegInfoError('Invalid url: %s for bill %s' % (bill_url, bill))
 
-    match = re.search(b"<h\d>Analyses</h\d>(.*?)(<h\d>)?", html, re.S)
+    match = re.search(b"<h\d>Analyses</h\d>(.*?)(<h\d>?)", html, re.S)
+    if not match:
+        match = re.search(b"<h\d>Analyses</h\d>(.*)</table>", html, re.S)
+
     if not match:
         print("No analysis for", bid, bill_url)
         return None
@@ -94,6 +98,7 @@ def write_bill_text(url, date):
         # this line throws url error
         page = urlopen(url)
         html = page.read()
+        html = str(html).replace('\\n', '\n')
         reg = r"<pre>(.*)</pre>"
 
         match = re.search(reg, str(html), re.DOTALL)
@@ -108,12 +113,11 @@ def write_bill_text(url, date):
         bill_name = match.group(1) + " " + match.group(2)
         file_name = bill_name + " " + date + ".txt"
 
-        path = OUT_FOLDER + "\\" + file_name
+        path = OUT_FOLDER + "/" + file_name
         path = path.replace(" ", "_")
 
-        if not os.path.isfile(path):
-            with open(path, "w+") as output:
-                output.write(bill_text)
+        with open(path, "w") as output:
+            output.write(bill_text)
 
     except URLError:
         print("Can't open: %s" % url)
@@ -147,7 +151,7 @@ def main():
 
     with pymysql.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                          port=3306,
-                         db='AndrewTest2',
+                         db='AndrewTest',
                          user='awsDB',
                          passwd='digitaldemocracy789') as cursor:
 
@@ -171,14 +175,15 @@ def main():
             bid = bid.replace('CA_', '')
             if bid not in finished_bills and bid in analy_counts:
                 analy_count = analy_counts[bid]
+                analy_found = 0
                 try:
                     bill_page_soup = get_bill_page(bid, author)
                     if bill_page_soup:
                         for url, date in get_analysis_links(bill_page_soup):
+                            analy_found += 1
                             write_bill_text(url, date)
                         num += 1
                     write_finished_bill(bid)
-
 
                 except LegInfoError as e:
                     print(e)
@@ -186,6 +191,10 @@ def main():
 
                 except BadStatusLine:
                     print("Can't open bill page for %s, %s" % (bid, author))
+
+                print(bid)
+
+
 
 
         print("Number of successes", num)

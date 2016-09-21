@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" autoUpload="Always" serverName="Copy of project-level server 'Development Server'">
+  <component name="PublishConfigData" autoUpload="Always" serverName="Development Server">
     <serverData>
-      <paths name="Copy of project-level server 'Development Server'">
+      <paths name="Development Server">
         <serverdata>
           <mappings>
-            <mapping deploy="/DuplicateRemoval" local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="dd-Data3.0\Python_Scripts\DuplicateRemoval" local="$PROJECT_DIR$" web="/" />
           </mappings>
         </serverdata>
       </paths>

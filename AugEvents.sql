@@ -4,7 +4,7 @@ delimiter |
 
 CREATE EVENT PersonAffiliations_event
   ON SCHEDULE
-    EVERY 1 DAY STARTS '2016-07-16 07:15:00'
+    EVERY 1 DAY STARTS '2016-09-21 07:15:00'
   DO
   BEGIN
 
@@ -37,7 +37,7 @@ delimiter |
 
 CREATE EVENT BillVersionCurrent_event
   ON SCHEDULE
-    EVERY 1 DAY STARTS '2016-07-16 07:15:00'
+    EVERY 1 DAY STARTS '2016-09-21 07:15:00'
 DO
   BEGIN
 
@@ -63,7 +63,7 @@ delimiter |
 
 CREATE EVENT GiftCombined_event
   ON SCHEDULE
-    EVERY 1 DAY STARTS '2016-07-16 07:15:00'
+    EVERY 1 DAY STARTS '2016-09-21 07:15:00'
 DO
   BEGIN
 
@@ -121,7 +121,7 @@ delimiter |
 
 CREATE EVENT LegParticipation
   ON SCHEDULE
-    EVERY 1 DAY STARTS '2016-07-16 07:00:00'
+    EVERY 1 DAY STARTS '2016-09-21 07:00:00'
 DO
   BEGIN
 
@@ -144,8 +144,9 @@ DO
     -- Creates view with the word counts for every utterance
     CREATE VIEW UtterInfo
     AS
-      SELECT u.uid, u.pid, v.hid, u.did, GetWordCount(u.text)
-        AS WordCount, u.endTime - u.time AS Time
+      SELECT u.uid, u.pid, v.hid, u.did,
+        LENGTH(u.text) - LENGTH(REPLACE(u.text, ' ', ''))+1 AS WordCount,
+        u.endTime - u.time AS Time
       FROM currentUtterance u
         JOIN Video v
           ON u.vid = v.vid
@@ -330,7 +331,7 @@ delimiter |
 
 CREATE EVENT OrgAlignments
   ON SCHEDULE
-    EVERY 1 DAY STARTS '2016-07-16 07:10:00'
+    EVERY 1 DAY STARTS '2016-09-21 07:10:00'
 DO
   BEGIN
 

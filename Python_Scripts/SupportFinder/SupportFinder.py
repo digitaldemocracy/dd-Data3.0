@@ -156,7 +156,7 @@ def scrapeCase3(analysis, supportOut, opposeOut):
     writeOutput(opposition, opposeOut)
 
 def BillScrape(bill, supportOut, opposeOut):
-    with open(bill, 'r') as input_file:
+    with open(bill, 'r', encoding='utf-8', errors='ignore') as input_file:
         text = input_file.read()
         text = text.replace('\r\n', '\n')
         num_empty = 0

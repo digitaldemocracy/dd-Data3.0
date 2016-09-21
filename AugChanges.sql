@@ -180,7 +180,7 @@ INSERT INTO PersonClassifications (pid, state, classification) select `gp`.`pid`
 
 -- Date Timestamp Table Modifications
 SELECT 'Adding *_ts date columns to tables...' AS '';
-ALTER TABLE Action ADD COLUMN date_ts int(11) AS (TO_SECONDS(date_ts) - TO_SECONDS('1970-01-01'));
+ALTER TABLE Action ADD COLUMN date_ts int(11) AS (TO_SECONDS(date) - TO_SECONDS('1970-01-01'));
 ALTER TABLE Behests ADD COLUMN datePaid_ts int(11) AS (TO_SECONDS(datePaid) - TO_SECONDS('1970-01-01'));
 ALTER TABLE Behests ADD COLUMN noticeReceived_ts int(11) AS (TO_SECONDS(noticeReceived) - TO_SECONDS('1970-01-01'));
 ALTER TABLE BillVersion ADD COLUMN date_ts int(11) AS (TO_SECONDS(date) - TO_SECONDS('1970-01-01'));
@@ -348,8 +348,15 @@ ALTER TABLE Person ADD INDEX last (`last`);
 ALTER TABLE Person ADD INDEX first (`first`);
 ALTER TABLE Utterance ADD INDEX current_finalized (`current`, `finalized`);
 
+ALTER TABLE Utterance ADD INDEX time (`time`);
+ALTER TABLE Utterance ADD INDEX current (`current`);
+ALTER TABLE Utterance ADD INDEX finalized (`finalized`);
+
+
 -- currentUtterance View
 -- Andrew Note*: I have no idea why he is doing this
 SELECT 'Re-Creating currentUtterance view for permissions...' AS '';
 DROP VIEW currentUtterance;
 CREATE VIEW `currentUtterance` AS select `Utterance`.`uid` AS `uid`,`Utterance`.`vid` AS `vid`,`Utterance`.`pid` AS `pid`,`Utterance`.`time` AS `time`,`Utterance`.`endTime` AS `endTime`,`Utterance`.`text` AS `text`,`Utterance`.`type` AS `type`,`Utterance`.`alignment` AS `alignment`,`Utterance`.`state` AS `state`,`Utterance`.`did` AS `did`,`Utterance`.`lastTouched` AS `lastTouched` from `Utterance` where ((`Utterance`.`current` = 1) and (`Utterance`.`finalized` = 1)) order by `Utterance`.`time` desc;
+
+

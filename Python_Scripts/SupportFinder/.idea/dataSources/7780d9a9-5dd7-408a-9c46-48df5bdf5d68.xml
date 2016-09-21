@@ -1,0 +1,3 @@
+<dataSource name="RDS Server">
+  <database-model serializer="dbm" rdbms="MYSQL" format-version="2.6" />
+</dataSource>

@@ -39,10 +39,10 @@ def GetBillText(urlList, outFolder):
             match = re.search(reg, html, re.DOTALL)
             billText = match.group(1)
 
-            billNameReg = r"[A-Z]{2,4}(\d?)\s+\d{1,3}"
+            billNameReg = r"[A-Z]{2,4}(\d{0,1})\s+\d{1,4}"
             match = re.search(billNameReg, billText)
 
-            # this through your attribute error
+            # this threw your attribute error
             billName = match.group(0)
             fileName = billName + " " + date + ".txt"
 
