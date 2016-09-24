@@ -9,6 +9,7 @@ Description:
 - Currently configured to test DB
 '''
 
+from Database_Connection import mysql_connection
 import traceback
 from lxml import html
 import requests
@@ -224,12 +225,12 @@ def get_pid_db(person, dddb):
 
     
 def main():
-    with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-                    user='awsDB',
-                    db='DDDB2015Dec',
-                    port=3306,
-                    passwd='digitaldemocracy789') as dddb:
-
+#    with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+#                    user='awsDB',
+#                    db='DDDB2015Dec',
+#                    port=3306,
+#                    passwd='digitaldemocracy789') as dddb:
+      dddb = mysql_connection()
       add_committees_db(dddb)
       logger.info(__file__ + ' terminated successfully.', 
           full_msg='Inserted ' + str(C_INSERTED) + ' rows in Committee and inserted ' 

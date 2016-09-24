@@ -28,6 +28,7 @@ Populates:
   - BillVersion (title, digest, text, state)
 '''
 
+from Database_Connection import mysql_connection
 import traceback
 from lxml import etree 
 import MySQLdb
@@ -160,17 +161,18 @@ def billparse(ca_cursor, dd_cursor):
 
 if __name__ == "__main__":
   # MUST SPECIFY charset='utf8' OR BAD THINGS WILL HAPPEN.
-  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-                         port=3306,
-                         db='DDDB2015Dec',
-                         user='awsDB',
-                         passwd='digitaldemocracy789',
-                         charset='utf8') as dd_cursor:
+#  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+#                         port=3306,
+#                         db='DDDB2015Dec',
+#                         user='awsDB',
+#                         passwd='digitaldemocracy789',
+#                         charset='utf8') as dd_cursor:
     with MySQLdb.connect(host='transcription.digitaldemocracy.org',
                          user='monty',
                          db='capublic',
                          passwd='python',
                          charset='utf8') as ca_cursor:
+      dd_cursor = mysql_connection() 
       with GrayLogger(API_URL) as _logger:                                          
         logger = _logger 
         billparse(ca_cursor, dd_cursor)

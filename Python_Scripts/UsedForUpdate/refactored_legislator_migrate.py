@@ -30,6 +30,7 @@ Populates:
   - Term (pid, year, district, house, party, state)
 '''
 
+from Database_Connection import mysql_connection
 import traceback
 import MySQLdb
 from Name_Fixes_Legislator_Migrate import clean_name_legislator_migrate
@@ -186,11 +187,12 @@ def main():
                        db='capublic',
                        user='monty',
                        passwd='python') as ca_cursor:
-    with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-                           port=3306,
-                           db='EricTest',
-                           user='awsDB',
-                           passwd='digitaldemocracy789') as dd_cursor:
+#    with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+#                           port=3306,
+#                           db='EricTest',
+#                           user='awsDB',
+#                           passwd='digitaldemocracy789') as dd_cursor:
+      dd_cursor = mysql_connection()  
       migrate_legislators(ca_cursor, dd_cursor)
       logger.info(__file__ + ' terminated successfully.', 
           full_msg='Inserted ' + str(P_INSERT) + ' rows in Person, inserted ' +

@@ -22,6 +22,7 @@ Sources:
   - cand_2015.csv
 '''
 
+from Database_Connection import mysql_connection
 import urllib
 import zipfile
 import os
@@ -253,12 +254,13 @@ def main():
   #getContributions('cand_2013.csv')
   #getContributions('../../../Contribution_Data/cand_2015_windows.csv')
   #db.close()
-  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-                         port=3306,
-                         db='DDDB2015Dec',
-                         #db='EricTest',
-                         user='awsDB',
-                         passwd='digitaldemocracy789') as dd_cursor:
+  #with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+  #                       port=3306,
+  #                       db='DDDB2015Dec',
+  #                       #db='EricTest',
+  #                       user='awsDB',
+  #                       passwd='digitaldemocracy789') as dd_cursor:
+    dd_cursor = mysql_connection() 
     dl_csv()
     getContributions('cand_2015.csv', dd_cursor)
     print 'orgs not found', len(notfound_org)

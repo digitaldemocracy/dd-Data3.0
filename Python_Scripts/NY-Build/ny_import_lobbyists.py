@@ -39,6 +39,7 @@ Source:
     - https://data.ny.gov/Transparency/Registered-Lobbyist-Disclosures-Beginning-2007/djsm-9cw7
 '''
 
+from Database_Connection import mysql_connection
 import re
 import sys
 from datetime import date
@@ -540,12 +541,13 @@ def insert_lobbyists_db(dddb, lobbyists):
             insert_lobbyingfirm_db(dddb, client_year_val)    
 
 def main():
-  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-      user='awsDB',
-      db='MikeyTest',
-      port=3306,
-      passwd='digitaldemocracy789',
-      charset='utf8') as dddb:
+#  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+#      user='awsDB',
+#      db='MikeyTest',
+#      port=3306,
+#      passwd='digitaldemocracy789',
+#      charset='utf8') as dddb:
+    dddb = mysql_connection()
     lobbyists_api = call_lobbyist_api()
     lobbyists = get_lobbyists_api(dddb, lobbyists_api)
     insert_lobbyists_db(dddb, lobbyists)

@@ -12,6 +12,7 @@ Description:
 - Currently configured to test DB
 '''
 
+from Database_Connection import mysql_connection
 import traceback
 import requests
 import MySQLdb
@@ -210,12 +211,13 @@ def add_bills_db( dddb):
     print "Inserted %d bills" % bcount
                     
 def main():
-    with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-                        user='awsDB',
-                        db='DDDB2015Dec',
-                        port=3306,
-                        passwd='digitaldemocracy789',
-                        charset='utf8') as dddb:
+#    with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+#                        user='awsDB',
+#                        db='DDDB2015Dec',
+#                        port=3306,
+#                        passwd='digitaldemocracy789',
+#                        charset='utf8') as dddb:
+      dddb = mysql_connection()
       add_bills_db(dddb)
       logger.info(__file__ + ' terminated successfully.', 
           full_msg='Inserted ' + str(INSERTED) + ' and updated ' + str(UPDATED) + ' rows in Bill and inserted ' 

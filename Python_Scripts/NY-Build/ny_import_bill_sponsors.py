@@ -11,6 +11,7 @@ Description:
 - Currently configured to test DB
 '''
 
+from Database_Connection import mysql_connection
 import traceback
 import requests
 import MySQLdb
@@ -278,14 +279,15 @@ def add_authors_db(year, dddb):
       insert_sponsors_db(bill, dddb, contribution)
 
 def main():
-  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-            user='awsDB',
-            db='DDDB2015Dec',
-            port=3306,
-            passwd='digitaldemocracy789',
-            charset='utf8') as dddb:
+#  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+#            user='awsDB',
+#            db='DDDB2015Dec',
+#            port=3306,
+#            passwd='digitaldemocracy789',
+#            charset='utf8') as dddb:
 #   dddb = dddb_conn.cursor()
 #   dddb_conn.autocommit(True)
+    dddb = mysql_connection() 
     add_authors_db(2015, dddb)
     logger.info(__file__ + ' terminated', 
         full_msg='inserted ' + str(INSERTED) + ' in BillSponsors',

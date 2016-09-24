@@ -19,6 +19,7 @@ Populates:
 
 '''
 
+from Database_Connection import mysql_connection
 import traceback
 import datetime
 import json
@@ -130,11 +131,12 @@ def get_districts(dd_cursor):
 
 def main():
   import MySQLdb
-  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-                         port=3306,
-                         db='DDDB2015Dec',
-                         user='awsDB',
-                         passwd='digitaldemocracy789') as dd_cursor:
+#  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+#                         port=3306,
+#                         db='DDDB2015Dec',
+#                         user='awsDB',
+#                         passwd='digitaldemocracy789') as dd_cursor:
+    dd_cursor = mysql_connection()
     get_districts(dd_cursor)
     logger.info(__file__ + ' terminated successfully.', 
         full_msg='Inserted ' + str(INSERTED) + ' rows in District',

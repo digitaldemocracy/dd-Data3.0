@@ -13,6 +13,7 @@ Description:
 - Currently configured to test DB
 '''
 
+from Database_Connection import mysql_connection
 import requests
 import MySQLdb
 import sys
@@ -458,12 +459,13 @@ def insert_billvotesums_db(dddb, bills):
 
 speaker = get_speaker_name()
 def main():
-    with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-                        user='awsDB',
-                        db='DDDB2015Dec',
-                        port=3306,
-                        passwd='digitaldemocracy789',
-                        charset='utf8') as dddb:
+#    with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+#                        user='awsDB',
+#                        db='DDDB2015Dec',
+#                        port=3306,
+#                        passwd='digitaldemocracy789',
+#                        charset='utf8') as dddb:
+        dddb = mysql_connection()
         insert_billvotesums_db(dddb, get_bills_api(dddb))   
         logger.info(__file__ + ' terminated successfully.', 
             full_msg='Inserted ' + str(VS_INSERTED) + ' rows in BillVoteSummary and inserted ' 
