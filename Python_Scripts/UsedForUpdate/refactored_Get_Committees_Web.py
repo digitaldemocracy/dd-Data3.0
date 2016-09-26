@@ -30,6 +30,7 @@ Notes:
       - http://apro.assembly.ca.gov/membersstaff
       - http://smup.senate.ca.gov/
 '''
+from Database_Connection import mysql_connection
 import Find_Person
 import datetime
 import json
@@ -550,12 +551,13 @@ def update_committees(cursor, house, year, comm_count, serve_count, pfinder):
   return comm_count, serve_count
 
 def main():
-  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-                       port=3306,
-                       db='DDDB2015Dec',
-                       user='awsDB',
-                       passwd='digitaldemocracy789',
-                       charset='utf8') as dd:
+#  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+#                       port=3306,
+#                       db='DDDB2015Dec',
+#                       user='awsDB',
+#                       passwd='digitaldemocracy789',
+#                       charset='utf8') as dd:
+    dd = mysql_connection() 
     comm_count = serve_count = 0
     year = datetime.datetime.now().year
     pfinder = Find_Person.FindPerson(dd, 'CA')

@@ -27,6 +27,7 @@ Populates:
   - LobbyingContracts (filer_id, lobbyist_employer, rpt_date, ls_beg_yr, ls_end_yr)
 '''
 
+from Database_Connection import mysql_connection
 import csv
 import re
 import MySQLdb
@@ -489,14 +490,15 @@ def is_in_lobbyingFirmState(dd_cursor, filer_id):
     return True
 
 def main():
-  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-                         port=3306,
-                         db='MikeyTest',
-                         user='awsDB',
-                         passwd='digitaldemocracy789') as dd_cursor:
+#  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+#                         port=3306,
+#                         db='MikeyTest',
+#                         user='awsDB',
+#                         passwd='digitaldemocracy789') as dd_cursor:
     # Turn off foreign key checks
     #dd_cursor.execute('SET foreign_key_checks = 0')
     with open('/home/data_warehouse_common/scripts/CVR_REGISTRATION_CD.TSV', 'rb') as tsvin:
+      dd_cursor = mysql_connection() 
       tsvin_reader = csv.reader(tsvin, delimiter='\t')
       
       val = 0

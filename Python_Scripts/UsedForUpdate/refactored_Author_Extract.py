@@ -30,6 +30,7 @@ Populates:
 
 '''
 
+from Database_Connection import mysql_connection
 import traceback
 import MySQLdb
 from graylogger.graylogger import GrayLogger
@@ -372,21 +373,22 @@ def get_authors(ca_cursor, dd_cursor):
           add_committee_author(dd_cursor, cid, bid, vid)
 
 def main():
-  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-                         port=3306,
-                         db='DDDB2015Dec',
-                         user='awsDB',
-                         passwd='digitaldemocracy789') as dd_cursor:
-    with MySQLdb.connect(host='transcription.digitaldemocracy.org',
+#  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+#                         port=3306,
+#                         db='DDDB2015Dec',
+#                         user='awsDB',
+#                         passwd='digitaldemocracy789') as dd_cursor:
+  with MySQLdb.connect(host='transcription.digitaldemocracy.org',
                        user='monty',
                        db='capublic',
                        passwd='python') as ca_cursor:
+      dd_cursor = mysql_connection()
       get_authors(ca_cursor, dd_cursor)
       logger.info(__file__ + ' terminated successfully.', 
           full_msg='Inserted ' + str(AU_INSERT) + ' rows in authors, ' 
                     + str(BS_INSERT) + ' rows in BillSponsors and ' 
                     + str(CA_INSERT) + ' rows in CommitteeAuthors.',
-     additional_fields={'_affected_rows':'authos:'+str(AU_INSERT)+
+          additional_fields={'_affected_rows':'authos:'+str(AU_INSERT)+
                                          ', BillSponsors:'+str(BS_INSERT)+
                                          ', CommitteeAuthors:'+str(CA_INSERT),
                              '_inserted':'authors:'+str(AU_INSERT)+

@@ -32,6 +32,7 @@ Populates:
 
 '''
 
+from Database_Connection import mysql_connection
 import traceback
 import MySQLdb
 import sys
@@ -374,11 +375,12 @@ def main():
                        db='capublic',
                        user='monty',
                        passwd='python') as ca_cursor:
-    with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-                           port=3306,
-                           db='DDDB2015Dec',
-                           user='awsDB',
-                           passwd='digitaldemocracy789') as dd_cursor:
+#    with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+#                           port=3306,
+#                           db='DDDB2015Dec',
+#                           user='awsDB',
+#                           passwd='digitaldemocracy789') as dd_cursor:
+      dd_cursor = mysql_connection() 
       get_summary_votes(ca_cursor, dd_cursor)
       get_detail_votes(ca_cursor, dd_cursor)
       logger.info(__file__ + ' terminated successfully.', 

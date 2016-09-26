@@ -24,6 +24,7 @@ Sources:
   - bill_motion_tbl
 '''
 
+from Database_Connection import mysql_connection
 import traceback
 import MySQLdb
 from graylogger.graylogger import GrayLogger
@@ -67,11 +68,12 @@ def get_motions():
                        db='capublic',
                        user='monty',
                        passwd='python') as ca_cursor:
-    with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-                           port=3306,
-                           db='DDDB2015Dec',
-                           user='awsDB',
-                           passwd='digitaldemocracy789') as dddb_cursor:
+#    with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+#                           port=3306,
+#                           db='DDDB2015Dec',
+#                           user='awsDB',
+#                           passwd='digitaldemocracy789') as dddb_cursor:
+      dddb_cursor = mysql_connection() 
       ca_cursor.execute(QS_CPUB_MOTION)
       for mid, text, update in ca_cursor.fetchall():
         date = update.strftime('%Y-%m-%d %H:%M:%S')

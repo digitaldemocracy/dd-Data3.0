@@ -31,6 +31,7 @@ Populates:
   - BillVersion (vid, bid, date, state, subject, appropriation, substantive_changes)
 '''
 
+from Database_Connection import mysql_connection
 import traceback
 import MySQLdb
 from graylogger.graylogger import GrayLogger                                    
@@ -225,15 +226,16 @@ def get_bill_versions(ca_cursor, dd_cursor):
       add_bill_version(dd_cursor, record)
 
 def main():
-  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-                         port=3306,
-                         db='DDDB2015Dec',
-                         user='awsDB',
-                         passwd='digitaldemocracy789') as dd_cursor:
-    with MySQLdb.connect(host='transcription.digitaldemocracy.org',
+#  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+#                         port=3306,
+#                         db='DDDB2015Dec',
+#                         user='awsDB',
+#                         passwd='digitaldemocracy789') as dd_cursor:
+  with MySQLdb.connect(host='transcription.digitaldemocracy.org',
                          user='monty',
                          db='capublic',
                          passwd='python') as ca_cursor:
+      dd_cursor = mysql_connection() 
       get_bills(ca_cursor, dd_cursor)
       get_bill_versions(ca_cursor, dd_cursor)
       logger.info(__file__ + ' terminated successfully.', 
