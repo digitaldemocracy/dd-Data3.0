@@ -159,6 +159,13 @@ def BillScrape(bill, supportOut, opposeOut):
     with open(bill, 'r', encoding='utf-8', errors='ignore') as input_file:
         text = input_file.read()
         text = text.replace('\r\n', '\n')
+
+        text = text.replace("\\'", "'")
+
+        if r'\x0c' in text:
+            # text = re.sub(r'\x0c', r'\n', text)
+            text = text.replace(r'\x0c', '')
+
         num_empty = 0
         case_1 = 0
         case_2 = 0

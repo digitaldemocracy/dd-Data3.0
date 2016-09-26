@@ -5,11 +5,10 @@ import pandas as pd
 import datetime
 import pickle
 
-DATA_DIR = 'BillAnalysisText'
+DATA_DIR = 'BillAnalysisTextFixed'
 
-CONN_INFO = {'host': 'digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+CONN_INFO = {'host': 'dddb2016-mysql5-7-11.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
              'port': 3306,
-             # 'db': 'AndrewTest',
              'db': 'DDDB2016Aug',
              'user': 'awsDB',
              'passwd': 'digitaldemocracy789'}
@@ -20,13 +19,13 @@ BILL_PREPEND = 'CA_20152016'
 # Returns a pandas dataframe of (hid, bid, date) columns
 def load_bill_info(cursor):
 
-    query = """SELECT bd.bid, h.hid, h.date
+    query = """SELECT bd.did, bd.bid, h.hid, h.date
                FROM BillDiscussion bd
                   JOIN Hearing h
                   ON bd.hid = h.hid
                 WHERE h.state = 'CA' """
     cursor.execute(query)
-    tuples = [[bid, hid, date] for bid, hid, date in cursor]
+    tuples = [[did, bid, hid, date] for did, bid, hid, date in cursor]
 
     query = """SELECT bid
                FROM Bill
@@ -35,7 +34,7 @@ def load_bill_info(cursor):
 
     bill_set = set([bid[0] for bid in cursor])
 
-    return pd.DataFrame(tuples, columns=['bid', 'hid', 'date']), bill_set
+    return pd.DataFrame(tuples, columns=['did', 'bid', 'hid', 'date']), bill_set
 
 def load_org_info(cursor):
 
@@ -48,22 +47,18 @@ def load_org_info(cursor):
 
 def get_file_data(f_name):
     data = {}
-    if 'support' in f_name.lower():
+    data_lst = f_name.split('_')
+    if data_lst[2].lower().replace('.csv', '') == 'support':
         data['alignment'] = 'For'
-    elif 'oppose' in f_name.lower():
+    elif data_lst[2].lower().replace('.csv', '') == 'oppose':
         data['alignment'] = 'Against'
     else:
         assert False
 
-    splits = f_name.split('_')
-    bill_type, bill_num, bill_date = splits[0], splits[1], splits[2]
-    session = '0'
-    if 'X' in bill_type:
-        bill_type, session = tuple(bill_type.split('X'))
+    data['bid'] = 'CA_' + data_lst[0]
+    date_str = data_lst[1]
 
-    data['bid'] = BILL_PREPEND + session + bill_type + bill_num
-
-    date_info = bill_date.split('-')
+    date_info = date_str.split('-')
     data['date'] = datetime.date(int(date_info[2]), int(date_info[0]), int(date_info[1]))
 
     return data
@@ -100,8 +95,8 @@ def match_hearing(file_info, bill_info_df, bill_set):
     if len(possible_hearings_df.index) > 0:
 
         matched_hearing = possible_hearings_df[possible_hearings_df['date'] == possible_hearings_df['date'].min()]
-        # I resent having to comment this out
-        # assert len(matched_hearing) == 1
+        if len(matched_hearing.index) > 1 and len(matched_hearing.date.unique()) > 1:
+            assert False
         return matched_hearing.iloc[0]['hid']
     else:
         return None
@@ -112,7 +107,7 @@ def insert_alignment(cursor, bid, hid, oid, alignment):
     stmt = """INSERT INTO OrgAlignments
               (bid, hid, oid, alignment, analysis_flag)
               VALUES
-              ("%s", %s, %s, "%s", True)"""
+              ("%s", "%s", "%s", "%s", True)"""
 
     try:
         cursor.execute(stmt % (bid, hid, oid, alignment))
@@ -148,6 +143,8 @@ def filter_org_names(org_name):
     elif 'verified (' in org_name.lower():
         return None
     elif 'analysis prepared by' in org_name.lower():
+        return None
+    elif 'arguments in support' in org_name.lower():
         return None
     else:
         return org_name

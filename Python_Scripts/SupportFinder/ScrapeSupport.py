@@ -2,7 +2,8 @@ import SupportFinder
 import os
 
 # billDir = "BillAnalysisText/"
-billDir = "ExampleOutput/"
+# billDir = "ExampleOutput/"
+billDir = "BillAnalysisTextFixed/"
 files = os.listdir(billDir)
 
 case_1 = 0

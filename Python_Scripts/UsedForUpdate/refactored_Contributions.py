@@ -66,6 +66,11 @@ QS_ORGANIZATION = '''SELECT oid
                      FROM Organizations
                      WHERE name = %s'''
 
+INSERT_ORGANIZATION = '''INSERT INTO Organizations
+                         (name, city, stateHeadquartered)
+                         VALUES
+                         (%s, %s, %s)'''
+
 # DELETE
 QD_CONTRIBUTION = '''DELETE FROM Contribution
                      WHERE id = %s'''
@@ -144,28 +149,48 @@ def getPerson(cursor, first, last, floor):
   return pid
 
 
-notfound_org = set()
+'''
+Adds a new organization to the database.
+Temporary, should be replaced by org matching class in the future
+'''
+def add_org(cursor, org_name, org_city, org_state):
+    if org_state.strip() == '':
+      org_state = None
+    try:
+        cursor.execute(INSERT_ORGANIZATION, (org_name, org_city, org_state))
+    except MySQLdb.IntegrityError:
+        org_state = None
+        cursor.execute(INSERT_ORGANIZATION, (org_name, org_city, org_state))
+
+    return cursor.lastrowid
+
+
 '''
 Using direct matching for name
 Should be changed later for more results
 '''
-def get_oid(cursor, donorOrg):
-  global notfound_org
+def get_oid(cursor, donorOrg, donorCity, donorState):
   cursor.execute(QS_ORGANIZATION, (donorOrg,))
 
-  if cursor.rowcount == 1:
+  if donorOrg == 'None':
+    oid = None
+  elif cursor.rowcount == 1:
     oid = cursor.fetchone()[0]
-    #print 'found oid: ', oid
-    return oid
-  notfound_org.add(donorOrg)
-  return None
+  else:
+      oid = add_org(cursor, donorOrg, donorCity, donorState)
+  return oid
+
 
 def insert_Contributor(cursor, id, pid, year, date, house, donorName, donorOrg, amount, oid):
   cursor.execute(QS_CONTRIBUTION_CHECK, (id,))
 
   if cursor.rowcount == 1:
     cursor.execute(QD_CONTRIBUTION, (id,))
-  cursor.execute(QI_CONTRIBUTION, (id, pid, year, date, house, donorName, donorOrg, amount, oid))
+  try:
+      cursor.execute(QI_CONTRIBUTION, (id, pid, year, date, house, donorName, donorOrg, amount, oid))
+  except MySQLdb.IntegrityError:
+      # TODO Figure out why this code ever runs?
+      print('Duplicate Primary Key Error')
 
 #db = mysql.connector.connect(user = 'root', db = 'DDDB2015Apr', password = '')
 #conn = db.cursor(buffered = True)
@@ -214,11 +239,14 @@ def getContributions(file, conn):
             house = "Senate"
           else:
             house = "null"
+
           district = row[14]
           donorName = row[15]
           donorOrg = row[21]
+          donorCity = row[16]
+          donorState = row[17]
           pid = getPerson(conn, first, last, house)
-          oid = get_oid(conn, donorOrg)
+          oid = get_oid(conn, donorOrg, donorCity, donorState)
           
           if house == "null" and pid != -1:
             house = getHouse(conn, pid)
@@ -239,7 +267,7 @@ def getContributions(file, conn):
           #If it says 'list index out of range', it's probably an empty name (row 9) and is ignored
           print 'error!', sys.exc_info()[0], sys.exc_info()[1]
           print traceback.format_exc()
-          exit(0)
+          # exit(0)
       print 'no pid and house', val
       print 'legislator', index
 
@@ -256,13 +284,13 @@ def main():
   with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                          port=3306,
                          db='DDDB2015Dec',
-                         #db='EricTest',
+                         # db='AndrewTest',
                          user='awsDB',
                          passwd='digitaldemocracy789') as dd_cursor:
     dl_csv()
     getContributions('cand_2015.csv', dd_cursor)
-    print 'orgs not found', len(notfound_org)
-    raise TypeError
+    # print 'orgs not found', len(notfound_org)
+    # raise TypeError
 
 if __name__ == "__main__":
   main()

@@ -71,44 +71,44 @@ tests = [
               "opposition" : "C3Opp.csv"},
 
             # 4: Case 2
-             {"file" : "ACR46-7-14-15.txt",
+             {"file" : "201520160ACR46_07-14-2015.txt",
               "support" : "ACR46-7-14-15Sup.csv",
               "opposition" : "ACR46-7-14-15Opp.csv"},
 
             # 5: Case 1
-             {"file" : "ACR46-4-6-15.txt",
+             {"file" : "201520160ACR46_04-06-2015.txt",
               "support" : "ACR46-4-6-15Sup.csv",
               "opposition" : "ACR46-4-6-15Opp.csv"},
 
             # 6: Case 1
-             {"file" : "SCR46-5-22-15.txt",
+             {"file" : "201520160SCR46_05-21-2015.txt",
               "support" : "SCR46-5-22-15Sup.csv",
               "opposition" : "SCR46-5-22-15Opp.csv"},
 
             # 7: Case 2
-             {"file" : "AB_10_07-06-2015.txt",
+             {"file" : "201520160AB10_07-06-2015.txt",
               "support" : "AB_10_07-06-2015_Support.csv",
               "opposition" : "AB_10_07-06-2015_Oppose.csv"},
 
             # 8: Case 2
-             {"file" : "AB_10_08-28-2015.txt",
+             {"file" : "201520160AB10_08-28-2015.txt",
               "support" : "AB_10_08-28-2015_Support.csv",
               "opposition" : "AB_10_08-28-2015_Oppose.csv"},
 
             # 9: Case 2
-             {"file" : "AB_100_06-12-2015.txt",
-              "support" : "AB_100_06-12-2015_Support.csv",
-              "opposition" : "AB_100_06-12-2015_Oppose.csv"},
+             {"file" : "201520160AB1008_06-12-2015.txt",
+              "support" : "AB_1008_06-12-2015_Support.csv",
+              "opposition" : "AB_1008_06-12-2015_Oppose.csv"},
 
             # 10: Case 2
-             {"file" : "AB_100_07-07-2015.txt",
-              "support" : "AB_100_07-07-2015_Support.csv",
-              "opposition" : "AB_100_07-07-2015_Oppose.csv"},
+             {"file" : "201520160AB1004_07-07-2015.txt",
+              "support" : "AB_1004_07-07-2015_Support.csv",
+              "opposition" : "AB_1004_07-07-2015_Oppose.csv"},
 
             # 11: Case 2
-             {"file" : "AB_101_06-04-2015.txt",
-              "support" : "AB_101_06-04-2015_Support.csv",
-              "opposition" : "AB_101_06-04-2015_Oppose.csv"},
+             {"file" : "201520160AB1015_06-04-2015.txt",
+              "support" : "AB_1015_06-04-2015_Support.csv",
+              "opposition" : "AB_1015_06-04-2015_Oppose.csv"},
 
             # 12: Case 1 ## pretty sure this is just unsolvable
              # {"file" : "AB_103_04-20-2015.txt",
@@ -116,17 +116,17 @@ tests = [
              #  "opposition" : "AB_103_04-20-2015_Oppose.csv"}
 
             # 12: Case 2
-             {"file" : "AB_103_07-10-2015.txt",
-              "support" : "AB_103_07-10-2015_Support.csv",
-              "opposition" : "AB_103_07-10-2015_Oppose.csv"},            
+             {"file" : "201520160AB1034_07-10-2015.txt",
+              "support" : "AB_1034_07-10-2015_Support.csv",
+              "opposition" : "AB_1034_07-10-2015_Oppose.csv"},
 
             # 13: Case 1
-             {"file" : "AB_105_04-10-2015.txt",
-              "support" : "AB_105_04-10-2015_Support.csv",
-              "opposition" : "AB_105_04-10-2015_Oppose.csv"},
+             {"file" : "201520160AB1059_04-10-2015.txt",
+              "support" : "AB_1059_04-10-2015_Support.csv",
+              "opposition" : "AB_1059_04-10-2015_Oppose.csv"},
 
             # 14: Case 1
-             {"file" : "ABX2_15_09-01-2015.txt",
+             {"file" : "201520162AB15_09-01-2015.txt",
               "support" : "ABX2_15_09-01-2015_Support.csv",
               "opposition" : "ABX2_15_09-01-2015_Oppose.csv"}
         ]

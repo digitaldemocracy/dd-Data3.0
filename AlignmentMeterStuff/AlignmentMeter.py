@@ -3,10 +3,9 @@ import pymysql
 import pickle
 import numpy as np
 
-CONN_INFO = {'host': 'digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+CONN_INFO = {'host': 'dddb2016-mysql5-7-11.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
              'port': 3306,
              # 'db': 'AndrewTest',
-             #  'db': 'DDDB2015Dec',
              'db': 'DDDB2016Aug',
              'user': 'awsDB',
              'passwd': 'digitaldemocracy789'}
@@ -15,10 +14,12 @@ CONN_INFO = {'host': 'digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.co
 # Gets the org alignments out of the database
 # Returns: Dataframe containing the org alignments
 def fetch_org_alignments(cnxn):
-    query = """SELECT oa.oid, oa.bid, oa.hid, oa.analysis_flag, oa.alignment, o.name
+    query = """SELECT oa.oid, oa.bid, oa.hid, oa.analysis_flag, oa.alignment, o.name, h.date
                FROM OrgAlignments oa
                 JOIN Organizations o
-                ON oa.oid = o.oid"""
+                ON oa.oid = o.oid
+                JOIN Hearing h
+                ON oa.hid = h.hid"""
 
     org_alignments_df = pd.read_sql(query, cnxn)
 
@@ -35,6 +36,8 @@ def fetch_org_alignments(cnxn):
     # TODO  - After corrected alignments are imported, drop this line
     org_alignments_df = org_alignments_df[org_alignments_df.analysis_flag == 0]
 
+    org_alignments_df['date'] = pd.to_datetime(org_alignments_df['date'])
+
     return org_alignments_df
 
 
@@ -42,9 +45,96 @@ def fetch_org_alignments(cnxn):
 # votes
 # Returns: Dataframe of passing votes
 def fetch_leg_votes(cnxn):
-    # TODO - make sure you only get passing votes
+
+    cursor = cnxn.cursor()
+
+    stmt = """CREATE OR REPLACE VIEW LastDate
+              AS
+             SELECT bid,
+                 c.house,
+                 MAX(b.VoteId) AS VoteId
+             FROM BillVoteSummary b
+                 JOIN Committee c
+                 on b.cid = c.cid
+             GROUP BY bid, c.house"""
+
+    cursor.execute(stmt)
+
+    stmt = """CREATE OR REPLACE VIEW LastVote
+              AS
+              SELECT bvs.bid,
+                bvs.voteId,
+                c.house,
+                c.type
+              FROM BillVoteSummary bvs
+                JOIN Committee c
+                ON bvs.cid = c.cid
+                JOIN LastDate ld
+                ON ld.bid = bvs.bid
+                  AND bvs.VoteId = ld.VoteId
+                  AND ld.house = c.house"""
+
+    cursor.execute(stmt)
+
+    stmt = """CREATE OR REPLACE VIEW DoPassVotes
+                AS
+                SELECT bid,
+                    voteId,
+                    m.mid,
+                    b.cid,
+                    VoteDate,
+                    ayes,
+                    naes,
+                    abstain,
+                    result,
+                    c.house,
+                    c.type,
+                    CASE
+                        WHEN result = "(PASS)" THEN 1
+                        ELSE 0
+                    END AS outcome
+                FROM BillVoteSummary b
+                    JOIN Motion m
+                    ON b.mid = m.mid
+                    JOIN Committee c
+                    ON b.cid = c.cid
+                WHERE m.doPass = 1"""
+    cursor.execute(stmt)
+
+    stmt = """CREATE OR REPLACE VIEW FloorVotes
+                AS
+                SELECT b.bid,
+                    b.voteId,
+                    b.mid,
+                    b.cid,
+                    b.VoteDate,
+                    b.ayes,
+                    b.naes,
+                    b.abstain,
+                    b.result,
+                    l.house,
+                    l.type,
+                    CASE
+                        WHEN result = "(PASS)" THEN 1
+                        ELSE 0
+                    END AS outcome
+                FROM BillVoteSummary b
+                    JOIN LastVote l
+                    ON b.voteId = l.voteId
+                WHERE l.type = 'Floor'"""
+    cursor.execute(stmt)
+
+    stmt = """CREATE OR REPLACE VIEW PassingVotes
+                AS
+                SELECT *
+                FROM DoPassVotes
+                UNION
+                SELECT *
+                FROM FloorVotes;"""
+    cursor.execute(stmt)
+
     query = """SELECT bvd.*, bvs.bid, bvs.VoteDate, h.hid, p.first, p.middle, p.last
-               FROM BillVoteSummary bvs
+               FROM PassingVotes bvs
                    JOIN Motion m
                    ON bvs.mid = m.mid
                    JOIN BillVoteDetail bvd
@@ -67,33 +157,38 @@ def fetch_leg_votes(cnxn):
     leg_votes_df.loc[leg_votes_df.result == 'NOE', 'result'] = 'Against'
     leg_votes_df.loc[leg_votes_df.result == 'ABS', 'result'] = 'Against'
 
+    cursor.execute('DROP VIEW LastDate')
+    cursor.execute('DROP VIEW LastVote')
+    cursor.execute('DROP VIEW DoPassVotes')
+    cursor.execute('DROP VIEW FloorVotes')
+    cursor.execute('DROP VIEW PassingVotes')
+
+    leg_votes_df.rename(columns={'VoteDate': 'date'}, inplace=True)
+
     return leg_votes_df
 
 
 # Given a list of org alignments, generates the strata for the organization for their alignments
 # Returns: Dataframe containing the strata
-def build_strata(org_alignments_df):
+def build_strata(oid_alignments_df):
     # Worth noting that that if there are different alignments in the same hearing, you're going to
     # basically just throw those out
     #     org_alignments_df['tmp_key'] = 0
+    assert len(oid_alignments_df.oid.unique()) == 1
 
-    strata_df = pd.merge(left=org_alignments_df,
-                         right=org_alignments_df,
-                         on=['bid', 'oid'],
+    strata_df = pd.merge(left=oid_alignments_df,
+                         right=oid_alignments_df,
+                         on=['bid'],
                          suffixes=['_1', '_2'])
-    # You're totally ignoring organizations that only register one alignment
-    strata_df_prod = strata_df[(strata_df.hid_1 < strata_df.hid_2) &
+    # You're totally ignoring organizations that only register one alignment. But you catch them later
+    strata_df_prod = strata_df[(strata_df.date_1 < strata_df.date_2) &
                                (strata_df.alignment_1 != strata_df.alignment_2)]
 
     strata_list = []
-    for ((oid, bid, hid_2), group) in strata_df_prod.groupby(['oid', 'bid', 'hid_2']):
-        row = group[group.hid_1 == group.hid_1.min()]
+    for ((oid, bid, date_2), group) in strata_df_prod.groupby(['oid', 'bid', 'date_2']):
+        row = group[group.date_1 == group.date_1.min()]
         # This assertion really really should valid
-        try:
-            assert len(row.index) == 1
-        except:
-            print("Crubs...")
-        # sigh
+        assert len(row.index) == 1
         row = row.iloc[0]
         strata_list.append(row)
 
@@ -173,18 +268,20 @@ def count_alignments(results, org_alignment):
 
     return total_votes, aligned_votes
 
+# Similar to count alignemnts, but instead of returning
 
-# Handles the case where an organization only has what kind of registered alignment
-# Returns: Df of each legislators score for a given bill and and oid
-def handle_single_alignment(org_alignments_df, leg_votes_df):
-    min_hid = org_alignments_df['hid'].min()
+# Handles the case where an organization only has one kind of registered alignment
+# Returns: Df of each legislators score for a given bill and oid
+def handle_single_alignment(oid_alignments_df, leg_votes_df):
+    min_date = oid_alignments_df['date'].min()
     # Still technically a dataframe to be used in the join
-    alignment_row = org_alignments_df[org_alignments_df['hid'] == min_hid]
+    alignment_row = oid_alignments_df[oid_alignments_df['date'] == min_date]
     alignment = alignment_row['alignment'].iloc[0]
     assert type(alignment_row) == pd.DataFrame
+    assert len(alignment_row.index) == 1
 
     alignment_votes_df = leg_votes_df.merge(alignment_row, on=['bid'], suffixes=['_leg', '_org'])
-    idx = alignment_votes_df['hid_org'] <= alignment_votes_df['hid_leg']
+    idx = alignment_votes_df['date_org'] <= alignment_votes_df['date_leg']
     alignment_votes_df = alignment_votes_df[idx]
 
     leg_scores = alignment_votes_df.groupby('pid')['result'].apply(count_alignments, alignment)
@@ -201,6 +298,21 @@ def handle_single_alignment(org_alignments_df, leg_votes_df):
 
     return leg_scores_df
 
+
+# Handles the case where an organization has multiple alignments registered on a bill
+# Returns: Df of each legislators score for a given bill and oid
+def handle_multi_alignment(oid_alignments_df, leg_votes_df):
+    strata_df = build_strata(oid_alignments_df)
+    strata_df = strata_df.rename(columns={'date_1': 'start_date',
+                                          'date_2': 'end_date',
+                                          'alignment_1': 'strata_alignment',
+                                          'alignment_2': 'end_alignment'})
+    # pickle.dump(strata_df, open('strata_df.p', 'wb'))
+    votes_strata_df = strata_df.merge(leg_votes_df, on='bid')
+    # pickle.dump(votes_strata_df, open('votes_strata_df.p', 'wb'))
+    scores_df = votes_strata_df.groupby('pid').apply(get_leg_score_stratified)
+
+    return scores_df
 
 # Given a list of oids, groups the organizations together and creates a new entry in your dataframe
 # for this org
@@ -263,25 +375,13 @@ def main():
     # org_alignments_df = org_alignments_df[org_alignments_df.oid < 0]
 
     scores_df_lst = []
-    for ((oid, bid), alignments_df) in org_alignments_df.groupby(['oid', 'bid']):
-        if len(alignments_df['alignment'].unique()) > 1:
-            # pickle.dump(alignments_df, open('alignments_df.p', 'wb'))
-            strata_df = build_strata(alignments_df)
-            strata_df = strata_df.rename(columns={'hid_1': 'start_hid',
-                                                  'hid_2': 'end_hid',
-                                                  'alignment_1': 'strata_alignment',
-                                                  'alignment_2': 'end_alignment'})
-            # pickle.dump(strata_df, open('strata_df.p', 'wb'))
-            votes_strata_df = strata_df.merge(leg_votes_df, on='bid')
-            # pickle.dump(votes_strata_df, open('votes_strata_df.p', 'wb'))
-            scores_df = votes_strata_df.groupby('pid').apply(get_leg_score_stratified)
-
-            # pickle.dump(scores_df, open('scores_df.p', 'wb'))
+    for ((oid, bid), oid_alignments_df) in org_alignments_df.groupby(['oid', 'bid']):
+        if len(oid_alignments_df['alignment'].unique()) > 1:
+            scores_df = handle_multi_alignment(oid_alignments_df, leg_votes_df)
             if len(scores_df.index):
                 scores_df_lst.append(scores_df)
-
         else:
-            scores_df = handle_single_alignment(alignments_df, leg_votes_df)
+            scores_df = handle_single_alignment(oid_alignments_df, leg_votes_df)
             if len(scores_df.index):
                 scores_df_lst.append(scores_df)
         # pickle.dump(scores_df_lst, open('scores_df_lst.p', 'wb'))

@@ -72,6 +72,7 @@ CREATE TABLE IF NOT EXISTS Organizations (
   type INTEGER DEFAULT 0,      -- type (not fleshed out yet)
   city VARCHAR(200),           -- city
   stateHeadquartered VARCHAR(2), -- U.S. state, where it's based
+  analysis_flag BOOL DEFAULT FALSE,
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
 
   PRIMARY KEY (oid),

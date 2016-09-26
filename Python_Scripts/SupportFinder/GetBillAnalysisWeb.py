@@ -93,7 +93,7 @@ def get_analysis_links(soup):
 
 # Follows each url to get the text of the analysis
 # Writes text to file given the url name a specified folder
-def write_bill_text(url, date):
+def write_bill_text(url, date, bid):
     try:
         # this line throws url error
         page = urlopen(url)
@@ -104,14 +104,21 @@ def write_bill_text(url, date):
         match = re.search(reg, str(html), re.DOTALL)
         bill_text = match.group(1)
 
-        bill_name_reg = (r"(AB|ACA|ACR|AJR|HR|SB|SCA|SCR|SJR|SR|ABX1"
-                         r"|SBX1|SCAX1|SCRX1|SRX1|ABX2|ACRX2|SBX2|SCRX2|"
-                         r"SRX2).*?(\d{1,4})")
-        match = re.search(bill_name_reg, bill_text)
-
-        # this threw your attribute error
-        bill_name = match.group(1) + " " + match.group(2)
-        file_name = bill_name + " " + date + ".txt"
+        # bill_name_reg = (r"(AB|ACA|ACR|AJR|HR|SB|SCA|SCR|SJR|SR).*?(\d{1,4})\s+(X\d)(\n|\s*\([\w-]+\))")
+        # match = re.search(bill_name_reg, bill_text)
+        # if match:
+        #     bill_name = match.group(1) + match.group(3) + " " + match.group(2)
+        #     file_name = bill_name + " " + date + ".txt"
+        #
+        # if not match:
+        #     bill_name_reg = (r"(AB|ACA|ACR|AJR|HR|SB|SCA|SCR|SJR|SR).*?(\d{1,4})(\n|\s*\([\w-]+\))")
+        #     match = re.search(bill_name_reg, bill_text)
+        #     assert match, 'No bill name found'
+        #
+        #     # this threw your attribute error
+        #     bill_name = match.group(1) + " " + match.group(2)
+        #     file_name = bill_name + " " + date + ".txt"
+        file_name = bid + " " + date + ".txt"
 
         path = OUT_FOLDER + "/" + file_name
         path = path.replace(" ", "_")
@@ -181,7 +188,7 @@ def main():
                     if bill_page_soup:
                         for url, date in get_analysis_links(bill_page_soup):
                             analy_found += 1
-                            write_bill_text(url, date)
+                            write_bill_text(url, date, bid)
                         num += 1
                     write_finished_bill(bid)
 
