@@ -19,3 +19,6 @@ where oid = 10775;
 
 
 Make sure you discuss with Hans some common abbreviations you might want for duplicate removal
+
+Next Steps:
+- Implement duplicate removal with some levenshtein distance included
