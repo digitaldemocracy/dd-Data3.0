@@ -36,7 +36,7 @@ from clean_name import clean_name
 import refactored_Lobbying_Firm_Name_Fix
 import refactored_Person_Name_Fix
 from graylogger.graylogger import GrayLogger                                    
-API_URL = 'http://development.digitaldemocracy.org:12202/gelf'                  
+API_URL = 'http://dw.digitaldemocracy.org:12202/gelf'                  
 logger = None
 
 # Global counters

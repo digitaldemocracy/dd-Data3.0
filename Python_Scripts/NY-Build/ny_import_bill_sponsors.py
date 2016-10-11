@@ -16,7 +16,7 @@ import traceback
 import requests
 import MySQLdb
 from graylogger.graylogger import GrayLogger                                    
-GRAY_URL = 'http://development.digitaldemocracy.org:12202/gelf'
+GRAY_URL = 'http://dw.digitaldemocracy.org:12202/gelf'
 logger = None
 logged_list = list()
 INSERTED = 0

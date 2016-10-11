@@ -17,7 +17,7 @@ import traceback
 import requests
 import MySQLdb
 from graylogger.graylogger import GrayLogger
-GRAY_URL = 'http://development.digitaldemocracy.org:12202/gelf'
+GRAY_URL = 'http://dw.digitaldemocracy.org:12202/gelf'
 logger = None
 INSERTED = 0
 BV_INSERTED = 0
@@ -93,7 +93,7 @@ def get_bills_api(resolution):
     cur_offset = 0
     ret_bills = list()
     
-    while cur_offset < total:
+    while cur_offset < 1:
         call = call_senate_api("bills", "/search", cur_offset, resolution)
         bills = call[0]
         total = call[1]
@@ -144,7 +144,8 @@ def insert_bill_db(bill, dddb):
 #checks if a bill is in the DB based on a generated BID
 #returns true/false as expected
 def is_bill_in_db(bill, dddb):
-    dddb.execute(select_bill, bill)
+    #print type(bill), bill.keys()
+    dddb.execute(select_bill, {'bid':bill['bid'],})
     bill_bid = dddb.fetchone()
     
     if bill_bid is None:            
@@ -208,7 +209,7 @@ def add_bills_db( dddb):
             bcount = bcount + 1
         insert_billversions_db(bill, dddb)
 
-    print "Inserted %d bills" % bcount
+    #print "Inserted %d bills" % bcount
                     
 def main():
 #    with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',

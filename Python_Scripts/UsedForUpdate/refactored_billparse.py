@@ -34,7 +34,7 @@ from lxml import etree
 import MySQLdb
 import re
 from graylogger.graylogger import GrayLogger                                    
-API_URL = 'http://development.digitaldemocracy.org:12202/gelf'                  
+API_URL = 'http://dw.digitaldemocracy.org:12202/gelf'                  
 logger = None
 UPDATE = 0
 
