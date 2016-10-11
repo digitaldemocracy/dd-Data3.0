@@ -187,8 +187,9 @@ def find_last_alignment(oid_alignments_df):
     last_alignment = None
     first_date = None
     for ((date, alignment), oid_alignments_df) in oid_alignments_df.groupby(['date', 'alignment']):
-        last_alignment = alignment
-        first_date = date
+        if alignment != last_alignment:
+            last_alignment = alignment
+            first_date = date
 
     return last_alignment, first_date
 
