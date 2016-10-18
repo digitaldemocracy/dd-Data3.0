@@ -94,7 +94,6 @@ CREATE TABLE IF NOT EXISTS Legislator (
   website_url    VARCHAR(200),  -- url
   room_number    VARCHAR(10),       -- room number
   email_form_link VARCHAR(200), -- email link
-  OfficialBio TEXT,             -- bio
   state    VARCHAR(2), -- state where term was served
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
   dr_id INTEGER UNIQUE AUTO_INCREMENT,
@@ -114,6 +113,7 @@ CREATE TABLE IF NOT EXISTS Legislator (
 */
 CREATE TABLE IF NOT EXISTS Term (
   pid      INTEGER,    -- Person id (ref. Person.pised)
+  official_bio TEXT,
   year     YEAR,       -- year served
   district INTEGER(3), -- district legislator served in
   house    VARCHAR(100), -- house they serve in,
@@ -201,6 +201,7 @@ CREATE TABLE IF NOT EXISTS Bill (
   house   VARCHAR(100),
   session INTEGER(1),           -- 0: Normal session, 1: Special session
   sessionYear YEAR(4),
+  visibility_flag BOOLEAN DEFAULT 0,
   state VARCHAR(2),
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
   dr_id INTEGER UNIQUE AUTO_INCREMENT,

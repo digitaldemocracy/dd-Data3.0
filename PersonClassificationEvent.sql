@@ -223,29 +223,30 @@ CREATE OR REPLACE VIEW UnlabeledPeople
     p.first,
     p.middle,
     p.last,
-
+    'Unlabeled' AS PersonType,
+    YEAR(h.date) AS specific_year,
+    IF(YEAR(h.date) % 2 = 1, YEAR(h.date), YEAR(h.date) - 1) AS session_year,
+    v.state
   FROM currentUtterance u
     JOIN Person p
       ON u.pid = p.pid
     JOIN Video v
     ON u.vid = v.vid
-    JOIN
+    JOIN Hearing h
+    ON v.hid = h.hid
+    LEFT JOIN AllPeeps ap
+    ON ap.pid = p.pid
+  WHERE ap.pid IS NULL;
 
+
+drop table PersonClassifications;
 CREATE TABLE PersonClassifications
   AS
   SELECT *
   FROM AllPeeps
   UNION
-
-CREATE TABLE LabeledUtterances
-AS
-  SELECT u.pid, ap.first, ap.middle, ap.last, ap.PersonType, u.uid, v.hid, u.text
-  FROM currentUtterance u
-    JOIN Video v
-      ON u.vid = v.vid
-    JOIN AllPeeps ap
-      ON ap.pid = u.pid
-         AND ap.hid = v.hid;
+  SELECT *
+  FROM UnlabeledPeople;
 
 DROP VIEW LabeledGenPub;
 DROP VIEW LabeledLAO;
