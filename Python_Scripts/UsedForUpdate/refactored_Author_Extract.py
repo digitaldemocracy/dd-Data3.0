@@ -34,7 +34,7 @@ from Database_Connection import mysql_connection
 import traceback
 import MySQLdb
 from graylogger.graylogger import GrayLogger
-API_URL = 'http://development.digitaldemocracy.org:12202/gelf'
+API_URL = 'http://dw.digitaldemocracy.org:12202/gelf'
 logger = None
 logged_list = list()
 AU_INSERT = 0

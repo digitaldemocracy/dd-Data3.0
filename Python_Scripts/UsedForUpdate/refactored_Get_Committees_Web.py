@@ -41,7 +41,7 @@ import traceback
 import urllib2
 from bs4 import BeautifulSoup
 from graylogger.graylogger import GrayLogger                                    
-API_URL = 'http://development.digitaldemocracy.org:12202/gelf'                  
+API_URL = 'http://dw.digitaldemocracy.org:12202/gelf'                  
 logger = None
 C_INSERT = 0
 S_INSERT = 0

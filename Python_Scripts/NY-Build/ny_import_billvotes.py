@@ -21,7 +21,7 @@ import traceback
 from datetime import datetime
 from bs4 import BeautifulSoup
 from graylogger.graylogger import GrayLogger
-GRAY_URL = 'http://development.digitaldemocracy.org:12202/gelf'
+GRAY_URL = 'http://dw.digitaldemocracy.org:12202/gelf'
 logger = None
 VD_INSERTED = 0
 VS_INSERTED = 0

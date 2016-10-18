@@ -26,7 +26,7 @@ import csv
 import re
 import subprocess
 from graylogger.graylogger import GrayLogger
-API_URL = 'http://development.digitaldemocracy.org:12202/gelf'
+API_URL = 'http://dw.digitaldemocracy.org:12202/gelf'
 logger = None
 logged_list = list()
 L_UPDATE = 0
