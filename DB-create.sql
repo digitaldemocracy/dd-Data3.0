@@ -27,6 +27,19 @@ CREATE TABLE IF NOT EXISTS State (
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+CREATE TABLE IF NOT EXISTS Session (
+  state VARCHAR(2),
+  start_year YEAR,
+  end_year YEAR,
+  lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+  lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
+
+  PRIMARY KEY (state, start_year, end_year),
+  FOREIGN KEY (state) REFERENCES State(abbrev)
+)
+  ENGINE = INNODB
+  CHARACTER SET utf8 COLLATE utf8_general_ci;
+
 /*
   A house in a legislature. Necessary because different states can have
   different names for their houses
@@ -75,6 +88,20 @@ CREATE TABLE IF NOT EXISTS PersonStateAffiliation (
 
   PRIMARY KEY (pid, state),
   FOREIGN KEY (pid) REFERENCES Person(pid),
+  FOREIGN KEY (state) REFERENCES State(abbrev)
+)
+  ENGINE = INNODB
+  CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+
+CREATE TABLE IF NOT EXISTS OrganizationStateAffiliation (
+  oid    INTEGER,
+  state  VARCHAR(2),
+  lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+  lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
+
+  PRIMARY KEY (oid, state),
+  FOREIGN KEY (oid) REFERENCES Organizations(pid),
   FOREIGN KEY (state) REFERENCES State(abbrev)
 )
   ENGINE = INNODB
@@ -249,6 +276,7 @@ CREATE TABLE IF NOT EXISTS Hearing (
   date   DATE,                        -- date of hearing
   date_ts INT(11) AS (UNIX_TIMESTAMP(date)), -- Used by Drupal
   type ENUM('Regular', 'Budget', 'Informational', 'Summary') DEFAULT 'Regular',
+  session_year YEAR,
   state  VARCHAR(2),
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
   lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
@@ -534,7 +562,7 @@ CREATE TABLE IF NOT EXISTS Utterance (
   CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 CREATE OR REPLACE VIEW currentUtterance
-AS SELECT uid, vid, pid, time, endTime, text, type, alignment, state, did, first_utterance_flag,
+AS SELECT uid, vid, pid, time, endTime, text, type, alignment, state, did,
      lastTouched
    FROM Utterance
    WHERE current = TRUE AND finalized = TRUE ORDER BY time DESC;
@@ -567,6 +595,7 @@ CREATE TABLE IF NOT EXISTS Gift (
   value DOUBLE,
   giftDate DATE,
   giftDate_ts INT(11) AS (UNIX_TIMESTAMP(giftDate)), -- Used by Drupal
+  sessionYear YEAR,
   reimbursed TINYINT(1),
   giftIncomeFlag TINYINT(1) DEFAULT 0,
   speechFlag TINYINT(1) DEFAULT 0,
@@ -609,6 +638,7 @@ CREATE TABLE IF NOT EXISTS Contribution (
   year INTEGER,
   date DATETIME,
   date_ts INT(11) AS (UNIX_TIMESTAMP(date)), -- Used by Drupal
+  sesssionYear YEAR,
   house VARCHAR(10),
   donorName VARCHAR(255),
   donorOrg VARCHAR(255),
@@ -1008,6 +1038,7 @@ CREATE TABLE IF NOT EXISTS Behests (
   purpose VARCHAR(200),  -- purpose of behest (ex. Charitable)
   noticeReceieved DATE,  -- when the behest was filed
   noticeReceived_ts INT(11) AS (UNIX_TIMESTAMP(noticeReceived)), -- Used by Drupal
+  sessionYear YEAR,
   state VARCHAR(2),
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
   lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
@@ -1073,6 +1104,7 @@ CREATE TABLE IF NOT EXISTS BillAnalysis(
 
 CREATE TABLE IF NOT EXISTS LegStaffGifts (
   year YEAR,
+  session_year YEAR,
   agency_name VARCHAR(200), -- The broad gov agency receiving the gift
   staff_member INT, -- the staff member receiving the gift
   legislator INT, -- the legislator the staff member is associated with
@@ -1243,6 +1275,19 @@ CREATE TABLE IF NOT EXISTS `PersonClassifications` (
   KEY `classification` (`classification`)
 ) ENGINE=INNODB DEFAULT CHARSET=latin1;
 
+-- Used by Kristian to determine the first utterance spoken by a speaker at given
+-- BillDiscussion
+CREATE TABLE IF NOT EXISTS InitialUtterance (
+  pid INT,
+  uid INT,
+  did INT,
+
+  PRIMARY KEY (pid, uid, did),
+  FOREIGN KEY (pid) REFERENCES Person(pid),
+  FOREIGN KEY (uid) REFERENCES Utterance(uid),
+  FOREIGN KEY (did) REFERENCES BillDiscussion(did)
+);
+
 
 -- A combination of Gift and LegStaffGifts. Rebuilds each night from a mysql event
 CREATE TABLE `GiftCombined` (
@@ -1335,7 +1380,102 @@ CREATE TABLE OrgConceptAffiliation (
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+CREATE TABLE UnionedRepresentations (
+  pid INT,
+  hid INT,
+  did INT,
+  oid INT,
+  state VARCHAR(2)
+);
 
+CREATE TABLE UnionedLobbyistEmployers (
+  pid INT,
+  assoc_name VARCHAR(255),
+  rpt_date DATE,
+  rpt_date_ts INT,
+  beg_year YEAR,
+  end_year YEAR,
+  state VARCHAR(2)
+);
+
+CREATE TABLE KnownClients (
+  pid INT,
+  assoc_name VARCHAR(255),
+  oid INT,
+  state VARCHAR(2)
+);
+
+CREATE TABLE BillAlignmentScoresMiguel (
+  aligned_votes int,
+  alignment_percentage double,
+  bid varchar(63),
+  oid int,
+  pid int,
+  total_votes int,
+
+  PRIMARY KEY (bid, oid, pid)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
+CREATE TABLE BillAlignmentScoresAndrew (
+  aligned_votes int,
+  alignment_percentage double,
+  bid varchar(63),
+  oid int,
+  pid int,
+  total_votes int,
+
+  PRIMARY KEY (bid, oid, pid)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+CREATE TABLE AlignmentScores (
+  pid int,
+  oid int,
+  MiguelScore double,
+  AndrewScore double,
+
+  PRIMARY KEY (pid, oid)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+CREATE TABLE AlignmentScoresData (
+  bill VARCHAR(30),
+  leg_first VARCHAR(30),
+  leg_last VARCHAR(30),
+  leg_alignment ENUM('For', 'Against'),
+  leg_vote_date DATE,
+  org_name VARCHAR(200),
+  org_alignment ENUM('For', 'Against'),
+  date_of_org_alignment DATE,
+
+  FOREIGN KEY (bill) REFERENCES Bill(bid)
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE AlignmentScoresExtraInfo (
+  oid INT,
+  pid INT,
+  positions_registered INT,
+  votes_in_agreement INT,
+  votes_in_disagreement INT,
+
+  PRIMARY KEY (oid, pid),
+  FOREIGN KEY (oid) REFERENCES OrgConcept(oid),
+  FOREIGN KEY (pid) REFERENCES Person(pid)
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE AlignmentScoresAggregated (
+  oid INT,
+  house VARCHAR(100),
+  party ENUM('Republican', 'Democrat', 'Other'),
+  state VARCHAR(2),
+  score DOUBLE,
+
+  PRIMARY KEY (oid, house, party, state),
+  FOREIGN KEY (oid) REFERENCES OrgConcept(oid),
+  FOREIGN KEY (house, state) REFERENCES House(name, state)
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /* Entity::DeprecatedPerson
 
    This is used for tracking what people are deprecated and will flush them
