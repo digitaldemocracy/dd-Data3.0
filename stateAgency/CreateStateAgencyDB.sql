@@ -251,8 +251,9 @@ AS SELECT uid, vid, speaker, time, endTime, text, state, agenda_item,
 FROM Utterance 
 WHERE current = TRUE AND finalized = TRUE ORDER BY time DESC;
 
--- Dropped sourceUrl
--- Added agency reference instead
+-- Added agency reference
+-- Added sourceUrl, hid
+-- Changed status
 CREATE TABLE IF NOT EXISTS TT_Videos (
    videoId INTEGER AUTO_INCREMENT,
    hearingName VARCHAR(255),
@@ -313,6 +314,7 @@ CHARACTER SET utf8 COLLATE utf8_general_ci;
 CREATE TABLE IF NOT EXISTS TT_HostingUrl (
    cutId INTEGER,
    url VARCHAR(255),
+   streamUrl VARCHAR(255),
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
    PRIMARY KEY (cutId),
    FOREIGN KEY (cutId) REFERENCES TT_Cuts(cutId)

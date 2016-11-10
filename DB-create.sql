@@ -1620,6 +1620,7 @@ CREATE TABLE IF NOT EXISTS TT_ServiceRequests (
 CREATE TABLE IF NOT EXISTS TT_HostingUrl (
   cutId INTEGER,
   url VARCHAR(255),
+  streamUrl VARCHAR(255),
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
   lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
   PRIMARY KEY (cutId),
