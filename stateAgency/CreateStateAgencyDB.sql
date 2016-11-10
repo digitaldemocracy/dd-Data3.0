@@ -127,9 +127,11 @@ CREATE TABLE IF NOT EXISTS Document (
    agency INTEGER,
    collection_date DATE,
    current BOOLEAN NOT NULL,
-   url VARCHAR(255), 
+   url VARCHAR(255),
+   sourceUrl VARCHAR(255),
+   s3_url VARCHAR(255),
    state VARCHAR(2),
-   doc_type ENUM("agenda","supplementary"),
+   doc_type enum('agenda','action','minutes','transcript','supplementary'),
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
 
    PRIMARY KEY (doc_id),
@@ -259,13 +261,16 @@ CREATE TABLE IF NOT EXISTS TT_Videos (
    url VARCHAR(255),
    fileName VARCHAR(255),
    duration FLOAT,
+   sourceUrl VARCHAR(255),
    state VARCHAR(2),
-   status ENUM("downloading","downloaded","failed","skipped","queued","diarized","cut","approved","tasked"),
+   status ENUM('downloading','downloaded','download failed','skipped','queued','cut','cutting','cutting failed','approved','tasked'),
    glacierId VARCHAR(255),
+   hid INT(11),
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
    PRIMARY KEY (videoId),
    FOREIGN KEY (agency) REFERENCES StateAgency(sa_id),
-   FOREIGN KEY (state) REFERENCES State(abbrev)
+   FOREIGN KEY (state) REFERENCES State(abbrev),
+   FOREIGN KEY (hid) REFERENCES Hearing(hid)
 )
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
