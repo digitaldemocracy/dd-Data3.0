@@ -5,14 +5,42 @@ You need to import all your extra alignments from, after correcting your alignme
 Go over with Hans, whether the passing votes you selected actually are passing votes
 
 current spot:
-You're in the process of changing the vote counting logic, so that it only counts one vote per strata
-
 
 
 AlignmentMeter.py:
 
-Correct your logic so that you only count one vote per strata
+Why is it there is a larger number of aligned_votes than total_votes
+
+
+Sometimes the same oid has different alignments in the same freakin' hid. Somebody will need to go through and correct
+these. Also examine these specific cases more thoroughly
+
+Currently generating all your data is an almagamation of crap between python, sql, and jupyter. Make sure
+you condense this all to one python file
 
 
 
 pickle.dump(oid_alignments_df, open('oid_alignments_df.p', 'wb'))
+pickle.dump(org_alignments_df, open('org_alignments_df.p', 'wb'))
+pickle.dump(alignment_votes_df, open('alignment_votes_df.p', 'wb'))
+pickle.dump(leg_scores_df, open('leg_scores_df.p', 'wb'))
+pickle.dump(leg_scores_alt_df, open('leg_scores_alt_df.p', 'wb'))
+
+pickle.dump(alignment_row, open('alignment_row.p', 'wb'))
+pickle.dump(leg_votes_df, open('leg_votes_df.p', 'wb'))
+
+pickle.dump(strata_df, open('strata_df.p', 'wb'))
+pickle.dump(strata_df_prod, open('strata_df_prod.p', 'wb'))
+
+pickle.dump(g_df, open('g_df.p', 'wb'))
+
+pickle.dump(group_df, open('group_df.p', 'wb'))
+
+pickle.dump(df, open('df.p', 'wb'))
+
+pickle.dump(oid_alignments_df, open('oid_alignments_df_test1.p', 'wb'))
+
+pickle.dump(org_alignments_df, open('org_alignments_df.p', 'wb'))
+
+pickle.dump(concept_alignments_df, open('concept_alignments_df.p', 'wb'))
+pickle.dump(leg_votes_df, open('leg_votes_df.p', 'wb'))

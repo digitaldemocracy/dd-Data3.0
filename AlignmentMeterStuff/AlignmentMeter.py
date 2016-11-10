@@ -33,10 +33,8 @@ def fetch_org_alignments(cnxn):
     org_alignments_df.loc[org_alignments_df.alignment == 'Against_unless_amend',
                           'alignment'] = 'Against'
 
-    # TODO  - After corrected alignments are imported, drop this line
-    org_alignments_df = org_alignments_df[org_alignments_df.analysis_flag == 0]
 
-    org_alignments_df['date'] = pd.to_datetime(org_alignments_df['date'])
+    # org_alignments_df['date'] = pd.to_datetime(org_alignments_df['date'])
 
     return org_alignments_df
 
@@ -48,33 +46,33 @@ def fetch_leg_votes(cnxn):
 
     cursor = cnxn.cursor()
 
-    stmt = """CREATE OR REPLACE VIEW LastDate
-              AS
-             SELECT bid,
-                 c.house,
-                 MAX(b.VoteId) AS VoteId
-             FROM BillVoteSummary b
-                 JOIN Committee c
-                 on b.cid = c.cid
-             GROUP BY bid, c.house"""
-
-    cursor.execute(stmt)
-
-    stmt = """CREATE OR REPLACE VIEW LastVote
-              AS
-              SELECT bvs.bid,
-                bvs.voteId,
-                c.house,
-                c.type
-              FROM BillVoteSummary bvs
-                JOIN Committee c
-                ON bvs.cid = c.cid
-                JOIN LastDate ld
-                ON ld.bid = bvs.bid
-                  AND bvs.VoteId = ld.VoteId
-                  AND ld.house = c.house"""
-
-    cursor.execute(stmt)
+    # stmt = """CREATE OR REPLACE VIEW LastDate
+    #           AS
+    #          SELECT bid,
+    #              c.house,
+    #              MAX(b.VoteId) AS VoteId
+    #          FROM BillVoteSummary b
+    #              JOIN Committee c
+    #              on b.cid = c.cid
+    #          GROUP BY bid, c.house"""
+    #
+    # cursor.execute(stmt)
+    #
+    # stmt = """CREATE OR REPLACE VIEW LastVote
+    #           AS
+    #           SELECT bvs.bid,
+    #             bvs.voteId,
+    #             c.house,
+    #             c.type
+    #           FROM BillVoteSummary bvs
+    #             JOIN Committee c
+    #             ON bvs.cid = c.cid
+    #             JOIN LastDate ld
+    #             ON ld.bid = bvs.bid
+    #               AND bvs.VoteId = ld.VoteId
+    #               AND ld.house = c.house"""
+    #
+    # cursor.execute(stmt)
 
     stmt = """CREATE OR REPLACE VIEW DoPassVotes
                 AS
@@ -112,16 +110,18 @@ def fetch_leg_votes(cnxn):
                     b.naes,
                     b.abstain,
                     b.result,
-                    l.house,
-                    l.type,
+                    c.house,
+                    c.type,
                     CASE
                         WHEN result = "(PASS)" THEN 1
                         ELSE 0
                     END AS outcome
                 FROM BillVoteSummary b
-                    JOIN LastVote l
-                    ON b.voteId = l.voteId
-                WHERE l.type = 'Floor'"""
+                    JOIN Committee c
+                    ON b.cid = c.cid
+                    JOIN Motion m
+                    on b.mid = m.mid
+                WHERE m.text like '%reading%'"""
     cursor.execute(stmt)
 
     stmt = """CREATE OR REPLACE VIEW PassingVotes
@@ -133,7 +133,8 @@ def fetch_leg_votes(cnxn):
                 FROM FloorVotes;"""
     cursor.execute(stmt)
 
-    query = """SELECT bvd.*, bvs.bid, bvs.VoteDate, h.hid, p.first, p.middle, p.last
+    query = """SELECT DISTINCT bvd.*, bvs.bid, date(bvs.VoteDate) as VoteDate,
+                    h.hid, p.first, p.middle, p.last
                FROM PassingVotes bvs
                    JOIN Motion m
                    ON bvs.mid = m.mid
@@ -142,14 +143,16 @@ def fetch_leg_votes(cnxn):
                    JOIN Committee c
                    ON c.cid = bvs.cid
                    JOIN Hearing h
-                   ON bvs.VoteDate = h.date
+                   ON date(bvs.VoteDate) = h.date
                    JOIN CommitteeHearings ch
                    ON ch.hid = h.hid
                     AND ch.cid = bvs.cid
                    JOIN Person p
                    ON p.pid = bvd.pid
-               WHERE m.doPass = 1
-                AND bvs.bid like 'CA%' """
+                   JOIN BillDiscussion bd
+                   ON bd.bid = bvs.bid
+                     AND bd.hid = h.hid
+               WHERE bvs.bid like 'CA%' """
 
     leg_votes_df = pd.read_sql(query, cnxn)
 
@@ -157,8 +160,8 @@ def fetch_leg_votes(cnxn):
     leg_votes_df.loc[leg_votes_df.result == 'NOE', 'result'] = 'Against'
     leg_votes_df.loc[leg_votes_df.result == 'ABS', 'result'] = 'Against'
 
-    cursor.execute('DROP VIEW LastDate')
-    cursor.execute('DROP VIEW LastVote')
+    # cursor.execute('DROP VIEW LastDate')
+    # cursor.execute('DROP VIEW LastVote')
     cursor.execute('DROP VIEW DoPassVotes')
     cursor.execute('DROP VIEW FloorVotes')
     cursor.execute('DROP VIEW PassingVotes')
@@ -178,7 +181,7 @@ def build_strata(oid_alignments_df):
 
     strata_df = pd.merge(left=oid_alignments_df,
                          right=oid_alignments_df,
-                         on=['bid'],
+                         on=['bid', 'oid'],
                          suffixes=['_1', '_2'])
     # You're totally ignoring organizations that only register one alignment. But you catch them later
     strata_df_prod = strata_df[(strata_df.date_1 < strata_df.date_2) &
@@ -218,16 +221,16 @@ def check_alignments_multi(row):
     return pd.Series(out)
 
 
-# Creates a dataframe of alignment of a single leg with a given oid, bid combo
+# Creates a dataframe of alignment of a single leg with a given oid, bid combo. Counts multiple votes per strata
 # Applied on the groupby object of the stratified votes by legislator
 # Return series with of bid, oid, pid, total votes, aligned votes
-def get_leg_score_stratified(g_df):
-    g_df = g_df.sort_values('hid')
+def get_leg_score_stratified_alt(g_df):
+    g_df = g_df.sort_values('date')
 
     post_final_df = g_df[g_df.hid >= g_df.hid.max()]
     pre_final_df = g_df[g_df.hid < g_df.hid.max()]
 
-    cmp_cols = ['start_hid', 'end_hid', 'result']
+    cmp_cols = ['start_date', 'end_date', 'result']
 
     post_final_df = post_final_df.loc[(post_final_df[cmp_cols].shift() != (post_final_df[cmp_cols])).apply(
         lambda row: sum(row) != 0, axis=1)]
@@ -252,10 +255,66 @@ def get_leg_score_stratified(g_df):
     return pd.Series(out)
 
 
+# Creates a dataframe of alignment of a single leg with a given oid, bid combo. Counts ONE alignment per strata
+# Applied on the groupby object of the stratified votes by legislator
+# Return series with of bid, oid, pid, total votes, aligned votes
+def get_leg_score_stratified(g_df):
+    g_df = g_df.sort_values('date')
+
+    bid, oid, pid = g_df.iloc[0]['bid'], g_df.iloc[0]['oid'], g_df.iloc[0]['pid']
+
+    post_final_df = g_df[g_df.date >= g_df.end_date.max()]
+    pre_final_df = g_df[(g_df.date >= g_df.start_date) &
+                        (g_df.date < g_df.end_date)]
+
+    if len(post_final_df.index) == 0 and len(pre_final_df.index) == 0:
+        out = {'bid': bid,
+               'oid': oid,
+               'pid': pid,
+               'total_votes': 0,
+               'aligned_votes': 0,
+               'alignment_percentage': 0}
+
+        return pd.Series(out)
+    else:
+        pre_final_df = pre_final_df.drop_duplicates(['start_date', 'end_date'], 'last')
+        total_votes = len(pre_final_df.index)
+        idx = pre_final_df['result'] == pre_final_df['strata_alignment']
+        aligned_votes = len(pre_final_df[idx])
+
+        if len(post_final_df.index) > 0:
+            total_votes += 1
+            last_row = post_final_df.sort_values(['date', 'end_date']).iloc[len(post_final_df.index) - 1]
+            if last_row['end_alignment'] == last_row['result']:
+                aligned_votes += 1
+
+        out = {'bid': bid,
+               'oid': oid,
+               'pid': pid,
+               'total_votes': total_votes,
+               'aligned_votes': aligned_votes,
+               'alignment_percentage': aligned_votes / total_votes}
+
+        return pd.Series(out)
+
+
 # Helper function for handle_single_alignment. Creates a dataframe which counts the number of aligned votes a
-# legislator has for a given oid, bid combo. Called on a series of vote results
+# legislator has for a given oid, bid combo. Called on a dataframe of vote results
 # Returns: tuple of (total votes, aligned votes)
-def count_alignments(results, org_alignment):
+def count_alignments(group_df, org_alignment):
+    leg_alignment = group_df[group_df['date_leg'] == group_df['date_leg'].max()]['result']
+    # should be true, but really not a problem. Legs voting on the same bill, same day, different committees
+    # is what fucks you here
+    # assert len(leg_alignment) == 1
+    leg_alignment = leg_alignment.iloc[0]
+    if leg_alignment == org_alignment:
+        return 1, 1
+    else:
+        return 1, 0
+
+
+# Similar to count_alignments but takes only the series and counts multiple alignments per strata
+def count_alignments_alternative(results, org_alignment):
     total_votes = 0
     aligned_votes = 0
     last_val = None
@@ -268,7 +327,6 @@ def count_alignments(results, org_alignment):
 
     return total_votes, aligned_votes
 
-# Similar to count alignemnts, but instead of returning
 
 # Handles the case where an organization only has one kind of registered alignment
 # Returns: Df of each legislators score for a given bill and oid
@@ -278,25 +336,42 @@ def handle_single_alignment(oid_alignments_df, leg_votes_df):
     alignment_row = oid_alignments_df[oid_alignments_df['date'] == min_date]
     alignment = alignment_row['alignment'].iloc[0]
     assert type(alignment_row) == pd.DataFrame
-    assert len(alignment_row.index) == 1
+    # assert len(alignment_row.index) == 1
 
     alignment_votes_df = leg_votes_df.merge(alignment_row, on=['bid'], suffixes=['_leg', '_org'])
     idx = alignment_votes_df['date_org'] <= alignment_votes_df['date_leg']
     alignment_votes_df = alignment_votes_df[idx]
 
-    leg_scores = alignment_votes_df.groupby('pid')['result'].apply(count_alignments, alignment)
-    leg_scores_df = pd.DataFrame(leg_scores)
-    leg_scores_df.reset_index(level=0, inplace=True)
+    if len(alignment_votes_df.index) == 0:
+        return pd.DataFrame()
+    else:
+        leg_scores = alignment_votes_df.groupby('pid').apply(count_alignments, alignment)
+        leg_scores_df = pd.DataFrame(leg_scores)
+        leg_scores_df.reset_index(level=0, inplace=True)
+        leg_scores_df.rename(columns={0: 'result'}, inplace=True)
 
-    leg_scores_df['total_votes'] = leg_scores_df['result'].apply(lambda x: x[0])
-    leg_scores_df['aligned_votes'] = leg_scores_df['result'].apply(lambda x: x[1])
-    leg_scores_df['alignment_percentage'] = leg_scores_df['aligned_votes'] / leg_scores_df['total_votes']
-    leg_scores_df.drop('result', axis=1, inplace=True)
+        leg_scores_df['total_votes'] = leg_scores_df['result'].apply(lambda x: x[0])
+        leg_scores_df['aligned_votes'] = leg_scores_df['result'].apply(lambda x: x[1])
+        leg_scores_df['alignment_percentage'] = leg_scores_df['aligned_votes'] / leg_scores_df['total_votes']
 
-    leg_scores_df['bid'] = alignment_row.iloc[0]['bid']
-    leg_scores_df['oid'] = alignment_row.iloc[0]['oid']
+        leg_scores_df.drop('result', axis=1, inplace=True)
 
-    return leg_scores_df
+        # leg_scores_alt = alignment_votes_df.groupby('pid')['result'].apply(count_alignments_alternative, alignment)
+        # # leg_scores_alt = alignment_votes_df.groupby('pid').apply(count_alignments_alternative, alignment)
+        # leg_scores_alt_df = pd.DataFrame(leg_scores_alt)
+        # leg_scores_alt_df.reset_index(level=0, inplace=True)
+        # leg_scores_alt_df.rename(columns={0: 'result'}, inplace=True)
+        #
+        # leg_scores_alt_df['total_votes'] = leg_scores_alt_df['result'].apply(lambda x: x[0])
+        # leg_scores_alt_df['aligned_votes'] = leg_scores_alt_df['result'].apply(lambda x: x[1])
+        # leg_scores_alt_df['alignment_percentage'] = leg_scores_alt_df['aligned_votes'] / leg_scores_alt_df['total_votes']
+        #
+        # leg_scores_alt_df.drop('result', axis=1, inplace=True)
+
+        leg_scores_df['bid'] = alignment_row.iloc[0]['bid']
+        leg_scores_df['oid'] = alignment_row.iloc[0]['oid']
+
+        return leg_scores_df
 
 
 # Handles the case where an organization has multiple alignments registered on a bill
@@ -311,6 +386,8 @@ def handle_multi_alignment(oid_alignments_df, leg_votes_df):
     votes_strata_df = strata_df.merge(leg_votes_df, on='bid')
     # pickle.dump(votes_strata_df, open('votes_strata_df.p', 'wb'))
     scores_df = votes_strata_df.groupby('pid').apply(get_leg_score_stratified)
+    if len(scores_df.index) > 0:
+        scores_df = scores_df[scores_df.total_votes > 0]
 
     return scores_df
 
@@ -350,6 +427,56 @@ def tmp_create_org_concepts(org_alignments_df):
     return org_alignments_df
 
 
+# Returns org_alignments_df w/ only the alignments for the organizations we're concerned w/
+def make_concept_alignments(org_alignments_df, cnxn):
+
+    query = '''SELECT oc.oid, a.old_oid, oc.name
+               FROM OrgConcept oc
+                JOIN OrgConceptAffiliation a
+                ON oc.oid = a.new_oid'''
+
+    concept_df = pd.read_sql(query, cnxn)
+
+    org_alignments_df = pd.merge(concept_df, org_alignments_df, left_on=['old_oid'], right_on=['oid'],
+                                 suffixes=['_concept', '_ali'])
+    org_alignments_df = org_alignments_df[['oid_concept', 'bid', 'hid', 'alignment', 'date', 'name_concept']].rename(
+        columns={'oid_concept': 'oid',
+                 'name_concept': 'org_name'})
+
+    return org_alignments_df
+
+
+# Organizes votes and org positions in such a way that it is easily downloaded an viewed by a third
+# party. Drops your data in mysql
+def make_data_table(org_alignments_df, leg_votes_df):
+    df = org_alignments_df.merge(leg_votes_df, on=['bid'], suffixes=['_leg', '_org'])
+    cols_dict = {'bid': 'bill',
+                 'alignment': 'org_alignment',
+                 'date_leg': 'leg_vote_date',
+                 'first': 'leg_first',
+                 'last': 'leg_last',
+                 'pid': 'pid',
+                 'result': 'leg_alignment',
+                 'date_org': 'date_of_org_alignment',
+                 'org_name': 'organization',
+                 'oid': 'oid'}
+    df = df[list(cols_dict.keys())].rename(columns=cols_dict)
+
+    return df
+
+
+def update_total_alignments(cnxn, org_alignments_df):
+    cursor = cnxn.cursor()
+    query = """UPDATE AlignmentScoresExtraInfo
+               SET positions_registered = %s
+               WHERE oid = %s"""
+    counts = org_alignments_df.groupby('oid')['oid'].count()
+    for oid, count in counts.iteritems():
+        print(oid)
+        cursor.execute(query % (count, oid))
+    cnxn.commit()
+
+
 def main():
     # cnxn = pymysql.connect(**CONN_INFO)
 
@@ -360,29 +487,38 @@ def main():
 
         cnxn = pymysql.connect(**CONN_INFO)
         org_alignments_df = fetch_org_alignments(cnxn)
+        concept_alignments_df = make_concept_alignments(org_alignments_df, cnxn)
         leg_votes_df = fetch_leg_votes(cnxn)
         pickle.dump(org_alignments_df, open('org_alignments_df.p', 'wb'))
+        pickle.dump(concept_alignments_df, open('concept_alignments_df.p', 'wb'))
         pickle.dump(leg_votes_df, open('leg_votes_df.p', 'wb'))
         cnxn.close()
     else:
-        org_alignments_df = pickle.load(open('org_alignments_df.p', 'rb'))
+        # org_alignments_df = pickle.load(open('org_alignments_df.p', 'rb'))
+        org_alignments_df = pickle.load(open('concept_alignments_df.p', 'rb'))
         leg_votes_df = pickle.load(open('leg_votes_df.p', 'rb'))
 
 
-    org_alignments_df = tmp_create_org_concepts(org_alignments_df)
+    # org_alignments_df = tmp_create_org_concepts(org_alignments_df)
 
     # Also tmp
     # org_alignments_df = org_alignments_df[org_alignments_df.oid < 0]
+
+    org_alignments_df = org_alignments_df.drop_duplicates(['oid', 'bid', 'hid'])
+
+    # leg_votes_df = pickle.load(open('leg_votes_df_sample.p', 'rb'))
 
     scores_df_lst = []
     for ((oid, bid), oid_alignments_df) in org_alignments_df.groupby(['oid', 'bid']):
         if len(oid_alignments_df['alignment'].unique()) > 1:
             scores_df = handle_multi_alignment(oid_alignments_df, leg_votes_df)
             if len(scores_df.index):
+                assert type(scores_df) == pd.DataFrame
                 scores_df_lst.append(scores_df)
         else:
             scores_df = handle_single_alignment(oid_alignments_df, leg_votes_df)
             if len(scores_df.index):
+                assert type(scores_df) == pd.DataFrame
                 scores_df_lst.append(scores_df)
         # pickle.dump(scores_df_lst, open('scores_df_lst.p', 'wb'))
 
@@ -392,7 +528,11 @@ def main():
     df = pd.concat(scores_df_lst)
 
     cnxn = pymysql.connect(**CONN_INFO)
-    df.to_sql('AlignmentScores', cnxn, flavor='mysql', if_exists='replace')
+
+    data_df = make_data_table(org_alignments_df, leg_votes_df)
+    data_df.to_sql('AlignmentScoresData', cnxn, flavor='mysql', if_exists='replace', index=False)
+    df.to_sql('BillAlignmentScoresAndrew', cnxn, flavor='mysql', if_exists='replace', index=False)
+
     cnxn.close()
 
 if __name__ == '__main__':
