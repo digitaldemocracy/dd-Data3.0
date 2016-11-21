@@ -1640,11 +1640,13 @@ CREATE TABLE IF NOT EXISTS TT_Videos (
   fileName VARCHAR(255),
   duration FLOAT,
   state VARCHAR(2),
-  status ENUM("downloading","downloaded","failed","skipped","queued","diarized","cut","approved","tasked"),
+  status ENUM('downloading','downloaded','download failed','skipped','queued','cutting','cut','cut failed','approved','tasked','deleted'),
+  hid INT(11),
   glacierId VARCHAR(255),
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
   lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
-  PRIMARY KEY (videoId)
+  PRIMARY KEY (videoId),
+  FOREIGN KEY (hid) REFERENCES Hearing(hid)
 )
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
@@ -1690,6 +1692,7 @@ CREATE TABLE IF NOT EXISTS TT_ServiceRequests (
 CREATE TABLE IF NOT EXISTS TT_HostingUrl (
   cutId INTEGER,
   url VARCHAR(255),
+  streamUrl VARCHAR(255),
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
   lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
   PRIMARY KEY (cutId),
