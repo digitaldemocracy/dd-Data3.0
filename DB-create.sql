@@ -68,6 +68,7 @@ CREATE TABLE IF NOT EXISTS Person (
   last   VARCHAR(50) NOT NULL,     -- last name
   middle VARCHAR(50),              -- middle name
   first  VARCHAR(50) NOT NULL,     -- first name
+  source VARCHAR(255),
   image VARCHAR(256),              -- path to image (if exists)
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
   lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
@@ -119,6 +120,7 @@ CREATE TABLE IF NOT EXISTS Organizations (
   city VARCHAR(200),           -- city
   stateHeadquartered VARCHAR(2), -- U.S. state, where it's based
   analysis_flag BOOL DEFAULT FALSE,
+  source VARCHAR(255),
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
   lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
 
@@ -196,16 +198,23 @@ CREATE TABLE IF NOT EXISTS Term (
 */
 CREATE TABLE IF NOT EXISTS Committee (
   cid    INTEGER(3),               -- Committee id
+  session_year YEAR,
+  current_flag BOOL,
   house  VARCHAR(200) NOT NULL,
   name   VARCHAR(200) NOT NULL,    -- committee name
   short_name   VARCHAR(200) NOT NULL,    -- committee name
   type   VARCHAR(100),
+  room INT,
+  phone VARCHAR(30),
+  fax VARCHAR(30),
+  email VARCHAR(256),
   state VARCHAR(2),
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
   lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
   dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
   PRIMARY KEY (cid),
+  UNIQUE (session_year, house, name, state),
   FOREIGN KEY (state) REFERENCES State(abbrev),
   FOREIGN KEY (house, state) REFERENCES House(name, state)
 )
@@ -222,6 +231,9 @@ CREATE TABLE IF NOT EXISTS servesOn (
   house    VARCHAR(100),
   cid      INTEGER(3),                            -- Committee id (ref. Committee.cid)
   position ENUM('Chair', 'Vice-Chair', 'Co-Chair', 'Member'),
+  current_flag BOOL,
+  start_date DATE,
+  end_date DATE,
   state    VARCHAR(2),
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
   lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
@@ -230,6 +242,29 @@ CREATE TABLE IF NOT EXISTS servesOn (
   PRIMARY KEY (pid, year, house, state, cid),
   FOREIGN KEY (cid) REFERENCES Committee(cid),
   FOREIGN KEY (house, state) REFERENCES House(name, state),
+  FOREIGN KEY (state) REFERENCES State(abbrev)
+)
+  ENGINE = INNODB
+  CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS ConsultantServesOn (
+  pid      INTEGER,                               -- Person id (ref. Person.pid)
+  session_year     YEAR,                                  -- year served
+  cid      INTEGER(3),                            -- Committee id (ref. Committee.cid)
+  position ENUM('Chief Consultant', 'Committee Secretary', 'Deputy Chief Consultant'),
+  current_flag BOOL,
+  start_date DATE,
+  start_date_ts INT,
+  end_date DATE DEFAULT NULL,
+  end_date_ts INT,
+  state    VARCHAR(2),
+  lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+  lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
+  dr_id INTEGER UNIQUE AUTO_INCREMENT,
+
+  PRIMARY KEY (pid, cid, start_date),
+  FOREIGN KEY (cid) REFERENCES Committee(cid),
+  FOREIGN KEY (pid) REFERENCES LegislativeStaff(pid),
   FOREIGN KEY (state) REFERENCES State(abbrev)
 )
   ENGINE = INNODB
@@ -835,7 +870,7 @@ CREATE TABLE IF NOT EXISTS GeneralPublic(
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS LegislativeStaff(
+CREATE TABLE IF NOT EXISTS LegislativeStaff (
   pid INTEGER,   -- added
   state VARCHAR(2),
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
@@ -1441,13 +1476,17 @@ CREATE TABLE AlignmentScoresData (
   bill VARCHAR(30),
   leg_first VARCHAR(30),
   leg_last VARCHAR(30),
+  pid INT,
   leg_alignment ENUM('For', 'Against'),
   leg_vote_date DATE,
   org_name VARCHAR(200),
+  oid INT,
   org_alignment ENUM('For', 'Against'),
   date_of_org_alignment DATE,
 
-  FOREIGN KEY (bill) REFERENCES Bill(bid)
+  FOREIGN KEY (bill) REFERENCES Bill(bid),
+  FOREIGN KEY (pid) REFERENCES Person(pid),
+  FOREIGN KEY (oid) REFERENCES OrgConcept(oid)
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -1470,12 +1509,45 @@ CREATE TABLE AlignmentScoresAggregated (
   party ENUM('Republican', 'Democrat', 'Other'),
   state VARCHAR(2),
   score DOUBLE,
+  positions_registered INT,
+  votes_in_agreement INT,
+  votes_in_disagreement INT,
 
   PRIMARY KEY (oid, house, party, state),
   FOREIGN KEY (oid) REFERENCES OrgConcept(oid),
   FOREIGN KEY (house, state) REFERENCES House(name, state)
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+CREATE OR REPLACE VIEW CombinedAlignmentScores
+  AS
+SELECT a.pid,
+  a.oid,
+  null as house,
+  null as party,
+  'CA' as 'state',
+  a.AndrewScore as score,
+  asei.positions_registered,
+  asei.votes_in_agreement,
+  asei.votes_in_disagreement
+FROM AlignmentScores a
+  INNER JOIN AlignmentScoresExtraInfo asei
+    ON asei.oid = a.oid AND asei.pid = a.pid
+UNION
+SELECT null,
+  asa.oid,
+  asa.house,
+  asa.party,
+  asa.state,
+  asa.score,
+  asa.positions_registered,
+  asa.votes_in_agreement,
+  asa.votes_in_disagreement
+FROM AlignmentScoresAggregated asa;
+
+
+
 /* Entity::DeprecatedPerson
 
    This is used for tracking what people are deprecated and will flush them

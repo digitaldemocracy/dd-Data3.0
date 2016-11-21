@@ -480,8 +480,8 @@ def update_total_alignments(cnxn, org_alignments_df):
 def main():
     # cnxn = pymysql.connect(**CONN_INFO)
 
-    # load_data = True
-    load_data = False
+    load_data = True
+    # load_data = False
 
     if load_data:
 
@@ -493,10 +493,10 @@ def main():
         pickle.dump(concept_alignments_df, open('concept_alignments_df.p', 'wb'))
         pickle.dump(leg_votes_df, open('leg_votes_df.p', 'wb'))
         cnxn.close()
-    else:
-        # org_alignments_df = pickle.load(open('org_alignments_df.p', 'rb'))
-        org_alignments_df = pickle.load(open('concept_alignments_df.p', 'rb'))
-        leg_votes_df = pickle.load(open('leg_votes_df.p', 'rb'))
+
+    # org_alignments_df = pickle.load(open('org_alignments_df.p', 'rb'))
+    org_alignments_df = pickle.load(open('concept_alignments_df.p', 'rb'))
+    leg_votes_df = pickle.load(open('leg_votes_df.p', 'rb'))
 
 
     # org_alignments_df = tmp_create_org_concepts(org_alignments_df)

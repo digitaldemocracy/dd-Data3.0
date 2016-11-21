@@ -1,0 +1,48 @@
+(1452, 'Cannot add or update a child row: a foreign key constraint fails (`DDDB2016Aug`.`LobbyistRepresentation`, CONSTRAINT `LobbyistRepresentation_ibfk_6` FOREIGN KEY (`oid`, `state`) REFERENCES `LobbyistEmployer` (`oid`, `state`))')
+table LobbyistRepresentation
+field oid
+old_oid 28639
+new_oid 5851
+Problem with: 5851 28639
+(1452, 'Cannot add or update a child row: a foreign key constraint fails (`DDDB2016Aug`.`LobbyistRepresentation`, CONSTRAINT `LobbyistRepresentation_ibfk_6` FOREIGN KEY (`oid`, `state`) REFERENCES `LobbyistEmployer` (`oid`, `state`))')
+table LobbyistRepresentation
+field oid
+old_oid 28429
+new_oid 7550
+Problem with: 7550 28429
+(1452, 'Cannot add or update a child row: a foreign key constraint fails (`DDDB2016Aug`.`LobbyistRepresentation`, CONSTRAINT `LobbyistRepresentation_ibfk_6` FOREIGN KEY (`oid`, `state`) REFERENCES `LobbyistEmployer` (`oid`, `state`))')
+table LobbyistRepresentation
+field oid
+old_oid 29823
+new_oid 17745
+Problem with: 17745 29823
+(1452, 'Cannot add or update a child row: a foreign key constraint fails (`DDDB2016Aug`.`LobbyistRepresentation`, CONSTRAINT `LobbyistRepresentation_ibfk_6` FOREIGN KEY (`oid`, `state`) REFERENCES `LobbyistEmployer` (`oid`, `state`))')
+table LobbyistRepresentation
+field oid
+old_oid 28427
+new_oid 10515
+Problem with: 10515 28427
+(1452, 'Cannot add or update a child row: a foreign key constraint fails (`DDDB2016Aug`.`LobbyistRepresentation`, CONSTRAINT `LobbyistRepresentation_ibfk_6` FOREIGN KEY (`oid`, `state`) REFERENCES `LobbyistEmployer` (`oid`, `state`))')
+table LobbyistRepresentation
+field oid
+old_oid 29517
+new_oid 17274
+Problem with: 17274 29517
+(1452, 'Cannot add or update a child row: a foreign key constraint fails (`DDDB2016Aug`.`LobbyistRepresentation`, CONSTRAINT `LobbyistRepresentation_ibfk_6` FOREIGN KEY (`oid`, `state`) REFERENCES `LobbyistEmployer` (`oid`, `state`))')
+table LobbyistRepresentation
+field oid
+old_oid 29148
+new_oid 15229
+Problem with: 15229 29148
+(1452, 'Cannot add or update a child row: a foreign key constraint fails (`DDDB2016Aug`.`LobbyistRepresentation`, CONSTRAINT `LobbyistRepresentation_ibfk_6` FOREIGN KEY (`oid`, `state`) REFERENCES `LobbyistEmployer` (`oid`, `state`))')
+table LobbyistRepresentation
+field oid
+old_oid 29538
+new_oid 19116
+Problem with: 19116 29538
+(1452, 'Cannot add or update a child row: a foreign key constraint fails (`DDDB2016Aug`.`LobbyistRepresentation`, CONSTRAINT `LobbyistRepresentation_ibfk_6` FOREIGN KEY (`oid`, `state`) REFERENCES `LobbyistEmployer` (`oid`, `state`))')
+table LobbyistRepresentation
+field oid
+old_oid 29017
+new_oid 19110
+Problem with: 19110 29017

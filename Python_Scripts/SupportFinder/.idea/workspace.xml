@@ -20,7 +20,7 @@
     <SUITE FILE_PATH="coverage/SupportFinder$TestCases.coverage" NAME="TestCases Coverage Results" MODIFIED="1474772202229" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/SupportFinder$temp.coverage" NAME="temp Coverage Results" MODIFIED="1471365542006" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/SupportFinder$RenameBillFiles.coverage" NAME="RenameBillFiles Coverage Results" MODIFIED="1474306810311" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/SupportFinder$InsertAlignments.coverage" NAME="InsertAlignments Coverage Results" MODIFIED="1474855368452" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/SupportFinder$InsertAlignments.coverage" NAME="InsertAlignments Coverage Results" MODIFIED="1477016525157" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/SupportFinder$GetBillAnalysisCapublic.coverage" NAME="GetBillAnalysisCapublic Coverage Results" MODIFIED="1474248865349" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/SupportFinder$GetBillAnalysisWeb.coverage" NAME="GetBillAnalysisWeb Coverage Results" MODIFIED="1474768854089" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/SupportFinder$GetBillAnalysis.coverage" NAME="GetBillAnalysis Coverage Results" MODIFIED="1467262349278" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
@@ -47,7 +47,7 @@
           <file leaf-file-name="GetBillAnalysisWeb.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/GetBillAnalysisWeb.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="325">
+                <state relative-caret-position="1615">
                   <caret line="95" column="34" selection-start-line="95" selection-start-column="34" selection-end-line="95" selection-end-column="34" />
                   <folding>
                     <element signature="e#0#14#0" expanded="true" />
@@ -73,12 +73,10 @@
           <file leaf-file-name="TestCases.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/TestCases.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="257">
+                <state relative-caret-position="1377">
                   <caret line="81" column="0" selection-start-line="81" selection-start-column="0" selection-end-line="81" selection-end-column="0" />
                   <folding>
                     <element signature="e#0#20#0" expanded="true" />
-                    <marker date="1474772072179" expanded="true" signature="1283:4165" ph="..." />
-                    <marker date="1474772072179" expanded="true" signature="3788:3951" ph="..." />
                   </folding>
                 </state>
               </provider>
@@ -87,26 +85,16 @@
           <file leaf-file-name="InsertAlignments.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/InsertAlignments.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="153">
-                  <caret line="9" column="84" selection-start-line="9" selection-start-column="84" selection-end-line="9" selection-end-column="84" />
+                <state relative-caret-position="524">
+                  <caret line="147" column="18" selection-start-line="147" selection-start-column="18" selection-end-line="147" selection-end-column="18" />
                   <folding>
                     <element signature="e#0#18#0" expanded="true" />
-                    <marker date="1474855361221" expanded="true" signature="488:668" ph="SELECT bd.bi... BillDiscussion" />
-                    <marker date="1474855361221" expanded="true" signature="786:855" ph="SELECT bid F... Bill" />
-                    <marker date="1474855361221" expanded="true" signature="1059:1109" ph="SELECT oid, Organizations" />
-                    <marker date="1474855361221" expanded="true" signature="2094:2215" ph="INSERT INTO Organizations... " />
-                    <marker date="1474855361221" expanded="true" signature="3259:3406" ph="INSERT INTO OrgAlignments... " />
+                    <marker date="1477016513926" expanded="true" signature="488:668" ph="SELECT bd.bi... BillDiscussion" />
+                    <marker date="1477016513926" expanded="true" signature="786:855" ph="SELECT bid F... Bill" />
+                    <marker date="1477016513926" expanded="true" signature="1059:1109" ph="SELECT oid, Organizations" />
+                    <marker date="1477016513926" expanded="true" signature="2094:2215" ph="INSERT INTO Organizations... " />
+                    <marker date="1477016513926" expanded="true" signature="3259:3406" ph="INSERT INTO OrgAlignments... " />
                   </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="err.py" pinned="false" current-in-tab="false">
-            <entry file="file://$USER_HOME$/.PyCharm2016.2/system/remote_sources/355428310/942361161/pymysql/err.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="714">
-                  <caret line="114" column="0" selection-start-line="114" selection-start-column="0" selection-end-line="114" selection-end-column="0" />
-                  <folding />
                 </state>
               </provider>
             </entry>
@@ -150,16 +138,15 @@
               <file leaf-file-name="InsertAlignments.py" pinned="false" current-in-tab="false">
                 <entry file="file://$PROJECT_DIR$/InsertAlignments.py">
                   <provider selected="true" editor-type-id="text-editor">
-                    <state relative-caret-position="286">
+                    <state relative-caret-position="544">
                       <caret line="32" column="24" selection-start-line="32" selection-start-column="24" selection-end-line="32" selection-end-column="24" />
                       <folding>
                         <element signature="e#0#18#0" expanded="true" />
-                        <marker date="1474855361221" expanded="true" signature="471:1014" ph="..." />
-                        <marker date="1474855361221" expanded="true" signature="488:668" ph="SELECT bd.bi... BillDiscussion" />
-                        <marker date="1474855361221" expanded="true" signature="786:855" ph="SELECT bid F... Bill" />
-                        <marker date="1474855361221" expanded="true" signature="1059:1109" ph="SELECT oid, Organizations" />
-                        <marker date="1474855361221" expanded="true" signature="2094:2215" ph="INSERT INTO Organizations... " />
-                        <marker date="1474855361221" expanded="true" signature="3259:3406" ph="INSERT INTO OrgAlignments... " />
+                        <marker date="1477016513926" expanded="true" signature="488:668" ph="SELECT bd.bi... BillDiscussion" />
+                        <marker date="1477016513926" expanded="true" signature="786:855" ph="SELECT bid F... Bill" />
+                        <marker date="1477016513926" expanded="true" signature="1059:1109" ph="SELECT oid, Organizations" />
+                        <marker date="1477016513926" expanded="true" signature="2094:2215" ph="INSERT INTO Organizations... " />
+                        <marker date="1477016513926" expanded="true" signature="3259:3406" ph="INSERT INTO OrgAlignments... " />
                       </folding>
                     </state>
                   </provider>
@@ -168,7 +155,7 @@
               <file leaf-file-name="GetBillAnalysisWeb.py" pinned="false" current-in-tab="false">
                 <entry file="file://$PROJECT_DIR$/GetBillAnalysisWeb.py">
                   <provider selected="true" editor-type-id="text-editor">
-                    <state relative-caret-position="0">
+                    <state relative-caret-position="2907">
                       <caret line="171" column="19" selection-start-line="171" selection-start-column="19" selection-end-line="171" selection-end-column="19" />
                       <folding>
                         <element signature="e#0#14#0" expanded="true" />
@@ -184,11 +171,11 @@
             </leaf>
           </split-first>
           <split-second>
-            <leaf>
+            <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
               <file leaf-file-name="TestCases.py" pinned="false" current-in-tab="false">
                 <entry file="file://$PROJECT_DIR$/TestCases.py">
                   <provider selected="true" editor-type-id="text-editor">
-                    <state relative-caret-position="1147">
+                    <state relative-caret-position="2295">
                       <caret line="135" column="17" selection-start-line="135" selection-start-column="17" selection-end-line="135" selection-end-column="17" />
                       <folding>
                         <element signature="e#0#20#0" expanded="true" />
@@ -200,15 +187,15 @@
               <file leaf-file-name="InsertAlignments.py" pinned="false" current-in-tab="true">
                 <entry file="file://$PROJECT_DIR$/InsertAlignments.py">
                   <provider selected="true" editor-type-id="text-editor">
-                    <state relative-caret-position="-68">
-                      <caret line="126" column="18" selection-start-line="126" selection-start-column="18" selection-end-line="126" selection-end-column="18" />
+                    <state relative-caret-position="167">
+                      <caret line="66" column="12" selection-start-line="66" selection-start-column="12" selection-end-line="66" selection-end-column="12" />
                       <folding>
                         <element signature="e#0#18#0" expanded="true" />
-                        <marker date="1474855361221" expanded="true" signature="488:668" ph="SELECT bd.bi... BillDiscussion" />
-                        <marker date="1474855361221" expanded="true" signature="786:855" ph="SELECT bid F... Bill" />
-                        <marker date="1474855361221" expanded="true" signature="1059:1109" ph="SELECT oid, Organizations" />
-                        <marker date="1474855361221" expanded="true" signature="2094:2215" ph="INSERT INTO Organizations... " />
-                        <marker date="1474855361221" expanded="true" signature="3259:3406" ph="INSERT INTO OrgAlignments... " />
+                        <marker date="1477016513926" expanded="true" signature="488:668" ph="SELECT bd.bi... BillDiscussion" />
+                        <marker date="1477016513926" expanded="true" signature="786:855" ph="SELECT bid F... Bill" />
+                        <marker date="1477016513926" expanded="true" signature="1059:1109" ph="SELECT oid, Organizations" />
+                        <marker date="1477016513926" expanded="true" signature="2094:2215" ph="INSERT INTO Organizations... " />
+                        <marker date="1477016513926" expanded="true" signature="3259:3406" ph="INSERT INTO OrgAlignments... " />
                       </folding>
                     </state>
                   </provider>
@@ -303,7 +290,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -325,10 +311,11 @@
         </subPane>
       </pane>
       <pane id="Scratches" />
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../../AlignmentMeterStuff" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../UsedForUpdate/ImportLegStaffData" />
     <property name="WebServerToolWindowFactoryState" value="true" />
     <property name="settings.editor.selected.configurable" value="preferences.keymap" />
     <property name="settings.editor.splitter.proportion" value="0.2" />
@@ -684,21 +671,21 @@
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="true" content_ui="tabs" />
       <window_info id="File Transfer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32980973" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="WINDOWED" visible="false" show_stripe_button="true" weight="0.32980973" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" x="1921" y="31" width="577" height="1008" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32980973" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="WINDOWED" visible="false" show_stripe_button="true" weight="0.32980973" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" x="1921" y="31" width="733" height="1008" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="WINDOWED" visible="true" show_stripe_button="true" weight="0.32875264" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" x="2656" y="31" width="1183" height="1008" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="WINDOWED" visible="false" show_stripe_button="true" weight="0.32875264" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" x="2656" y="31" width="1183" height="1008" />
       <window_info id="Remote Host" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3296875" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Database Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="WINDOWED" visible="true" show_stripe_button="true" weight="1.0" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" x="2881" y="31" width="958" height="1008" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.125" sideWeight="0.5" order="1" side_tool="false" content_ui="combo" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3296875" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.0625" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="true" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="true" internal_type="SLIDING" type="WINDOWED" visible="false" show_stripe_button="true" weight="0.74524313" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" x="1921" y="31" width="733" height="1008" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="true" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
+      <window_info id="Database Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="WINDOWED" visible="true" show_stripe_button="true" weight="1.0" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" x="2881" y="31" width="958" height="1008" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="3" side_tool="false" content_ui="combo" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
@@ -833,10 +820,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#0#14#0" expanded="true" />
-            <marker date="1474305672411" expanded="true" signature="213:312" ph="SELECT field... field_data_field_analysis" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1019,10 +1002,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="190">
           <caret line="41" column="45" selection-start-line="41" selection-start-column="45" selection-end-line="41" selection-end-column="45" />
-          <folding>
-            <element signature="e#0#14#0" expanded="true" />
-            <marker date="1474305672411" expanded="true" signature="213:312" ph="SELECT field... field_data_field_analysis" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -1030,7 +1009,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="306">
           <caret line="864" column="0" selection-start-line="864" selection-start-column="0" selection-end-line="864" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1038,7 +1016,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1046,13 +1023,12 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/GetBillAnalysisWeb.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="325">
+        <state relative-caret-position="1615">
           <caret line="95" column="34" selection-start-line="95" selection-start-column="34" selection-end-line="95" selection-end-column="34" />
           <folding>
             <element signature="e#0#14#0" expanded="true" />
@@ -1068,7 +1044,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="700">
           <caret line="1579" column="0" selection-start-line="1579" selection-start-column="0" selection-end-line="1579" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1085,28 +1060,18 @@
         <state relative-caret-position="102">
           <caret line="162" column="36" selection-start-line="162" selection-start-column="36" selection-end-line="162" selection-end-column="36" />
           <folding>
-            <element signature="e#0#9#0" expanded="true" />
+            <element signature="e#0#9#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/TestCases.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="257">
+        <state relative-caret-position="1377">
           <caret line="81" column="0" selection-start-line="81" selection-start-column="0" selection-end-line="81" selection-end-column="0" />
           <folding>
             <element signature="e#0#20#0" expanded="true" />
-            <marker date="1474772072179" expanded="true" signature="1283:4165" ph="..." />
-            <marker date="1474772072179" expanded="true" signature="3788:3951" ph="..." />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/.PyCharm2016.2/system/remote_sources/355428310/942361161/pymysql/err.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="714">
-          <caret line="114" column="0" selection-start-line="114" selection-start-column="0" selection-end-line="114" selection-end-column="0" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -1126,6 +1091,14 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$USER_HOME$/.PyCharm2016.2/system/remote_sources/355428310/942361161/pymysql/err.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="714">
+          <caret line="114" column="0" selection-start-line="114" selection-start-column="0" selection-end-line="114" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/ProjectNotes.txt">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="153">
@@ -1136,15 +1109,15 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/InsertAlignments.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="153">
-          <caret line="9" column="84" selection-start-line="9" selection-start-column="84" selection-end-line="9" selection-end-column="84" />
+        <state relative-caret-position="524">
+          <caret line="147" column="18" selection-start-line="147" selection-start-column="18" selection-end-line="147" selection-end-column="18" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
-            <marker date="1474855361221" expanded="true" signature="488:668" ph="SELECT bd.bi... BillDiscussion" />
-            <marker date="1474855361221" expanded="true" signature="786:855" ph="SELECT bid F... Bill" />
-            <marker date="1474855361221" expanded="true" signature="1059:1109" ph="SELECT oid, Organizations" />
-            <marker date="1474855361221" expanded="true" signature="2094:2215" ph="INSERT INTO Organizations... " />
-            <marker date="1474855361221" expanded="true" signature="3259:3406" ph="INSERT INTO OrgAlignments... " />
+            <marker date="1477016513926" expanded="true" signature="488:668" ph="SELECT bd.bi... BillDiscussion" />
+            <marker date="1477016513926" expanded="true" signature="786:855" ph="SELECT bid F... Bill" />
+            <marker date="1477016513926" expanded="true" signature="1059:1109" ph="SELECT oid, Organizations" />
+            <marker date="1477016513926" expanded="true" signature="2094:2215" ph="INSERT INTO Organizations... " />
+            <marker date="1477016513926" expanded="true" signature="3259:3406" ph="INSERT INTO OrgAlignments... " />
           </folding>
         </state>
       </provider>

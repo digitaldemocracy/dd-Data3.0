@@ -357,6 +357,6 @@ ALTER TABLE Utterance ADD INDEX finalized (`finalized`);
 -- Andrew Note*: I have no idea why he is doing this
 SELECT 'Re-Creating currentUtterance view for permissions...' AS '';
 DROP VIEW currentUtterance;
-CREATE VIEW `currentUtterance` AS select `Utterance`.`uid` AS `uid`,`Utterance`.`vid` AS `vid`,`Utterance`.`pid` AS `pid`,`Utterance`.`time` AS `time`,`Utterance`.`endTime` AS `endTime`,`Utterance`.`text` AS `text`,`Utterance`.`type` AS `type`,`Utterance`.`alignment` AS `alignment`,`Utterance`.`state` AS `state`,`Utterance`.`did` AS `did`,`Utterance`.`lastTouched` AS `lastTouched` from `Utterance` where ((`Utterance`.`current` = 1) and (`Utterance`.`finalized` = 1)) order by `Utterance`.`time` desc;
+CREATE VIEW `currentUtterance` AS select `Utterance`.`uid` AS `uid`,`Utterance`.`vid` AS `vid`,`Utterance`.`pid` AS `pid`,`Utterance`.`time` AS `time`,`Utterance`.`endTime` AS `endTime`,`Utterance`.`text` AS `text`,`Utterance`.`type` AS `type`,`Utterance`.`alignment` AS `alignment`,`Utterance`.`state` AS `state`,`Utterance`.`did` AS `did`,`Utterance`.`lastTouched` AS `lastTouched` from `Utterance` where ((`Utterance`.`current` = 1) and (`Utterance`.`finalized` = 1));
 
 

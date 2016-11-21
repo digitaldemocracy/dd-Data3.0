@@ -39,8 +39,8 @@
       <file leaf-file-name="remove_duplicates.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/remove_duplicates.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="663">
-              <caret line="164" column="8" selection-start-line="164" selection-start-column="8" selection-end-line="164" selection-end-column="8" />
+            <state relative-caret-position="357">
+              <caret line="146" column="36" selection-start-line="146" selection-start-column="36" selection-end-line="146" selection-end-column="36" />
               <folding>
                 <element signature="e#354#1896#0" expanded="false" />
               </folding>
@@ -574,8 +574,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/remove_duplicates.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="663">
-          <caret line="164" column="8" selection-start-line="164" selection-start-column="8" selection-end-line="164" selection-end-column="8" />
+        <state relative-caret-position="357">
+          <caret line="146" column="36" selection-start-line="146" selection-start-column="36" selection-end-line="146" selection-end-column="36" />
           <folding>
             <element signature="e#354#1896#0" expanded="false" />
           </folding>
