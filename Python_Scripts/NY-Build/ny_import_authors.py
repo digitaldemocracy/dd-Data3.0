@@ -11,6 +11,7 @@ Description:
 - Currently configured to test DB
 '''
 
+import sys
 from Database_Connection import mysql_connection
 import traceback
 import requests
@@ -97,7 +98,9 @@ def get_author_api(year):
   while cur_offset < total:
     call = call_senate_api("bills", year, "", cur_offset)
     bills = call[0]
-    total = call[1]
+    #TODO API broken change back once fixed
+    #total = call[1]
+    total = 9999
     for bill in bills:
       if bill['sponsor']['member'] is not None:
         try:
@@ -281,11 +284,11 @@ def get_pid_db(first, last, dddb):
     return None
 
 def add_authors_db(year, dddb):
-  dddb.execute(QS_BILLSPONSORROLL_CHECK, CONTRIBUTION)
+  dddb.execute(QS_BILLSPONSORROLL_CHECK, (CONTRIBUTION,))
 
   if dddb.rowcount == 0:
     try:
-      dddb.execute(QI_BILLSPONSORROLLS, CONTRIBUTION)
+      dddb.execute(QI_BILLSPONSORROLLS, (CONTRIBUTION,))
     except MySQLdb.Error:
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
           additional_fields=create_payload('BillSponsorRolls', (QI_BILLSPONSORROLLS % CONTRIBUTION)))
@@ -296,15 +299,13 @@ def add_authors_db(year, dddb):
     insert_authors_db(bill, dddb)
 
 def main():
-#  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-#            user='awsDB',
-#            db='DDDB2015Dec',
-#            port=3306,
-#            passwd='digitaldemocracy789',
-#            charset='utf8') as dddb:
-#   dddb = dddb_conn.cursor()
-#   dddb_conn.autocommit(True)
-    dddb = mysql_connection()
+  ddinfo = mysql_connection(sys.argv)
+  with MySQLdb.connect(host=ddinfo['host'],
+            user=ddinfo['user'],
+            db=ddinfo['db'],
+            port=ddinfo['port'],
+            passwd=ddinfo['passwd'],
+            charset='utf8') as dddb:
     add_authors_db(2015, dddb)
     logger.info(__file__ + ' terminated successfully.', 
         full_msg='Inserted ' + str(INSERTED) + ' and updated ' + str(A_UPDATE) + ' rows in authors and ' 

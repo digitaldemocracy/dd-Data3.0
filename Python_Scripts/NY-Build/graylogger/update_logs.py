@@ -163,7 +163,7 @@ def table_names_to_tids(hit):
     tables_with_numbers = hit.affected_rows.split(",")
     for tables in tables_with_numbers:
       table_affected = tables.split(":")
-      overlorddb_cursor.execute('''SELECT tid FROM DD_Table WHERE name = %s''', (table_affected[0],))
+      overlorddb_cursor.execute('''SELECT tid FROM DD_Table WHERE name = %s''', (table_affected[0].strip(),))
       if overlorddb_cursor.rowcount == 0:
         print table_affected[0] + ' not found'
       else:
@@ -172,9 +172,9 @@ def table_names_to_tids(hit):
 
 def get_total_rows(table_name):
   # connect to dddb
-  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+  with MySQLdb.connect(host='dddb2016-mysql5-7-11.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
     user='awsDB',
-    db='DDDB2015Dec',
+    db='DDDB2016Aug',
     port=3306,
     passwd='digitaldemocracy789',
     charset='utf8') as dddb:

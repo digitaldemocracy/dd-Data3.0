@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.6
+#!/usr/bin/env python
 '''
 File: Action_Extract.py
 Author: Daniel Mangin
@@ -27,6 +27,8 @@ Populates:
   - Action (bid, date, text)
 '''
 
+from Database_Connection import mysql_connection
+import sys
 import traceback
 import MySQLdb
 from graylogger.graylogger import GrayLogger
@@ -86,11 +88,12 @@ def insert_Action(dd_cursor, values):
 Loops through all Actions from capublic and adds them as necessary
 '''
 def main():
-  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-                         port=3306,
-                         db='DDDB2015Dec',
-                         user='awsDB',
-                         passwd='digitaldemocracy789') as dd_cursor:
+  dbinfo = mysql_connection(sys.argv)
+  with MySQLdb.connect(host=dbinfo['host'],
+                         port=dbinfo['port'],
+                         db=dbinfo['db'],
+                         user=dbinfo['user'],
+                         passwd=dbinfo['passwd']) as dd_cursor:
     with MySQLdb.connect(host='transcription.digitaldemocracy.org',
                          user='monty',
                          db='capublic',

@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.6
+#!/usr/bin/env python
 '''
 File: Get_Districts.py
 Author: Daniel Mangin
@@ -23,6 +23,7 @@ import traceback
 import datetime
 import json
 import MySQLdb
+import sys
 from urllib import urlopen
 from graylogger.graylogger import GrayLogger                                    
 API_URL = 'http://dw.digitaldemocracy.org:12202/gelf'                  
@@ -107,6 +108,7 @@ def get_districts(dd_cursor):
   # Get lower chamber districts
   for j in xrange(1, _NUM_LOWER_DISTRICTS):
     url = urlopen(url_string % {'chamber': 'l', 'district_num': j}).read()
+    print(url)
     result = json.loads(url)
     state = result['abbr']
     house = 'Assembly'
@@ -129,12 +131,12 @@ def get_districts(dd_cursor):
     insert_district(dd_cursor, state, house, did, note, year, region, geodata)
 
 def main():
-#  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-#                         port=3306,
-#                         db='DDDB2015Dec',
-#                         user='awsDB',
-#                         passwd='digitaldemocracy789') as dd_cursor:
-    dd_cursor = mysql_connection() 
+  dbinfo = mysql_connection(sys.argv) 
+  with MySQLdb.connect(host=dbinfo['host'],
+                         port=dbinfo['port'],
+                         db=dbinfo['db'],
+                         user=dbinfo['user'],
+                         passwd=dbinfo['passwd']) as dd_cursor:
     get_districts(dd_cursor)
     logger.info(__file__ + ' terminated successfully.', 
         full_msg='Inserted ' + str(INSERTED) + ' rows in District',

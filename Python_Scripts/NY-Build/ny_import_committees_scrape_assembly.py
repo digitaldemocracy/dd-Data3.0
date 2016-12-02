@@ -9,6 +9,7 @@ Description:
 - Currently configured to test DB
 '''
 
+import sys
 from Database_Connection import mysql_connection
 import traceback
 from lxml import html
@@ -188,7 +189,8 @@ def add_committees_db(dddb):
             committee['cid'] = str(cid)
             count = count + 1
             try:
-              dddb.execute(insert_committee, committee)
+              dddb.execute(insert_committee, {'cid':committee['cid'], 
+                'house':committee['house'], 'name':committee['name'], 'state':committee['state']})
               C_INSERTED += dddb.rowcount
             except MySQLdb.Error:
               logger.warning('Insert Failed', full_msg=traceback.format_exc(),        
@@ -225,12 +227,12 @@ def get_pid_db(person, dddb):
 
     
 def main():
-#    with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-#                    user='awsDB',
-#                    db='DDDB2015Dec',
-#                    port=3306,
-#                    passwd='digitaldemocracy789') as dddb:
-      dddb = mysql_connection()
+    ddinfo = mysql_connection(sys.argv)
+    with MySQLdb.connect(host=ddinfo['host'],
+                    user=ddinfo['user'],
+                    db=ddinfo['db'],
+                    port=ddinfo['port'],
+                    passwd=ddinfo['passwd']) as dddb:
       add_committees_db(dddb)
       logger.info(__file__ + ' terminated successfully.', 
           full_msg='Inserted ' + str(C_INSERTED) + ' rows in Committee and inserted ' 

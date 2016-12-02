@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.6
+#!/usr/bin/env python
 # -*- coding: utf8 -*-
 '''
 File: Bill_Extract.py
@@ -226,16 +226,17 @@ def get_bill_versions(ca_cursor, dd_cursor):
       add_bill_version(dd_cursor, record)
 
 def main():
-#  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-#                         port=3306,
-#                         db='DDDB2015Dec',
-#                         user='awsDB',
-#                         passwd='digitaldemocracy789') as dd_cursor:
-  with MySQLdb.connect(host='transcription.digitaldemocracy.org',
+  import sys
+  ddinfo = mysql_connection(sys.argv) 
+  with MySQLdb.connect(host=ddinfo['host'],
+                         port=ddinfo['port'],
+                         db=ddinfo['db'],
+                         user=ddinfo['user'],
+                         passwd=ddinfo['passwd']) as dd_cursor:
+    with MySQLdb.connect(host='transcription.digitaldemocracy.org',
                          user='monty',
                          db='capublic',
                          passwd='python') as ca_cursor:
-      dd_cursor = mysql_connection() 
       get_bills(ca_cursor, dd_cursor)
       get_bill_versions(ca_cursor, dd_cursor)
       logger.info(__file__ + ' terminated successfully.', 

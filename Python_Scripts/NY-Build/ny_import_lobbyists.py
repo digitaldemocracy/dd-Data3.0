@@ -268,7 +268,7 @@ def insert_lobbyistEmployer_db(dddb, lobby):
 def insert_organization_db(dddb, lobby):
   global O_INSERT
 
-  dddb.execute(QS_ORGANIZATIONS, (lobby['client_name']))
+  dddb.execute(QS_ORGANIZATIONS, (lobby['client_name'],))
   query = dddb.fetchone()
 
   if query is None:
@@ -480,7 +480,7 @@ def insert_additional_lobbyists_db(dddb, lobbyist):
 def insert_lobbying_contracts_db(dddb, lobbyist):
   global LC_INSERT
 
-  dddb.execute(QS_ORGANIZATIONS, (lobbyist['client_name']))
+  dddb.execute(QS_ORGANIZATIONS, (lobbyist['client_name'],))
   oid = dddb.fetchone()[0]
   dddb.execute(QS_LOBBYISTEMPLOYER, (oid, 'NY'))
   lobbyist_employer = dddb.fetchone()[0]
@@ -541,13 +541,13 @@ def insert_lobbyists_db(dddb, lobbyists):
             insert_lobbyingfirm_db(dddb, client_year_val)    
 
 def main():
-#  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-#      user='awsDB',
-#      db='MikeyTest',
-#      port=3306,
-#      passwd='digitaldemocracy789',
-#      charset='utf8') as dddb:
-    dddb = mysql_connection()
+  ddinfo = mysql_connection(sys.argv)
+  with MySQLdb.connect(host=ddinfo['host'],
+      user=ddinfo['user'],
+      db=ddinfo['db'],
+      port=ddinfo['port'],
+      passwd=ddinfo['passwd'],
+      charset='utf8') as dddb:
     lobbyists_api = call_lobbyist_api()
     lobbyists = get_lobbyists_api(dddb, lobbyists_api)
     insert_lobbyists_db(dddb, lobbyists)

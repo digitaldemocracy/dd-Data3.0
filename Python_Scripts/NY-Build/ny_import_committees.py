@@ -10,6 +10,7 @@ Description:
 - Currently configured to test DB
 '''
 
+import sys
 from Database_Connection import mysql_connection
 import traceback
 import requests
@@ -204,7 +205,7 @@ def get_committees_api():
 #only adds committees if they do not exist and only adds to servesOn if member
 #is not already there.
 def add_committees_db(cur):
-    global C_INSERTED
+    global C_INSERTED, S_INSERTED
     committees = get_committees_api()
     x = 0
     y = 0
@@ -216,7 +217,8 @@ def add_committees_db(cur):
             x += 1
             committee['cid'] = str(cid)
             try:
-              cur.execute(insert_committee, committee)
+              cur.execute(insert_committee, {'cid':committee['cid'], 
+                'house':committee['house'], 'name':committee['name'], 'state':committee['state']})
               C_INSERTED += cur.rowcount
             except MySQLdb.Error:
               logger.warning('Insert Failed', full_msg=traceback.format_exc(),        
@@ -247,13 +249,13 @@ def get_pid_db(person, cur):
     return query[0]    
 
 def main():
-#    with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-#                        user='awsDB',
-#                        db='DDDB2015Dec',
-#                        port=3306,
-#                        passwd='digitaldemocracy789',
-#                        charset='utf8') as dddb:
-      dddb = mysql_connection()
+    ddinfo = mysql_connection(sys.argv)
+    with MySQLdb.connect(host=ddinfo['host'],
+                        user=ddinfo['user'],
+                        db=ddinfo['db'],
+                        port=ddinfo['port'],
+                        passwd=ddinfo['passwd'],
+                        charset='utf8') as dddb:
       add_committees_db(dddb)
       logger.info(__file__ + ' terminated successfully.', 
           full_msg='Inserted ' + str(C_INSERTED) + ' rows in Committee and inserted ' 

@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.6
+#!/usr/bin/env python
 '''
 File: Action_Extract.py
 Author: Daniel Mangin
@@ -28,10 +28,11 @@ Populates:
 '''
 
 from Database_Connection import mysql_connection
+import sys
 import traceback
 import MySQLdb
 from graylogger.graylogger import GrayLogger
-API_URL = 'http://development.digitaldemocracy.org:12202/gelf' 
+API_URL = 'http://dw.digitaldemocracy.org:12202/gelf' 
 logger = None
 INSERTED = 0
 UPDATED = 0
@@ -131,17 +132,17 @@ def update_Action(dd_cursor, values):
 Loops through all Actions from capublic and adds them as necessary
 '''
 def main():
-#  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-#                         port=3306,
-#                         db='DDDB2016Aug',
-#                         user='awsDB',
-#                         passwd='digitaldemocracy789') as dd_cursor:
-  with MySQLdb.connect(host='transcription.digitaldemocracy.org',
+  dbinfo = mysql_connection(sys.argv)
+  with MySQLdb.connect(host=dbinfo['host'],
+                         port=dbinfo['port'],
+                         db=dbinfo['db'],
+                         user=dbinfo['user'],
+                         passwd=dbinfo['passwd']) as dd_cursor:
+    with MySQLdb.connect(host='transcription.digitaldemocracy.org',
                          user='monty',
                          db='capublic',
                          passwd='python') as ca_cursor:
       # Get all of the Actions from capublic
-      dd_cursor = mysql_connection()
       ca_cursor.execute(QS_BILL_HISTORY_TBL)
 
       for record in ca_cursor.fetchall():

@@ -371,16 +371,16 @@ def get_detail_votes(ca_cursor, dd_cursor):
   print counter
 
 def main():
+  dbinfo = mysql_connection(sys.argv) 
   with MySQLdb.connect(host='transcription.digitaldemocracy.org',
                        db='capublic',
                        user='monty',
                        passwd='python') as ca_cursor:
-#    with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-#                           port=3306,
-#                           db='DDDB2015Dec',
-#                           user='awsDB',
-#                           passwd='digitaldemocracy789') as dd_cursor:
-      dd_cursor = mysql_connection() 
+    with MySQLdb.connect(host=dbinfo['host'],
+                           port=dbinfo['port'],
+                           db=dbinfo['db'],
+                           user=dbinfo['user'],
+                           passwd=dbinfo['passwd']) as dd_cursor:
       get_summary_votes(ca_cursor, dd_cursor)
       get_detail_votes(ca_cursor, dd_cursor)
       logger.info(__file__ + ' terminated successfully.', 

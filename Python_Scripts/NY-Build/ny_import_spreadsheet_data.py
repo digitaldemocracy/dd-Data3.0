@@ -19,6 +19,8 @@ Populates:
             email_form_link, OfficialBio)
   - Term (party, district)
 '''
+
+import sys
 from Database_Connection import mysql_connection
 import traceback
 import MySQLdb
@@ -266,18 +268,18 @@ def delete_spreadsheet():
 
 
 def main():
+  ddinfo = mysql_connection(sys.argv)
   #Connect to the Database
-#  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-#                        user='awsDB',
-#                        db='DDDB2015Dec',
-#                        port=3306,
-#                        passwd='digitaldemocracy789',
-#                        charset='utf8') as dddb:
+  with MySQLdb.connect(host=ddinfo['host'],
+                        user=ddinfo['user'],
+                        db=ddinfo['db'],
+                        port=ddinfo['port'],
+                        passwd=ddinfo['passwd'],
+                        charset='utf8') as dddb:
 
   #Need a cursor in order to execute queries
 # dddb = dddb_conn.cursor()
 # dddb_conn.autocommit(True)
-    dddb = mysql_connection()
     #Download Google spreadsheet
     get_spreadsheet()
     #Collect the necessary data for each legislator

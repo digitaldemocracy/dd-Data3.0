@@ -230,7 +230,7 @@ def insert_organization(dd_cursor, filer_naml, bus_city, bus_state):
   if len(bus_city.split(',')) == 2:
     bus_city = bus_city.split(',')[0]
   #In case the state is not a real state or another country other than US and Canada
-  dd_cursor.execute(QS_STATE, (bus_state))
+  dd_cursor.execute(QS_STATE, (bus_state,))
   if dd_cursor.rowcount == 0:
     #print bus_state
     bus_state = 'UN'
@@ -297,6 +297,7 @@ def insert_lobbying_firm(dd_cursor, filer_naml):
     try:
       dd_cursor.execute(QI_LOBBYING_FIRM, (filer_naml,))
       LF_INSERT += dd_cursor.rowcount
+      print LF_INSERT, filer_naml
     except MySQLdb.Error:                                              
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
           additional_fields=create_payload('LobbyingFirm', 
@@ -490,15 +491,17 @@ def is_in_lobbyingFirmState(dd_cursor, filer_id):
     return True
 
 def main():
-#  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-#                         port=3306,
-#                         db='MikeyTest',
-#                         user='awsDB',
-#                         passwd='digitaldemocracy789') as dd_cursor:
+  import sys
+  dbinfo = mysql_connection(sys.argv)
+  with MySQLdb.connect(host=dbinfo['host'],
+                         port=dbinfo['port'],
+                         db=dbinfo['db'],
+                         user=dbinfo['user'],
+                         passwd=dbinfo['passwd']) as dd_cursor:
     # Turn off foreign key checks
     #dd_cursor.execute('SET foreign_key_checks = 0')
     with open('/home/data_warehouse_common/scripts/CVR_REGISTRATION_CD.TSV', 'rb') as tsvin:
-      dd_cursor = mysql_connection() 
+      #dd_cursor = mysql_connection() 
       tsvin_reader = csv.reader(tsvin, delimiter='\t')
       
       val = 0
@@ -692,7 +695,7 @@ def main():
                                        +', LobbyistEmployer:'+str(ER_INSERT)
                                        +', LobbyistEmployment:'+str(EM_INSERT)
                                        +', LobbyistDirectEmployment:'+str(DE_INSERT)
-                                       +', LobbyingContracts.:'+str(LC_INSERT),
+                                       +', LobbyingContracts:'+str(LC_INSERT),
                            '_inserted':'LobbingFirm:'+str(LF_INSERT)
                                        +', LobbyingFirmState:'+str(FS_INSERT)
                                        +', Lobbyist:'+str(L_INSERT)

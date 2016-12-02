@@ -38,6 +38,10 @@ import csv
 import mysql.connector
 from pprint import pprint
 from urllib import urlopen
+from graylogger.graylogger import GrayLogger
+API_URL = 'http://dw.digitaldemocracy.org:12202/gelf'
+logger = None
+C_INSERT = 0
 
 #queries used for insertion
 QI_CONTRIBUTION = '''INSERT INTO Contribution 
@@ -162,11 +166,13 @@ def get_oid(cursor, donorOrg):
   return None
 
 def insert_Contributor(cursor, id, pid, year, date, house, donorName, donorOrg, amount, oid):
+  global C_INSERT
   cursor.execute(QS_CONTRIBUTION_CHECK, (id,))
 
   if cursor.rowcount == 1:
     cursor.execute(QD_CONTRIBUTION, (id,))
   cursor.execute(QI_CONTRIBUTION, (id, pid, year, date, house, donorName, donorOrg, amount, oid))
+  C_INSERT += cursor.rowcount
 
 #db = mysql.connector.connect(user = 'root', db = 'DDDB2015Apr', password = '')
 #conn = db.cursor(buffered = True)
@@ -230,7 +236,7 @@ def getContributions(file, conn):
                 index = index + 1
             except:
                 print(traceback.format_exc())
-                pass
+                raise
           else:
             val = val + 1
             #print 'did not go in successfully'
@@ -258,18 +264,25 @@ def main():
   #getContributions('cand_2013.csv')
   #getContributions('../../../Contribution_Data/cand_2015_windows.csv')
   #db.close()
-  #with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-  #                       port=3306,
-  #                       db='DDDB2015Dec',
-  #                       #db='EricTest',
-  #                       user='awsDB',
-  #                       passwd='digitaldemocracy789') as dd_cursor:
-    dd_cursor = mysql_connection() 
+  dbinfo = mysql_connection(sys.argv)
+  with MySQLdb.connect(host=dbinfo['host'],
+                         port=dbinfo['port'],
+                         db=dbinfo['db'],
+                         user=dbinfo['user'],
+                         passwd=dbinfo['passwd']) as dd_cursor:
     dl_csv()
     getContributions('cand_2015.csv', dd_cursor)
     print 'orgs not found', len(notfound_org)
-    raise Ty#peError
+    logger.info(__file__ + ' terminated successfully.',
+        full_msg='Inserted ' + str(C_INSERT) + ' rows in Contribution',
+        additional_fields={'_affected_rows':'Contribution'+str(C_INSERT),
+                           '_inserted':'Contribution'+str(C_INSERT),
+                           '_state':'CA',
+                           '_log_type':'Database'})
+    #raise TypeError
 
 if __name__ == "__main__":
-  main()
+  with GrayLogger(API_URL) as _logger:
+    logger = _logger
+    main()
 

@@ -10,6 +10,7 @@
         - Fills in the Action table with NY data
 '''
 
+import sys
 from Database_Connection import mysql_connection
 import requests
 import MySQLdb
@@ -69,7 +70,9 @@ def get_bills_api(resolution):
     while cur_offset < total:
         call = call_senate_api("bills", "/search", cur_offset, resolution)
         bills = call[0]
-        total = call[1]
+        #TODO API broken right now change back once fixed
+        #total = call[1]
+        total = 9999
         
         for bill in bills:
             bill = bill['result']             
@@ -127,19 +130,19 @@ def add_bill_actions_db(dddb):
     print "Inserted %d actions" % act_count
 
 def main():
-#    with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-#                        user='awsDB',
-#                        db='DDDB2015Dec',
-#                        port=3306,
-#                        passwd='digitaldemocracy789',
-#                        charset='utf8') as dddb:
-        dddb = mysql_connection() 
-        add_bill_actions_db(dddb)      
-        logger.info(__file__ + ' terminated successfully.', 
-            full_msg='inserted ' + str(INSERTED) + ' rows in Action',
-            additional_fields={'_affected_rows':'Action:'+str(INSERTED),
-                               '_inserted':'Action:'+str(INSERTED),
-                               '_state':'NY'})
+  dd_info = mysql_connection(sys.argv)
+  with MySQLdb.connect(host=dd_info['host'],
+                        user=dd_info['user'],
+                        db=dd_info['db'],
+                        port=dd_info['port'],
+                        passwd=dd_info['passwd'],
+                        charset='utf8') as dddb:
+    add_bill_actions_db(dddb)      
+    logger.info(__file__ + ' terminated successfully.', 
+                full_msg='inserted ' + str(INSERTED) + ' rows in Action',
+                additional_fields={'_affected_rows':'Action:'+str(INSERTED),
+                                   '_inserted':'Action:'+str(INSERTED),
+                                   '_state':'NY'})
     
 if __name__ == '__main__':
     with GrayLogger(GRAY_URL) as _logger:

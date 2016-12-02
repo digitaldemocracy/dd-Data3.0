@@ -10,6 +10,7 @@ Description:
 - Currently configured to test DB
 '''
 
+import sys
 from Database_Connection import mysql_connection
 import traceback
 import requests
@@ -125,13 +126,13 @@ def get_cid_db(dddb):
   return None
 
 def main():
-#  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-#            user='awsDB',
-#            db='DDDB2015Dec',
-#            port=3306,
-#            passwd='digitaldemocracy789',
-#            charset='utf8') as dddb:
-    dddb = mysql_connection()
+  ddinfo = mysql_connection(sys.argv)
+  with MySQLdb.connect(host=ddinfo['host'],
+            user=ddinfo['user'],
+            db=ddinfo['db'],
+            port=ddinfo['port'],
+            passwd=ddinfo['passwd'],
+            charset='utf8') as dddb:
     add_committeeauthors_db(2015, dddb)
     logger.info(__file__ + ' terminated successfully.', 
         full_msg='Inserted ' + str(INSERTED) + ' rows in CommitteeAuthors',

@@ -12,6 +12,7 @@ Description:
 - Currently configured to test DB
 '''
 
+import sys
 from Database_Connection import mysql_connection
 import traceback
 import requests
@@ -80,6 +81,7 @@ def call_senate_api(restCall, house, offset, resolution):
         api_url = API_URL+"term=billType.resolution:false"
 
     url = api_url.format(restCall, API_YEAR, house, offset)
+    print url
     r = requests.get(url)
     out = r.json()
     
@@ -93,10 +95,12 @@ def get_bills_api(resolution):
     cur_offset = 0
     ret_bills = list()
     
-    while cur_offset < 1:
+    while cur_offset < total:
         call = call_senate_api("bills", "/search", cur_offset, resolution)
         bills = call[0]
-        total = call[1]
+        #TODO change this back if the api is fixed. API doesnt allow for offset greater than 10k
+        #total = call[1]
+        total = 9999
         
         for bill in bills:
             bill = bill['result']             
@@ -125,14 +129,18 @@ def insert_bill_db(bill, dddb):
     global INSERTED, UPDATED
     if not is_bill_in_db(bill, dddb):                        
       try:
-        dddb.execute(insert_bill, bill)
+        dddb.execute(insert_bill, {'bid':bill['bid'], 'number':bill['number'], 
+          'type':bill['type'], 'status':bill['status'], 'house':bill['house'], 
+          'state':bill['state'], 'session':bill['session'], 'sessionYear':bill['sessionYear']})
         INSERTED += dddb.rowcount
       except MySQLdb.Error:
         logger.warning('Insert Failed', full_msg=traceback.format_exc(),
             additional_fields=create_payload('Bill', (insert_bill % bill)))
     else:        
       try:
-        dddb.execute(update_bill, bill)
+        dddb.execute(update_bill, {'number':bill['number'], 'type':bill['type'],
+          'status':bill['status'], 'house':bill['house'], 'state':bill['state'],
+          'session':bill['session'], 'sessionYear':bill['sessionYear'], 'bid':bill['bid']})
         UPDATED += dddb.rowcount
       except MySQLdb.Error:
         logger.warning('Update Failed', full_msg=traceback.format_exc(),
@@ -212,13 +220,13 @@ def add_bills_db( dddb):
     #print "Inserted %d bills" % bcount
                     
 def main():
-#    with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-#                        user='awsDB',
-#                        db='DDDB2015Dec',
-#                        port=3306,
-#                        passwd='digitaldemocracy789',
-#                        charset='utf8') as dddb:
-      dddb = mysql_connection()
+    ddinfo = mysql_connection(sys.argv)
+    with MySQLdb.connect(host=ddinfo['host'],
+                        user=ddinfo['user'],
+                        db=ddinfo['db'],
+                        port=ddinfo['port'],
+                        passwd=ddinfo['passwd'],
+                        charset='utf8') as dddb:
       add_bills_db(dddb)
       logger.info(__file__ + ' terminated successfully.', 
           full_msg='Inserted ' + str(INSERTED) + ' and updated ' + str(UPDATED) + ' rows in Bill and inserted ' 

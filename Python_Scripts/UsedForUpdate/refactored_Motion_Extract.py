@@ -27,6 +27,7 @@ Sources:
 from Database_Connection import mysql_connection
 import traceback
 import MySQLdb
+import sys
 from graylogger.graylogger import GrayLogger
 API_URL = 'http://dw.digitaldemocracy.org:12202/gelf'
 logger = None
@@ -64,16 +65,16 @@ def insert_motion(cursor, mid, date, text):
             (QI_MOTION % (mid, text, do_pass_flag))))
 
 def get_motions():
+  dbinfo = mysql_connection(sys.argv) 
   with MySQLdb.connect(host='transcription.digitaldemocracy.org',
                        db='capublic',
                        user='monty',
                        passwd='python') as ca_cursor:
-#    with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-#                           port=3306,
-#                           db='DDDB2015Dec',
-#                           user='awsDB',
-#                           passwd='digitaldemocracy789') as dddb_cursor:
-      dddb_cursor = mysql_connection() 
+    with MySQLdb.connect(host=dbinfo['host'],
+                           port=dbinfo['port'],
+                           db=dbinfo['db'],
+                           user=dbinfo['user'],
+                           passwd=dbinfo['passwd']) as dddb_cursor:
       ca_cursor.execute(QS_CPUB_MOTION)
       for mid, text, update in ca_cursor.fetchall():
         date = update.strftime('%Y-%m-%d %H:%M:%S')

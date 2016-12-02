@@ -9,7 +9,9 @@ Description:
 - Used as an import to the Cal-Access-Accessor.py to clean Lobbying Firm Names
 '''
 
-import loggingdb
+
+#import loggingdb
+import MySQLdb
 import re
 import sys
 
@@ -25,7 +27,7 @@ def cleanNames(select_query, update_query):
   |select_query|: A query that returns tuples of id and name, in that order.
   |update_query|: A query that updates names by id.
   '''
-  with loggingdb.connect(host='transcription.digitaldemocracy.org',
+  with MySQLdb.connect(host='transcription.digitaldemocracy.org',
                          user='monty',
                          db='DDDB2015JulyTest',
                          passwd='python') as dd_cursor:

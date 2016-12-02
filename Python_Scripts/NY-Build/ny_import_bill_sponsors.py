@@ -11,6 +11,7 @@ Description:
 - Currently configured to test DB
 '''
 
+import sys
 from Database_Connection import mysql_connection
 import traceback
 import requests
@@ -122,7 +123,7 @@ If contribution is not in the DDDB then add.
 |contribution|: the person's contribution to the bill (ex: Lead Author)
 '''
 def add_sponsor(dd_cursor, pid, bid, vid, contribution):
-  global counter
+  global counter, INSERTED
   dd_cursor.execute(QS_BILLSPONSORS_CHECK, (bid, pid, vid, contribution))
 
   if dd_cursor.rowcount == 0:
@@ -279,15 +280,15 @@ def add_authors_db(year, dddb):
       insert_sponsors_db(bill, dddb, contribution)
 
 def main():
-#  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-#            user='awsDB',
-#            db='DDDB2015Dec',
-#            port=3306,
-#            passwd='digitaldemocracy789',
-#            charset='utf8') as dddb:
+  ddinfo = mysql_connection(sys.argv)
+  with MySQLdb.connect(host=ddinfo['host'],
+            user=ddinfo['user'],
+            db=ddinfo['db'],
+            port=ddinfo['port'],
+            passwd=ddinfo['passwd'],
+            charset='utf8') as dddb:
 #   dddb = dddb_conn.cursor()
 #   dddb_conn.autocommit(True)
-    dddb = mysql_connection() 
     add_authors_db(2015, dddb)
     logger.info(__file__ + ' terminated', 
         full_msg='inserted ' + str(INSERTED) + ' in BillSponsors',

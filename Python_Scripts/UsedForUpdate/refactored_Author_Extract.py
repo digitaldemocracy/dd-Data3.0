@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.6
+#!/usr/bin/env python
 '''
 File: Author_Extract.py
 Author: Daniel Mangin
@@ -373,16 +373,17 @@ def get_authors(ca_cursor, dd_cursor):
           add_committee_author(dd_cursor, cid, bid, vid)
 
 def main():
-#  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-#                         port=3306,
-#                         db='DDDB2015Dec',
-#                         user='awsDB',
-#                         passwd='digitaldemocracy789') as dd_cursor:
-  with MySQLdb.connect(host='transcription.digitaldemocracy.org',
+  import sys
+  dbinfo = mysql_connection(sys.argv)
+  with MySQLdb.connect(host=dbinfo['host'],
+                         port=dbinfo['port'],
+                         db=dbinfo['db'],
+                         user=dbinfo['user'],
+                         passwd=dbinfo['passwd']) as dd_cursor:
+    with MySQLdb.connect(host='transcription.digitaldemocracy.org',
                        user='monty',
                        db='capublic',
                        passwd='python') as ca_cursor:
-      dd_cursor = mysql_connection()
       get_authors(ca_cursor, dd_cursor)
       logger.info(__file__ + ' terminated successfully.', 
           full_msg='Inserted ' + str(AU_INSERT) + ' rows in authors, ' 

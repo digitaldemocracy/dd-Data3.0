@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.6
+#!/usr/bin/env python
 '''
 File: ny_import_districts.py
 Author: Matt Versaggi
@@ -19,12 +19,14 @@ Populates:
 
 '''
 
+import sys
 from Database_Connection import mysql_connection
 import traceback
 import datetime
 import json
 from urllib import urlopen
 from graylogger.graylogger import GrayLogger                                    
+import MySQLdb
 GRAY_URL = 'http://dw.digitaldemocracy.org:12202/gelf'
 logger = None
 INSERTED = 0
@@ -93,6 +95,8 @@ def insert_district(dd_cursor, house, did, note, year, region, geoData):
                       (state, house, did, note, year, region, geoData))
       INSERTED += dd_cursor.rowcount
     except MySQLdb.Error:
+      print(traceback.format_exc(), (QI_DISTRICT % (state, house, did, note, year, region, geoData)))
+      exit(1)
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
           additional_fields=create_payload('District', 
             (QI_DISTRICT % (state, house, did, note, year, region, geoData))))
@@ -110,6 +114,7 @@ def get_districts(dd_cursor):
   # Get lower chamber districts
   for j in xrange(1, _NUM_LOWER_DISTRICTS):
     url = urlopen(url_string % {'chamber': 'l', 'district_num': j}).read()
+    print(url_string% {'chamber': 'l', 'district_num': j})
     result = json.loads(url)
     house = result['chamber']
     did = int(result['name'])
@@ -130,13 +135,12 @@ def get_districts(dd_cursor):
     insert_district(dd_cursor, house, did, note, year, region, geoData)
 
 def main():
-  import MySQLdb
-#  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-#                         port=3306,
-#                         db='DDDB2015Dec',
-#                         user='awsDB',
-#                         passwd='digitaldemocracy789') as dd_cursor:
-    dd_cursor = mysql_connection()
+  ddinfo = mysql_connection(sys.argv)
+  with MySQLdb.connect(host=ddinfo['host'],
+                         port=ddinfo['port'],
+                         db=ddinfo['db'],
+                         user=ddinfo['user'],
+                         passwd=ddinfo['passwd']) as dd_cursor:
     get_districts(dd_cursor)
     logger.info(__file__ + ' terminated successfully.', 
         full_msg='Inserted ' + str(INSERTED) + ' rows in District',

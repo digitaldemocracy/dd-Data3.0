@@ -1,11 +1,11 @@
-#!/usr/bin/env python2.6
+#!/usr/bin/env python
 # -*- coding: utf8 -*-
 
 '''
 File: ny_import_billvotes.py
 Author: John Alkire
 Maintained: Miguel Aguilar
-Date: 1/22/2016
+gate: 1/22/2016
 Last Updated: 07/14/2016
 Description:
 - Imports NY bill vote data using the senate API and by scraping the NY assembly page
@@ -161,7 +161,7 @@ def clean_name(name):
     
 def get_comm_cid(dddb, comm):
     try:
-        dddb.execute(select_committee, comm)
+      dddb.execute(select_committee, {'house':comm['house'], 'name':comm['name'], 'state':comm['state']})
     except MySQLdb.Error:
         logger.warning('Select Failed', full_msg=traceback.format_exc(),
         additional_fields=create_payload('Committee',(select_committee%comm)))
@@ -292,7 +292,7 @@ def get_vote_sums_assem(dddb, bid, bill):
     url = ASSEMBLY_URL.format(bill, api_year)
     page = requests.get(url)
 
-    soup = BeautifulSoup(page.content, 'html5lib')
+    soup = BeautifulSoup(page.content, 'html.parser')
     
     for table in soup.find_all('table'):         
         bv = dict()
@@ -459,13 +459,13 @@ def insert_billvotesums_db(dddb, bills):
 
 speaker = get_speaker_name()
 def main():
-#    with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-#                        user='awsDB',
-#                        db='DDDB2015Dec',
-#                        port=3306,
-#                        passwd='digitaldemocracy789',
-#                        charset='utf8') as dddb:
-        dddb = mysql_connection()
+    ddinfo = mysql_connection(sys.argv)
+    with MySQLdb.connect(host=ddinfo['host'],
+                        user=ddinfo['user'],
+                        db=ddinfo['db'],
+                        port=ddinfo['port'],
+                        passwd=ddinfo['passwd'],
+                        charset='utf8') as dddb:
         insert_billvotesums_db(dddb, get_bills_api(dddb))   
         logger.info(__file__ + ' terminated successfully.', 
             full_msg='Inserted ' + str(VS_INSERTED) + ' rows in BillVoteSummary and inserted ' 

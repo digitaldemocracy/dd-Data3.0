@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.6
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 '''
 File: billparse.py
@@ -134,8 +134,9 @@ def billparse(ca_cursor, dd_cursor):
     # This line will fail if |xml| is not valid XML.
     try:
       root = etree.fromstring(xml)
+      print('passed'+vid)
     except:
-      print(vid)
+      print('failed'+vid)
       print(xml)
       raise
 
@@ -155,24 +156,26 @@ def billparse(ca_cursor, dd_cursor):
       dd_cursor.execute(QU_BILL_VERSION, (title, digest, body, STATE, vid))
       UPDATE += dd_cursor.rowcount
     except MySQLdb.Error:
+      print 'failed'
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
           additional_fields=create_payload('BillVersion', 
             (QU_BILL_VERSION % (title, digest, body, STATE, vid))))
 
 if __name__ == "__main__":
+  import sys
+  dbinfo = mysql_connection(sys.argv) 
   # MUST SPECIFY charset='utf8' OR BAD THINGS WILL HAPPEN.
-#  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-#                         port=3306,
-#                         db='DDDB2015Dec',
-#                         user='awsDB',
-#                         passwd='digitaldemocracy789',
-#                         charset='utf8') as dd_cursor:
+  with MySQLdb.connect(host=dbinfo['host'],
+                         port=dbinfo['port'],
+                         db=dbinfo['db'],
+                         user=dbinfo['user'],
+                         passwd=dbinfo['passwd'],
+                         charset='utf8') as dd_cursor:
     with MySQLdb.connect(host='transcription.digitaldemocracy.org',
                          user='monty',
                          db='capublic',
                          passwd='python',
                          charset='utf8') as ca_cursor:
-      dd_cursor = mysql_connection() 
       with GrayLogger(API_URL) as _logger:                                          
         logger = _logger 
         billparse(ca_cursor, dd_cursor)

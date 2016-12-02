@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.6
+#!/usr/bin/env python
 # -*- coding: utf-8 -*- 
 '''
 File: Get_Committees_Web.py
@@ -39,6 +39,7 @@ import re
 import sys
 import traceback
 import urllib2
+import sys
 from bs4 import BeautifulSoup
 from graylogger.graylogger import GrayLogger                                    
 API_URL = 'http://dw.digitaldemocracy.org:12202/gelf'                  
@@ -551,13 +552,13 @@ def update_committees(cursor, house, year, comm_count, serve_count, pfinder):
   return comm_count, serve_count
 
 def main():
-#  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-#                       port=3306,
-#                       db='DDDB2015Dec',
-#                       user='awsDB',
-#                       passwd='digitaldemocracy789',
-#                       charset='utf8') as dd:
-    dd = mysql_connection() 
+  dbinfo = mysql_connection(sys.argv) 
+  with MySQLdb.connect(host=dbinfo['host'],
+                       port=dbinfo['port'],
+                       db=dbinfo['db'],
+                       user=dbinfo['user'],
+                       passwd=dbinfo['passwd'],
+                       charset='utf8') as dd:
     comm_count = serve_count = 0
     year = datetime.datetime.now().year
     pfinder = Find_Person.FindPerson(dd, 'CA')

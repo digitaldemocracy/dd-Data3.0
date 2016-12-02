@@ -11,7 +11,8 @@ Description:
 
 '''
 
-import loggingdb
+#import loggingdb
+import MySQLdb
 import re
 
 from clean_name import clean_name
@@ -48,7 +49,7 @@ def name_clean(index, name):
   return clean_name
 
 def clean_names():
-  with loggingdb.connect(host='transcription.digitaldemocracy.org',
+  with MySQLdb.connect(host='transcription.digitaldemocracy.org',
                          user='monty',
                          db='DDDB2015JulyTest',
                          passwd='python') as dd_cursor:
