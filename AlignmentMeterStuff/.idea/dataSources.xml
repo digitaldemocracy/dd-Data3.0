@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="DataSourceManagerImpl" format="xml" hash="604034337">
+  <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
     <data-source source="LOCAL" name="MySQL - @digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com" uuid="92e90ec9-e326-4553-b257-947493a2ac06">
       <driver-ref>mysql</driver-ref>
       <synchronize>true</synchronize>

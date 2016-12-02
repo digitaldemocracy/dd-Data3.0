@@ -70,19 +70,6 @@ from BillAlignmentScoresAndrew s
 where t.year = 2015
 group by s.oid, t.party, t.house;
 
-select *
-from AlignmentScoresAggregated;
-
-drop table AlignmentScoresAggregated;
-drop table AlignmentScoresExtraInfo;
-
-select *
-from BillAlignmentScoresAndrew
-where oid = -2;
-
-select *
-from AlignmentScoresExtraInfo
-where affirmations > votes_in_agreement + votes_in_disagreement;
 
 delete from AlignmentScoresExtraInfo;
 insert into AlignmentScoresExtraInfo

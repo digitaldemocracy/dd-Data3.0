@@ -12,10 +12,9 @@
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="ChangesViewManager" flattened_view="true" show_ignored="false" />
   <component name="CoverageDataManager">
     <SUITE FILE_PATH="coverage/AlignmentMeterStuff$AlignmentMeterLVA.coverage" NAME="AlignmentMeterLVA Coverage Results" MODIFIED="1476998169712" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/AlignmentMeterStuff$AlignmentMeter.coverage" NAME="AlignmentMeter Coverage Results" MODIFIED="1479936013036" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/AlignmentMeterStuff$AlignmentMeter.coverage" NAME="AlignmentMeter Coverage Results" MODIFIED="1480648841296" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
   <component name="CreatePatchCommitExecutor">
     <option name="PATCH_PATH" value="" />
@@ -38,7 +37,7 @@
           <file leaf-file-name="DB-create.sql" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/../DB-create.sql">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="256">
+                <state relative-caret-position="5236">
                   <caret line="308" column="36" selection-start-line="308" selection-start-column="27" selection-end-line="308" selection-end-column="36" />
                   <folding />
                 </state>
@@ -48,24 +47,24 @@
           <file leaf-file-name="AlignmentMeter.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/AlignmentMeter.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="534">
-                  <caret line="506" column="0" selection-start-line="506" selection-start-column="0" selection-end-line="506" selection-end-column="0" />
+                <state relative-caret-position="374">
+                  <caret line="546" column="53" selection-start-line="546" selection-start-column="53" selection-end-line="546" selection-end-column="53" />
                   <folding>
                     <element signature="e#0#19#0" expanded="true" />
-                    <marker date="1480115896373" expanded="true" signature="473:723" ph="SELECT oa.oi... OrgAlignments" />
-                    <marker date="1480115896373" expanded="true" signature="2500:3223" ph="CREATE OR RE... DoPassVotes" />
-                    <marker date="1480115896373" expanded="true" signature="2570:3223" ph="SELECT bid, BillVoteSummary" />
-                    <marker date="1480115896373" expanded="true" signature="3267:4014" ph="CREATE OR RE... FloorVotes" />
-                    <marker date="1480115896373" expanded="true" signature="3336:4014" ph="SELECT b.bid... BillVoteSummary" />
-                    <marker date="1480115896373" expanded="true" signature="4058:4249" ph="CREATE OR RE... PassingVotes" />
-                    <marker date="1480115896373" expanded="true" signature="4129:4170" ph="SELECT * FRO... DoPassVotes" />
-                    <marker date="1480115896373" expanded="true" signature="4209:4249" ph="SELECT * FRO... FloorVotes" />
-                    <marker date="1480115896373" expanded="true" signature="4295:5121" ph="SELECT DISTI... PassingVotes" />
-                    <marker date="1480115896373" expanded="true" signature="5494:5515" ph="DROP VIEW Do... " />
-                    <marker date="1480115896373" expanded="true" signature="5538:5558" ph="DROP VIEW Fl... " />
-                    <marker date="1480115896373" expanded="true" signature="5581:5603" ph="DROP VIEW Pa... " />
-                    <marker date="1480115896373" expanded="true" signature="16621:16771" ph="SELECT oc.oi... OrgConcept" />
-                    <marker date="1480115896373" expanded="true" signature="18076:18182" ph="UPDATE Align... " />
+                    <marker date="1480647716969" expanded="true" signature="473:723" ph="SELECT oa.oi... OrgAlignments" />
+                    <marker date="1480647716969" expanded="true" signature="2500:3223" ph="CREATE OR RE... DoPassVotes" />
+                    <marker date="1480647716969" expanded="true" signature="2570:3223" ph="SELECT bid, BillVoteSummary" />
+                    <marker date="1480647716969" expanded="true" signature="3267:4014" ph="CREATE OR RE... FloorVotes" />
+                    <marker date="1480647716969" expanded="true" signature="3336:4014" ph="SELECT b.bid... BillVoteSummary" />
+                    <marker date="1480647716969" expanded="true" signature="4058:4249" ph="CREATE OR RE... PassingVotes" />
+                    <marker date="1480647716969" expanded="true" signature="4129:4170" ph="SELECT * FRO... DoPassVotes" />
+                    <marker date="1480647716969" expanded="true" signature="4209:4249" ph="SELECT * FRO... FloorVotes" />
+                    <marker date="1480647716969" expanded="true" signature="4295:5121" ph="SELECT DISTI... PassingVotes" />
+                    <marker date="1480647716969" expanded="true" signature="5494:5515" ph="DROP VIEW Do... " />
+                    <marker date="1480647716969" expanded="true" signature="5538:5558" ph="DROP VIEW Fl... " />
+                    <marker date="1480647716969" expanded="true" signature="5581:5603" ph="DROP VIEW Pa... " />
+                    <marker date="1480647716969" expanded="true" signature="16621:16771" ph="SELECT oc.oi... OrgConcept" />
+                    <marker date="1480647716969" expanded="true" signature="18076:18182" ph="UPDATE Align... " />
                   </folding>
                 </state>
               </provider>
@@ -78,24 +77,10 @@
           <file leaf-file-name="AlignmentMeter.py" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/AlignmentMeter.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="413">
+                <state relative-caret-position="9214">
                   <caret line="542" column="30" selection-start-line="542" selection-start-column="30" selection-end-line="542" selection-end-column="30" />
                   <folding>
                     <element signature="e#0#19#0" expanded="true" />
-                    <marker date="1480115896373" expanded="true" signature="473:723" ph="SELECT oa.oi... OrgAlignments" />
-                    <marker date="1480115896373" expanded="true" signature="2500:3223" ph="CREATE OR RE... DoPassVotes" />
-                    <marker date="1480115896373" expanded="true" signature="2570:3223" ph="SELECT bid, BillVoteSummary" />
-                    <marker date="1480115896373" expanded="true" signature="3267:4014" ph="CREATE OR RE... FloorVotes" />
-                    <marker date="1480115896373" expanded="true" signature="3336:4014" ph="SELECT b.bid... BillVoteSummary" />
-                    <marker date="1480115896373" expanded="true" signature="4058:4249" ph="CREATE OR RE... PassingVotes" />
-                    <marker date="1480115896373" expanded="true" signature="4129:4170" ph="SELECT * FRO... DoPassVotes" />
-                    <marker date="1480115896373" expanded="true" signature="4209:4249" ph="SELECT * FRO... FloorVotes" />
-                    <marker date="1480115896373" expanded="true" signature="4295:5121" ph="SELECT DISTI... PassingVotes" />
-                    <marker date="1480115896373" expanded="true" signature="5494:5515" ph="DROP VIEW Do... " />
-                    <marker date="1480115896373" expanded="true" signature="5538:5558" ph="DROP VIEW Fl... " />
-                    <marker date="1480115896373" expanded="true" signature="5581:5603" ph="DROP VIEW Pa... " />
-                    <marker date="1480115896373" expanded="true" signature="16621:16771" ph="SELECT oc.oi... OrgConcept" />
-                    <marker date="1480115896373" expanded="true" signature="18076:18182" ph="UPDATE Align... " />
                   </folding>
                 </state>
               </provider>
@@ -104,40 +89,18 @@
           <file leaf-file-name="ProjectNotes.txt" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/ProjectNotes.txt">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="257">
+                <state relative-caret-position="544">
                   <caret line="32" column="52" selection-start-line="32" selection-start-column="52" selection-end-line="32" selection-end-column="52" />
                   <folding />
                 </state>
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="CalcAlignmentScoreMiguel.sql" pinned="false" current-in-tab="false">
+          <file leaf-file-name="CalcAlignmentScoreMiguel.sql" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/../CalcAlignmentScoreMiguel.sql">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="511">
-                  <caret line="84" column="18" selection-start-line="84" selection-start-column="18" selection-end-line="84" selection-end-column="18" />
-                  <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="console.sql" pinned="false" current-in-tab="false">
-            <entry file="file://$APPLICATION_CONFIG_DIR$/consoles/db/5ab65591-6da1-4f38-9116-1722a6ec5f2e/console.sql">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="531">
-                  <caret line="209" column="9" selection-start-line="209" selection-start-column="9" selection-end-line="209" selection-end-column="9" />
-                  <folding>
-                    <marker date="1480114680510" expanded="true" signature="4569:4832" ph="insert into PersonClassifications... " />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="GetBrandonData.sql" pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/../GetBrandonData.sql">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="901">
-                  <caret line="166" column="3" selection-start-line="146" selection-start-column="0" selection-end-line="166" selection-end-column="20" />
+                <state relative-caret-position="408">
+                  <caret line="64" column="34" selection-start-line="64" selection-start-column="34" selection-end-line="64" selection-end-column="34" />
                   <folding />
                 </state>
               </provider>
@@ -164,11 +127,11 @@
         <option value="$APPLICATION_CONFIG_DIR$/consoles/db/92e90ec9-e326-4553-b257-947493a2ac06/console.sql" />
         <option value="$PROJECT_DIR$/AlignmentMeterLVA.py" />
         <option value="$PROJECT_DIR$/ProjectNotes.txt" />
-        <option value="$PROJECT_DIR$/../CalcAlignmentScoreMiguel.sql" />
         <option value="$PROJECT_DIR$/../DB-create.sql" />
         <option value="$APPLICATION_CONFIG_DIR$/consoles/db/5ab65591-6da1-4f38-9116-1722a6ec5f2e/console.sql" />
-        <option value="$PROJECT_DIR$/AlignmentMeter.py" />
         <option value="$PROJECT_DIR$/../GetBrandonData.sql" />
+        <option value="$PROJECT_DIR$/AlignmentMeter.py" />
+        <option value="$PROJECT_DIR$/../CalcAlignmentScoreMiguel.sql" />
       </list>
     </option>
   </component>
@@ -181,8 +144,8 @@
   <component name="ProjectFrameBounds">
     <option name="x" value="-8" />
     <option name="y" value="-8" />
-    <option name="width" value="1382" />
-    <option name="height" value="744" />
+    <option name="width" value="1936" />
+    <option name="height" value="1056" />
   </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">
     <entry key="Project Default">
@@ -211,7 +174,7 @@
     <ConfirmationsSetting value="0" id="Remove" />
   </component>
   <component name="ProjectView">
-    <navigator currentView="ProjectPane" proportions="" version="1">
+    <navigator proportions="" version="1">
       <flattenPackages />
       <showMembers />
       <showModules />
@@ -224,13 +187,7 @@
       <manualOrder />
       <foldersAlwaysOnTop value="true" />
     </navigator>
-    <panes>
-      <pane id="ProjectPane">
-        <subPane />
-      </pane>
-      <pane id="Scope" />
-      <pane id="Scratches" />
-    </panes>
+    <panes />
   </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="true" />
@@ -518,18 +475,17 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1382" height="744" extended-state="6" />
+    <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
     <editor active="false" />
     <layout>
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="true" content_ui="tabs" />
-      <window_info id="File Transfer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.336" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
-      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32939914" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="WINDOWED" visible="false" show_stripe_button="true" weight="0.7454844" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" x="-7" y="0" width="1378" height="735" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32893288" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" x="184" y="205" width="958" height="488" />
+      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32939914" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.29175475" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" x="624" y="455" width="882" height="118" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32875264" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" x="184" y="205" width="958" height="488" />
       <window_info id="Remote Host" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3267254" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Database Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="WINDOWED" visible="false" show_stripe_button="true" weight="1.0" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" x="-8" y="-8" width="1382" height="744" />
+      <window_info id="Database Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="WINDOWED" visible="false" show_stripe_button="true" weight="1.0" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" x="1921" y="31" width="996" height="1008" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.14170338" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3292553" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.065104164" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -539,6 +495,7 @@
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="File Transfer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.336" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -643,20 +600,20 @@
           <caret line="230" column="58" selection-start-line="230" selection-start-column="58" selection-end-line="230" selection-end-column="58" />
           <folding>
             <element signature="e#0#19#0" expanded="true" />
-            <marker date="1480115896373" expanded="true" signature="473:723" ph="SELECT oa.oi... OrgAlignments" />
-            <marker date="1480115896373" expanded="true" signature="2500:3223" ph="CREATE OR RE... DoPassVotes" />
-            <marker date="1480115896373" expanded="true" signature="2570:3223" ph="SELECT bid, BillVoteSummary" />
-            <marker date="1480115896373" expanded="true" signature="3267:4014" ph="CREATE OR RE... FloorVotes" />
-            <marker date="1480115896373" expanded="true" signature="3336:4014" ph="SELECT b.bid... BillVoteSummary" />
-            <marker date="1480115896373" expanded="true" signature="4058:4249" ph="CREATE OR RE... PassingVotes" />
-            <marker date="1480115896373" expanded="true" signature="4129:4170" ph="SELECT * FRO... DoPassVotes" />
-            <marker date="1480115896373" expanded="true" signature="4209:4249" ph="SELECT * FRO... FloorVotes" />
-            <marker date="1480115896373" expanded="true" signature="4295:5121" ph="SELECT DISTI... PassingVotes" />
-            <marker date="1480115896373" expanded="true" signature="5494:5515" ph="DROP VIEW Do... " />
-            <marker date="1480115896373" expanded="true" signature="5538:5558" ph="DROP VIEW Fl... " />
-            <marker date="1480115896373" expanded="true" signature="5581:5603" ph="DROP VIEW Pa... " />
-            <marker date="1480115896373" expanded="true" signature="16621:16771" ph="SELECT oc.oi... OrgConcept" />
-            <marker date="1480115896373" expanded="true" signature="18076:18182" ph="UPDATE Align... " />
+            <marker date="1480647716969" expanded="true" signature="473:723" ph="SELECT oa.oi... OrgAlignments" />
+            <marker date="1480647716969" expanded="true" signature="2500:3223" ph="CREATE OR RE... DoPassVotes" />
+            <marker date="1480647716969" expanded="true" signature="2570:3223" ph="SELECT bid, BillVoteSummary" />
+            <marker date="1480647716969" expanded="true" signature="3267:4014" ph="CREATE OR RE... FloorVotes" />
+            <marker date="1480647716969" expanded="true" signature="3336:4014" ph="SELECT b.bid... BillVoteSummary" />
+            <marker date="1480647716969" expanded="true" signature="4058:4249" ph="CREATE OR RE... PassingVotes" />
+            <marker date="1480647716969" expanded="true" signature="4129:4170" ph="SELECT * FRO... DoPassVotes" />
+            <marker date="1480647716969" expanded="true" signature="4209:4249" ph="SELECT * FRO... FloorVotes" />
+            <marker date="1480647716969" expanded="true" signature="4295:5121" ph="SELECT DISTI... PassingVotes" />
+            <marker date="1480647716969" expanded="true" signature="5494:5515" ph="DROP VIEW Do... " />
+            <marker date="1480647716969" expanded="true" signature="5538:5558" ph="DROP VIEW Fl... " />
+            <marker date="1480647716969" expanded="true" signature="5581:5603" ph="DROP VIEW Pa... " />
+            <marker date="1480647716969" expanded="true" signature="16621:16771" ph="SELECT oc.oi... OrgConcept" />
+            <marker date="1480647716969" expanded="true" signature="18076:18182" ph="UPDATE Align... " />
           </folding>
         </state>
       </provider>
@@ -822,26 +779,7 @@
         <state relative-caret-position="691">
           <caret line="307" column="43" selection-start-line="307" selection-start-column="43" selection-end-line="307" selection-end-column="43" />
           <folding>
-            <element signature="e#0#19#0" expanded="true" />
-            <marker date="1479844306218" expanded="true" signature="472:722" ph="SELECT oa.oi... OrgAlignments" />
-            <marker date="1479844306218" expanded="true" signature="1799:2078" ph="CREATE OR RE... LastDate" />
-            <marker date="1479844306218" expanded="true" signature="1861:2078" ph="SELECT bid, BillVoteSummary" />
-            <marker date="1479844306218" expanded="true" signature="2162:2578" ph="CREATE OR RE... LastVote" />
-            <marker date="1479844306218" expanded="true" signature="2225:2578" ph="SELECT bvs.b... BillVoteSummary" />
-            <marker date="1479844306218" expanded="true" signature="2623:3346" ph="CREATE OR RE... DoPassVotes" />
-            <marker date="1479844306218" expanded="true" signature="2693:3346" ph="SELECT bid, BillVoteSummary" />
-            <marker date="1479844306218" expanded="true" signature="3390:4064" ph="CREATE OR RE... FloorVotes" />
-            <marker date="1479844306218" expanded="true" signature="3459:4064" ph="SELECT b.bid... BillVoteSummary" />
-            <marker date="1479844306218" expanded="true" signature="4108:4299" ph="CREATE OR RE... PassingVotes" />
-            <marker date="1479844306218" expanded="true" signature="4179:4220" ph="SELECT * FRO... DoPassVotes" />
-            <marker date="1479844306218" expanded="true" signature="4259:4299" ph="SELECT * FRO... FloorVotes" />
-            <marker date="1479844306218" expanded="true" signature="4345:5030" ph="SELECT bvd.*... PassingVotes" />
-            <marker date="1479844306218" expanded="true" signature="5317:5335" ph="DROP VIEW La... " />
-            <marker date="1479844306218" expanded="true" signature="5358:5376" ph="DROP VIEW La... " />
-            <marker date="1479844306218" expanded="true" signature="5399:5420" ph="DROP VIEW Do... " />
-            <marker date="1479844306218" expanded="true" signature="5443:5463" ph="DROP VIEW Fl... " />
-            <marker date="1479844306218" expanded="true" signature="5486:5508" ph="DROP VIEW Pa... " />
-            <marker date="1479844306218" expanded="true" signature="9147:9297" ph="SELECT oc.oi... OrgConcept" />
+            <element signature="e#0#19#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -864,7 +802,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/../DB-create.sql">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="256">
+        <state relative-caret-position="5236">
           <caret line="308" column="36" selection-start-line="308" selection-start-column="27" selection-end-line="308" selection-end-column="36" />
           <folding />
         </state>
@@ -872,61 +810,55 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/ProjectNotes.txt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="257">
+        <state relative-caret-position="544">
           <caret line="32" column="52" selection-start-line="32" selection-start-column="52" selection-end-line="32" selection-end-column="52" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$APPLICATION_CONFIG_DIR$/consoles/db/5ab65591-6da1-4f38-9116-1722a6ec5f2e/console.sql" />
+    <entry file="file://$PROJECT_DIR$/../GetBrandonData.sql">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="884">
+          <caret line="166" column="3" selection-start-line="166" selection-start-column="3" selection-end-line="166" selection-end-column="3" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/../CalcAlignmentScoreMiguel.sql">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="511">
-          <caret line="84" column="18" selection-start-line="84" selection-start-column="18" selection-end-line="84" selection-end-column="18" />
+        <state relative-caret-position="408">
+          <caret line="64" column="34" selection-start-line="64" selection-start-column="34" selection-end-line="64" selection-end-column="34" />
           <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$APPLICATION_CONFIG_DIR$/consoles/db/5ab65591-6da1-4f38-9116-1722a6ec5f2e/console.sql">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="531">
-          <caret line="209" column="9" selection-start-line="209" selection-start-column="9" selection-end-line="209" selection-end-column="9" />
-          <folding>
-            <marker date="1480114680510" expanded="true" signature="4569:4832" ph="insert into PersonClassifications... " />
-          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/AlignmentMeter.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="413">
-          <caret line="542" column="30" selection-start-line="542" selection-start-column="30" selection-end-line="542" selection-end-column="30" />
+        <state relative-caret-position="374">
+          <caret line="546" column="53" selection-start-line="546" selection-start-column="53" selection-end-line="546" selection-end-column="53" />
           <folding>
             <element signature="e#0#19#0" expanded="true" />
-            <marker date="1480115896373" expanded="true" signature="473:723" ph="SELECT oa.oi... OrgAlignments" />
-            <marker date="1480115896373" expanded="true" signature="2500:3223" ph="CREATE OR RE... DoPassVotes" />
-            <marker date="1480115896373" expanded="true" signature="2570:3223" ph="SELECT bid, BillVoteSummary" />
-            <marker date="1480115896373" expanded="true" signature="3267:4014" ph="CREATE OR RE... FloorVotes" />
-            <marker date="1480115896373" expanded="true" signature="3336:4014" ph="SELECT b.bid... BillVoteSummary" />
-            <marker date="1480115896373" expanded="true" signature="4058:4249" ph="CREATE OR RE... PassingVotes" />
-            <marker date="1480115896373" expanded="true" signature="4129:4170" ph="SELECT * FRO... DoPassVotes" />
-            <marker date="1480115896373" expanded="true" signature="4209:4249" ph="SELECT * FRO... FloorVotes" />
-            <marker date="1480115896373" expanded="true" signature="4295:5121" ph="SELECT DISTI... PassingVotes" />
-            <marker date="1480115896373" expanded="true" signature="5494:5515" ph="DROP VIEW Do... " />
-            <marker date="1480115896373" expanded="true" signature="5538:5558" ph="DROP VIEW Fl... " />
-            <marker date="1480115896373" expanded="true" signature="5581:5603" ph="DROP VIEW Pa... " />
-            <marker date="1480115896373" expanded="true" signature="16621:16771" ph="SELECT oc.oi... OrgConcept" />
-            <marker date="1480115896373" expanded="true" signature="18076:18182" ph="UPDATE Align... " />
+            <marker date="1480647716969" expanded="true" signature="473:723" ph="SELECT oa.oi... OrgAlignments" />
+            <marker date="1480647716969" expanded="true" signature="2500:3223" ph="CREATE OR RE... DoPassVotes" />
+            <marker date="1480647716969" expanded="true" signature="2570:3223" ph="SELECT bid, BillVoteSummary" />
+            <marker date="1480647716969" expanded="true" signature="3267:4014" ph="CREATE OR RE... FloorVotes" />
+            <marker date="1480647716969" expanded="true" signature="3336:4014" ph="SELECT b.bid... BillVoteSummary" />
+            <marker date="1480647716969" expanded="true" signature="4058:4249" ph="CREATE OR RE... PassingVotes" />
+            <marker date="1480647716969" expanded="true" signature="4129:4170" ph="SELECT * FRO... DoPassVotes" />
+            <marker date="1480647716969" expanded="true" signature="4209:4249" ph="SELECT * FRO... FloorVotes" />
+            <marker date="1480647716969" expanded="true" signature="4295:5121" ph="SELECT DISTI... PassingVotes" />
+            <marker date="1480647716969" expanded="true" signature="5494:5515" ph="DROP VIEW Do... " />
+            <marker date="1480647716969" expanded="true" signature="5538:5558" ph="DROP VIEW Fl... " />
+            <marker date="1480647716969" expanded="true" signature="5581:5603" ph="DROP VIEW Pa... " />
+            <marker date="1480647716969" expanded="true" signature="16621:16771" ph="SELECT oc.oi... OrgConcept" />
+            <marker date="1480647716969" expanded="true" signature="18076:18182" ph="UPDATE Align... " />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../GetBrandonData.sql">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="901">
-          <caret line="166" column="3" selection-start-line="146" selection-start-column="0" selection-end-line="166" selection-end-column="20" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
+  </component>
+  <component name="webServersAuthStorage">
+    <data>AAAAcM4mtjKH3aZk0G2FyaDJS/CGU5hQCIAdupkO2Ef8RGEDXLWDBAQaFSQdMn2RKPG7383rrxHoVG24fyy3Qy+dPi+GknhAcmsLxvAFZZhPT83HDwiMh+UTA9ENfTFNMmWXToahEE4q3HD0oOua8QMNb+Wz3X52ky0lsynamlBatVQ/</data>
   </component>
 </project>
