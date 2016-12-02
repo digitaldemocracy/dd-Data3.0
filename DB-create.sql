@@ -1236,9 +1236,11 @@ CREATE TABLE OrgAlignments (
   hid int(11) DEFAULT NULL,
   alignment char(20) CHARACTER SET utf8 DEFAULT NULL,
   analysis_flag BOOL,
+  state VARCHAR(2),
 
   PRIMARY KEY(oa_id),
-  UNIQUE (oid, bid, hid, alignment, analysis_flag)
+  UNIQUE (oid, bid, hid, alignment, analysis_flag),
+  FOREIGN KEY (state) REFERENCES State(abbrev)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE LegParticipation
@@ -1453,12 +1455,14 @@ CREATE TABLE BillAlignmentScoresMiguel (
 
 
 CREATE TABLE BillAlignmentScoresAndrew (
-  aligned_votes int,
-  alignment_percentage double,
   bid varchar(63),
   oid int,
   pid int,
+  aligned_votes int,
+  alignment_percentage double,
   total_votes int,
+  positions int,
+  affirmations int,
 
   PRIMARY KEY (bid, oid, pid)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
@@ -1496,6 +1500,8 @@ CREATE TABLE AlignmentScoresExtraInfo (
   positions_registered INT,
   votes_in_agreement INT,
   votes_in_disagreement INT,
+  affirmations INT,
+  bills INT,
 
   PRIMARY KEY (oid, pid),
   FOREIGN KEY (oid) REFERENCES OrgConcept(oid),
@@ -1512,6 +1518,8 @@ CREATE TABLE AlignmentScoresAggregated (
   positions_registered INT,
   votes_in_agreement INT,
   votes_in_disagreement INT,
+  affirmations INT,
+  bills INT,
 
   PRIMARY KEY (oid, house, party, state),
   FOREIGN KEY (oid) REFERENCES OrgConcept(oid),

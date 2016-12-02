@@ -36,7 +36,8 @@ INSERT INTO AlignmentScores
 
 CREATE TEMPORARY TABLE AggScores
 AS
-  SELECT pid, oid, AVG(alignment_percentage) AS score
+  SELECT pid, oid,
+  AVG(alignment_percentage) AS score
   FROM BillAlignmentScoresAndrew ba
   GROUP BY ba.pid, ba.oid;
 
@@ -51,24 +52,50 @@ DROP TABLE AggScores;
 
 delete from AlignmentScoresAggregated;
 insert into AlignmentScoresAggregated
-(oid, house, party, state, score, votes_in_agreement, votes_in_disagreement)
-select oid, house, party, 'CA' as state, AVG(s.alignment_percentage) as score,
-  sum(s.aligned_votes), sum(s.total_votes) - sum(s.aligned_votes)
+(oid, house, party, state, score, votes_in_agreement, votes_in_disagreement,
+ positions_registered, affirmations, bills)
+select oid,
+  house,
+  party,
+  'CA' as state,
+  AVG(s.alignment_percentage) as score,
+  sum(s.aligned_votes),
+  sum(s.total_votes) - sum(s.aligned_votes),
+  sum(positions) as positions,
+  sum(affirmations) as affirmations,
+  count(distinct bid) as bills
 from BillAlignmentScoresAndrew s
   join Term t
   on s.pid = t.pid
 where t.year = 2015
 group by s.oid, t.party, t.house;
 
+select *
+from AlignmentScoresAggregated;
+
+drop table AlignmentScoresAggregated;
+drop table AlignmentScoresExtraInfo;
+
+select *
+from BillAlignmentScoresAndrew
+where oid = -2;
+
+select *
+from AlignmentScoresExtraInfo
+where affirmations > votes_in_agreement + votes_in_disagreement;
 
 delete from AlignmentScoresExtraInfo;
 insert into AlignmentScoresExtraInfo
-(oid, pid, votes_in_agreement, votes_in_disagreement)
-select oid, pid, sum(aligned_votes), sum(total_votes) - sum(aligned_votes)
+(oid, pid, votes_in_agreement, votes_in_disagreement,
+ positions_registered, affirmations, bills)
+select oid,
+  pid,
+  sum(aligned_votes),
+  sum(total_votes) - sum(aligned_votes),
+  sum(positions) as positions,
+  sum(affirmations) as affirmations,
+  count(distinct bid) as bills
 from BillAlignmentScoresAndrew
 group by oid, pid;
-
-
-
 
 

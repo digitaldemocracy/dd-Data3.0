@@ -108,12 +108,12 @@ DO
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
     TRUNCATE TABLE GiftCombined;
-    INSERT INTO GiftCombined (RecordId, recipientPid, schedule, sourceName,
+    INSERT INTO GiftCombined (year, RecordId, recipientPid, schedule, sourceName,
                               activity, sourceCity, sourceState, giftValue,
                               giftDate, reimbursed, giftIncomeFlag, speechFlag,
                               description, sessionYear, state, lastTouched, oid,
                               giftDate_ts)
-      SELECT RecordId, pid, schedule, sourceName,
+      SELECT YEAR(giftDate), RecordId, pid, schedule, sourceName,
              activity, city, cityState, value,
              giftDate, reimbursed, giftIncomeFlag, speechFlag,
              description, sessionYear, state, lastTouched, oid, giftDate_ts
