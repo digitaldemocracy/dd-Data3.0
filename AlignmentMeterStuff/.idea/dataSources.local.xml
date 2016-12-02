@@ -2,15 +2,14 @@
 <project version="4">
   <component name="dataSourceStorageLocal">
     <data-source name="MySQL - @digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com" uuid="92e90ec9-e326-4553-b257-947493a2ac06">
-      <database-info product="MySQL" version="5.6.23-log" jdbc-version="4.0" driver-name="MySQL Connector Java" driver-version="mysql-connector-java-5.1.35 ( Revision: 5fb9c5849535c13917c2cf9baaece6ef9693ef27 )">
-        <extra-name-characters>#@</extra-name-characters>
-        <identifier-quote-string>`</identifier-quote-string>
-      </database-info>
-      <case-sensitivity plain-identifiers="exact" quoted-identifiers="exact" />
       <secret-storage>master_key</secret-storage>
       <user-name>awsDB</user-name>
-      <introspection-scope>mysql:*</introspection-scope>
-      <resolve-scope>mysql:*</resolve-scope>
+    </data-source>
+    <data-source name="MySQL - DDDB2016Aug@dddb2016-mysql5-7-11.chzg5zpujwmo.us-west-2.rds.amazonaws.com" uuid="5ab65591-6da1-4f38-9116-1722a6ec5f2e">
+      <secret-storage>master_key</secret-storage>
+      <user-name>awsDB</user-name>
+      <schema-pattern>DDDB2016Aug.*</schema-pattern>
+      <default-schemas>DDDB2016Aug.*</default-schemas>
     </data-source>
   </component>
 </project>

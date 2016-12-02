@@ -1,18 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" autoUpload="Always" serverName="DD Development Server">
+  <component name="PublishConfigData" autoUpload="Always" serverName="DD Development">
     <serverData>
-      <paths name="DD Development Server">
+      <paths name="DD Development">
         <serverdata>
           <mappings>
-            <mapping deploy="/AlignmentMeterStuff/" local="$PROJECT_DIR$" web="/" />
-          </mappings>
-        </serverdata>
-      </paths>
-      <paths name="development.digitaldemocracy.org">
-        <serverdata>
-          <mappings>
-            <mapping local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="/AlignmentMeterStuff" local="$PROJECT_DIR$" web="/" />
           </mappings>
         </serverdata>
       </paths>

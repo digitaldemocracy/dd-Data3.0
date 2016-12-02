@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="2de9d80e-f885-49f9-841e-62961bae5eb5" name="DD Development" url="http://development.digitaldemocracy.org">
+        <fileTransfer host="development.digitaldemocracy.org" port="22" privateKey="C:\Users\andre_000\OneDrive\DigitalDemocracy\Keys\DDPrivate.pub" rootFolder="/home/acvoorhe" accessType="SFTP" username="acvoorhe" keyPair="true">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" />
+          </advancedOptions>
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

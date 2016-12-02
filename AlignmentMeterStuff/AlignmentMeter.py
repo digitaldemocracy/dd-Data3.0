@@ -477,11 +477,42 @@ def update_total_alignments(cnxn, org_alignments_df):
     cnxn.commit()
 
 
+def get_positions(g):
+    out = 1
+    alignments = g['alignment']
+    last = alignments.iloc[0]
+    for a in alignments.iloc[1:]:
+        if a != last:
+            out += 1
+        last = a
+    return out
+
+
+def get_position_info(full_df, org_alignments_df, leg_votes_df):
+    df_j = org_alignments_df.merge(full_df, how='inner', on=['bid', 'oid'])
+
+    groups = df_j.groupby(['pid', 'oid', 'bid'])
+    positions = groups.apply(get_positions).reset_index().rename(columns={0: 'positions'})
+    df = org_alignments_df.groupby(['bid', 'oid'])['date'].apply(min).reset_index()
+
+    # aff_df = df.merge(leg_votes_df, how='inner', on=['bid'], suffixes=['_leg', '_org'])
+    # aff_df = aff_df[aff_df['date_leg'] >= aff_df['date_org']]
+    # groups = aff_df.groupby(['oid', 'bid', 'pid'])
+
+    groups = org_alignments_df.groupby(['bid', 'oid'])
+
+    affirmations = groups.apply(len).reset_index().rename(columns={0: 'affirmations'})
+    df = positions.merge(affirmations, on=['bid', 'oid'])
+    # df = positions.merge(affirmations, on=['oid', 'bid', 'pid'])
+
+    return df.merge(full_df, on=['pid', 'oid', 'bid'])
+
+
 def main():
     # cnxn = pymysql.connect(**CONN_INFO)
 
-    load_data = True
-    # load_data = False
+    # load_data = True
+    load_data = False
 
     if load_data:
 
@@ -526,6 +557,8 @@ def main():
 
     pickle.dump(scores_df_lst, open('scores_df_lst_final.p', 'wb'))
     df = pd.concat(scores_df_lst)
+
+    df = get_position_info(df, org_alignments_df, leg_votes_df)
 
     cnxn = pymysql.connect(**CONN_INFO)
 
