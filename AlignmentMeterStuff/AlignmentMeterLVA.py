@@ -5,8 +5,8 @@ import numpy as np
 
 CONN_INFO = {'host': 'dddb2016-mysql5-7-11.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
              'port': 3306,
-             'db': 'MikeyTest',
-             #'db': 'DDDB2016Aug',
+             # 'db': 'MikeyTest',
+             'db': 'DDDB2016Aug',
              'user': 'awsDB',
              'passwd': 'digitaldemocracy789'}
 
@@ -202,7 +202,7 @@ def get_alignments(oid_alignments_df, leg_votes_df, multiple):
 
     alignment_row = oid_alignments_df[oid_alignments_df['date'] == first_date]
     alignment_votes_df = leg_votes_df.merge(alignment_row, on=['bid'], suffixes=['_leg', '_org'])
-    ndx_after_date = pd.to_datetime(alignment_votes_df['date']) <= pd.to_datetime(alignment_votes_df['VoteDate'])
+    ndx_after_date = pd.to_datetime(alignment_votes_df['date_org']) <= pd.to_datetime(alignment_votes_df['date_leg'])
     alignment_votes_df = alignment_votes_df[ndx_after_date]
 
     leg_scores = alignment_votes_df.groupby('pid')['result'].apply(count_alignments, org_alignment)
@@ -256,6 +256,24 @@ def tmp_create_org_concepts(org_alignments_df):
     return org_alignments_df
 
 
+# Returns org_alignments_df w/ only the alignments for the organizations we're concerned w/
+def make_concept_alignments(org_alignments_df, cnxn):
+
+    query = '''SELECT oc.oid, a.old_oid, oc.name
+               FROM OrgConcept oc
+                JOIN OrgConceptAffiliation a
+                ON oc.oid = a.new_oid'''
+
+    concept_df = pd.read_sql(query, cnxn)
+
+    org_alignments_df = pd.merge(concept_df, org_alignments_df, left_on=['old_oid'], right_on=['oid'],
+                                 suffixes=['_concept', '_ali'])
+    org_alignments_df = org_alignments_df[['oid_concept', 'bid', 'hid', 'alignment', 'date']].rename(
+        columns={'oid_concept': 'oid'})
+
+    return org_alignments_df
+
+
 def main():
     # cnxn = pymysql.connect(**CONN_INFO)
 
@@ -266,16 +284,19 @@ def main():
 
         cnxn = pymysql.connect(**CONN_INFO)
         org_alignments_df = fetch_org_alignments(cnxn)
+        concept_alignments_df = make_concept_alignments(org_alignments_df, cnxn)
         leg_votes_df = fetch_leg_votes(cnxn)
         pickle.dump(org_alignments_df, open('org_alignments_df.p', 'wb'))
+        pickle.dump(concept_alignments_df, open('concept_alignments_df.p', 'wb'))
         pickle.dump(leg_votes_df, open('leg_votes_df.p', 'wb'))
         cnxn.close()
     else:
-        org_alignments_df = pickle.load(open('org_alignments_df.p', 'rb'))
+        # org_alignments_df = pickle.load(open('org_alignments_df.p', 'rb'))
+        org_alignments_df = pickle.load(open('concept_alignments_df.p', 'rb'))
         leg_votes_df = pickle.load(open('leg_votes_df.p', 'rb'))
 
 
-    org_alignments_df = tmp_create_org_concepts(org_alignments_df)
+    # org_alignments_df = tmp_create_org_concepts(org_alignments_df)
 
     # Also tmp
     # org_alignments_df = org_alignments_df[org_alignments_df.oid < 0]
@@ -296,9 +317,9 @@ def main():
     pickle.dump(scores_df_lst, open('scores_df_lst_final.p', 'wb'))
     df = pd.concat(scores_df_lst)
 
-    #cnxn = pymysql.connect(**CONN_INFO)
-    #df.to_sql('AlignmentScoresLVA', cnxn, flavor='mysql', if_exists='replace')
-    #cnxn.close()
+    cnxn = pymysql.connect(**CONN_INFO)
+    df.to_sql('BillAlignmentScoresMiguel', cnxn, flavor='mysql', if_exists='replace', index=False)
+    cnxn.close()
 
 if __name__ == '__main__':
     main()

@@ -125,7 +125,7 @@ def filter_org_names(org_name):
 
     if len(org_name) < 4:
         return None
-    if len(org_name.split(' ')) > 13:
+    if len(org_name.split(' ')) > 8:
         print(org_name)
         return None
     elif org_name.lower() == 'california':

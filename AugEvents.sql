@@ -76,7 +76,7 @@ DO
       `giftDate` date DEFAULT NULL,
       `giftDate_ts` int(11) DEFAULT NULL,
       `year` year(4) DEFAULT NULL,
-      `description` varchar(150) DEFAULT NULL,
+      `description` varchar(250) DEFAULT NULL,
       `giftValue` double DEFAULT NULL,
       `agencyName` varchar(100) DEFAULT NULL,
       `sourceName` varchar(150) DEFAULT NULL,
@@ -94,6 +94,7 @@ DO
       `giftIncomeFlag` tinyint(1) DEFAULT '0',
       `speechFlag` tinyint(1) DEFAULT '0',
       `speechOrPanel` tinyint(1) DEFAULT NULL,
+      sessionYear YEAR,
       `state` varchar(2) DEFAULT NULL,
       `lastTouched` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       PRIMARY KEY (`RecordId`),
@@ -107,8 +108,27 @@ DO
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
     TRUNCATE TABLE GiftCombined;
-    INSERT INTO GiftCombined (RecordId, recipientPid, schedule, sourceName, activity, sourceCity, sourceState, giftValue, giftDate, reimbursed, giftIncomeFlag, speechFlag, description, state, lastTouched, oid, giftDate_ts) SELECT * from Gift;
-    INSERT INTO GiftCombined (year, agencyName, recipientPid, legislatorPid, position, districtNumber, jurisdiction, sourceName, sourceCity, sourceState, sourceBusiness, giftDate, giftValue, reimbursed, description, speechOrPanel, imageUrl, lastTouched, schedule, giftDate_ts) select year, agency_name, staff_member, legislator, position, district_number, jurisdiction, source_name, source_city, source_state, source_business, date_given, gift_value, reimbursed, gift_description, speech_or_panel, image_url, lastTouched, schedule, date_given_ts from LegStaffGifts;
+    INSERT INTO GiftCombined (year, RecordId, recipientPid, schedule, sourceName,
+                              activity, sourceCity, sourceState, giftValue,
+                              giftDate, reimbursed, giftIncomeFlag, speechFlag,
+                              description, sessionYear, state, lastTouched, oid,
+                              giftDate_ts)
+      SELECT YEAR(giftDate), RecordId, pid, schedule, sourceName,
+             activity, city, cityState, value,
+             giftDate, reimbursed, giftIncomeFlag, speechFlag,
+             description, sessionYear, state, lastTouched, oid, giftDate_ts
+      from Gift;
+    INSERT INTO GiftCombined (year, agencyName, recipientPid, legislatorPid,
+                              position, districtNumber, jurisdiction, sourceName,
+                              sourceCity, sourceState, sourceBusiness, giftDate,
+                              giftValue, reimbursed, description, speechOrPanel,
+                              imageUrl, lastTouched, schedule, sessionYear, giftDate_ts)
+      select year, agency_name, staff_member, legislator,
+             position, district_number, jurisdiction, source_name,
+             source_city, source_state, source_business, date_given,
+             gift_value, reimbursed, gift_description, speech_or_panel,
+             image_url, lastTouched, schedule, session_year, date_given_ts
+      from LegStaffGifts;
     -- @TODO FIX LegStaffGifts - Temporary set state to CA for LegStaffGifts, since it doesn't contain a state yet
     UPDATE GiftCombined set state='CA' where state IS NULL;
 
