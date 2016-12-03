@@ -50,6 +50,32 @@ CREATE TABLE IF NOT EXISTS Session (
 
 
 /*
+  Legislators are elected to represent specific districts.
+
+  Sources: CA: refactored_Get_Districts.py
+           NY: ny_import_districts.py
+ */
+CREATE TABLE IF NOT EXISTS District (
+  state VARCHAR(2),
+  house VARCHAR(100),
+  did INTEGER,
+  note VARCHAR(40) DEFAULT '',
+  year INTEGER,
+  region TEXT,
+  geoData MEDIUMTEXT,
+  lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+  lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
+  dr_id INTEGER UNIQUE AUTO_INCREMENT,
+
+  PRIMARY KEY(state, house, did, year),
+  FOREIGN KEY (state) REFERENCES State(abbrev),
+  FOREIGN KEY (house, state) REFERENCES House(name, state)
+)
+  ENGINE = INNODB
+  CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+
+/*
   A house in a legislature. Necessary because different states can have
   different names for their houses.
 
@@ -356,6 +382,39 @@ CREATE TABLE IF NOT EXISTS Bill (
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+
+/*
+  Bills go through different versions. This table captures a specific version of a bill. Vids do
+  not necessarily follow a logical order, but they do always contain the bid
+
+  Sources: CA: refactored_Bill_Extract.py
+           NY: ny_import_bills.py
+ */
+CREATE TABLE IF NOT EXISTS BillVersion (
+  vid                 VARCHAR(33),
+  bid                 VARCHAR(23),
+  date                DATE,
+  date_ts  INT(11) AS (UNIX_TIMESTAMP(date_ts)), -- Used by Drupal
+  billState               ENUM('Chaptered', 'Introduced', 'Amended Assembly', 'Amended Senate',
+                               'Enrolled', 'Proposed', 'Amended', 'Vetoed') NOT NULL,
+  subject             TEXT,
+  appropriation       BOOLEAN,
+  substantive_changes BOOLEAN,
+  title               TEXT,
+  digest              MEDIUMTEXT,
+  text                MEDIUMTEXT,
+  state               VARCHAR(2),
+  lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+  lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
+  dr_id INTEGER UNIQUE AUTO_INCREMENT,
+
+  PRIMARY KEY (vid),
+  FOREIGN KEY (bid) REFERENCES Bill(bid),
+  FOREIGN KEY (state) REFERENCES State(abbrev)
+)
+  ENGINE = INNODB
+  CHARACTER SET utf8 COLLATE utf8_general_ci;
+
 /* Entity::Hearing
 
    There are many hearings per day. A bill is presented during a hearing and
@@ -580,38 +639,37 @@ CREATE TABLE IF NOT EXISTS BillVoteSummary (
 
 
 /*
-  Bills go through different versions. This table captures a specific version of a bill. Vids do
-  not necessarily follow a logical order, but they do always contain the bid
+  The vote information of a specific legislators on a given vote.
 
-  Sources:
+  Sources: CA: refactored_Vote_Extract.py
+           NY: ny_import_billvotes.py
  */
-CREATE TABLE IF NOT EXISTS BillVersion (
-  vid                 VARCHAR(33),
-  bid                 VARCHAR(23),
-  date                DATE,
-  date_ts  INT(11) AS (UNIX_TIMESTAMP(date_ts)), -- Used by Drupal
-  billState               ENUM('Chaptered', 'Introduced', 'Amended Assembly', 'Amended Senate',
-                               'Enrolled', 'Proposed', 'Amended', 'Vetoed') NOT NULL,
-  subject             TEXT,
-  appropriation       BOOLEAN,
-  substantive_changes BOOLEAN,
-  title               TEXT,
-  digest              MEDIUMTEXT,
-  text                MEDIUMTEXT,
-  state               VARCHAR(2),
+CREATE TABLE IF NOT EXISTS BillVoteDetail (
+  pid     INTEGER,
+  voteId INTEGER,
+  result  VARCHAR(20),
+  state   VARCHAR(2),
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
   lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
   dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
-  PRIMARY KEY (vid),
-  FOREIGN KEY (bid) REFERENCES Bill(bid),
-  FOREIGN KEY (state) REFERENCES State(abbrev)
+  PRIMARY KEY(pid, voteId),
+  FOREIGN KEY (pid) REFERENCES Legislator(pid),
+  FOREIGN KEY (state) REFERENCES State(abbrev),
+  FOREIGN KEY (voteId) REFERENCES BillVoteSummary(voteId)
 )
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
 
--- Note that for now contribution is either always lead author
--- or blank
+/*
+   The legislators that author specific bills.
+
+   Sources: CA: refactored_Author_Extract.py
+            NY: ny_import_authors.py
+
+   **Note that for now contribution is either always lead author
+   or blank
+ */
 CREATE TABLE IF NOT EXISTS authors (
   pid          INTEGER,
   bid          VARCHAR(23),
@@ -629,6 +687,13 @@ CREATE TABLE IF NOT EXISTS authors (
   CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 
+/*
+  This is just the different author rolls enumerated. So why isn't it an enum Andrew?
+  Don't ask too many questions.
+
+  Sources: CA: TODO something should fill this
+           NY: No data
+ */
 CREATE TABLE IF NOT EXISTS BillSponsorRolls (
   roll VARCHAR(100),
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
@@ -640,9 +705,14 @@ CREATE TABLE IF NOT EXISTS BillSponsorRolls (
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
 
-/* Table basically just the same info as authors, but it clarifies their
-role. We have a second table as not to confuse the druple scripts that
-pull author names. Ideally we role this into authors soon */
+/*
+  Table basically just the same info as authors, but it clarifies their
+  role. We have a second table as not to confuse the druple scripts that
+  pull author names. Ideally we role this into authors soon.
+
+  Sources: CA: TODO something should fill this
+           NY: No data
+ */
 CREATE TABLE IF NOT EXISTS BillSponsors (
   pid          INTEGER,
   bid          VARCHAR(23),
@@ -661,6 +731,13 @@ CREATE TABLE IF NOT EXISTS BillSponsors (
   CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 
+/*
+  Bills can be authored by legislators or whole committees. This table captures the case where
+  a bill was authored by a committee.
+
+  Sources: CA: refactored_Author_Extract.py
+           NY: ny_import_committeeauthors.py
+ */
 CREATE TABLE IF NOT EXISTS CommitteeAuthors(
   cid INTEGER,
   bid VARCHAR(23),
@@ -679,7 +756,13 @@ CREATE TABLE IF NOT EXISTS CommitteeAuthors(
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
 
--- examine (without endTime in UNIQUE, duplicate)
+
+/*
+  The individual blocks of text our transcripts are broken up into.
+
+  Sources: CA: Transcription Tool
+           NY: Transcription Tool
+ */
 CREATE TABLE IF NOT EXISTS Utterance (
   uid    INTEGER AUTO_INCREMENT,
   vid    INTEGER,
@@ -708,29 +791,15 @@ CREATE TABLE IF NOT EXISTS Utterance (
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
 
-CREATE OR REPLACE VIEW currentUtterance
-AS SELECT uid, vid, pid, time, endTime, text, type, alignment, state, did,
-     lastTouched
-   FROM Utterance
-   WHERE current = TRUE AND finalized = TRUE ORDER BY time DESC;
 
-CREATE TABLE IF NOT EXISTS BillVoteDetail (
-  pid     INTEGER,
-  voteId INTEGER,
-  result  VARCHAR(20),
-  state   VARCHAR(2),
-  lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
-  lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
-  dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
-  PRIMARY KEY(pid, voteId),
-  FOREIGN KEY (pid) REFERENCES Legislator(pid),
-  FOREIGN KEY (state) REFERENCES State(abbrev),
-  FOREIGN KEY (voteId) REFERENCES BillVoteSummary(voteId)
-)
-  ENGINE = INNODB
-  CHARACTER SET utf8 COLLATE utf8_general_ci;
+/*
+  Whenever an organization gives something to a legislator, that must be recorded. This table
+  keeps track of all those "gifts".
 
+  Sources: CA: TODO ??
+           NY: TODO ??
+ */
 CREATE TABLE IF NOT EXISTS Gift (
   RecordId INTEGER AUTO_INCREMENT,
   pid INTEGER,
@@ -760,25 +829,13 @@ CREATE TABLE IF NOT EXISTS Gift (
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
 
-CREATE TABLE IF NOT EXISTS District (
-  state VARCHAR(2),
-  house VARCHAR(100),
-  did INTEGER,
-  note VARCHAR(40) DEFAULT '',
-  year INTEGER,
-  region TEXT,
-  geoData MEDIUMTEXT,
-  lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
-  lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
-  dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
-  PRIMARY KEY(state, house, did, year),
-  FOREIGN KEY (state) REFERENCES State(abbrev),
-  FOREIGN KEY (house, state) REFERENCES House(name, state)
-)
-  ENGINE = INNODB
-  CHARACTER SET utf8 COLLATE utf8_general_ci;
+/*
+  These are formal contributions to legislators campaigns.
 
+  Sources: CA: refactored_Contributions.py
+           NY: TODO ??
+ */
 CREATE TABLE IF NOT EXISTS Contribution (
   id VARCHAR(20),
   pid INTEGER,
@@ -804,6 +861,12 @@ CREATE TABLE IF NOT EXISTS Contribution (
   CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 
+/*
+  Lobbyists are people who "lobby" on behalf of organizations in front of Congress.
+
+  Sources: CA: refactored_Cal-Access-Accessor.py
+           NY: ny_import_lobbyists.py
+ */
 CREATE TABLE IF NOT EXISTS Lobbyist(
   pid INTEGER,   -- added
   -- FILER_NAML VARCHAR(50),               modified, needs to be same as Person.last
@@ -821,6 +884,14 @@ CREATE TABLE IF NOT EXISTS Lobbyist(
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+
+/*
+  Similar to a law firm. Organizations hire lobbyists through a lobbying firm in
+  order to represent the organization at a hearing.
+
+  Sources: CA: refactored_Cal-Access-Accessor.py
+           NY: ny_import_lobbyists.py
+ */
 CREATE TABLE IF NOT EXISTS LobbyingFirm(
   filer_naml VARCHAR(200),
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
@@ -832,6 +903,13 @@ CREATE TABLE IF NOT EXISTS LobbyingFirm(
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+/*
+  It is possible that a lobbying firm might be present in multiple states. This table represents the
+  state specific info we have a firm in a given state.
+
+  Sources: CA: refactored_Cal-Access-Accessor.py
+           NY: ny_import_lobbyists.py
+*/
 CREATE TABLE IF NOT EXISTS LobbyingFirmState (
   filer_id VARCHAR(200),  -- modified, given by state
   rpt_date DATE,
@@ -851,6 +929,13 @@ CREATE TABLE IF NOT EXISTS LobbyingFirmState (
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+
+/*
+  A organization that hires lobbyists on their behalf.
+
+  Sources: CA: refactored_Cal-Access-Accessor.py
+           NY: ny_import_lobbyists.py
+ */
 CREATE TABLE IF NOT EXISTS LobbyistEmployer (
    filer_id VARCHAR(200),  -- modified (PK)
    oid INTEGER,
@@ -868,8 +953,13 @@ CREATE TABLE IF NOT EXISTS LobbyistEmployer (
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
--- LOBBYIST_EMPLOYED_BY_LOBBYING_FIRM
 
+/*
+  Records which lobbying firms employ which lobbyists.
+
+  Sources: CA: refactored_Cal-Access-Accessor.py
+           NY: ny_import_lobbyists.py
+ */
 CREATE TABLE IF NOT EXISTS LobbyistEmployment (
   pid INT,                         -- modified (FK)
   sender_id VARCHAR(200),
@@ -891,10 +981,13 @@ CREATE TABLE IF NOT EXISTS LobbyistEmployment (
   CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 
--- NEW TABLE: Lobbyist Employed Directly by Lobbyist Employers
--- Structure same as LOBBYIST_EMPLOYED_BY_LOBBYING_FIRM,
--- but the SENDER_ID is a Foreign Key onto LOBBYIST_EMPLOYER
---  LOBBYIST_EMPLOYED_BY_LOBBYIST_EMPLOYER
+/*
+  Represents an instance where a lobbyist employer (an organization) hires a lobbyists directly,
+  as opposed to hiring said lobbyists through a lobbying firm. Ie these are in house lobbyists
+
+  Sources: CA: refactored_Cal-Access-Accessor.py
+           NY: ny_import_lobbyists.py
+ */
 CREATE TABLE IF NOT EXISTS LobbyistDirectEmployment(
    pid INT,
    lobbyist_employer INTEGER,
@@ -915,8 +1008,13 @@ ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 
--- end new table
+/*
+  Tracks the employment contracts between an organization and a lobbying firm. Ie when an organization
+  hires a lobbying firm to use some of its lobbyists on that organizations behalf.
 
+  Sources: CA: refactored_Cal-Access-Accessor.py
+           NY: ny_import_lobbyists.py
+ */
 CREATE TABLE IF NOT EXISTS LobbyingContracts(
    filer_id VARCHAR(200),
    lobbyist_employer INTEGER, -- modified (FK)
@@ -938,6 +1036,12 @@ ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 
+/*
+  A specific instance of a lobbyist speaking at a hearing on an organizationss behalf.
+
+  Sources: CA: Transcription Tool
+           NY: Transcription Tool
+ */
 CREATE TABLE IF NOT EXISTS LobbyistRepresentation (
    pid INTEGER,
    oid INTEGER, -- modified (renamed)
@@ -961,6 +1065,12 @@ ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 
+/*
+  A specific instance of a member of the general public speaking at a hearing on an organization's behalf.
+
+  Sources: CA: Transcription Tool
+           NY: Transcription Tool
+ */
 CREATE TABLE IF NOT EXISTS GeneralPublic(
   pid INTEGER,   -- added
   position VARCHAR(100),
@@ -982,6 +1092,13 @@ CREATE TABLE IF NOT EXISTS GeneralPublic(
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+/*
+  A person who works in state legislature for a legislator or specific committee.
+
+  Sources: CA: Transcription Tool,
+               ImportLegStaffGifts (whole side project)
+           NY: Transcription Tool
+ */
 CREATE TABLE IF NOT EXISTS LegislativeStaff (
   pid INTEGER,   -- added
   state VARCHAR(2),
@@ -996,6 +1113,12 @@ CREATE TABLE IF NOT EXISTS LegislativeStaff (
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+/*
+  An instance of a legislative staff member speaking at a hearing.
+
+  Sources: CA: Transcription Tool
+           NY: Transcription Tool
+ */
 CREATE TABLE IF NOT EXISTS LegislativeStaffRepresentation (
   pid INTEGER,   -- added
   flag TINYINT(1),  -- if flag is 0, there must be a legislator; if flag is 1, there must be a committee
@@ -1020,6 +1143,13 @@ CREATE TABLE IF NOT EXISTS LegislativeStaffRepresentation (
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+/*
+  A person who works for the LAO. They are in theory an objective third party who examines the
+  logistics of specific pieces of legislation.
+
+  Source: CA: Transcription Tool
+          NY: Transcription Tool
+ */
 CREATE TABLE IF NOT EXISTS LegAnalystOffice(
   pid INTEGER REFERENCES Person(pid),
   state VARCHAR(2),
@@ -1034,6 +1164,13 @@ CREATE TABLE IF NOT EXISTS LegAnalystOffice(
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+
+/*
+  An instance of an LAO member speaking at a hearing.
+
+  Source: CA: Transcription Tool
+          NY: Transcription Tool
+ */
 CREATE TABLE IF NOT EXISTS LegAnalystOfficeRepresentation(
   pid INTEGER REFERENCES Person(pid),   -- added
   hid   INTEGER,                       -- added
@@ -1051,6 +1188,13 @@ CREATE TABLE IF NOT EXISTS LegAnalystOfficeRepresentation(
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+
+/*
+  Just a specific state agency.
+
+  Source: CA: Transcription Tool (Some added by hand)
+          NY: Transcription Tool (Some added by hand)
+ */
 CREATE TABLE IF NOT EXISTS StateAgency (
   name VARCHAR(200),
   state VARCHAR(2),
@@ -1064,6 +1208,13 @@ CREATE TABLE IF NOT EXISTS StateAgency (
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+
+/*
+  A person who works for a state agency.
+
+  Source: CA: Transcription Tool
+          NY: Transcription Tool
+ */
 CREATE TABLE IF NOT EXISTS StateAgencyRep(
   pid INTEGER,   -- added
   state VARCHAR(2),
@@ -1079,6 +1230,13 @@ CREATE TABLE IF NOT EXISTS StateAgencyRep(
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+
+/*
+  An instance of a state agency rep testifying at a hearing.
+
+  Source: CA: Transcription Tool
+          NY: Transcription Tool
+ */
 CREATE TABLE IF NOT EXISTS StateAgencyRepRepresentation(
   pid INTEGER,   -- added
   employer VARCHAR(200),
@@ -1099,6 +1257,13 @@ CREATE TABLE IF NOT EXISTS StateAgencyRepRepresentation(
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+
+/*
+  State constitutional offices are important organizations in state legislatures.
+
+  Source: CA: Transcription Tool
+          NY: Transcription Tool
+ */
 CREATE TABLE IF NOT EXISTS StateConstOffice (
   name VARCHAR(200),
   state VARCHAR(2),
@@ -1112,6 +1277,13 @@ CREATE TABLE IF NOT EXISTS StateConstOffice (
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+
+/*
+  Table holds recorded of specific state const offices.
+
+  Source: CA: Transcription Tool
+          NY: Transcription Tool
+ */
 CREATE TABLE IF NOT EXISTS StateConstOfficeRep(
   pid INTEGER,
   state VARCHAR(2),
@@ -1126,6 +1298,13 @@ CREATE TABLE IF NOT EXISTS StateConstOfficeRep(
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+
+/*
+  Specific instance of a state const office employee testifying at a hearing.
+
+  Source: CA: Transcription Tool
+          NY: Transcription Tool
+ */
 CREATE TABLE IF NOT EXISTS StateConstOfficeRepRepresentation(
   pid INTEGER,
   office VARCHAR(200),
@@ -1146,10 +1325,14 @@ CREATE TABLE IF NOT EXISTS StateConstOfficeRepRepresentation(
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+
 /* Entity::Payors
 
    Payors are persons or organizations that pay for another organization
-   on the behest of a legislator.
+   on the "behest" of a legislator.
+
+   Source: CA: refactored_insert_Behests.py
+           NY: No Data
 */
 CREATE TABLE IF NOT EXISTS Payors (
   prid INT AUTO_INCREMENT,  -- Payor id
@@ -1167,12 +1350,16 @@ CREATE TABLE IF NOT EXISTS Payors (
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+
 /* Entity::Behests
 
    Behests are when a legislator asks someone (can be an Organization or a
    Person) to pay for another organization. Essentially, the legislator gets
    good publicity for helping the payee. Later on, the payor can influence
    the legislator on certain bills because they helped out before.
+
+   Source: CA: refactored_insert_Behests.py
+           NY: No Data
 */
 CREATE TABLE IF NOT EXISTS Behests (
   official INT,          -- legislator (ref. Legislator.pid)
@@ -1200,7 +1387,14 @@ CREATE TABLE IF NOT EXISTS Behests (
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
 
--- The next two tables are added for Toshi
+
+-- TODO are we still using this?
+/*
+  Table used by the front to keep track of specific bill types.
+
+  Sources: CA: Manually
+           NY: Manually
+ */
 CREATE TABLE IF NOT EXISTS BillTypes (
   Type VARCHAR(10),
   Label VARCHAR(10),
@@ -1213,6 +1407,14 @@ CREATE TABLE IF NOT EXISTS BillTypes (
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+
+-- TODO are we still using this?
+/*
+  Table used by the front to keep track of speaker profile types.
+
+  Sources: CA: Manually
+           NY: Manually
+ */
 CREATE TABLE IF NOT EXISTS SpeakerProfileTypes  (
   SpeakerType VARCHAR(50),
   Label VARCHAR(50),
@@ -1225,6 +1427,7 @@ CREATE TABLE IF NOT EXISTS SpeakerProfileTypes  (
   CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 
+-- TODO this is probably deprecated
 CREATE TABLE IF NOT EXISTS BillAnalysis(
   analysis_id DECIMAL(22, 0),
   bill_id VARCHAR(23),
@@ -1248,7 +1451,12 @@ CREATE TABLE IF NOT EXISTS BillAnalysis(
   PRIMARY KEY(analysis_id)
 );
 
+/*
+  Holds gifts given to staff members of legislators or commitees.
 
+  Sources: CA: ImportLegStaffGifts
+           NY: No Data
+ */
 CREATE TABLE IF NOT EXISTS LegStaffGifts (
   year YEAR,
   session_year YEAR,
@@ -1280,6 +1488,13 @@ CREATE TABLE IF NOT EXISTS LegStaffGifts (
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+
+/*
+  Holds information on the employment of a legislative staff member by a specific legislator.
+
+  Sources: CA: ImportLegStaffGifts
+           NY: No Data
+ */
 CREATE TABLE IF NOT EXISTS LegOfficePersonnel (
   staff_member INT,
   legislator INT, -- pk for term
@@ -1304,6 +1519,12 @@ CREATE TABLE IF NOT EXISTS LegOfficePersonnel (
   CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 
+/*
+  A specific office within the state legislature. Somehow different from state const office.
+
+  Sources: CA: ImportLegStaffGifts
+           NY: No Data
+ */
 CREATE TABLE IF NOT EXISTS LegislatureOffice (
   lo_id INT AUTO_INCREMENT,
   name VARCHAR(200),
@@ -1319,7 +1540,12 @@ CREATE TABLE IF NOT EXISTS LegislatureOffice (
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+/*
+  The employment of a legislative staff member to a given office.
 
+  Sources: CA: ImportLegStaffGifts
+           NY: No Data
+ */
 CREATE TABLE IF NOT EXISTS OfficePersonnel (
   staff_member INT,
   office INT, -- pk for term
@@ -1337,173 +1563,9 @@ CREATE TABLE IF NOT EXISTS OfficePersonnel (
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
 
-
-/* Following 3 tables are dropped and re-added each night. Should probably be views,
-   but we want the imports to run quickly.
+/*
+  Temporary table used to track organizations that should be grouped as one entity.
  */
-CREATE TABLE OrgAlignments (
-  oa_id INT AUTO_INCREMENT,
-  oid int(11) DEFAULT NULL,
-  bid varchar(23) CHARACTER SET utf8 DEFAULT NULL,
-  hid int(11) DEFAULT NULL,
-  alignment char(20) CHARACTER SET utf8 DEFAULT NULL,
-  analysis_flag BOOL,
-  state VARCHAR(2),
-
-  PRIMARY KEY(oa_id),
-  UNIQUE (oid, bid, hid, alignment, analysis_flag),
-  FOREIGN KEY (state) REFERENCES State(abbrev)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-CREATE TABLE LegParticipation
-(
-  hid INT(11),
-  did INT(11) DEFAULT '0',
-  bid VARCHAR(23),
-  pid INT(11),
-  first VARCHAR(50) NOT NULL,
-  last VARCHAR(50) NOT NULL,
-  party ENUM('Republican', 'Democrat', 'Other'),
-  LegBillWordCount DECIMAL(32) DEFAULT '0' NOT NULL,
-  LegBillTime DECIMAL(33) DEFAULT '0' NOT NULL,
-  LegBillPercentWord DECIMAL(36,4) DEFAULT '0.0000' NOT NULL,
-  LegBillPercentTime DECIMAL(37,4) DEFAULT '0.0000' NOT NULL,
-  LegHearingWordCount DECIMAL(32) DEFAULT '0' NOT NULL,
-  LegHearingTime DECIMAL(33) DEFAULT '0' NOT NULL,
-  LegHearingPercentWord DECIMAL(36,4) DEFAULT '0.0000' NOT NULL,
-  LegHearingPercentTime DECIMAL(37,4) DEFAULT '0.0000' NOT NULL,
-  LegHearingAvg DECIMAL(58,4) DEFAULT '0.0000' NOT NULL,
-  BillWordCount DECIMAL(54) DEFAULT '0' NOT NULL,
-  HearingWordCount DECIMAL(54) DEFAULT '0' NOT NULL
-);
-
-CREATE TABLE LegAvgPercentParticipation
-(
-  pid INT(11),
-  first VARCHAR(50) NOT NULL,
-  last VARCHAR(50) NOT NULL,
-  AvgPercentParticipation DECIMAL(58,4)
-);
-
--- Creates the alignments view toshi needs for his
--- query.
-CREATE VIEW BillAlignments
-AS
-  SELECT MAX(u.uid) AS uid, l.pid, u.alignment, u.did
-  FROM Lobbyist l
-    JOIN currentUtterance u
-      ON l.pid = u.pid
-  WHERE u.did IS NOT NULL
-  GROUP BY l.pid, u.alignment, u.did;
-
-
--- Used by Kristian to affiliate people to their proper labels
-CREATE TABLE IF NOT EXISTS `PersonAffiliations` (
-  `pid` int(11) DEFAULT NULL,
-  `affiliation` varchar(255) DEFAULT NULL,
-  `state` varchar(2) DEFAULT NULL,
-  `source` varchar(255) DEFAULT NULL,
-  `dr_id` int(11) NOT NULL AUTO_INCREMENT,
-  PRIMARY KEY (`dr_id`),
-  KEY `state` (`state`),
-  KEY `pid_state` (`pid`,`state`),
-  KEY `affiliation` (`affiliation`),
-  KEY `pid` (`pid`)
-) ENGINE=INNODB DEFAULT CHARSET=latin1;
-
--- Used by Kristian for Drupal. Rebuilt by a mysql event every night
--- WRONG COLUMNS
-CREATE TABLE IF NOT EXISTS `PersonClassifications` (
-  `pid` int(11) DEFAULT NULL,
-  `classification` varchar(255) DEFAULT NULL,
-  `state` varchar(2) DEFAULT NULL,
-  `dr_id` int(11) NOT NULL AUTO_INCREMENT,
-  PRIMARY KEY (`dr_id`),
-  KEY `pid` (`pid`),
-  KEY `pid_state` (`pid`,`state`),
-  KEY `state` (`state`),
-  KEY `classification` (`classification`)
-) ENGINE=INNODB DEFAULT CHARSET=latin1;
-
--- Used by Kristian to determine the first utterance spoken by a speaker at given
--- BillDiscussion
-CREATE TABLE IF NOT EXISTS InitialUtterance (
-  pid INT,
-  uid INT,
-  did INT,
-
-  PRIMARY KEY (pid, uid, did),
-  FOREIGN KEY (pid) REFERENCES Person(pid),
-  FOREIGN KEY (uid) REFERENCES Utterance(uid),
-  FOREIGN KEY (did) REFERENCES BillDiscussion(did)
-);
-
-
--- A combination of Gift and LegStaffGifts. Rebuilds each night from a mysql event
-CREATE TABLE `GiftCombined` (
-  `RecordId` int(11) NOT NULL AUTO_INCREMENT,
-  `recipientPid` int(11) DEFAULT NULL,
-  `legislatorPid` int(11) DEFAULT NULL,
-  `giftDate` date DEFAULT NULL,
-  `giftDate_ts` int(11) DEFAULT NULL,
-  `year` year(4) DEFAULT NULL,
-  `description` varchar(150) DEFAULT NULL,
-  `giftValue` double DEFAULT NULL,
-  `agencyName` varchar(100) DEFAULT NULL,
-  `sourceName` varchar(150) DEFAULT NULL,
-  `sourceBusiness` varchar(100) DEFAULT NULL,
-  `sourceCity` varchar(50) DEFAULT NULL,
-  `sourceState` varchar(30) DEFAULT NULL,
-  `imageUrl` varchar(200) DEFAULT NULL,
-  `oid` int(11) DEFAULT NULL,
-  `activity` varchar(256) DEFAULT NULL,
-  `position` varchar(200) DEFAULT NULL,
-  `schedule` enum('D','E') DEFAULT NULL,
-  `jurisdiction` varchar(200) DEFAULT NULL,
-  `distictNumber` int(11) DEFAULT NULL,
-  `reimbursed` tinyint(1) DEFAULT NULL,
-  `giftIncomeFlag` tinyint(1) DEFAULT '0',
-  `speechFlag` tinyint(1) DEFAULT '0',
-  `speechOrPanel` tinyint(1) DEFAULT NULL,
-  `state` varchar(2) DEFAULT NULL,
-  `lastTouched` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`RecordId`),
-  KEY `giftDate_ts` (`giftDate_ts`),
-  KEY `recipientPid` (`recipientPid`),
-  KEY `legislatorPid` (`legislatorPid`),
-  KEY `agencyName` (`agencyName`),
-  KEY `sourceName` (`sourceName`),
-  KEY `giftValue` (`giftValue`),
-  KEY `state` (`state`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-# Basically like current utterance. Rebuilt every night
-CREATE TABLE IF NOT EXISTS BillVersionCurrent (
-  vid                 VARCHAR(33),
-  bid                 VARCHAR(23),
-  date                DATE,
-  date_ts  INT(11) AS (UNIX_TIMESTAMP(date_ts)), -- Used by Drupal
-  billState               ENUM('Chaptered', 'Introduced', 'Amended Assembly', 'Amended Senate',
-                               'Enrolled', 'Proposed', 'Amended', 'Vetoed') NOT NULL,
-  subject             TEXT,
-  appropriation       BOOLEAN,
-  substantive_changes BOOLEAN,
-  title               TEXT,
-  digest              MEDIUMTEXT,
-  text                MEDIUMTEXT,
-  state               VARCHAR(2),
-  lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
-  lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
-  dr_id INTEGER UNIQUE AUTO_INCREMENT,
-
-  PRIMARY KEY (vid),
-  FOREIGN KEY (bid) REFERENCES Bill(bid),
-  FOREIGN KEY (state) REFERENCES State(abbrev)
-)
-  ENGINE = INNODB
-  CHARACTER SET utf8 COLLATE utf8_general_ci;
-
-
 CREATE TABLE OrgConcept (
   oid INT,
   name VARCHAR(250),
@@ -1516,6 +1578,10 @@ CREATE TABLE OrgConcept (
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+
+/*
+  Temporary table used to track organizations that should be grouped as one entity.
+ */
 CREATE TABLE OrgConceptAffiliation (
   new_oid INT,
   old_oid INT,
@@ -1530,145 +1596,8 @@ CREATE TABLE OrgConceptAffiliation (
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
 
-CREATE TABLE UnionedRepresentations (
-  pid INT,
-  hid INT,
-  did INT,
-  oid INT,
-  state VARCHAR(2)
-);
 
-CREATE TABLE UnionedLobbyistEmployers (
-  pid INT,
-  assoc_name VARCHAR(255),
-  rpt_date DATE,
-  rpt_date_ts INT,
-  beg_year YEAR,
-  end_year YEAR,
-  state VARCHAR(2)
-);
-
-CREATE TABLE KnownClients (
-  pid INT,
-  assoc_name VARCHAR(255),
-  oid INT,
-  state VARCHAR(2)
-);
-
-CREATE TABLE BillAlignmentScoresMiguel (
-  aligned_votes int,
-  alignment_percentage double,
-  bid varchar(63),
-  oid int,
-  pid int,
-  total_votes int,
-
-  PRIMARY KEY (bid, oid, pid)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
-
-CREATE TABLE BillAlignmentScoresAndrew (
-  bid varchar(63),
-  oid int,
-  pid int,
-  aligned_votes int,
-  alignment_percentage double,
-  total_votes int,
-  positions int,
-  affirmations int,
-
-  PRIMARY KEY (bid, oid, pid)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
-CREATE TABLE AlignmentScores (
-  pid int,
-  oid int,
-  MiguelScore double,
-  AndrewScore double,
-
-  PRIMARY KEY (pid, oid)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
-CREATE TABLE AlignmentScoresData (
-  bill VARCHAR(30),
-  leg_first VARCHAR(30),
-  leg_last VARCHAR(30),
-  pid INT,
-  leg_alignment ENUM('For', 'Against'),
-  leg_vote_date DATE,
-  org_name VARCHAR(200),
-  oid INT,
-  org_alignment ENUM('For', 'Against'),
-  date_of_org_alignment DATE,
-
-  FOREIGN KEY (bill) REFERENCES Bill(bid),
-  FOREIGN KEY (pid) REFERENCES Person(pid),
-  FOREIGN KEY (oid) REFERENCES OrgConcept(oid)
-
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-CREATE TABLE AlignmentScoresExtraInfo (
-  oid INT,
-  pid INT,
-  positions_registered INT,
-  votes_in_agreement INT,
-  votes_in_disagreement INT,
-  affirmations INT,
-  bills INT,
-
-  PRIMARY KEY (oid, pid),
-  FOREIGN KEY (oid) REFERENCES OrgConcept(oid),
-  FOREIGN KEY (pid) REFERENCES Person(pid)
-
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-CREATE TABLE AlignmentScoresAggregated (
-  oid INT,
-  house VARCHAR(100),
-  party ENUM('Republican', 'Democrat', 'Other'),
-  state VARCHAR(2),
-  score DOUBLE,
-  positions_registered INT,
-  votes_in_agreement INT,
-  votes_in_disagreement INT,
-  affirmations INT,
-  bills INT,
-
-  PRIMARY KEY (oid, house, party, state),
-  FOREIGN KEY (oid) REFERENCES OrgConcept(oid),
-  FOREIGN KEY (house, state) REFERENCES House(name, state)
-
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-
-CREATE OR REPLACE VIEW CombinedAlignmentScores
-  AS
-SELECT a.pid,
-  a.oid,
-  null as house,
-  null as party,
-  'CA' as 'state',
-  a.AndrewScore as score,
-  asei.positions_registered,
-  asei.votes_in_agreement,
-  asei.votes_in_disagreement
-FROM AlignmentScores a
-  INNER JOIN AlignmentScoresExtraInfo asei
-    ON asei.oid = a.oid AND asei.pid = a.pid
-UNION
-SELECT null,
-  asa.oid,
-  asa.house,
-  asa.party,
-  asa.state,
-  asa.score,
-  asa.positions_registered,
-  asa.votes_in_agreement,
-  asa.votes_in_disagreement
-FROM AlignmentScoresAggregated asa;
-
-
-
+-- TODO this should no longer be necessary
 /* Entity::DeprecatedPerson
 
    This is used for tracking what people are deprecated and will flush them
@@ -1701,6 +1630,7 @@ CREATE TABLE IF NOT EXISTS DeprecatedOrganization(
 )
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
+
 
 -- Transcription Tool Tables
 CREATE TABLE IF NOT EXISTS TT_Editor (
@@ -1825,107 +1755,3 @@ CREATE TABLE IF NOT EXISTS TT_HostingUrl (
 CREATE OR REPLACE VIEW TT_currentCuts
 AS SELECT * FROM TT_Cuts
 WHERE current = TRUE AND finalized = FALSE ORDER BY videoId DESC, cutId ASC;
-
-
-
-
-/* The following are all dead tables. */
-
--- CREATE TABLE IF NOT EXISTS JobSnapshot (
---    pid   INTEGER,
---    hid   INTEGER,
---    role  ENUM('Lobbyist', 'General_public', 'Legislative_staff_commitee', 'Legislative_staff_author', 'State_agency_rep', 'Unknown'),
---    employer VARCHAR(50), -- employer: lobbyist: lobying firm, union, corporation. SAR: name of Agency/Department. GP: teacher/etc.
---    client   VARCHAR(50), -- client: only for lobbyist
-
---    PRIMARY KEY (pid, hid),
---    FOREIGN KEY (pid) REFERENCES Person(pid),
---    FOREIGN KEY (hid) REFERENCES Hearing(hid)
--- )
--- ENGINE = INNODB
--- CHARACTER SET utf8 COLLATE utf8_general_ci;
-
--- CREATE TABLE IF NOT EXISTS attends (
---    pid    INTEGER,
---    hid    INTEGER,
-
---    PRIMARY KEY (pid, hid),
---    FOREIGN KEY (pid) REFERENCES Legislator(pid), -- Person
---    FOREIGN KEY (hid) REFERENCES Hearing(hid)
--- )
--- ENGINE = INNODB
--- CHARACTER SET utf8 COLLATE utf8_general_ci;
-
--- tag is a keyword. For example, "education", "war on drugs"
--- can also include abbreviations for locations such as "Cal Poly" for "Cal Poly SLO"
--- CREATE TABLE IF NOT EXISTS tag (
---    tid INTEGER AUTO_INCREMENT
--- ,   tag VARCHAR(50),
-
---    PRIMARY KEY (tid)
--- )
--- ENGINE = INNODB
--- CHARACTER SET utf8 COLLATE utf8_general_ci;
-
--- -- join table for Uterrance >>> Tag
--- CREATE TABLE IF NOT EXISTS join_utrtag (
---    uid INTEGER,
---    tid INTEGER,
-
---    PRIMARY KEY (uid, tid),
---    FOREIGN KEY (tid) REFERENCES tag(tid),
---    FOREIGN KEY (uid) REFERENCES Utterance(uid)
--- )
--- ENGINE = INNODB
--- CHARACTER SET utf8 COLLATE utf8_general_ci;
-
--- -- an utterance might contain an honorific or a pronoun where it is unclear who the actual person is
--- -- this is a "mention" and should be joined against when searching for a specific person
--- CREATE TABLE IF NOT EXISTS Mention (
---    uid INTEGER,
---    pid INTEGER,
-
---    PRIMARY KEY (uid, pid),
---    FOREIGN KEY (pid) REFERENCES Person(pid),
---    FOREIGN KEY (uid) REFERENCES Utterance(uid)
--- )
--- ENGINE = INNODB
--- CHARACTER SET utf8 COLLATE utf8_general_ci;
-
--- CREATE TABLE IF NOT EXISTS user (
---    email VARCHAR(255) NOT NULL,
---    name VARCHAR(255),
---    password VARCHAR(255) NOT NULL,
---    new_user INTEGER,
-
---    PRIMARY KEY (email)
--- )
--- ENGINE = INNODB
--- CHARACTER SET utf8 COLLATE utf8_general_ci;
-
--- CREATE TABLE IF NOT EXISTS BillDisRepresentation(
---     did INTEGER,
---     pid INTEGER,
---     oid INTEGER,
---     hid INTEGER,
-
---     PRIMARY KEY (did, pid, oid, hid),
---     FOREIGN KEY (did) REFERENCES BillDiscussion(did),
---     FOREIGN KEY (pid) REFERENCES Person(pid),
---     FOREIGN KEY (oid) REFERENCES LobbyistEmployer(oid),
---     FOREIGN KEY (hid) REFERENCES Hearing(hid)
--- )
--- ENGINE = INNODB
--- CHARACTER SET utf8 COLLATE utf8_general_ci;
-
--- CREATE TABLE IF NOT EXISTS TT_TaskCompletion (
---    tcid INTEGER AUTO_INCREMENT ,
---    tid INTEGER ,
---    completion DATE ,
-
---    PRIMARY KEY (tcid),
---    FOREIGN KEY (tid) REFERENCES TT_Task(tid)
--- )
--- ENGINE = INNODB
--- CHARACTER SET utf8 COLLATE utf8_general_ci;
-
