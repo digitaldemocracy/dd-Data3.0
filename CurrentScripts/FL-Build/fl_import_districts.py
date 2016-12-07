@@ -50,6 +50,10 @@ NUM_ASSEMBLY_DISTRICTS = 120
 NUM_SENATE_DISTRICTS = 40 
 
 
+'''
+This function gets the region (which is a dict) from OpenStates API
+and converts it into a long string.
+'''
 def get_region(region):
   regionString = '{lon_delta: ' + str(region['lon_delta']) + ','
   regionString += 'center_lon: ' + str(region['center_lon']) + ','
@@ -57,6 +61,9 @@ def get_region(region):
   regionString += 'center_lat: ' + str(region['center_lat']) + '}'
   return regionString
 
+'''
+This function formats the OpenStates API geo data into a string.
+'''
 def format_to_string(geo_data):
   geo_data = geo_data[0][0]
   data_str = '{'
@@ -68,6 +75,9 @@ def format_to_string(geo_data):
   data_str = data_str + '}'
   return data_str
 
+'''
+This function inserts a district into the DB.
+'''
 def insert_district_db(dddb, state, house, did, note, year, region, geoData):
   global D_INSERT
 
@@ -81,11 +91,16 @@ def insert_district_db(dddb, state, house, did, note, year, region, geoData):
           additional_fields=create_payload('District', 
             (QI_DISTRICT % (state, house, did, note, year, region, geoData))))
 
+'''
+This function gets all the districts from the OpenStates API
+and inserts them into the DB.
+'''
 def get_districts_api(dddb):
   cur_year = datetime.datetime.now().year
   year = cur_year - (cur_year % 4)
   state = 'FL'
 
+  #Assembly districts
   for ndx in range(1, NUM_ASSEMBLY_DISTRICTS+1):
     district_json = requests.get(API_URL.format('l', ndx, API_KEY)).json()
     house = 'Assembly'
@@ -95,6 +110,7 @@ def get_districts_api(dddb):
     geoData = format_to_string(district_json['shape'])
     insert_district_db(dddb, state, house, did, note, year, region, geoData)
 
+  #Senate districts
   for ndx in range(1, NUM_SENATE_DISTRICTS+1):
     district_json = requests.get(API_URL.format('u', ndx, API_KEY)).json()
     house = 'Senate'

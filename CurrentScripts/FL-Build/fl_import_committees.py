@@ -100,6 +100,10 @@ def create_payload(table, sqlstmt):
     '_state': 'FL'
   }
 
+'''
+This function cleans the name of the legislators
+into a common format.
+'''
 def clean_name(name):
   problem_names = {
     "Miguel Diaz de la Portilla":("Miguel", "Diaz de la Portilla"),
@@ -156,6 +160,10 @@ def clean_name(name):
 
   return (first, last)
 
+'''
+This function gets the legislative member ID (pid).
+Includes handling of problem names. 
+'''
 def get_member_pid_db(dddb, name):
   prob_names = ['Darryl Ervin','Victor Manuel', 'W Travis', 'Jared Evan', 'Ray Wesley', 'Maria Lorts']
   per = {}
@@ -190,6 +198,10 @@ def get_member_pid_db(dddb, name):
 
   return pid
 
+'''
+This function gets all the committee members given a 
+committee id and a house through OpenStates API.
+'''
 def get_comm_members_api(dddb, comm_id, house):
   url = API_URL2.format(comm_id, API_KEY)
   comm_json = requests.get(url).json()
@@ -220,6 +232,11 @@ def get_comm_members_api(dddb, comm_id, house):
 
   return member_list
 
+'''
+This gets the list of Florida committees from OpenStates API.
+Every committee is cleaned-up and formated into a dictionary.
+Returns a list of dictionaries.
+'''
 def get_committees_api(dddb):
   url = API_URL.format(API_KEY)
   comm_json = requests.get(url).json()
@@ -259,6 +276,10 @@ def get_committees_api(dddb):
 
   return comm_list 
 
+'''
+This function clears the current people in the servesOn table
+given a committee id (cid) and house
+'''
 def clear_servesOn_db(dddb, cid, house):
   global S_DELETE
 
@@ -270,6 +291,9 @@ def clear_servesOn_db(dddb, cid, house):
     logger.warning('Delete Failed', full_msg=traceback.format_exc(),
       additional_fields=create_payload('servesOn',(QD_SERVESON%(cid, house, YEAR, STATE))))
 
+'''
+This function inserts an entry into the servesOn table.
+'''
 def insert_servesOn_db(dddb, mem_list, cid):
   global S_INSERT
 
@@ -284,7 +308,10 @@ def insert_servesOn_db(dddb, mem_list, cid):
         logger.warning('Insert Failed', full_msg=traceback.format_exc(),
             additional_fields=create_payload('servesOn', (QI_SERVESON%mem)))
 
-
+'''
+This function inserts the rest of the committees into the Committee table
+excludes the floors.
+'''
 def insert_committees_db(dddb, comm_list):
   global C_INSERT
 
@@ -305,11 +332,17 @@ def insert_committees_db(dddb, comm_list):
     clear_servesOn_db(dddb, comm['cid'], comm['house'])
     insert_servesOn_db(dddb, comm['members'], comm['cid'])
 
+'''
+This function inserts the floor committees into the Committee table
+and it also inserts the legislators that serve on them into the
+servesOn table.
+'''
 def insert_floor_committees_db(dddb):
   global C_INSERT
   comm_list = [{'cid':'', 'house':'Assembly', 'name':'Assembly Floor', 'type':'Floor', 'state':'FL', 'short_name':'Assembly Floor'},
               {'cid':'', 'house':'Senate', 'name':'Senate Floor', 'type':'Floor', 'state':'FL', 'short_name':'Senate Floor'}]
 
+  #Insert the floor committees into Committee table
   for comm in comm_list:
     dddb.execute(QS_COMMITTEE, comm)
     if dddb.rowcount == 0:
@@ -328,6 +361,7 @@ def insert_floor_committees_db(dddb):
     query = dddb.fetchall()
     pid_list = [int(x[0]) for x in query]
 
+    #Insert legislative members into the servesOn table
     mem_list = []
     for pid in pid_list:
       mem = {}
