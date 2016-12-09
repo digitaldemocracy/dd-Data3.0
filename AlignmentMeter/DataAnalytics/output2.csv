@@ -1,0 +1,602 @@
+"VOTE STATS: For any given legislator, what is the percent of bills on which they vote Aye, and the percent of bills on which they vote No, and percent of bills on which they abstain per committee on which the legislator sits."
+
+
+first,last,cid,name,total,aye,noe,abst,aye_percent,noe_percent,abs_percent
+Isadore,Hall,47,Senate Standing Committee on Banking and Financial Institutions,4,4,0,0,1.0000,0.0000,0.0000
+Isadore,Hall,55,Senate Standing Committee on Governmental Organization,82,79,3,0,0.9634,0.0366,0.0000
+Isadore,Hall,56,Senate Standing Committee on Health,194,155,0,39,0.7990,0.0000,0.2010
+Isadore,Hall,58,Senate Standing Committee on Insurance,12,12,0,0,1.0000,0.0000,0.0000
+Isadore,Hall,62,Senate Standing Committee on Public Employment and Retirement,20,19,1,0,0.9500,0.0500,0.0000
+Isadore,Hall,452,Senate Floor,2169,2052,11,106,0.9461,0.0051,0.0489
+Richard,Bloom,3,Assembly Standing Committee on Appropriations,342,336,2,4,0.9825,0.0058,0.0117
+Richard,Bloom,6,Assembly Standing Committee on Budget,15,15,0,0,1.0000,0.0000,0.0000
+Richard,Bloom,7,Assembly Standing Committee on Business and Professions,89,85,0,4,0.9551,0.0000,0.0449
+Richard,Bloom,13,Assembly Standing Committee on Higher Education,66,58,6,2,0.8788,0.0909,0.0303
+Richard,Bloom,27,Assembly Standing Committee on Transportation,104,91,6,7,0.8750,0.0577,0.0673
+Richard,Bloom,435,Assembly Floor,1782,1701,8,73,0.9545,0.0045,0.0410
+Susan,Bonilla,3,Assembly Standing Committee on Appropriations,198,175,2,21,0.8838,0.0101,0.1061
+Susan,Bonilla,12,Assembly Standing Committee on Health,166,140,8,18,0.8434,0.0482,0.1084
+Susan,Bonilla,15,Assembly Standing Committee on Human Services,39,39,0,0,1.0000,0.0000,0.0000
+Susan,Bonilla,20,Assembly Standing Committee on Local Government,62,50,1,11,0.8065,0.0161,0.1774
+Susan,Bonilla,435,Assembly Floor,1782,1729,16,37,0.9703,0.0090,0.0208
+Tony,Thurmond,6,Assembly Standing Committee on Budget,15,15,0,0,1.0000,0.0000,0.0000
+Tony,Thurmond,8,Assembly Standing Committee on Education,135,121,8,6,0.8963,0.0593,0.0444
+Tony,Thurmond,12,Assembly Standing Committee on Health,153,126,4,23,0.8235,0.0261,0.1503
+Tony,Thurmond,15,Assembly Standing Committee on Human Services,68,67,0,1,0.9853,0.0000,0.0147
+Tony,Thurmond,19,Assembly Standing Committee on Labor and Employment,27,27,0,0,1.0000,0.0000,0.0000
+Tony,Thurmond,435,Assembly Floor,1782,1709,9,64,0.9590,0.0051,0.0359
+"K.H. ""Katcho""",Achadjian,29,Assembly Standing Committee on Veterans Affairs,18,15,0,3,0.8333,0.0000,0.1667
+"K.H. ""Katcho""",Achadjian,435,Assembly Floor,1782,1336,392,54,0.7497,0.2200,0.0303
+Autumn,Burke,0,Assembly Standing Committee on Accountability and Administrative Review,10,10,0,0,1.0000,0.0000,0.0000
+Autumn,Burke,12,Assembly Standing Committee on Health,166,154,8,4,0.9277,0.0482,0.0241
+Autumn,Burke,14,Assembly Standing Committee on Housing and Community Development,35,34,0,1,0.9714,0.0000,0.0286
+Autumn,Burke,28,Assembly Standing Committee on Utilities and Commerce,62,59,1,2,0.9516,0.0161,0.0323
+Autumn,Burke,435,Assembly Floor,1782,1687,11,84,0.9467,0.0062,0.0471
+David,Chiu,6,Assembly Standing Committee on Budget,15,15,0,0,1.0000,0.0000,0.0000
+David,Chiu,12,Assembly Standing Committee on Health,166,149,7,10,0.8976,0.0422,0.0602
+David,Chiu,14,Assembly Standing Committee on Housing and Community Development,35,35,0,0,1.0000,0.0000,0.0000
+David,Chiu,18,Assembly Standing Committee on Judiciary,144,135,5,4,0.9375,0.0347,0.0278
+David,Chiu,20,Assembly Standing Committee on Local Government,100,98,0,2,0.9800,0.0000,0.0200
+David,Chiu,435,Assembly Floor,1782,1744,14,24,0.9787,0.0079,0.0135
+Marc,Levine,1,Assembly Standing Committee on Aging and Long-Term Care,7,6,1,0,0.8571,0.1429,0.0000
+Marc,Levine,4,"Assembly Standing Committee on Arts, Entertainment, Sports, Tourism, and Internet Media",8,8,0,0,1.0000,0.0000,0.0000
+Marc,Levine,11,Assembly Standing Committee on Governmental Organization,25,23,1,1,0.9200,0.0400,0.0400
+Marc,Levine,13,Assembly Standing Committee on Higher Education,66,60,6,0,0.9091,0.0909,0.0000
+Marc,Levine,30,"Assembly Standing Committee on Water, Parks, and Wildlife",47,41,6,0,0.8723,0.1277,0.0000
+Marc,Levine,435,Assembly Floor,1782,1690,75,17,0.9484,0.0421,0.0095
+Luis,Alejo,10,Assembly Standing Committee on Environmental Safety and Toxic Materials,3,3,0,0,1.0000,0.0000,0.0000
+Luis,Alejo,11,Assembly Standing Committee on Governmental Organization,25,24,0,1,0.9600,0.0000,0.0400
+Luis,Alejo,18,Assembly Standing Committee on Judiciary,137,126,5,6,0.9197,0.0365,0.0438
+Luis,Alejo,20,Assembly Standing Committee on Local Government,90,78,1,11,0.8667,0.0111,0.1222
+Luis,Alejo,29,Assembly Standing Committee on Veterans Affairs,31,25,0,6,0.8065,0.0000,0.1935
+Luis,Alejo,435,Assembly Floor,1782,1685,10,87,0.9456,0.0056,0.0488
+Tom,Lackey,0,Assembly Standing Committee on Accountability and Administrative Review,10,7,3,0,0.7000,0.3000,0.0000
+Tom,Lackey,6,Assembly Standing Committee on Budget,15,11,3,1,0.7333,0.2000,0.0667
+Tom,Lackey,12,Assembly Standing Committee on Health,166,130,27,9,0.7831,0.1627,0.0542
+Tom,Lackey,24,Assembly Standing Committee on Public Safety,92,66,23,3,0.7174,0.2500,0.0326
+Tom,Lackey,435,Assembly Floor,1782,1354,421,7,0.7598,0.2363,0.0039
+Evan,Low,4,"Assembly Standing Committee on Arts, Entertainment, Sports, Tourism, and Internet Media",3,3,0,0,1.0000,0.0000,0.0000
+Evan,Low,9,Assembly Standing Committee on Elections and Redistricting,14,13,0,1,0.9286,0.0000,0.0714
+Evan,Low,13,Assembly Standing Committee on Higher Education,66,59,2,5,0.8939,0.0303,0.0758
+Evan,Low,22,Assembly Standing Committee on Privacy and Consumer Protection,40,39,1,0,0.9750,0.0250,0.0000
+Evan,Low,435,Assembly Floor,1782,1744,17,21,0.9787,0.0095,0.0118
+Das,Williams,6,Assembly Standing Committee on Budget,15,14,0,1,0.9333,0.0000,0.0667
+Das,Williams,13,Assembly Standing Committee on Higher Education,66,59,7,0,0.8939,0.1061,0.0000
+Das,Williams,21,Assembly Standing Committee on Natural Resources,137,124,13,0,0.9051,0.0949,0.0000
+Das,Williams,28,Assembly Standing Committee on Utilities and Commerce,55,51,0,4,0.9273,0.0000,0.0727
+Das,Williams,30,"Assembly Standing Committee on Water, Parks, and Wildlife",47,42,4,1,0.8936,0.0851,0.0213
+Das,Williams,435,Assembly Floor,1782,1673,21,88,0.9388,0.0118,0.0494
+Cheryl,Brown,1,Assembly Standing Committee on Aging and Long-Term Care,7,7,0,0,1.0000,0.0000,0.0000
+Cheryl,Brown,27,Assembly Standing Committee on Transportation,55,50,4,1,0.9091,0.0727,0.0182
+Cheryl,Brown,435,Assembly Floor,1782,1689,22,71,0.9478,0.0123,0.0398
+Matthew,Harper,6,Assembly Standing Committee on Budget,9,4,4,1,0.4444,0.4444,0.1111
+Matthew,Harper,9,Assembly Standing Committee on Elections and Redistricting,14,2,12,0,0.1429,0.8571,0.0000
+Matthew,Harper,21,Assembly Standing Committee on Natural Resources,137,69,55,13,0.5036,0.4015,0.0949
+Matthew,Harper,30,"Assembly Standing Committee on Water, Parks, and Wildlife",47,14,27,6,0.2979,0.5745,0.1277
+Matthew,Harper,435,Assembly Floor,1782,920,706,156,0.5163,0.3962,0.0875
+Kristin,Olsen,8,Assembly Standing Committee on Education,47,34,2,11,0.7234,0.0426,0.2340
+Kristin,Olsen,12,Assembly Standing Committee on Health,75,49,12,14,0.6533,0.1600,0.1867
+Kristin,Olsen,13,Assembly Standing Committee on Higher Education,20,13,3,4,0.6500,0.1500,0.2000
+Kristin,Olsen,22,Assembly Standing Committee on Privacy and Consumer Protection,15,12,1,2,0.8000,0.0667,0.1333
+Kristin,Olsen,30,"Assembly Standing Committee on Water, Parks, and Wildlife",31,21,8,2,0.6774,0.2581,0.0645
+Kristin,Olsen,435,Assembly Floor,1782,1231,392,159,0.6908,0.2200,0.0892
+Jacqui,Irwin,0,Assembly Standing Committee on Accountability and Administrative Review,10,10,0,0,1.0000,0.0000,0.0000
+Jacqui,Irwin,2,Assembly Standing Committee on Agriculture,7,7,0,0,1.0000,0.0000,0.0000
+Jacqui,Irwin,6,Assembly Standing Committee on Budget,9,9,0,0,1.0000,0.0000,0.0000
+Jacqui,Irwin,13,Assembly Standing Committee on Higher Education,66,62,3,1,0.9394,0.0455,0.0152
+Jacqui,Irwin,29,Assembly Standing Committee on Veterans Affairs,31,31,0,0,1.0000,0.0000,0.0000
+Jacqui,Irwin,435,Assembly Floor,1782,1647,106,29,0.9242,0.0595,0.0163
+Miguel,Santiago,3,Assembly Standing Committee on Appropriations,164,160,2,2,0.9756,0.0122,0.0122
+Miguel,Santiago,8,Assembly Standing Committee on Education,135,125,8,2,0.9259,0.0593,0.0148
+Miguel,Santiago,12,Assembly Standing Committee on Health,166,151,7,8,0.9096,0.0422,0.0482
+Miguel,Santiago,13,Assembly Standing Committee on Higher Education,66,63,3,0,0.9545,0.0455,0.0000
+Miguel,Santiago,24,Assembly Standing Committee on Public Safety,92,84,4,4,0.9130,0.0435,0.0435
+Miguel,Santiago,28,Assembly Standing Committee on Utilities and Commerce,62,60,0,2,0.9677,0.0000,0.0323
+Miguel,Santiago,435,Assembly Floor,1782,1752,7,23,0.9832,0.0039,0.0129
+Ling,Chang,3,Assembly Standing Committee on Appropriations,347,182,97,68,0.5245,0.2795,0.1960
+Ling,Chang,22,Assembly Standing Committee on Privacy and Consumer Protection,40,35,0,5,0.8750,0.0000,0.1250
+Ling,Chang,435,Assembly Floor,1782,1227,389,166,0.6886,0.2183,0.0932
+Scott,Wilk,6,Assembly Standing Committee on Budget,15,10,5,0,0.6667,0.3333,0.0000
+Scott,Wilk,11,Assembly Standing Committee on Governmental Organization,25,22,0,3,0.8800,0.0000,0.1200
+Scott,Wilk,22,Assembly Standing Committee on Privacy and Consumer Protection,40,33,3,4,0.8250,0.0750,0.1000
+Scott,Wilk,435,Assembly Floor,1782,1295,459,28,0.7267,0.2576,0.0157
+Mark,Stone,15,Assembly Standing Committee on Human Services,68,68,0,0,1.0000,0.0000,0.0000
+Mark,Stone,18,Assembly Standing Committee on Judiciary,144,138,6,0,0.9583,0.0417,0.0000
+Mark,Stone,21,Assembly Standing Committee on Natural Resources,137,116,21,0,0.8467,0.1533,0.0000
+Mark,Stone,435,Assembly Floor,1782,1739,41,2,0.9759,0.0230,0.0011
+Jim,Cooper,6,Assembly Standing Committee on Budget,15,15,0,0,1.0000,0.0000,0.0000
+Jim,Cooper,11,Assembly Standing Committee on Governmental Organization,25,23,0,2,0.9200,0.0000,0.0800
+Jim,Cooper,16,Assembly Standing Committee on Insurance,25,25,0,0,1.0000,0.0000,0.0000
+Jim,Cooper,22,Assembly Standing Committee on Privacy and Consumer Protection,40,37,0,3,0.9250,0.0000,0.0750
+Jim,Cooper,435,Assembly Floor,1782,1636,36,110,0.9181,0.0202,0.0617
+Kevin,McCarty,6,Assembly Standing Committee on Budget,15,15,0,0,1.0000,0.0000,0.0000
+Kevin,McCarty,8,Assembly Standing Committee on Education,135,120,9,6,0.8889,0.0667,0.0444
+Kevin,McCarty,10,Assembly Standing Committee on Environmental Safety and Toxic Materials,3,3,0,0,1.0000,0.0000,0.0000
+Kevin,McCarty,19,Assembly Standing Committee on Labor and Employment,27,27,0,0,1.0000,0.0000,0.0000
+Kevin,McCarty,21,Assembly Standing Committee on Natural Resources,137,122,11,4,0.8905,0.0803,0.0292
+Kevin,McCarty,435,Assembly Floor,1782,1727,15,40,0.9691,0.0084,0.0224
+Bill,Quirk,2,Assembly Standing Committee on Agriculture,7,7,0,0,1.0000,0.0000,0.0000
+Bill,Quirk,3,Assembly Standing Committee on Appropriations,369,362,4,3,0.9810,0.0108,0.0081
+Bill,Quirk,25,Assembly Standing Committee on Revenue and Taxation,31,29,0,2,0.9355,0.0000,0.0645
+Bill,Quirk,28,Assembly Standing Committee on Utilities and Commerce,62,58,0,4,0.9355,0.0000,0.0645
+Bill,Quirk,435,Assembly Floor,1782,1706,28,48,0.9574,0.0157,0.0269
+Ted,Gaines,49,"Senate Standing Committee on Business, Professions and Economic Development",31,24,5,2,0.7742,0.1613,0.0645
+Ted,Gaines,52,"Senate Standing Committee on Energy, Utilities and Communications",42,24,6,12,0.5714,0.1429,0.2857
+Ted,Gaines,53,Senate Standing Committee on Environmental Quality,76,45,21,10,0.5921,0.2763,0.1316
+Ted,Gaines,55,Senate Standing Committee on Governmental Organization,82,59,7,16,0.7195,0.0854,0.1951
+Ted,Gaines,58,Senate Standing Committee on Insurance,12,11,1,0,0.9167,0.0833,0.0000
+Ted,Gaines,65,Senate Standing Committee on Transportation and Housing,184,116,32,36,0.6304,0.1739,0.1957
+Ted,Gaines,452,Senate Floor,2169,1550,490,129,0.7146,0.2259,0.0595
+Bill,Monning,48,Senate Standing Committee on Budget and Fiscal Review,50,49,0,1,0.9800,0.0000,0.0200
+Bill,Monning,50,Senate Standing Committee on Education,187,176,5,6,0.9412,0.0267,0.0321
+Bill,Monning,56,Senate Standing Committee on Health,194,185,0,9,0.9536,0.0000,0.0464
+Bill,Monning,59,Senate Standing Committee on Judiciary,202,191,7,4,0.9455,0.0347,0.0198
+Bill,Monning,61,Senate Standing Committee on Natural Resources and Water,76,70,4,2,0.9211,0.0526,0.0263
+Bill,Monning,63,Senate Standing Committee on Public Safety,162,152,5,5,0.9383,0.0309,0.0309
+Bill,Monning,452,Senate Floor,2169,2092,19,58,0.9645,0.0088,0.0267
+Jeff,Stone,48,Senate Standing Committee on Budget and Fiscal Review,50,18,24,8,0.3600,0.4800,0.1600
+Jeff,Stone,60,Senate Standing Committee on Labor and Industrial Relations,56,21,32,3,0.3750,0.5714,0.0536
+Jeff,Stone,61,Senate Standing Committee on Natural Resources and Water,76,40,34,2,0.5263,0.4474,0.0263
+Jeff,Stone,63,Senate Standing Committee on Public Safety,162,101,54,7,0.6235,0.3333,0.0432
+Jeff,Stone,452,Senate Floor,2169,1513,550,106,0.6976,0.2536,0.0489
+Adam,Gray,1,Assembly Standing Committee on Aging and Long-Term Care,7,7,0,0,1.0000,0.0000,0.0000
+Adam,Gray,10,Assembly Standing Committee on Environmental Safety and Toxic Materials,3,2,1,0,0.6667,0.3333,0.0000
+Adam,Gray,11,Assembly Standing Committee on Governmental Organization,25,25,0,0,1.0000,0.0000,0.0000
+Adam,Gray,435,Assembly Floor,1782,1584,118,80,0.8889,0.0662,0.0449
+Mike,Gipson,1,Assembly Standing Committee on Aging and Long-Term Care,7,3,0,4,0.4286,0.0000,0.5714
+Mike,Gipson,11,Assembly Standing Committee on Governmental Organization,25,19,0,6,0.7600,0.0000,0.2400
+Mike,Gipson,25,Assembly Standing Committee on Revenue and Taxation,31,29,2,0,0.9355,0.0645,0.0000
+Mike,Gipson,435,Assembly Floor,1782,1716,11,55,0.9630,0.0062,0.0309
+Marie,Waldron,11,Assembly Standing Committee on Governmental Organization,25,19,0,6,0.7600,0.0000,0.2400
+Marie,Waldron,12,Assembly Standing Committee on Health,166,128,18,20,0.7711,0.1084,0.1205
+Marie,Waldron,20,Assembly Standing Committee on Local Government,100,67,24,9,0.6700,0.2400,0.0900
+Marie,Waldron,23,"Assembly Standing Committee on Public Employees, Retirement, and Social Security",5,2,1,2,0.4000,0.2000,0.4000
+Marie,Waldron,435,Assembly Floor,1782,1187,450,145,0.6661,0.2525,0.0814
+Philip,Ting,6,Assembly Standing Committee on Budget,15,15,0,0,1.0000,0.0000,0.0000
+Philip,Ting,7,Assembly Standing Committee on Business and Professions,89,83,2,4,0.9326,0.0225,0.0449
+Philip,Ting,18,Assembly Standing Committee on Judiciary,52,46,4,2,0.8846,0.0769,0.0385
+Philip,Ting,28,Assembly Standing Committee on Utilities and Commerce,62,50,0,12,0.8065,0.0000,0.1935
+Philip,Ting,435,Assembly Floor,1782,1735,24,23,0.9736,0.0135,0.0129
+Kevin,Mullin,6,Assembly Standing Committee on Budget,15,15,0,0,1.0000,0.0000,0.0000
+Kevin,Mullin,7,Assembly Standing Committee on Business and Professions,89,86,1,2,0.9663,0.0112,0.0225
+Kevin,Mullin,9,Assembly Standing Committee on Elections and Redistricting,21,20,0,1,0.9524,0.0000,0.0476
+Kevin,Mullin,14,Assembly Standing Committee on Housing and Community Development,35,23,0,12,0.6571,0.0000,0.3429
+Kevin,Mullin,25,Assembly Standing Committee on Revenue and Taxation,31,29,1,1,0.9355,0.0323,0.0323
+Kevin,Mullin,435,Assembly Floor,1782,1750,7,25,0.9820,0.0039,0.0140
+Kansen,Chu,4,"Assembly Standing Committee on Arts, Entertainment, Sports, Tourism, and Internet Media",8,8,0,0,1.0000,0.0000,0.0000
+Kansen,Chu,16,Assembly Standing Committee on Insurance,5,5,0,0,1.0000,0.0000,0.0000
+Kansen,Chu,19,Assembly Standing Committee on Labor and Employment,27,26,0,1,0.9630,0.0000,0.0370
+Kansen,Chu,27,Assembly Standing Committee on Transportation,104,93,6,5,0.8942,0.0577,0.0481
+Kansen,Chu,435,Assembly Floor,1782,1738,9,35,0.9753,0.0051,0.0196
+Henry,Perea,435,Assembly Floor,892,845,14,33,0.9473,0.0157,0.0370
+Rudy,Salas,2,Assembly Standing Committee on Agriculture,7,6,0,1,0.8571,0.0000,0.1429
+Rudy,Salas,7,Assembly Standing Committee on Business and Professions,39,39,0,0,1.0000,0.0000,0.0000
+Rudy,Salas,11,Assembly Standing Committee on Governmental Organization,25,23,0,2,0.9200,0.0000,0.0800
+Rudy,Salas,29,Assembly Standing Committee on Veterans Affairs,31,31,0,0,1.0000,0.0000,0.0000
+Rudy,Salas,30,"Assembly Standing Committee on Water, Parks, and Wildlife",33,29,4,0,0.8788,0.1212,0.0000
+Rudy,Salas,435,Assembly Floor,1782,1640,110,32,0.9203,0.0617,0.0180
+Marc,Steinorth,11,Assembly Standing Committee on Governmental Organization,25,24,0,1,0.9600,0.0000,0.0400
+Marc,Steinorth,12,Assembly Standing Committee on Health,166,103,35,28,0.6205,0.2108,0.1687
+Marc,Steinorth,14,Assembly Standing Committee on Housing and Community Development,35,28,5,2,0.8000,0.1429,0.0571
+Marc,Steinorth,435,Assembly Floor,1782,1215,477,90,0.6818,0.2677,0.0505
+Adrin,Nazarian,4,"Assembly Standing Committee on Arts, Entertainment, Sports, Tourism, and Internet Media",7,7,0,0,1.0000,0.0000,0.0000
+Adrin,Nazarian,6,Assembly Standing Committee on Budget,15,15,0,0,1.0000,0.0000,0.0000
+Adrin,Nazarian,9,Assembly Standing Committee on Elections and Redistricting,14,14,0,0,1.0000,0.0000,0.0000
+Adrin,Nazarian,12,Assembly Standing Committee on Health,166,146,6,14,0.8795,0.0361,0.0843
+Adrin,Nazarian,27,Assembly Standing Committee on Transportation,104,92,5,7,0.8846,0.0481,0.0673
+Adrin,Nazarian,435,Assembly Floor,1782,1698,11,73,0.9529,0.0062,0.0410
+Roger,Hernandez,435,Assembly Floor,1782,1579,15,188,0.8861,0.0084,0.1055
+Eduardo,Garcia,3,Assembly Standing Committee on Appropriations,369,346,2,21,0.9377,0.0054,0.0569
+Eduardo,Garcia,11,Assembly Standing Committee on Governmental Organization,25,25,0,0,1.0000,0.0000,0.0000
+Eduardo,Garcia,27,Assembly Standing Committee on Transportation,104,77,1,26,0.7404,0.0096,0.2500
+Eduardo,Garcia,28,Assembly Standing Committee on Utilities and Commerce,39,34,0,5,0.8718,0.0000,0.1282
+Eduardo,Garcia,30,"Assembly Standing Committee on Water, Parks, and Wildlife",19,17,0,2,0.8947,0.0000,0.1053
+Eduardo,Garcia,435,Assembly Floor,1782,1719,7,56,0.9646,0.0039,0.0314
+Eric,Linder,11,Assembly Standing Committee on Governmental Organization,25,24,0,1,0.9600,0.0000,0.0400
+Eric,Linder,13,Assembly Standing Committee on Higher Education,66,57,5,4,0.8636,0.0758,0.0606
+Eric,Linder,19,Assembly Standing Committee on Labor and Employment,2,1,0,1,0.5000,0.0000,0.5000
+Eric,Linder,20,Assembly Standing Committee on Local Government,100,74,22,4,0.7400,0.2200,0.0400
+Eric,Linder,27,Assembly Standing Committee on Transportation,104,89,11,4,0.8558,0.1058,0.0385
+Eric,Linder,435,Assembly Floor,1782,1367,307,108,0.7671,0.1723,0.0606
+David,Hadley,1,Assembly Standing Committee on Aging and Long-Term Care,7,5,1,1,0.7143,0.1429,0.1429
+David,Hadley,4,"Assembly Standing Committee on Arts, Entertainment, Sports, Tourism, and Internet Media",8,5,1,2,0.6250,0.1250,0.2500
+David,Hadley,21,Assembly Standing Committee on Natural Resources,137,91,23,23,0.6642,0.1679,0.1679
+David,Hadley,28,Assembly Standing Committee on Utilities and Commerce,62,38,14,10,0.6129,0.2258,0.1613
+David,Hadley,435,Assembly Floor,1782,1271,321,190,0.7132,0.1801,0.1066
+Melissa,Melendez,6,Assembly Standing Committee on Budget,15,12,3,0,0.8000,0.2000,0.0000
+Melissa,Melendez,16,Assembly Standing Committee on Insurance,5,4,1,0,0.8000,0.2000,0.0000
+Melissa,Melendez,24,Assembly Standing Committee on Public Safety,92,56,25,11,0.6087,0.2717,0.1196
+Melissa,Melendez,27,Assembly Standing Committee on Transportation,104,77,19,8,0.7404,0.1827,0.0769
+Melissa,Melendez,435,Assembly Floor,1782,1045,529,208,0.5864,0.2969,0.1167
+Brian,Jones,3,Assembly Standing Committee on Appropriations,369,151,165,53,0.4092,0.4472,0.1436
+Brian,Jones,7,Assembly Standing Committee on Business and Professions,89,59,13,17,0.6629,0.1461,0.1910
+Brian,Jones,21,Assembly Standing Committee on Natural Resources,60,31,13,16,0.5167,0.2167,0.2667
+Brian,Jones,435,Assembly Floor,1782,1126,563,93,0.6319,0.3159,0.0522
+Travis,Allen,6,Assembly Standing Committee on Budget,15,6,6,3,0.4000,0.4000,0.2000
+Travis,Allen,9,Assembly Standing Committee on Elections and Redistricting,21,2,11,8,0.0952,0.5238,0.3810
+Travis,Allen,16,Assembly Standing Committee on Insurance,25,11,7,7,0.4400,0.2800,0.2800
+Travis,Allen,435,Assembly Floor,1782,1059,628,95,0.5943,0.3524,0.0533
+Shirley,Weber,3,Assembly Standing Committee on Appropriations,369,351,5,13,0.9512,0.0136,0.0352
+Shirley,Weber,8,Assembly Standing Committee on Education,135,118,7,10,0.8741,0.0519,0.0741
+Shirley,Weber,9,Assembly Standing Committee on Elections and Redistricting,14,12,1,1,0.8571,0.0714,0.0714
+Shirley,Weber,13,Assembly Standing Committee on Higher Education,66,61,3,2,0.9242,0.0455,0.0303
+Shirley,Weber,435,Assembly Floor,1782,1706,14,62,0.9574,0.0079,0.0348
+Ken,Cooley,11,Assembly Standing Committee on Governmental Organization,25,25,0,0,1.0000,0.0000,0.0000
+Ken,Cooley,16,Assembly Standing Committee on Insurance,25,25,0,0,1.0000,0.0000,0.0000
+Ken,Cooley,20,Assembly Standing Committee on Local Government,100,95,3,2,0.9500,0.0300,0.0200
+Ken,Cooley,23,"Assembly Standing Committee on Public Employees, Retirement, and Social Security",5,4,1,0,0.8000,0.2000,0.0000
+Ken,Cooley,435,Assembly Floor,1782,1688,49,45,0.9473,0.0275,0.0253
+Mike,Gatto,7,Assembly Standing Committee on Business and Professions,89,74,15,0,0.8315,0.1685,0.0000
+Mike,Gatto,16,Assembly Standing Committee on Insurance,25,24,1,0,0.9600,0.0400,0.0000
+Mike,Gatto,22,Assembly Standing Committee on Privacy and Consumer Protection,40,40,0,0,1.0000,0.0000,0.0000
+Mike,Gatto,28,Assembly Standing Committee on Utilities and Commerce,40,40,0,0,1.0000,0.0000,0.0000
+Mike,Gatto,435,Assembly Floor,1782,1644,138,0,0.9226,0.0774,0.0000
+Brian,Dahle,1,Assembly Standing Committee on Aging and Long-Term Care,4,2,2,0,0.5000,0.5000,0.0000
+Brian,Dahle,7,Assembly Standing Committee on Business and Professions,39,28,3,8,0.7179,0.0769,0.2051
+Brian,Dahle,10,Assembly Standing Committee on Environmental Safety and Toxic Materials,3,1,0,2,0.3333,0.0000,0.6667
+Brian,Dahle,16,Assembly Standing Committee on Insurance,5,4,1,0,0.8000,0.2000,0.0000
+Brian,Dahle,28,Assembly Standing Committee on Utilities and Commerce,59,27,20,12,0.4576,0.3390,0.2034
+Brian,Dahle,435,Assembly Floor,1782,1095,484,203,0.6145,0.2716,0.1139
+Ben,Hueso,47,Senate Standing Committee on Banking and Financial Institutions,4,4,0,0,1.0000,0.0000,0.0000
+Ben,Hueso,52,"Senate Standing Committee on Energy, Utilities and Communications",80,79,1,0,0.9875,0.0125,0.0000
+Ben,Hueso,55,Senate Standing Committee on Governmental Organization,82,72,1,9,0.8780,0.0122,0.1098
+Ben,Hueso,61,Senate Standing Committee on Natural Resources and Water,76,70,3,3,0.9211,0.0395,0.0395
+Ben,Hueso,66,Senate Standing Committee on Veterans Affairs,13,13,0,0,1.0000,0.0000,0.0000
+Ben,Hueso,452,Senate Floor,2169,1988,5,176,0.9166,0.0023,0.0811
+Jean,Fuller,452,Senate Floor,2169,1512,514,143,0.6971,0.2370,0.0659
+Matthew,Dababneh,16,Assembly Standing Committee on Insurance,25,25,0,0,1.0000,0.0000,0.0000
+Matthew,Dababneh,22,Assembly Standing Committee on Privacy and Consumer Protection,40,39,1,0,0.9750,0.0250,0.0000
+Matthew,Dababneh,25,Assembly Standing Committee on Revenue and Taxation,31,25,2,4,0.8065,0.0645,0.1290
+Matthew,Dababneh,435,Assembly Floor,1782,1705,35,42,0.9568,0.0196,0.0236
+Mike,Morrell,52,"Senate Standing Committee on Energy, Utilities and Communications",80,40,27,13,0.5000,0.3375,0.1625
+Mike,Morrell,62,Senate Standing Committee on Public Employment and Retirement,20,7,9,4,0.3500,0.4500,0.2000
+Mike,Morrell,452,Senate Floor,2169,1459,624,86,0.6727,0.2877,0.0396
+Tony,Mendoza,46,Senate Standing Committee on Appropriations,201,198,0,3,0.9851,0.0000,0.0149
+Tony,Mendoza,49,"Senate Standing Committee on Business, Professions and Economic Development",114,109,0,5,0.9561,0.0000,0.0439
+Tony,Mendoza,50,Senate Standing Committee on Education,210,185,5,20,0.8810,0.0238,0.0952
+Tony,Mendoza,60,Senate Standing Committee on Labor and Industrial Relations,56,54,2,0,0.9643,0.0357,0.0000
+Tony,Mendoza,65,Senate Standing Committee on Transportation and Housing,184,174,4,6,0.9457,0.0217,0.0326
+Tony,Mendoza,452,Senate Floor,2169,2103,11,55,0.9696,0.0051,0.0254
+Lorena,Gonzalez,3,Assembly Standing Committee on Appropriations,164,157,3,4,0.9573,0.0183,0.0244
+Lorena,Gonzalez,435,Assembly Floor,1782,1729,22,31,0.9703,0.0123,0.0174
+Tom,Berryhill,45,Senate Standing Committee on Agriculture,1,1,0,0,1.0000,0.0000,0.0000
+Tom,Berryhill,55,Senate Standing Committee on Governmental Organization,82,53,7,22,0.6463,0.0854,0.2683
+Tom,Berryhill,57,Senate Standing Committee on Human Services,35,17,5,13,0.4857,0.1429,0.3714
+Tom,Berryhill,58,Senate Standing Committee on Insurance,12,11,1,0,0.9167,0.0833,0.0000
+Tom,Berryhill,452,Senate Floor,2169,1459,426,284,0.6727,0.1964,0.1309
+Bob,Wieckowski,49,"Senate Standing Committee on Business, Professions and Economic Development",114,101,1,12,0.8860,0.0088,0.1053
+Bob,Wieckowski,53,Senate Standing Committee on Environmental Quality,76,67,5,4,0.8816,0.0658,0.0526
+Bob,Wieckowski,58,Senate Standing Committee on Insurance,12,11,0,1,0.9167,0.0000,0.0833
+Bob,Wieckowski,59,Senate Standing Committee on Judiciary,202,185,9,8,0.9158,0.0446,0.0396
+Bob,Wieckowski,65,Senate Standing Committee on Transportation and Housing,184,157,4,23,0.8533,0.0217,0.1250
+Bob,Wieckowski,452,Senate Floor,2169,2100,7,62,0.9682,0.0032,0.0286
+Andy,Vidak,47,Senate Standing Committee on Banking and Financial Institutions,4,3,1,0,0.7500,0.2500,0.0000
+Andy,Vidak,50,Senate Standing Committee on Education,210,163,38,9,0.7762,0.1810,0.0429
+Andy,Vidak,55,Senate Standing Committee on Governmental Organization,82,60,14,8,0.7317,0.1707,0.0976
+Andy,Vidak,61,Senate Standing Committee on Natural Resources and Water,59,36,16,7,0.6102,0.2712,0.1186
+Andy,Vidak,452,Senate Floor,2169,1625,474,70,0.7492,0.2185,0.0323
+Joel,Anderson,48,Senate Standing Committee on Budget and Fiscal Review,50,19,25,6,0.3800,0.5000,0.1200
+Joel,Anderson,51,Senate Standing Committee on Elections and Constitutional Amendments,12,7,5,0,0.5833,0.4167,0.0000
+Joel,Anderson,59,Senate Standing Committee on Judiciary,202,125,61,16,0.6188,0.3020,0.0792
+Joel,Anderson,63,Senate Standing Committee on Public Safety,162,106,48,8,0.6543,0.2963,0.0494
+Joel,Anderson,452,Senate Floor,2169,1532,592,45,0.7063,0.2729,0.0207
+Pat,Bates,46,Senate Standing Committee on Appropriations,201,118,49,34,0.5871,0.2438,0.1692
+Pat,Bates,49,"Senate Standing Committee on Business, Professions and Economic Development",114,79,9,26,0.6930,0.0789,0.2281
+Pat,Bates,53,Senate Standing Committee on Environmental Quality,76,41,21,14,0.5395,0.2763,0.1842
+Pat,Bates,55,Senate Standing Committee on Governmental Organization,14,10,0,4,0.7143,0.0000,0.2857
+Pat,Bates,65,Senate Standing Committee on Transportation and Housing,184,116,37,31,0.6304,0.2011,0.1685
+Pat,Bates,452,Senate Floor,2169,1541,506,122,0.7105,0.2333,0.0562
+Marty,Block,48,Senate Standing Committee on Budget and Fiscal Review,50,50,0,0,1.0000,0.0000,0.0000
+Marty,Block,49,"Senate Standing Committee on Business, Professions and Economic Development",114,111,1,2,0.9737,0.0088,0.0175
+Marty,Block,50,Senate Standing Committee on Education,210,183,3,24,0.8714,0.0143,0.1143
+Marty,Block,55,Senate Standing Committee on Governmental Organization,82,75,1,6,0.9146,0.0122,0.0732
+Marty,Block,452,Senate Floor,2169,2141,10,18,0.9871,0.0046,0.0083
+Mark,Leno,48,Senate Standing Committee on Budget and Fiscal Review,50,50,0,0,1.0000,0.0000,0.0000
+Mark,Leno,53,Senate Standing Committee on Environmental Quality,76,71,5,0,0.9342,0.0658,0.0000
+Mark,Leno,59,Senate Standing Committee on Judiciary,202,193,9,0,0.9554,0.0446,0.0000
+Mark,Leno,60,Senate Standing Committee on Labor and Industrial Relations,56,54,2,0,0.9643,0.0357,0.0000
+Mark,Leno,63,Senate Standing Committee on Public Safety,162,151,11,0,0.9321,0.0679,0.0000
+Mark,Leno,452,Senate Floor,2169,2138,19,12,0.9857,0.0088,0.0055
+Anthony,Cannella,45,Senate Standing Committee on Agriculture,1,1,0,0,1.0000,0.0000,0.0000
+Anthony,Cannella,52,"Senate Standing Committee on Energy, Utilities and Communications",80,59,16,5,0.7375,0.2000,0.0625
+Anthony,Cannella,65,Senate Standing Committee on Transportation and Housing,184,154,14,16,0.8370,0.0761,0.0870
+Anthony,Cannella,452,Senate Floor,2169,1800,224,145,0.8299,0.1033,0.0669
+Connie,Leyva,50,Senate Standing Committee on Education,210,200,5,5,0.9524,0.0238,0.0238
+Connie,Leyva,52,"Senate Standing Committee on Energy, Utilities and Communications",80,76,4,0,0.9500,0.0500,0.0000
+Connie,Leyva,65,Senate Standing Committee on Transportation and Housing,184,171,9,4,0.9293,0.0489,0.0217
+Connie,Leyva,452,Senate Floor,2169,2134,27,8,0.9839,0.0124,0.0037
+Carol,Liu,50,Senate Standing Committee on Education,210,192,10,8,0.9143,0.0476,0.0381
+Carol,Liu,51,Senate Standing Committee on Elections and Constitutional Amendments,12,12,0,0,1.0000,0.0000,0.0000
+Carol,Liu,57,Senate Standing Committee on Human Services,35,35,0,0,1.0000,0.0000,0.0000
+Carol,Liu,58,Senate Standing Committee on Insurance,12,7,0,5,0.5833,0.0000,0.4167
+Carol,Liu,63,Senate Standing Committee on Public Safety,162,151,7,4,0.9321,0.0432,0.0247
+Carol,Liu,452,Senate Floor,2169,2001,7,161,0.9225,0.0032,0.0742
+Holly,Mitchell,48,Senate Standing Committee on Budget and Fiscal Review,50,41,1,8,0.8200,0.0200,0.1600
+Holly,Mitchell,56,Senate Standing Committee on Health,194,178,0,16,0.9175,0.0000,0.0825
+Holly,Mitchell,58,Senate Standing Committee on Insurance,12,11,0,1,0.9167,0.0000,0.0833
+Holly,Mitchell,60,Senate Standing Committee on Labor and Industrial Relations,56,54,1,1,0.9643,0.0179,0.0179
+Holly,Mitchell,452,Senate Floor,2169,2046,16,107,0.9433,0.0074,0.0493
+Janet,Nguyen,48,Senate Standing Committee on Budget and Fiscal Review,50,22,22,6,0.4400,0.4400,0.1200
+Janet,Nguyen,54,Senate Standing Committee on Governance and Finance,138,94,22,22,0.6812,0.1594,0.1594
+Janet,Nguyen,56,Senate Standing Committee on Health,194,139,33,22,0.7165,0.1701,0.1134
+Janet,Nguyen,57,Senate Standing Committee on Human Services,35,28,0,7,0.8000,0.0000,0.2000
+Janet,Nguyen,66,Senate Standing Committee on Veterans Affairs,13,8,0,5,0.6154,0.0000,0.3846
+Janet,Nguyen,452,Senate Floor,2169,1633,440,96,0.7529,0.2029,0.0443
+Jerry,Hill,46,Senate Standing Committee on Appropriations,201,200,0,1,0.9950,0.0000,0.0050
+Jerry,Hill,49,"Senate Standing Committee on Business, Professions and Economic Development",114,111,3,0,0.9737,0.0263,0.0000
+Jerry,Hill,52,"Senate Standing Committee on Energy, Utilities and Communications",80,71,1,8,0.8875,0.0125,0.1000
+Jerry,Hill,53,Senate Standing Committee on Environmental Quality,76,69,6,1,0.9079,0.0789,0.0132
+Jerry,Hill,55,Senate Standing Committee on Governmental Organization,82,73,3,6,0.8902,0.0366,0.0732
+Jerry,Hill,452,Senate Floor,2169,2154,14,1,0.9931,0.0065,0.0005
+Sebastian,Ridley-Thomas,12,Assembly Standing Committee on Health,166,122,5,39,0.7349,0.0301,0.2349
+Sebastian,Ridley-Thomas,25,Assembly Standing Committee on Revenue and Taxation,26,24,2,0,0.9231,0.0769,0.0000
+Sebastian,Ridley-Thomas,435,Assembly Floor,1782,1678,25,79,0.9416,0.0140,0.0443
+Jim,Nielsen,46,Senate Standing Committee on Appropriations,201,122,55,24,0.6070,0.2736,0.1194
+Jim,Nielsen,48,Senate Standing Committee on Budget and Fiscal Review,50,29,19,2,0.5800,0.3800,0.0400
+Jim,Nielsen,56,Senate Standing Committee on Health,194,123,37,34,0.6340,0.1907,0.1753
+Jim,Nielsen,66,Senate Standing Committee on Veterans Affairs,13,13,0,0,1.0000,0.0000,0.0000
+Jim,Nielsen,452,Senate Floor,2169,1483,554,132,0.6837,0.2554,0.0609
+Freddie,Rodriguez,0,Assembly Standing Committee on Accountability and Administrative Review,10,10,0,0,1.0000,0.0000,0.0000
+Freddie,Rodriguez,6,Assembly Standing Committee on Budget,15,15,0,0,1.0000,0.0000,0.0000
+Freddie,Rodriguez,12,Assembly Standing Committee on Health,166,146,7,13,0.8795,0.0422,0.0783
+Freddie,Rodriguez,16,Assembly Standing Committee on Insurance,25,24,0,1,0.9600,0.0000,0.0400
+Freddie,Rodriguez,435,Assembly Floor,1782,1707,10,65,0.9579,0.0056,0.0365
+Benjamin,Allen,48,Senate Standing Committee on Budget and Fiscal Review,50,44,0,6,0.8800,0.0000,0.1200
+Benjamin,Allen,51,Senate Standing Committee on Elections and Constitutional Amendments,12,12,0,0,1.0000,0.0000,0.0000
+Benjamin,Allen,61,Senate Standing Committee on Natural Resources and Water,76,69,2,5,0.9079,0.0263,0.0658
+Benjamin,Allen,65,Senate Standing Committee on Transportation and Housing,184,163,8,13,0.8859,0.0435,0.0707
+Benjamin,Allen,66,Senate Standing Committee on Veterans Affairs,13,13,0,0,1.0000,0.0000,0.0000
+Benjamin,Allen,452,Senate Floor,2169,2089,12,68,0.9631,0.0055,0.0314
+Bill,Dodd,2,Assembly Standing Committee on Agriculture,7,7,0,0,1.0000,0.0000,0.0000
+Bill,Dodd,7,Assembly Standing Committee on Business and Professions,89,84,4,1,0.9438,0.0449,0.0112
+Bill,Dodd,27,Assembly Standing Committee on Transportation,104,95,7,2,0.9135,0.0673,0.0192
+Bill,Dodd,30,"Assembly Standing Committee on Water, Parks, and Wildlife",47,44,3,0,0.9362,0.0638,0.0000
+Bill,Dodd,435,Assembly Floor,1782,1704,33,45,0.9562,0.0185,0.0253
+Jim,Wood,3,Assembly Standing Committee on Appropriations,368,363,2,3,0.9864,0.0054,0.0082
+Jim,Wood,7,Assembly Standing Committee on Business and Professions,89,86,3,0,0.9663,0.0337,0.0000
+Jim,Wood,12,Assembly Standing Committee on Health,166,156,8,2,0.9398,0.0482,0.0120
+Jim,Wood,21,Assembly Standing Committee on Natural Resources,137,121,13,3,0.8832,0.0949,0.0219
+Jim,Wood,435,Assembly Floor,1782,1734,13,35,0.9731,0.0073,0.0196
+Susan,Eggman,2,Assembly Standing Committee on Agriculture,7,7,0,0,1.0000,0.0000,0.0000
+Susan,Eggman,3,Assembly Standing Committee on Appropriations,369,364,1,4,0.9864,0.0027,0.0108
+Susan,Eggman,7,Assembly Standing Committee on Business and Professions,89,78,2,9,0.8764,0.0225,0.1011
+Susan,Eggman,20,Assembly Standing Committee on Local Government,62,59,1,2,0.9516,0.0161,0.0323
+Susan,Eggman,28,Assembly Standing Committee on Utilities and Commerce,62,54,1,7,0.8710,0.0161,0.1129
+Susan,Eggman,30,"Assembly Standing Committee on Water, Parks, and Wildlife",21,20,0,1,0.9524,0.0000,0.0476
+Susan,Eggman,435,Assembly Floor,1782,1676,12,94,0.9405,0.0067,0.0527
+Catharine,Baker,7,Assembly Standing Committee on Business and Professions,89,69,9,11,0.7753,0.1011,0.1236
+Catharine,Baker,13,Assembly Standing Committee on Higher Education,66,45,18,3,0.6818,0.2727,0.0455
+Catharine,Baker,22,Assembly Standing Committee on Privacy and Consumer Protection,40,32,1,7,0.8000,0.0250,0.1750
+Catharine,Baker,27,Assembly Standing Committee on Transportation,104,85,14,5,0.8173,0.1346,0.0481
+Catharine,Baker,435,Assembly Floor,1782,1394,370,18,0.7823,0.2076,0.0101
+Devon,Mathis,27,Assembly Standing Committee on Transportation,55,42,6,7,0.7636,0.1091,0.1273
+Devon,Mathis,29,Assembly Standing Committee on Veterans Affairs,31,27,0,4,0.8710,0.0000,0.1290
+Devon,Mathis,30,"Assembly Standing Committee on Water, Parks, and Wildlife",46,16,14,16,0.3478,0.3043,0.3478
+Devon,Mathis,435,Assembly Floor,1782,1117,523,142,0.6268,0.2935,0.0797
+Nora,Campos,6,Assembly Standing Committee on Budget,15,15,0,0,1.0000,0.0000,0.0000
+Nora,Campos,7,Assembly Standing Committee on Business and Professions,74,70,2,2,0.9459,0.0270,0.0270
+Nora,Campos,11,Assembly Standing Committee on Governmental Organization,25,16,1,8,0.6400,0.0400,0.3200
+Nora,Campos,12,Assembly Standing Committee on Health,75,69,4,2,0.9200,0.0533,0.0267
+Nora,Campos,435,Assembly Floor,1782,1656,18,108,0.9293,0.0101,0.0606
+Shannon,Grove,2,Assembly Standing Committee on Agriculture,7,6,1,0,0.8571,0.1429,0.0000
+Shannon,Grove,6,Assembly Standing Committee on Budget,15,3,2,10,0.2000,0.1333,0.6667
+Shannon,Grove,15,Assembly Standing Committee on Human Services,43,21,5,17,0.4884,0.1163,0.3953
+Shannon,Grove,435,Assembly Floor,1782,1026,592,164,0.5758,0.3322,0.0920
+Chris,Holden,3,Assembly Standing Committee on Appropriations,369,344,2,23,0.9322,0.0054,0.0623
+Chris,Holden,6,Assembly Standing Committee on Budget,9,9,0,0,1.0000,0.0000,0.0000
+Chris,Holden,7,Assembly Standing Committee on Business and Professions,89,85,1,3,0.9551,0.0112,0.0337
+Chris,Holden,18,Assembly Standing Committee on Judiciary,123,117,4,2,0.9512,0.0325,0.0163
+Chris,Holden,28,Assembly Standing Committee on Utilities and Commerce,2,2,0,0,1.0000,0.0000,0.0000
+Chris,Holden,435,Assembly Floor,1782,1726,8,48,0.9686,0.0045,0.0269
+Chad,Mayes,435,Assembly Floor,1782,1161,481,140,0.6515,0.2699,0.0786
+Jimmy,Gomez,7,Assembly Standing Committee on Business and Professions,39,38,0,1,0.9744,0.0000,0.0256
+Jimmy,Gomez,12,Assembly Standing Committee on Health,160,146,6,8,0.9125,0.0375,0.0500
+Jimmy,Gomez,21,Assembly Standing Committee on Natural Resources,60,55,4,1,0.9167,0.0667,0.0167
+Jimmy,Gomez,27,Assembly Standing Committee on Transportation,104,86,6,12,0.8269,0.0577,0.1154
+Jimmy,Gomez,30,"Assembly Standing Committee on Water, Parks, and Wildlife",47,40,2,5,0.8511,0.0426,0.1064
+Jimmy,Gomez,435,Assembly Floor,1782,1742,11,29,0.9776,0.0062,0.0163
+Jose,Medina,0,Assembly Standing Committee on Accountability and Administrative Review,10,10,0,0,1.0000,0.0000,0.0000
+Jose,Medina,4,"Assembly Standing Committee on Arts, Entertainment, Sports, Tourism, and Internet Media",8,3,0,5,0.3750,0.0000,0.6250
+Jose,Medina,13,Assembly Standing Committee on Higher Education,66,59,4,3,0.8939,0.0606,0.0455
+Jose,Medina,27,Assembly Standing Committee on Transportation,104,85,6,13,0.8173,0.0577,0.1250
+Jose,Medina,30,"Assembly Standing Committee on Water, Parks, and Wildlife",39,30,4,5,0.7692,0.1026,0.1282
+Jose,Medina,435,Assembly Floor,1782,1712,36,34,0.9607,0.0202,0.0191
+Young,Kim,6,Assembly Standing Committee on Budget,15,12,2,1,0.8000,0.1333,0.0667
+Young,Kim,8,Assembly Standing Committee on Education,135,100,20,15,0.7407,0.1481,0.1111
+Young,Kim,27,Assembly Standing Committee on Transportation,104,79,16,9,0.7596,0.1538,0.0865
+Young,Kim,435,Assembly Floor,1782,1156,449,177,0.6487,0.2520,0.0993
+Rocky,Chavez,6,Assembly Standing Committee on Budget,15,11,2,2,0.7333,0.1333,0.1333
+Rocky,Chavez,7,Assembly Standing Committee on Business and Professions,39,31,5,3,0.7949,0.1282,0.0769
+Rocky,Chavez,13,Assembly Standing Committee on Higher Education,66,29,21,16,0.4394,0.3182,0.2424
+Rocky,Chavez,28,Assembly Standing Committee on Utilities and Commerce,39,22,13,4,0.5641,0.3333,0.1026
+Rocky,Chavez,29,Assembly Standing Committee on Veterans Affairs,31,19,2,10,0.6129,0.0645,0.3226
+Rocky,Chavez,435,Assembly Floor,1782,1107,447,228,0.6212,0.2508,0.1279
+Brian,Maienschein,11,Assembly Standing Committee on Governmental Organization,8,7,0,1,0.8750,0.0000,0.1250
+Brian,Maienschein,12,Assembly Standing Committee on Health,166,132,25,9,0.7952,0.1506,0.0542
+Brian,Maienschein,15,Assembly Standing Committee on Human Services,68,55,8,5,0.8088,0.1176,0.0735
+Brian,Maienschein,18,Assembly Standing Committee on Judiciary,144,106,24,14,0.7361,0.1667,0.0972
+Brian,Maienschein,435,Assembly Floor,1782,1380,358,44,0.7744,0.2009,0.0247
+Rob,Bonta,3,Assembly Standing Committee on Appropriations,369,364,2,3,0.9864,0.0054,0.0081
+Rob,Bonta,6,Assembly Standing Committee on Budget,15,15,0,0,1.0000,0.0000,0.0000
+Rob,Bonta,11,Assembly Standing Committee on Governmental Organization,8,8,0,0,1.0000,0.0000,0.0000
+Rob,Bonta,23,"Assembly Standing Committee on Public Employees, Retirement, and Social Security",5,4,1,0,0.8000,0.2000,0.0000
+Rob,Bonta,435,Assembly Floor,1782,1752,7,23,0.9832,0.0039,0.0129
+Jay,Obernolte,3,Assembly Standing Committee on Appropriations,164,67,90,7,0.4085,0.5488,0.0427
+Jay,Obernolte,4,"Assembly Standing Committee on Arts, Entertainment, Sports, Tourism, and Internet Media",8,6,1,1,0.7500,0.1250,0.1250
+Jay,Obernolte,6,Assembly Standing Committee on Budget,15,10,4,1,0.6667,0.2667,0.0667
+Jay,Obernolte,28,Assembly Standing Committee on Utilities and Commerce,51,31,19,1,0.6078,0.3725,0.0196
+Jay,Obernolte,435,Assembly Floor,1782,1103,558,121,0.6190,0.3131,0.0679
+Reginald,Jones-Sawyer,11,Assembly Standing Committee on Governmental Organization,25,20,0,5,0.8000,0.0000,0.2000
+Reginald,Jones-Sawyer,13,Assembly Standing Committee on Higher Education,66,57,2,7,0.8636,0.0303,0.1061
+Reginald,Jones-Sawyer,24,Assembly Standing Committee on Public Safety,92,75,6,11,0.8152,0.0652,0.1196
+Reginald,Jones-Sawyer,435,Assembly Floor,1782,1706,7,69,0.9574,0.0039,0.0387
+Donald,Wagner,3,Assembly Standing Committee on Appropriations,369,174,163,32,0.4715,0.4417,0.0867
+Donald,Wagner,18,Assembly Standing Committee on Judiciary,144,102,38,4,0.7083,0.2639,0.0278
+Donald,Wagner,23,"Assembly Standing Committee on Public Employees, Retirement, and Social Security",5,1,0,4,0.2000,0.0000,0.8000
+Donald,Wagner,25,Assembly Standing Committee on Revenue and Taxation,31,31,0,0,1.0000,0.0000,0.0000
+Donald,Wagner,435,Assembly Floor,1782,1158,579,45,0.6498,0.3249,0.0253
+Patty,Lopez,1,Assembly Standing Committee on Aging and Long-Term Care,7,7,0,0,1.0000,0.0000,0.0000
+Patty,Lopez,10,Assembly Standing Committee on Environmental Safety and Toxic Materials,3,3,0,0,1.0000,0.0000,0.0000
+Patty,Lopez,14,Assembly Standing Committee on Housing and Community Development,35,34,1,0,0.9714,0.0286,0.0000
+Patty,Lopez,15,Assembly Standing Committee on Human Services,68,68,0,0,1.0000,0.0000,0.0000
+Patty,Lopez,19,Assembly Standing Committee on Labor and Employment,2,2,0,0,1.0000,0.0000,0.0000
+Patty,Lopez,24,Assembly Standing Committee on Public Safety,62,58,4,0,0.9355,0.0645,0.0000
+Patty,Lopez,30,"Assembly Standing Committee on Water, Parks, and Wildlife",47,43,4,0,0.9149,0.0851,0.0000
+Patty,Lopez,435,Assembly Floor,1782,1748,20,14,0.9809,0.0112,0.0079
+Frank,Bigelow,3,Assembly Standing Committee on Appropriations,369,166,178,25,0.4499,0.4824,0.0678
+Frank,Bigelow,6,Assembly Standing Committee on Budget,15,4,3,8,0.2667,0.2000,0.5333
+Frank,Bigelow,11,Assembly Standing Committee on Governmental Organization,25,24,0,1,0.9600,0.0000,0.0400
+Frank,Bigelow,16,Assembly Standing Committee on Insurance,5,3,2,0,0.6000,0.4000,0.0000
+Frank,Bigelow,30,"Assembly Standing Committee on Water, Parks, and Wildlife",47,21,17,9,0.4468,0.3617,0.1915
+Frank,Bigelow,435,Assembly Floor,1782,1063,535,184,0.5965,0.3002,0.1033
+Jim,Beall,46,Senate Standing Committee on Appropriations,201,197,0,4,0.9801,0.0000,0.0199
+Jim,Beall,48,Senate Standing Committee on Budget and Fiscal Review,50,46,0,4,0.9200,0.0000,0.0800
+Jim,Beall,54,Senate Standing Committee on Governance and Finance,138,134,3,1,0.9710,0.0217,0.0072
+Jim,Beall,62,Senate Standing Committee on Public Employment and Retirement,20,19,1,0,0.9500,0.0500,0.0000
+Jim,Beall,65,Senate Standing Committee on Transportation and Housing,184,180,4,0,0.9783,0.0217,0.0000
+Jim,Beall,452,Senate Floor,2169,2109,5,55,0.9723,0.0023,0.0254
+Mike,McGuire,46,Senate Standing Committee on Appropriations,80,80,0,0,1.0000,0.0000,0.0000
+Mike,McGuire,52,"Senate Standing Committee on Energy, Utilities and Communications",80,75,2,3,0.9375,0.0250,0.0375
+Mike,McGuire,55,Senate Standing Committee on Governmental Organization,82,79,0,3,0.9634,0.0000,0.0366
+Mike,McGuire,57,Senate Standing Committee on Human Services,35,35,0,0,1.0000,0.0000,0.0000
+Mike,McGuire,65,Senate Standing Committee on Transportation and Housing,184,169,7,8,0.9185,0.0380,0.0435
+Mike,McGuire,452,Senate Floor,2169,2123,15,31,0.9788,0.0069,0.0143
+Lois,Wolk,45,Senate Standing Committee on Agriculture,1,1,0,0,1.0000,0.0000,0.0000
+Lois,Wolk,48,Senate Standing Committee on Budget and Fiscal Review,50,47,0,3,0.9400,0.0000,0.0600
+Lois,Wolk,52,"Senate Standing Committee on Energy, Utilities and Communications",80,59,1,20,0.7375,0.0125,0.2500
+Lois,Wolk,56,Senate Standing Committee on Health,194,151,0,43,0.7784,0.0000,0.2216
+Lois,Wolk,61,Senate Standing Committee on Natural Resources and Water,76,70,5,1,0.9211,0.0658,0.0132
+Lois,Wolk,452,Senate Floor,2169,2053,9,107,0.9465,0.0041,0.0493
+Cathleen,Galgiani,45,Senate Standing Committee on Agriculture,1,1,0,0,1.0000,0.0000,0.0000
+Cathleen,Galgiani,47,Senate Standing Committee on Banking and Financial Institutions,4,4,0,0,1.0000,0.0000,0.0000
+Cathleen,Galgiani,49,"Senate Standing Committee on Business, Professions and Economic Development",114,102,2,10,0.8947,0.0175,0.0877
+Cathleen,Galgiani,55,Senate Standing Committee on Governmental Organization,82,58,2,22,0.7073,0.0244,0.2683
+Cathleen,Galgiani,452,Senate Floor,2169,1966,57,146,0.9064,0.0263,0.0673
+Richard,Pan,45,Senate Standing Committee on Agriculture,1,1,0,0,1.0000,0.0000,0.0000
+Richard,Pan,48,Senate Standing Committee on Budget and Fiscal Review,50,50,0,0,1.0000,0.0000,0.0000
+Richard,Pan,50,Senate Standing Committee on Education,210,196,2,12,0.9333,0.0095,0.0571
+Richard,Pan,56,Senate Standing Committee on Health,194,180,1,13,0.9278,0.0052,0.0670
+Richard,Pan,62,Senate Standing Committee on Public Employment and Retirement,20,19,1,0,0.9500,0.0500,0.0000
+Richard,Pan,452,Senate Floor,2169,2088,13,68,0.9627,0.0060,0.0314
+Loni,Hancock,48,Senate Standing Committee on Budget and Fiscal Review,50,46,0,4,0.9200,0.0000,0.0800
+Loni,Hancock,50,Senate Standing Committee on Education,210,179,7,24,0.8524,0.0333,0.1143
+Loni,Hancock,51,Senate Standing Committee on Elections and Constitutional Amendments,12,6,0,6,0.5000,0.0000,0.5000
+Loni,Hancock,57,Senate Standing Committee on Human Services,35,35,0,0,1.0000,0.0000,0.0000
+Loni,Hancock,63,Senate Standing Committee on Public Safety,162,154,8,0,0.9506,0.0494,0.0000
+Loni,Hancock,452,Senate Floor,2169,2034,21,114,0.9378,0.0097,0.0526
+Robert,Hertzberg,51,Senate Standing Committee on Elections and Constitutional Amendments,12,12,0,0,1.0000,0.0000,0.0000
+Robert,Hertzberg,52,"Senate Standing Committee on Energy, Utilities and Communications",80,75,1,4,0.9375,0.0125,0.0500
+Robert,Hertzberg,54,Senate Standing Committee on Governance and Finance,138,133,2,3,0.9638,0.0145,0.0217
+Robert,Hertzberg,59,Senate Standing Committee on Judiciary,202,177,2,23,0.8762,0.0099,0.1139
+Robert,Hertzberg,61,Senate Standing Committee on Natural Resources and Water,76,64,3,9,0.8421,0.0395,0.1184
+Robert,Hertzberg,452,Senate Floor,2169,2033,2,134,0.9373,0.0009,0.0618
+Hannah-Beth,Jackson,49,"Senate Standing Committee on Business, Professions and Economic Development",114,102,0,12,0.8947,0.0000,0.1053
+Hannah-Beth,Jackson,53,Senate Standing Committee on Environmental Quality,76,56,6,14,0.7368,0.0789,0.1842
+Hannah-Beth,Jackson,59,Senate Standing Committee on Judiciary,202,193,7,2,0.9554,0.0347,0.0099
+Hannah-Beth,Jackson,60,Senate Standing Committee on Labor and Industrial Relations,56,41,2,13,0.7321,0.0357,0.2321
+Hannah-Beth,Jackson,61,Senate Standing Committee on Natural Resources and Water,76,69,5,2,0.9079,0.0658,0.0263
+Hannah-Beth,Jackson,452,Senate Floor,2169,2085,18,66,0.9613,0.0083,0.0304
+Kevin,De Leon,452,Senate Floor,2169,2117,4,48,0.9760,0.0018,0.0221
+Ed,Hernandez,49,"Senate Standing Committee on Business, Professions and Economic Development",114,102,1,11,0.8947,0.0088,0.0965
+Ed,Hernandez,54,Senate Standing Committee on Governance and Finance,138,132,1,5,0.9565,0.0072,0.0362
+Ed,Hernandez,55,Senate Standing Committee on Governmental Organization,82,78,1,3,0.9512,0.0122,0.0366
+Ed,Hernandez,56,Senate Standing Committee on Health,194,187,2,5,0.9639,0.0103,0.0258
+Ed,Hernandez,58,Senate Standing Committee on Insurance,12,11,0,1,0.9167,0.0000,0.0833
+Ed,Hernandez,452,Senate Floor,2169,2098,15,56,0.9673,0.0069,0.0258
+Fran,Pavley,48,Senate Standing Committee on Budget and Fiscal Review,50,46,0,4,0.9200,0.0000,0.0800
+Fran,Pavley,52,"Senate Standing Committee on Energy, Utilities and Communications",80,66,1,13,0.8250,0.0125,0.1625
+Fran,Pavley,53,Senate Standing Committee on Environmental Quality,76,69,3,4,0.9079,0.0395,0.0526
+Fran,Pavley,54,Senate Standing Committee on Governance and Finance,138,118,3,17,0.8551,0.0217,0.1232
+Fran,Pavley,61,Senate Standing Committee on Natural Resources and Water,76,69,5,2,0.9079,0.0658,0.0263
+Fran,Pavley,452,Senate Floor,2169,2024,15,130,0.9331,0.0069,0.0599
+Bob,Huff,50,Senate Standing Committee on Education,122,86,25,11,0.7049,0.2049,0.0902
+Bob,Huff,452,Senate Floor,2169,1621,417,131,0.7473,0.1923,0.0604
+Richard,Roth,48,Senate Standing Committee on Budget and Fiscal Review,50,47,0,3,0.9400,0.0000,0.0600
+Richard,Roth,56,Senate Standing Committee on Health,194,179,1,14,0.9227,0.0052,0.0722
+Richard,Roth,58,Senate Standing Committee on Insurance,12,12,0,0,1.0000,0.0000,0.0000
+Richard,Roth,65,Senate Standing Committee on Transportation and Housing,184,172,5,7,0.9348,0.0272,0.0380
+Richard,Roth,66,Senate Standing Committee on Veterans Affairs,13,13,0,0,1.0000,0.0000,0.0000
+Richard,Roth,452,Senate Floor,2169,2031,75,63,0.9364,0.0346,0.0290
+Ricardo,Lara,46,Senate Standing Committee on Appropriations,201,195,0,6,0.9701,0.0000,0.0299
+Ricardo,Lara,47,Senate Standing Committee on Banking and Financial Institutions,4,4,0,0,1.0000,0.0000,0.0000
+Ricardo,Lara,52,"Senate Standing Committee on Energy, Utilities and Communications",80,74,0,6,0.9250,0.0000,0.0750
+Ricardo,Lara,54,Senate Standing Committee on Governance and Finance,138,127,3,8,0.9203,0.0217,0.0580
+Ricardo,Lara,55,Senate Standing Committee on Governmental Organization,82,79,2,1,0.9634,0.0244,0.0122
+Ricardo,Lara,452,Senate Floor,2169,2084,8,77,0.9608,0.0037,0.0355
+James,Gallagher,2,Assembly Standing Committee on Agriculture,7,6,1,0,0.8571,0.1429,0.0000
+James,Gallagher,3,Assembly Standing Committee on Appropriations,369,173,158,38,0.4688,0.4282,0.1030
+James,Gallagher,11,Assembly Standing Committee on Governmental Organization,9,1,0,8,0.1111,0.0000,0.8889
+James,Gallagher,18,Assembly Standing Committee on Judiciary,144,88,38,18,0.6111,0.2639,0.1250
+James,Gallagher,30,"Assembly Standing Committee on Water, Parks, and Wildlife",32,14,13,5,0.4375,0.4063,0.1563
+James,Gallagher,435,Assembly Floor,1782,1089,544,149,0.6111,0.3053,0.0836
+Beth,Gaines,0,Assembly Standing Committee on Accountability and Administrative Review,10,5,3,2,0.5000,0.3000,0.2000
+Beth,Gaines,10,Assembly Standing Committee on Environmental Safety and Toxic Materials,3,1,1,1,0.3333,0.3333,0.3333
+Beth,Gaines,14,Assembly Standing Committee on Housing and Community Development,35,18,15,2,0.5143,0.4286,0.0571
+Beth,Gaines,20,Assembly Standing Committee on Local Government,52,26,18,8,0.5000,0.3462,0.1538
+Beth,Gaines,435,Assembly Floor,1782,924,607,251,0.5185,0.3406,0.1409
+Toni,Atkins,435,Assembly Floor,1782,1726,5,51,0.9686,0.0028,0.0286
+William,Brough,0,Assembly Standing Committee on Accountability and Administrative Review,10,5,2,3,0.5000,0.2000,0.3000
+William,Brough,7,Assembly Standing Committee on Business and Professions,39,26,6,7,0.6667,0.1538,0.1795
+William,Brough,25,Assembly Standing Committee on Revenue and Taxation,31,31,0,0,1.0000,0.0000,0.0000
+William,Brough,435,Assembly Floor,1782,1002,617,163,0.5623,0.3462,0.0915
+Cristina,Garcia,0,Assembly Standing Committee on Accountability and Administrative Review,2,2,0,0,1.0000,0.0000,0.0000
+Cristina,Garcia,11,Assembly Standing Committee on Governmental Organization,25,22,0,3,0.8800,0.0000,0.1200
+Cristina,Garcia,18,Assembly Standing Committee on Judiciary,135,126,3,6,0.9333,0.0222,0.0444
+Cristina,Garcia,21,Assembly Standing Committee on Natural Resources,137,123,13,1,0.8978,0.0949,0.0073
+Cristina,Garcia,28,Assembly Standing Committee on Utilities and Commerce,62,59,0,3,0.9516,0.0000,0.0484
+Cristina,Garcia,30,"Assembly Standing Committee on Water, Parks, and Wildlife",47,38,4,5,0.8085,0.0851,0.1064
+Cristina,Garcia,435,Assembly Floor,1782,1721,11,50,0.9658,0.0062,0.0281
+Patrick,O'Donnell,6,Assembly Standing Committee on Budget,15,15,0,0,1.0000,0.0000,0.0000
+Patrick,O'Donnell,8,Assembly Standing Committee on Education,135,124,8,3,0.9185,0.0593,0.0222
+Patrick,O'Donnell,19,Assembly Standing Committee on Labor and Employment,2,1,1,0,0.5000,0.5000,0.0000
+Patrick,O'Donnell,23,"Assembly Standing Committee on Public Employees, Retirement, and Social Security",5,4,1,0,0.8000,0.2000,0.0000
+Patrick,O'Donnell,25,Assembly Standing Committee on Revenue and Taxation,26,25,1,0,0.9615,0.0385,0.0000
+Patrick,O'Donnell,27,Assembly Standing Committee on Transportation,104,90,7,7,0.8654,0.0673,0.0673
+Patrick,O'Donnell,435,Assembly Floor,1782,1642,18,122,0.9214,0.0101,0.0685
+Jim,Frazier,0,Assembly Standing Committee on Accountability and Administrative Review,10,10,0,0,1.0000,0.0000,0.0000
+Jim,Frazier,16,Assembly Standing Committee on Insurance,25,24,0,1,0.9600,0.0000,0.0400
+Jim,Frazier,27,Assembly Standing Committee on Transportation,104,92,9,3,0.8846,0.0865,0.0288
+Jim,Frazier,29,Assembly Standing Committee on Veterans Affairs,31,31,0,0,1.0000,0.0000,0.0000
+Jim,Frazier,435,Assembly Floor,1782,1598,58,126,0.8967,0.0325,0.0707
+Ian,Calderon,3,Assembly Standing Committee on Appropriations,367,363,2,2,0.9891,0.0054,0.0054
+Ian,Calderon,16,Assembly Standing Committee on Insurance,24,23,0,1,0.9583,0.0000,0.0417
+Ian,Calderon,22,Assembly Standing Committee on Privacy and Consumer Protection,40,39,0,1,0.9750,0.0000,0.0250
+Ian,Calderon,435,Assembly Floor,1782,1731,10,41,0.9714,0.0056,0.0230
+Ed,Chau,14,Assembly Standing Committee on Housing and Community Development,35,35,0,0,1.0000,0.0000,0.0000
+Ed,Chau,18,Assembly Standing Committee on Judiciary,144,137,4,3,0.9514,0.0278,0.0208
+Ed,Chau,22,Assembly Standing Committee on Privacy and Consumer Protection,40,40,0,0,1.0000,0.0000,0.0000
+Ed,Chau,435,Assembly Floor,1782,1754,5,23,0.9843,0.0028,0.0129
+Richard,Gordon,6,Assembly Standing Committee on Budget,15,15,0,0,1.0000,0.0000,0.0000
+Richard,Gordon,9,Assembly Standing Committee on Elections and Redistricting,21,19,1,1,0.9048,0.0476,0.0476
+Richard,Gordon,20,Assembly Standing Committee on Local Government,100,85,2,13,0.8500,0.0200,0.1300
+Richard,Gordon,22,Assembly Standing Committee on Privacy and Consumer Protection,40,40,0,0,1.0000,0.0000,0.0000
+Richard,Gordon,435,Assembly Floor,1782,1655,18,109,0.9287,0.0101,0.0612
+Tom,Daly,3,Assembly Standing Committee on Appropriations,336,301,2,33,0.8958,0.0060,0.0982
+Tom,Daly,11,Assembly Standing Committee on Governmental Organization,25,22,0,3,0.8800,0.0000,0.1200
+Tom,Daly,16,Assembly Standing Committee on Insurance,25,25,0,0,1.0000,0.0000,0.0000
+Tom,Daly,27,Assembly Standing Committee on Transportation,104,93,4,7,0.8942,0.0385,0.0673
+Tom,Daly,29,Assembly Standing Committee on Veterans Affairs,31,30,0,1,0.9677,0.0000,0.0323
+Tom,Daly,435,Assembly Floor,1782,1645,22,115,0.9231,0.0123,0.0645
+Jim,Patterson,6,Assembly Standing Committee on Budget,15,7,5,3,0.4667,0.3333,0.2000
+Jim,Patterson,12,Assembly Standing Committee on Health,166,103,46,17,0.6205,0.2771,0.1024
+Jim,Patterson,19,Assembly Standing Committee on Labor and Employment,27,7,17,3,0.2593,0.6296,0.1111
+Jim,Patterson,25,Assembly Standing Committee on Revenue and Taxation,31,27,0,4,0.8710,0.0000,0.1290
+Jim,Patterson,28,Assembly Standing Committee on Utilities and Commerce,62,33,25,4,0.5323,0.4032,0.0645
+Jim,Patterson,435,Assembly Floor,1782,1059,555,168,0.5943,0.3114,0.0943
+Anthony,Rendon,435,Assembly Floor,1782,1736,8,38,0.9742,0.0045,0.0213
+Sharon,Runner,452,Senate Floor,1536,702,240,594,0.4570,0.1563,0.3867
+John,Moorlach,48,Senate Standing Committee on Budget and Fiscal Review,48,24,23,1,0.5000,0.4792,0.0208
+John,Moorlach,54,Senate Standing Committee on Governance and Finance,137,91,26,20,0.6642,0.1898,0.1460
+John,Moorlach,59,Senate Standing Committee on Judiciary,194,127,37,30,0.6546,0.1907,0.1546
+John,Moorlach,62,Senate Standing Committee on Public Employment and Retirement,10,3,4,3,0.3000,0.4000,0.3000
+John,Moorlach,452,Senate Floor,2149,1553,515,81,0.7227,0.2396,0.0377
+Steve,Glazer,47,Senate Standing Committee on Banking and Financial Institutions,2,2,0,0,1.0000,0.0000,0.0000
+Steve,Glazer,48,Senate Standing Committee on Budget and Fiscal Review,24,19,0,5,0.7917,0.0000,0.2083
+Steve,Glazer,55,Senate Standing Committee on Governmental Organization,64,62,1,1,0.9688,0.0156,0.0156
+Steve,Glazer,58,Senate Standing Committee on Insurance,12,12,0,0,1.0000,0.0000,0.0000
+Steve,Glazer,63,Senate Standing Committee on Public Safety,152,139,7,6,0.9145,0.0461,0.0395
+Steve,Glazer,452,Senate Floor,1946,1822,88,36,0.9363,0.0452,0.0185
+Joaquin,Arambula,10,Assembly Standing Committee on Environmental Safety and Toxic Materials,3,3,0,0,1.0000,0.0000,0.0000
+Joaquin,Arambula,15,Assembly Standing Committee on Human Services,7,7,0,0,1.0000,0.0000,0.0000
+Joaquin,Arambula,29,Assembly Standing Committee on Veterans Affairs,6,6,0,0,1.0000,0.0000,0.0000
+Joaquin,Arambula,435,Assembly Floor,817,749,35,33,0.9168,0.0428,0.0404

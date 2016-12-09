@@ -1,11 +1,11 @@
 '''
-File: AlignmentMeterLVA.py
+File: AlignmentMeterCVA.py
 Author: Miguel Aguilar
 Maintained: Miguel Aguilar
 Date: 11/28/2016
 Last Modified: 11/28/2016
 
-Google Doc that explains the LVA metric:
+Google Doc that explains the CVA metric:
     https://docs.google.com/document/d/1lURy_SaebFWLVHjhnoRlh0VGqrmTjZ-jB34XeRC1YJw/edit?usp=sharing
 '''
 
@@ -36,7 +36,7 @@ def fetch_org_alignments(cnxn):
 
     org_alignments_df = pd.read_sql(query, cnxn)
 
-    #Does the cleaning for org_alignments
+    # Does the cleaning for org_alignments
     org_alignments_df = org_alignments_df[(org_alignments_df.alignment != 'Indeterminate') &
                                           (org_alignments_df.alignment != 'Neutral') &
                                           (org_alignments_df.alignment != 'NA')]
@@ -154,19 +154,32 @@ def fetch_leg_votes(cnxn):
 
 '''
 This function is used to count the alignments between the legislator
-and the organization. Gets total votes and aligned votes. 
+and the organization. Gets total votes and aligned votes. Used for multiple alignments.
+'''
+def count_alignments2(results):
+    total_votes = 0
+    aligned_votes = 0
+    for val in results.values:
+        #print(val[2], val[13])
+        #val[2] = legislator result & val[13] = org result
+        if val[2] == val[13]:
+            aligned_votes += 1
+        total_votes += 1
+
+    return total_votes, aligned_votes
+
+'''
+This function is used to count the alignments between the legislator
+and the organization. Gets total votes and aligned votes. Used for single alignments.
 Metrics change per alignment meters.
 '''
 def count_alignments(results, org_alignment):
     total_votes = 0
     aligned_votes = 0
-    last_val = ''
     for val in results.values:
-        if val != last_val:
-            last_val = val
-            total_votes += 1
-            if val == org_alignment:
-                aligned_votes += 1
+        if val == org_alignment:
+            aligned_votes += 1
+        total_votes += 1
 
     return total_votes, aligned_votes
 
@@ -186,16 +199,75 @@ def find_last_alignment(oid_alignments_df):
 
 '''
 This function returns a dataframe of legislators per organization and bill
-with the alignment scores they have.
+with the alignment scores they have. For organizations that had multiple alignments on a bill.
 '''
-def get_alignments(oid_alignments_df, leg_votes_df, multiple):
-    if multiple:
-        #If multiple alignments were recorded for an organization
-        #then find the last alignment and its first date
-        org_alignment, first_date = find_last_alignment(oid_alignments_df)
-    else:
-        first_date = oid_alignments_df['date'].min()
-        org_alignment = oid_alignments_df['alignment'].iloc[0]
+def get_multiple_alignments(oid_alignments_df, leg_votes_df, bid, oid):
+    #Sort the dataframe by org date and get the earliest date
+    sorted_df = oid_alignments_df.sort_values('date').reset_index()
+    #final_date = datetime.date(datetime.strptime('2016-12-31', '%Y-%m-%d'))
+    final_date = datetime.now().date()
+    min_date = sorted_df['date'].iloc[0]
+
+    #Create a range of dates for the dataframe
+    #The end_date is the next entry's date
+    #The last entry will have an end date to today's current date
+    end_dates = []
+    for date in sorted_df['date'][1:]:
+        end_dates.append(date)
+
+    end_dates.append(final_date)
+    end_dates = pd.Series(end_dates)
+    sorted_df['end_date'] = end_dates
+    
+    #Iterate through the legislator votes and for their vote date 
+    #check in what date range it fits in for orgs. Then append that
+    #alignment to a list. The list becomes a series that's added to legislator votes
+    #as a column, that way every row has the appropriate org alignment based on date.
+    alignments = []
+    leg_votes_df2 = leg_votes_df[leg_votes_df['bid'] == bid].copy()
+    for ndx, leg_row in leg_votes_df2.iterrows():
+        boo = False
+        for i, row in sorted_df.iterrows():
+            if leg_row['date'] >= row['date'] and leg_row['date'] < row['end_date']:
+                alignments.append(row['alignment'])
+                boo = True
+                break
+        if not boo:
+            alignments.append(0)
+            
+    #Drop rows that have no alignment (alignment == 0)
+    leg_votes_df2['alignment'] = alignments
+    alignment_votes_df = leg_votes_df2[leg_votes_df2['alignment'] != 0]
+
+    #leg_scores = alignment_votes_df.groupby('pid')['result', 'alignment'].apply(count_alignments2)
+    #Group by person (pid) and count the alignments they have with the organization
+    leg_scores = alignment_votes_df.groupby('pid').apply(count_alignments2)
+    leg_scores_df = pd.DataFrame(leg_scores)
+    leg_scores_df.reset_index(level=0, inplace=True)
+
+    #If empty alignment scores found, then return empty dataframe
+    if not len(leg_scores_df.index):
+        return leg_scores_df
+
+    leg_scores_df.columns = ['pid', 'result']
+    #Append some columns to the dataframe
+    leg_scores_df['total_votes'] = leg_scores_df['result'].apply(lambda x: x[0])
+    leg_scores_df['aligned_votes'] = leg_scores_df['result'].apply(lambda x: x[1])
+    leg_scores_df['alignment_percentage'] = leg_scores_df['aligned_votes'] / leg_scores_df['total_votes']
+    leg_scores_df.drop('result', axis=1, inplace=True)
+
+    leg_scores_df['bid'] = bid
+    leg_scores_df['oid'] = oid
+    
+    return leg_scores_df
+
+'''
+This function returns a dataframe of legislators per organization and bill
+with the alignment scores they have. For organizations that had a single alignment on a bill.
+'''
+def get_single_alignments(oid_alignments_df, leg_votes_df):
+    first_date = oid_alignments_df['date'].min()
+    org_alignment = oid_alignments_df['alignment'].iloc[0]
 
     #Get the alignment row which includes the first date and the alignment
     alignment_row = oid_alignments_df[oid_alignments_df['date'] == first_date]
@@ -270,15 +342,14 @@ def main():
     org_alignments_df = org_alignments_df.drop_duplicates(['oid', 'bid', 'hid'])
 
     scores_df_lst = []
-    multiple = False
     for ((oid, bid), oid_alignments_df) in org_alignments_df.groupby(['oid', 'bid']):
-        multiple = False
         #If there exists multiple alignments for an organization on a bill
         if len(oid_alignments_df['alignment'].unique()) > 1:
-            multiple = True
+            scores_df = get_multiple_alignments(oid_alignments_df, leg_votes_df, bid, oid)
+        else:
+            scores_df = get_single_alignments(oid_alignments_df, leg_votes_df)
 
-        #Get a dataframe of aligned scores of legislators per organization and bill
-        scores_df = get_alignments(oid_alignments_df, leg_votes_df, multiple)
+        #Add dataframe of aligned scores of legislators per organization and bill to list
         if len(scores_df.index):
             scores_df_lst.append(scores_df)
 
@@ -295,7 +366,7 @@ def main():
 
     #Make the resulting dataframe into a table in DDDB
     cnxn = pymysql.connect(**CONN_INFO)
-    df.to_sql('BillAlignmentScoresLVA', cnxn, flavor='mysql', if_exists='replace', index=False)
+    df.to_sql('BillAlignmentScoresCVA', cnxn, flavor='mysql', if_exists='replace', index=False)
     cnxn.close()
 
     #Print the total runtime of the script

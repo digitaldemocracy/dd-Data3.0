@@ -1,11 +1,11 @@
 '''
-File: AlignmentMeterLVA.py
+File: AlignmentMeterFVA.py
 Author: Miguel Aguilar
 Maintained: Miguel Aguilar
 Date: 11/28/2016
 Last Modified: 11/28/2016
 
-Google Doc that explains the LVA metric:
+Google Doc that explains the FVA metric:
     https://docs.google.com/document/d/1lURy_SaebFWLVHjhnoRlh0VGqrmTjZ-jB34XeRC1YJw/edit?usp=sharing
 '''
 
@@ -80,7 +80,12 @@ def fetch_leg_votes(cnxn):
                     ON b.mid = m.mid
                     JOIN Committee c
                     ON b.cid = c.cid
-                WHERE m.doPass = 1"""
+                WHERE m.doPass = 1
+                AND c.cid = 452 OR c.cid = 435"""
+    #THIS LINE ABOVE ^^^^^^^^^^^ IS THE ONLY DIFFERENCE FROM AlignmentMeterLVA
+    #c.cid = 452 OR c.cid = 435
+    #cid = 452 (Senate Floor) and cid = 435 (Assembly Floor)
+    #Only considers votes done on the floor
     cursor.execute(stmt)
 
     stmt = """CREATE OR REPLACE VIEW FloorVotes
@@ -105,7 +110,12 @@ def fetch_leg_votes(cnxn):
                     ON b.cid = c.cid
                     JOIN Motion m
                     on b.mid = m.mid
-                WHERE m.text like '%reading%'"""
+                WHERE m.text like '%reading%'
+                AND c.cid = 452 OR c.cid = 435"""
+    #THIS LINE ABOVE ^^^^^^^^^^^ IS THE ONLY DIFFERENCE FROM AlignmentMeterLVA
+    #c.cid = 452 OR c.cid = 435
+    #cid = 452 (Senate Floor) and cid = 435 (Assembly Floor)
+    #Only considers votes done on the floor
     cursor.execute(stmt)
 
     stmt = """CREATE OR REPLACE VIEW PassingVotes
@@ -295,7 +305,7 @@ def main():
 
     #Make the resulting dataframe into a table in DDDB
     cnxn = pymysql.connect(**CONN_INFO)
-    df.to_sql('BillAlignmentScoresLVA', cnxn, flavor='mysql', if_exists='replace', index=False)
+    df.to_sql('BillAlignmentScoresFVA', cnxn, flavor='mysql', if_exists='replace', index=False)
     cnxn.close()
 
     #Print the total runtime of the script

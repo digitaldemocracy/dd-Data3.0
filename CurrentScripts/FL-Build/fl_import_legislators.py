@@ -93,6 +93,10 @@ def create_payload(table, sqlstmt):
     '_state': 'FL'
   }
 
+'''
+This function cleans the name of the legislators
+into a common format.
+'''
 def clean_name(name):
   problem_names = {
     "Miguel Diaz de la Portilla":("Miguel", "Diaz de la Portilla"),
@@ -149,7 +153,10 @@ def clean_name(name):
 
   return (first, last)
 
-
+'''
+This function gets all the legislators from the OpenStates API.
+Returns a list of dictionaries where each is a legislator entry.
+'''
 def get_legislators_api(dddb, house):
   url = API_URL.format(house)
   req = requests.get(url)
@@ -201,6 +208,10 @@ def get_legislators_api(dddb, house):
 
   return leg_list
 
+'''
+The function checks to see if a term entry already exists
+in the DB. 
+'''
 def is_term_in_db(dddb, leg):
   global T_UPDATE
 
@@ -222,6 +233,10 @@ def is_term_in_db(dddb, leg):
 
   return True
 
+'''
+This function checks to see if a legislator is already 
+in the DB. Returns true or false.
+'''
 def is_leg_in_db(dddb, leg):
   try:
     dddb.execute(QS_LEGISLATOR, leg)
@@ -234,15 +249,21 @@ def is_leg_in_db(dddb, leg):
 
   return query[0]
 
+'''
+This function adds the legislators into the Person, Term, and Legislator
+table, if it doesn't exist already in the DB. 
+'''
 def add_legislators_db(dddb, leg_list):
   global P_INSERT
   global T_INSERT
   global L_INSERT
 
+  #For all the legislators from OpenStates API
   for leg in leg_list:
     pid = is_leg_in_db(dddb, leg)
     leg['pid'] = pid
 
+    #Insert into Person table first
     if not pid:
       try:
         dddb.execute(QI_PERSON, leg)
@@ -253,6 +274,7 @@ def add_legislators_db(dddb, leg_list):
         logger.warning('Insert Failed', full_msg=traceback.format_exc(),
             additional_fields=create_payload('Person', (QI_PERSON%leg)))
 
+      #Insert into Legislator table next
       try:
         dddb.execute(QI_LEGISLATOR, leg)
         L_INSERT += dddb.rowcount
@@ -260,6 +282,7 @@ def add_legislators_db(dddb, leg_list):
         logger.warning('Insert Failed', full_msg=traceback.format_exc(),
             additional_fields=create_payload('Legislator', (QI_LEGISLATOR%leg)))
 
+    #Finally insert into Term table
     if is_term_in_db(dddb, leg) == False:
       try:
         dddb.execute(QI_TERM, leg)
