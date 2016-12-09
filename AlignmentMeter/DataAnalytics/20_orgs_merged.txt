@@ -1,0 +1,163 @@
+20 ORGS
+
+
+Python script (due friday)
+Input: Data file with list of Orgs
+    Internally: Will use a dictionary with names from list
+        Dictionary: Key => Name of the Org     Value => SQL Query 
+Output: Fill in table with Merged Orgs [id(negative), name(from list), oid]
+    Table: OrgConcept, OrgConceptAffiliation
+
+
+EXAMPLE:
+    cta_oids = set([3723, 6344, 10163, 20030, 24545, 25467, 28301, 9085, 27716])
+    chevron_oids = set([9301, 9955])
+    sierra_club_oids = set([1333, 27797, 28333])
+    ca_chamber_oids = set([89, 5629, 20024, 20119, 20257])
+
+
+
+1) California Chamber Of Commerce
+
+    SELECT * FROM Organizations WHERE name like "%California%Commerce%";
+    SELECT * FROM Organizations WHERE name REGEXP "^(California|Cal).{0,2}Chamber.{0,5}Commerce$";
+
+    ca_chamber_oids = set([89, 5629, 19749, 20024, 20119, 20257, 27013, 77483])    
+
+2) California State Association Of Counties
+
+    SELECT * FROM Organizations WHERE name like "Cal%Counties%";
+
+    ca_association_counties_oids = set([8, 10542, 27794, 29965])
+
+3) California District Attorneys Association
+
+    SELECT * FROM Organizations WHERE name like "%California%District%Attorneys%";
+    SELECT * FROM Organizations WHERE name like "%Cal%District%Attorney%";
+
+    ca_district_attorneys_oids = set([2624, 8424, 19946, 23108, 29071]) 
+
+4) Children Now
+
+    SELECT * FROM Organizations WHERE name like "%Children%Now%";
+
+    children_now_oids = set([2231, 8042, 10689, 22553, 28051, 34855, 69323, 72305])
+
+5) California Manufacturers And Technology Association
+
+    SELECT * FROM Organizations WHERE name like "%Cal%Manufacturer%Technology%Association%";
+    SELECT * FROM Organizations WHERE name like "%CMTA%";
+    SELECT * FROM Organizations WHERE name like "%Cal%Manufacturer%Technology%Association" or name like "CMTA";
+
+    ca_manu_tech_oids = set([1085, 5974, 16451, 21334, 28349, 37633, 71360])
+
+6) Howard Jarvis Taxpayers Association
+    
+    SELECT * FROM Organizations WHERE name like "%Howard%Jarvis%Taxpayer%Ass%";
+
+    howard_jarvis_association_oids = set([3286, 23970, 37476, 42045, 59310, 59397, 77065, 77066])
+
+7) California Farm Bureau Federation
+
+    SELECT * FROM Organizations WHERE name like "%Cal%Farm%Bureau%";
+
+    ca_farm_bureau_oids = set([701, 7703, 19890, 20915, 27543])
+
+8) California Catholic Conference
+
+    SELECT * FROM Organizations WHERE name like "%Cal%Catholic%";
+
+    ca_catholic_oids = set([1117, 3578, 20043, 21369, 24368, 24469])
+
+9) Association Of California Water Agencies
+
+    SELECT * FROM Organizations WHERE name like "%Ass%Cal%Water%Agen%";
+
+    ca_water_agencies_oids = set([2262, 8185, 11182, 22588])
+
+10) California Building Industry Association
+
+    SELECT * FROM Organizations WHERE name like "%Cal%Building%Industry%Ass%";
+    SELECT * FROM Organizations WHERE name REGEXP "^California.{0,2}Building.{0,2}Industry.{0,2}(Ass.{0,5}|Association)$";
+
+    ca_building_industry_oids = set([905, 21142, 31449, 32867, 58948, 59742, 66561, 66820. 69232, 77010, 77012])
+
+11) California Labor Federation
+
+    SELECT * FROM Organizations WHERE name like "%Cal%Labor%Fed%";
+    SELECT * FROM Organizations WHERE name REGEXP "^(California|Cal).{0,2}Labor.{0,4}Federation.{0,10}$";
+
+    ca_labor_fed_oids = set([4788, 5340, 5968, 19863, 25999, 30386])
+
+12) Sierra Club California
+
+    SELECT * FROM Organizations WHERE name like "%Sierra%Club%Cal%";
+    SELECT * FROM Organizations WHERE name like "%Sierra%Club%";
+    SELECT * FROM Organizations WHERE name like "Sierra%Club" or name like "Sierra%Club%California";
+
+    sierra_club_oids = set([1333, 27797, 28333])
+
+13) California Teachers Association
+    
+    SELECT * FROM Organizations WHERE name like "%Cal%Teacher%Ass%";
+    SELECT * FROM Organizations WHERE name REGEXP "^(California|Cal).{0,2}Teacher.{0,3}(Assn|Assoc|Association).{0,2}$" or name like "CTA";
+
+    cta_oids = set([3723, 6344, 10163, 20030, 24545, 25467, 28301, 9085, 27716, 31757, 31760, 32881, 34052, 49298, 58393, 60449, 60736, 68026, 67802, 69209, 70768, 74660])
+
+14) California Immigrant Policy Center
+
+    SELECT * FROM Organizations WHERE name like "%Cal%Immigrant%";
+    SELECT * FROM Organizations WHERE name REGEXP "^(California|Cal).{0,2}Immigrant.{0,2}Policy.{0,8}$";
+
+    ca_immigrant_policy_oids = set([5386, 19929, 26874, 29963])
+
+15) American Civil Liberties Union of California
+
+    SELECT * FROM Organizations WHERE name like "%America%Civil%Union%";
+    SELECT * FROM Organizations WHERE name REGEXP "^American.{0,2}Civil.{0,2}Liberties.{0,2}Union.{0,4}(California)?$";
+
+    ca_american_civil_union_oids = set([6066, 8544, 28636])
+
+    north:
+        nor_cal = set([7743])
+
+    south:
+        so_cal = set([492, 20682])
+
+    both:
+        both = set([15914, 18869])
+
+16) Consumer Attorneys Of California
+
+    SELECT * FROM Organizations WHERE name like "%Consumer%Attorneys%";
+    SELECT * FROM Organizations WHERE name REGEXP "^Consumer.{0,2}Attorneys.{0,4}(California|Cal|Ca)$" or name like "Consumer%Attorneys";
+
+    ca_consumer_attorneys_oids = set([153, 9960, 20324, 27625, 36002, 51359, 65723, 71802, 71977])
+
+17) Disability Rights California
+
+    SELECT * FROM Organizations WHERE name like "Disability%Rights%California";
+
+    ca_disability_rights_oids = set([5207, 8070, 23559])
+
+18) California Medical Association
+
+    SELECT * FROM Organizations WHERE name like "%Ca%Medical%Ass%";
+    SELECT * FROM Organizations WHERE name REGEXP "^(California|Cal|Ca).{0,2}Medical.{0,2}(Association|Associate|Assoc|Assn).{0,2}(Inc.)?$";
+
+    ca_medical_association_oids = set([819, 10696, 21045, 22054, 22821, 24555, 27963, 41054])
+
+19) Western Center on Law and Poverty
+
+    SELECT * FROM Organizations WHERE name like "%Western%Law%Poverty%";
+
+    western_law_poverty_oids = set([187, 5240, 6122, 19847, 19880, 20357, 20950, 23803, 28177, 30387, 48391])
+
+20) American Federation of State, County and Municipal Employees
+
+    SELECT * FROM Organizations WHERE name like "%American%Fed%State%County%Municipal%Employees%";
+    SELECT * FROM Organizations WHERE name REGEXP "^American.{0,2}(Federation|Confederation|Federatio).{0,2}Of.{0,2}State.{0,6}County.{0,6}Municipal.{0,2}(Home.{0,2})?Employees(.{0,3}((California|CA) People|AFL-CIO))?$";
+
+    american_fed_employees_oids = set([449, 4674, 6014, 6310, 10444, 14196, 19872, 19911, 20120, 20635, 20845, 22873, 24316, 24898, 24904, 25869, 32987, 33601, 39029, 44020, 45531, 51796, 53867, 59329, 61830, 62266, 62492, 63625, 63949, 70530])
+
+

@@ -1,0 +1,995 @@
+"PARTICIPATION: For each committee, rank all committee members by who, on average, makes the longest uninterrupted statements."
+
+
+cid,committee name,pid,first,last,avg_statements
+0,Assembly Standing Committee on Accountability and Administrative Review
+,,81,Jose,Medina,113.2500
+,,111,William,Brough,99.0000
+,,109,Beth,Gaines,97.6667
+,,69,Freddie,Rodriguez,75.0000
+,,114,Jim,Frazier,56.4000
+,,10,Tom,Lackey,47.3333
+,,16,Jacqui,Irwin,42.3125
+,,112,Cristina,Garcia,15.1053
+1,Assembly Standing Committee on Aging and Long-Term Care
+,,8,Marc,Levine,103.2000
+,,27,Adam,Gray,78.0000
+,,28,Mike,Gipson,62.1481
+,,13,Cheryl,Brown,53.0880
+,,89,Patty,Lopez,50.8333
+,,40,David,Hadley,30.2979
+2,Assembly Standing Committee on Agriculture
+,,77,Shannon,Grove,307.0000
+,,75,Devon,Mathis,90.1667
+,,71,Bill,Dodd,67.7143
+,,108,James,Gallagher,49.5000
+,,23,Bill,Quirk,40.6923
+,,16,Jacqui,Irwin,1.0000
+,,34,Rudy,Salas,1.0000
+3,Assembly Standing Committee on Appropriations
+,,88,Donald,Wagner,106.8873
+,,2,Richard,Bloom,104.7000
+,,78,Chris,Holden,84.8125
+,,108,James,Gallagher,74.4603
+,,38,Eduardo,Garcia,74.0435
+,,44,Shirley,Weber,72.6364
+,,3,Susan,Bonilla,72.0000
+,,72,Jim,Wood,62.8750
+,,86,Jay,Obernolte,59.6735
+,,42,Brian,Jones,57.6286
+,,73,Susan,Eggman,48.0189
+,,18,Ling,Chang,43.4444
+,,115,Ian,Calderon,42.5714
+,,85,Rob,Bonta,42.4800
+,,118,Tom,Daly,38.1250
+,,53,Lorena,Gonzalez,36.8348
+,,23,Bill,Quirk,29.1037
+,,91,Frank,Bigelow,27.7687
+,,17,Miguel,Santiago,24.7917
+4,"Assembly Standing Committee on Arts, Entertainment, Sports, Tourism, and Internet Media"
+,,40,David,Hadley,215.7500
+,,8,Marc,Levine,130.0000
+,,36,Adrin,Nazarian,82.0000
+,,86,Jay,Obernolte,46.4762
+,,32,Kansen,Chu,36.8261
+,,81,Jose,Medina,29.6250
+5,Assembly Standing Committee on Banking and Finance
+,,40,David,Hadley,147.0000
+,,20,Mark,Stone,139.1429
+,,82,Young,Kim,109.5000
+,,50,Matthew,Dababneh,66.8425
+,,3,Susan,Bonilla,57.1333
+,,67,Sebastian,Ridley-Thomas,49.5000
+,,11,Evan,Low,49.2857
+,,46,Mike,Gatto,47.9200
+,,43,Travis,Allen,47.3077
+,,13,Cheryl,Brown,35.0417
+,,5,"K.H. ""Katcho""",Achadjian,27.4783
+,,116,Ed,Chau,27.1923
+6,Assembly Standing Committee on Budget
+,,2,Richard,Bloom,1078.0000
+,,119,Jim,Patterson,397.5000
+,,36,Adrin,Nazarian,288.2500
+,,14,Matthew,Harper,279.0000
+,,85,Rob,Bonta,255.5000
+,,31,Kevin,Mullin,218.7500
+,,19,Scott,Wilk,204.0000
+,,76,Nora,Campos,202.5714
+,,22,Kevin,McCarty,202.4211
+,,82,Young,Kim,190.7500
+,,69,Freddie,Rodriguez,186.6000
+,,12,Das,Williams,161.2500
+,,4,Tony,Thurmond,145.1818
+,,117,Richard,Gordon,144.0000
+,,83,Rocky,Chavez,132.4545
+,,21,Jim,Cooper,121.6667
+,,77,Shannon,Grove,118.0000
+,,7,David,Chiu,114.4000
+,,91,Frank,Bigelow,111.0909
+,,41,Melissa,Melendez,100.8667
+,,86,Jay,Obernolte,98.6818
+,,10,Tom,Lackey,63.0000
+,,113,Patrick,O'Donnell,58.1250
+,,30,Philip,Ting,34.1929
+7,Assembly Standing Committee on Business and Professions
+,,31,Kevin,Mullin,102.9048
+,,76,Nora,Campos,89.3704
+,,72,Jim,Wood,86.7536
+,,73,Susan,Eggman,83.4167
+,,47,Brian,Dahle,83.4000
+,,74,Catharine,Baker,71.4796
+,,46,Mike,Gatto,68.8043
+,,30,Philip,Ting,64.6667
+,,78,Chris,Holden,54.4348
+,,83,Rocky,Chavez,52.7727
+,,71,Bill,Dodd,49.6774
+,,2,Richard,Bloom,45.0270
+,,42,Brian,Jones,40.2157
+,,34,Rudy,Salas,33.3750
+,,111,William,Brough,19.4493
+,,80,Jimmy,Gomez,15.0000
+8,Assembly Standing Committee on Education
+,,44,Shirley,Weber,115.7453
+,,4,Tony,Thurmond,105.5523
+,,15,Kristin,Olsen,99.2241
+,,82,Young,Kim,93.6975
+,,17,Miguel,Santiago,66.6500
+,,22,Kevin,McCarty,64.6235
+,,113,Patrick,O'Donnell,28.7031
+9,Assembly Standing Committee on Elections and Redistricting
+,,36,Adrin,Nazarian,188.0000
+,,31,Kevin,Mullin,127.6316
+,,43,Travis,Allen,115.9130
+,,11,Evan,Low,86.5000
+,,117,Richard,Gordon,69.6667
+,,14,Matthew,Harper,61.7532
+,,44,Shirley,Weber,54.9439
+10,Assembly Standing Committee on Environmental Safety and Toxic Materials
+,,47,Brian,Dahle,172.3810
+,,17377,Joaquin,Arambula,166.6667
+,,27,Adam,Gray,145.5000
+,,9,Luis,Alejo,83.1930
+,,22,Kevin,McCarty,63.4667
+11,Assembly Standing Committee on Governmental Organization
+,,45,Ken,Cooley,183.9091
+,,38,Eduardo,Garcia,107.6667
+,,8,Marc,Levine,81.0526
+,,87,Reginald,Jones-Sawyer,72.6596
+,,29,Marie,Waldron,61.2000
+,,21,Jim,Cooper,58.8974
+,,34,Rudy,Salas,54.5333
+,,112,Cristina,Garcia,46.0000
+,,27,Adam,Gray,44.6874
+,,76,Nora,Campos,40.5714
+,,39,Eric,Linder,35.8542
+,,28,Mike,Gipson,34.7174
+,,91,Frank,Bigelow,34.0619
+,,19,Scott,Wilk,26.6667
+,,35,Marc,Steinorth,26.0000
+,,118,Tom,Daly,25.7143
+12,Assembly Standing Committee on Health
+,,7,David,Chiu,151.4851
+,,3,Susan,Bonilla,97.5263
+,,80,Jimmy,Gomez,93.7419
+,,4,Tony,Thurmond,92.1648
+,,29,Marie,Waldron,90.3900
+,,69,Freddie,Rodriguez,80.0290
+,,76,Nora,Campos,78.4286
+,,35,Marc,Steinorth,72.6667
+,,36,Adrin,Nazarian,63.2533
+,,15,Kristin,Olsen,56.0889
+,,119,Jim,Patterson,55.1017
+,,17,Miguel,Santiago,52.1429
+,,67,Sebastian,Ridley-Thomas,46.0763
+,,6,Autumn,Burke,43.3380
+,,72,Jim,Wood,36.7351
+,,10,Tom,Lackey,35.9412
+,,84,Brian,Maienschein,26.2755
+13,Assembly Standing Committee on Higher Education
+,,17,Miguel,Santiago,350.1667
+,,44,Shirley,Weber,170.6373
+,,87,Reginald,Jones-Sawyer,128.0000
+,,12,Das,Williams,123.7377
+,,39,Eric,Linder,96.5000
+,,15,Kristin,Olsen,91.2571
+,,83,Rocky,Chavez,87.9355
+,,11,Evan,Low,83.5926
+,,2,Richard,Bloom,70.3529
+,,8,Marc,Levine,68.1538
+,,74,Catharine,Baker,57.2552
+,,16,Jacqui,Irwin,51.3529
+,,81,Jose,Medina,31.2645
+14,Assembly Standing Committee on Housing and Community Development
+,,31,Kevin,Mullin,74.4000
+,,35,Marc,Steinorth,60.6061
+,,7,David,Chiu,59.9150
+,,89,Patty,Lopez,31.3529
+,,109,Beth,Gaines,28.0000
+,,116,Ed,Chau,26.5040
+,,6,Autumn,Burke,19.0000
+15,Assembly Standing Committee on Human Services
+,,20,Mark,Stone,117.4571
+,,4,Tony,Thurmond,93.7536
+,,77,Shannon,Grove,88.0806
+,,84,Brian,Maienschein,37.5455
+,,17377,Joaquin,Arambula,34.5000
+,,89,Patty,Lopez,34.3191
+,,3,Susan,Bonilla,22.4987
+16,Assembly Standing Committee on Insurance
+,,45,Ken,Cooley,200.5333
+,,50,Matthew,Dababneh,167.4286
+,,43,Travis,Allen,135.2308
+,,32,Kansen,Chu,127.0000
+,,115,Ian,Calderon,110.4000
+,,47,Brian,Dahle,99.0000
+,,21,Jim,Cooper,76.0625
+,,46,Mike,Gatto,66.8276
+,,114,Jim,Frazier,65.7647
+,,69,Freddie,Rodriguez,65.0000
+,,41,Melissa,Melendez,34.6000
+,,118,Tom,Daly,21.6158
+18,Assembly Standing Committee on Judiciary
+,,9,Luis,Alejo,153.8310
+,,78,Chris,Holden,143.3548
+,,7,David,Chiu,111.8899
+,,108,James,Gallagher,104.7500
+,,30,Philip,Ting,98.7407
+,,84,Brian,Maienschein,88.4444
+,,112,Cristina,Garcia,79.5476
+,,88,Donald,Wagner,65.5866
+,,116,Ed,Chau,63.9667
+,,20,Mark,Stone,30.7106
+19,Assembly Standing Committee on Labor and Employment
+,,22,Kevin,McCarty,105.1176
+,,119,Jim,Patterson,68.7865
+,,32,Kansen,Chu,58.6875
+,,4,Tony,Thurmond,58.5281
+20,Assembly Standing Committee on Local Government
+,,45,Ken,Cooley,160.6250
+,,9,Luis,Alejo,139.1290
+,,7,David,Chiu,99.5238
+,,3,Susan,Bonilla,86.1500
+,,39,Eric,Linder,67.1944
+,,117,Richard,Gordon,51.4906
+,,29,Marie,Waldron,47.9167
+,,109,Beth,Gaines,34.8571
+,,73,Susan,Eggman,23.1911
+21,Assembly Standing Committee on Natural Resources
+,,80,Jimmy,Gomez,126.7059
+,,112,Cristina,Garcia,90.9322
+,,42,Brian,Jones,83.7581
+,,22,Kevin,McCarty,82.4043
+,,40,David,Hadley,75.0899
+,,20,Mark,Stone,74.0796
+,,14,Matthew,Harper,63.6364
+,,72,Jim,Wood,54.5577
+,,12,Das,Williams,29.0187
+22,Assembly Standing Committee on Privacy and Consumer Protection
+,,11,Evan,Low,227.5000
+,,117,Richard,Gordon,114.9355
+,,50,Matthew,Dababneh,101.6500
+,,21,Jim,Cooper,87.7973
+,,115,Ian,Calderon,76.3462
+,,74,Catharine,Baker,72.2222
+,,46,Mike,Gatto,59.6553
+,,116,Ed,Chau,55.7150
+,,18,Ling,Chang,48.1875
+,,15,Kristin,Olsen,44.6667
+,,19,Scott,Wilk,24.1406
+23,"Assembly Standing Committee on Public Employees, Retirement, and Social Security"
+,,29,Marie,Waldron,225.5000
+,,45,Ken,Cooley,123.3750
+,,85,Rob,Bonta,34.8846
+,,88,Donald,Wagner,2.5000
+,,113,Patrick,O'Donnell,1.0000
+24,Assembly Standing Committee on Public Safety
+,,17,Miguel,Santiago,120.7917
+,,10,Tom,Lackey,88.9559
+,,41,Melissa,Melendez,72.2883
+,,87,Reginald,Jones-Sawyer,34.5865
+,,89,Patty,Lopez,19.4167
+25,Assembly Standing Committee on Revenue and Taxation
+,,31,Kevin,Mullin,200.0000
+,,50,Matthew,Dababneh,177.0000
+,,119,Jim,Patterson,84.0769
+,,28,Mike,Gipson,72.8182
+,,23,Bill,Quirk,65.8667
+,,111,William,Brough,38.5455
+,,67,Sebastian,Ridley-Thomas,34.1301
+,,88,Donald,Wagner,31.3333
+,,113,Patrick,O'Donnell,31.0000
+26,Assembly Standing Committee on Rules
+,,45,Ken,Cooley,368.6000
+,,18,Ling,Chang,292.5000
+,,17377,Joaquin,Arambula,261.0000
+,,78,Chris,Holden,190.3333
+,,29,Marie,Waldron,76.3333
+,,117,Richard,Gordon,41.3226
+,,80,Jimmy,Gomez,2.0000
+27,Assembly Standing Committee on Transportation
+,,74,Catharine,Baker,96.7126
+,,2,Richard,Bloom,84.9024
+,,38,Eduardo,Garcia,82.2105
+,,75,Devon,Mathis,63.5789
+,,113,Patrick,O'Donnell,53.5638
+,,71,Bill,Dodd,51.8958
+,,82,Young,Kim,50.4091
+,,41,Melissa,Melendez,49.6232
+,,36,Adrin,Nazarian,48.6316
+,,39,Eric,Linder,44.5930
+,,114,Jim,Frazier,42.9629
+,,13,Cheryl,Brown,41.3881
+,,32,Kansen,Chu,32.2157
+,,81,Jose,Medina,27.4839
+,,118,Tom,Daly,26.0250
+,,80,Jimmy,Gomez,22.5862
+28,Assembly Standing Committee on Utilities and Commerce
+,,73,Susan,Eggman,117.3333
+,,40,David,Hadley,111.9538
+,,17,Miguel,Santiago,103.0000
+,,12,Das,Williams,97.4528
+,,47,Brian,Dahle,97.1892
+,,112,Cristina,Garcia,95.4545
+,,30,Philip,Ting,91.0000
+,,86,Jay,Obernolte,83.0000
+,,6,Autumn,Burke,82.6389
+,,38,Eduardo,Garcia,81.5714
+,,23,Bill,Quirk,57.0422
+,,119,Jim,Patterson,57.0120
+,,83,Rocky,Chavez,50.8750
+,,46,Mike,Gatto,46.9131
+29,Assembly Standing Committee on Veterans Affairs
+,,17377,Joaquin,Arambula,74.0000
+,,83,Rocky,Chavez,73.7324
+,,114,Jim,Frazier,57.6471
+,,5,"K.H. ""Katcho""",Achadjian,46.2500
+,,75,Devon,Mathis,46.0635
+,,34,Rudy,Salas,41.3333
+,,16,Jacqui,Irwin,39.9688
+,,118,Tom,Daly,25.4444
+,,9,Luis,Alejo,1.0000
+30,"Assembly Standing Committee on Water, Parks, and Wildlife"
+,,73,Susan,Eggman,272.7778
+,,80,Jimmy,Gomez,116.5000
+,,71,Bill,Dodd,102.2222
+,,12,Das,Williams,95.2857
+,,75,Devon,Mathis,78.8077
+,,112,Cristina,Garcia,73.5000
+,,15,Kristin,Olsen,72.0476
+,,81,Jose,Medina,70.3333
+,,108,James,Gallagher,61.3333
+,,38,Eduardo,Garcia,53.5000
+,,14,Matthew,Harper,52.1250
+,,34,Rudy,Salas,51.6429
+,,91,Frank,Bigelow,47.7838
+,,8,Marc,Levine,38.7605
+,,89,Patty,Lopez,27.1250
+31,Assembly Budget Subcommittee No. 1 on Health and Human Services
+,,30,Philip,Ting,275.3333
+,,77,Shannon,Grove,63.8462
+,,7,David,Chiu,59.6667
+,,86,Jay,Obernolte,51.0000
+,,85,Rob,Bonta,46.3571
+,,4,Tony,Thurmond,36.5766
+,,14,Matthew,Harper,12.8676
+32,Assembly Budget Subcommittee No. 2 on Education Finance
+,,30,Philip,Ting,64.3235
+,,82,Young,Kim,62.7625
+,,83,Rocky,Chavez,51.7247
+,,113,Patrick,O'Donnell,49.7016
+,,16,Jacqui,Irwin,45.9535
+,,22,Kevin,McCarty,41.1575
+,,86,Jay,Obernolte,18.5000
+33,Assembly Budget Subcommittee No. 3 on Resources and Transportation
+,,91,Frank,Bigelow,84.0938
+,,12,Das,Williams,54.2270
+,,119,Jim,Patterson,52.2281
+,,117,Richard,Gordon,49.1128
+,,86,Jay,Obernolte,49.0273
+,,2,Richard,Bloom,35.9863
+34,Assembly Budget Subcommittee No. 4 on State Administration
+,,31,Kevin,Mullin,76.8627
+,,43,Travis,Allen,57.7273
+,,21,Jim,Cooper,38.7955
+,,19,Scott,Wilk,35.4583
+,,36,Adrin,Nazarian,34.3063
+,,30,Philip,Ting,32.1343
+35,Assembly Budget Subcommittee No. 5 on Public Safety
+,,78,Chris,Holden,49.7778
+,,10,Tom,Lackey,44.3103
+,,69,Freddie,Rodriguez,38.1250
+,,76,Nora,Campos,34.9944
+36,Assembly Budget Subcommittee No. 6 on Budget Process Oversight and Program Evaluation
+,,36,Adrin,Nazarian,272.0000
+,,119,Jim,Patterson,188.7500
+,,2,Richard,Bloom,184.0000
+,,22,Kevin,McCarty,155.8333
+,,4,Tony,Thurmond,131.2222
+37,Joint Committee on Arts
+,,2,Richard,Bloom,204.0000
+,,40,David,Hadley,110.5000
+,,70,Benjamin,Allen,96.4167
+,,86,Jay,Obernolte,44.0000
+39,Joint Committee on Fisheries and Aquaculture
+,,72,Jim,Wood,206.8000
+,,30,Philip,Ting,110.6000
+,,93,Mike,McGuire,100.0361
+,,5,"K.H. ""Katcho""",Achadjian,25.0000
+41,Joint Legislative Audit Committee
+,,61,Anthony,Cannella,243.0000
+,,72,Jim,Wood,201.4000
+,,74,Catharine,Baker,117.6129
+,,42,Brian,Jones,112.0952
+,,49,Jean,Fuller,95.5000
+,,92,Jim,Beall,94.7857
+,,95,Cathleen,Galgiani,79.8235
+,,5,"K.H. ""Katcho""",Achadjian,79.5000
+,,107,Ricardo,Lara,64.2188
+,,106,Richard,Roth,63.8780
+,,62,Connie,Leyva,53.6250
+,,76,Nora,Campos,47.4000
+,,28,Mike,Gipson,39.2186
+42,Joint Legislative Budget
+,,60,Mark,Leno,40.4800
+,,85,Rob,Bonta,15.5000
+,,44,Shirley,Weber,11.0000
+,,107,Ricardo,Lara,9.0000
+43,Joint Legislative Committee on Emergency Management
+,,10,Tom,Lackey,132.0000
+,,58,Pat,Bates,110.1250
+,,69,Freddie,Rodriguez,105.9444
+,,96,Richard,Pan,94.6818
+,,106,Richard,Roth,76.6667
+,,100,Hannah-Beth,Jackson,56.5128
+,,21,Jim,Cooper,50.0000
+45,Senate Standing Committee on Agriculture
+,,96,Richard,Pan,91.0000
+,,94,Lois,Wolk,46.6667
+,,95,Cathleen,Galgiani,38.3647
+,,54,Tom,Berryhill,33.1667
+,,61,Anthony,Cannella,15.6667
+46,Senate Standing Committee on Appropriations
+,,93,Mike,McGuire,205.0000
+,,92,Jim,Beall,114.4653
+,,66,Jerry,Hill,92.7234
+,,52,Tony,Mendoza,72.9500
+,,68,Jim,Nielsen,67.1290
+,,58,Pat,Bates,30.0859
+,,107,Ricardo,Lara,28.6892
+47,Senate Standing Committee on Banking and Financial Institutions
+,,48,Ben,Hueso,64.6667
+,,10481,Steve,Glazer,53.2667
+,,95,Cathleen,Galgiani,47.8667
+,,107,Ricardo,Lara,31.6667
+,,56,Andy,Vidak,26.6000
+,,1,Isadore,Hall,14.0000
+48,Senate Standing Committee on Budget and Fiscal Review
+,,65,Janet,Nguyen,168.8333
+,,96,Richard,Pan,142.0583
+,,59,Marty,Block,115.0000
+,,26,Jeff,Stone,112.8813
+,,104,Fran,Pavley,100.1868
+,,106,Richard,Roth,98.2914
+,,98,Loni,Hancock,96.5596
+,,64,Holly,Mitchell,95.4351
+,,94,Lois,Wolk,94.6500
+,,92,Jim,Beall,80.8765
+,,68,Jim,Nielsen,79.0337
+,,10481,Steve,Glazer,76.2034
+,,25,Bill,Monning,74.9688
+,,57,Joel,Anderson,73.2727
+,,70,Benjamin,Allen,69.0260
+,,4657,John,Moorlach,43.5280
+,,60,Mark,Leno,38.1597
+49,"Senate Standing Committee on Business, Professions and Economic Development"
+,,55,Bob,Wieckowski,83.2552
+,,52,Tony,Mendoza,79.1935
+,,100,Hannah-Beth,Jackson,78.9281
+,,95,Cathleen,Galgiani,77.4286
+,,103,Ed,Hernandez,65.4930
+,,59,Marty,Block,60.7290
+,,24,Ted,Gaines,39.3000
+,,66,Jerry,Hill,36.3096
+,,58,Pat,Bates,33.7863
+50,Senate Standing Committee on Education
+,,96,Richard,Pan,122.4401
+,,105,Bob,Huff,99.6963
+,,59,Marty,Block,94.1759
+,,52,Tony,Mendoza,85.0412
+,,98,Loni,Hancock,62.9813
+,,62,Connie,Leyva,62.6614
+,,25,Bill,Monning,57.1714
+,,56,Andy,Vidak,26.0256
+,,63,Carol,Liu,20.2357
+51,Senate Standing Committee on Elections and Constitutional Amendments
+,,99,Robert,Hertzberg,153.4730
+,,57,Joel,Anderson,71.2414
+,,98,Loni,Hancock,53.3443
+,,70,Benjamin,Allen,44.8871
+,,63,Carol,Liu,12.8333
+52,"Senate Standing Committee on Energy, Utilities and Communications"
+,,93,Mike,McGuire,147.4810
+,,66,Jerry,Hill,119.6981
+,,99,Robert,Hertzberg,95.7340
+,,104,Fran,Pavley,66.9350
+,,61,Anthony,Cannella,48.6757
+,,48,Ben,Hueso,44.7610
+,,94,Lois,Wolk,38.7246
+,,24,Ted,Gaines,33.2500
+,,62,Connie,Leyva,31.5395
+,,51,Mike,Morrell,29.7978
+,,107,Ricardo,Lara,24.9672
+53,Senate Standing Committee on Environmental Quality
+,,100,Hannah-Beth,Jackson,104.7067
+,,58,Pat,Bates,82.8308
+,,104,Fran,Pavley,66.4787
+,,66,Jerry,Hill,64.6222
+,,60,Mark,Leno,47.8801
+,,55,Bob,Wieckowski,32.2580
+,,24,Ted,Gaines,31.8500
+54,Senate Standing Committee on Governance and Finance
+,,92,Jim,Beall,77.3362
+,,107,Ricardo,Lara,74.3363
+,,65,Janet,Nguyen,58.3200
+,,103,Ed,Hernandez,46.9184
+,,4657,John,Moorlach,41.3690
+,,104,Fran,Pavley,37.8261
+,,99,Robert,Hertzberg,34.6268
+55,Senate Standing Committee on Governmental Organization
+,,48,Ben,Hueso,149.6970
+,,58,Pat,Bates,128.6667
+,,95,Cathleen,Galgiani,122.2727
+,,93,Mike,McGuire,93.7353
+,,66,Jerry,Hill,76.6944
+,,107,Ricardo,Lara,73.2632
+,,10481,Steve,Glazer,65.7353
+,,103,Ed,Hernandez,55.8519
+,,56,Andy,Vidak,55.3000
+,,59,Marty,Block,52.8333
+,,54,Tom,Berryhill,46.0448
+,,24,Ted,Gaines,41.0392
+,,1,Isadore,Hall,25.1359
+56,Senate Standing Committee on Health
+,,96,Richard,Pan,136.0508
+,,68,Jim,Nielsen,75.2105
+,,25,Bill,Monning,66.9259
+,,65,Janet,Nguyen,61.0909
+,,64,Holly,Mitchell,54.5086
+,,106,Richard,Roth,43.1901
+,,94,Lois,Wolk,37.4671
+,,1,Isadore,Hall,33.3140
+,,103,Ed,Hernandez,32.2771
+57,Senate Standing Committee on Human Services
+,,93,Mike,McGuire,63.0457
+,,98,Loni,Hancock,61.5781
+,,65,Janet,Nguyen,50.5185
+,,63,Carol,Liu,32.9500
+,,54,Tom,Berryhill,20.1553
+58,Senate Standing Committee on Insurance
+,,55,Bob,Wieckowski,71.2500
+,,10481,Steve,Glazer,51.4737
+,,24,Ted,Gaines,42.0000
+,,106,Richard,Roth,28.8761
+,,54,Tom,Berryhill,11.7143
+,,103,Ed,Hernandez,1.0000
+59,Senate Standing Committee on Judiciary
+,,25,Bill,Monning,96.6527
+,,99,Robert,Hertzberg,96.1587
+,,57,Joel,Anderson,72.5960
+,,55,Bob,Wieckowski,68.1421
+,,60,Mark,Leno,64.2591
+,,100,Hannah-Beth,Jackson,38.8222
+,,4657,John,Moorlach,27.4833
+60,Senate Standing Committee on Labor and Industrial Relations
+,,100,Hannah-Beth,Jackson,233.2917
+,,26,Jeff,Stone,81.6022
+,,60,Mark,Leno,71.4823
+,,64,Holly,Mitchell,68.8235
+,,52,Tony,Mendoza,26.7399
+61,Senate Standing Committee on Natural Resources and Water
+,,100,Hannah-Beth,Jackson,90.3544
+,,48,Ben,Hueso,76.1000
+,,25,Bill,Monning,57.4844
+,,94,Lois,Wolk,56.1322
+,,99,Robert,Hertzberg,55.2736
+,,70,Benjamin,Allen,50.3011
+,,56,Andy,Vidak,47.5294
+,,26,Jeff,Stone,46.2046
+,,104,Fran,Pavley,42.2221
+62,Senate Standing Committee on Public Employment and Retirement
+,,4657,John,Moorlach,69.3438
+,,96,Richard,Pan,67.8927
+,,92,Jim,Beall,41.1667
+,,51,Mike,Morrell,27.6522
+,,1,Isadore,Hall,13.7200
+63,Senate Standing Committee on Public Safety
+,,26,Jeff,Stone,77.1742
+,,10481,Steve,Glazer,59.7366
+,,60,Mark,Leno,51.5989
+,,25,Bill,Monning,50.5901
+,,63,Carol,Liu,36.1149
+,,98,Loni,Hancock,31.7353
+,,57,Joel,Anderson,31.1940
+64,Senate Standing Committee on Rules
+,,61,Anthony,Cannella,78.5532
+,,64,Holly,Mitchell,75.0847
+,,54,Tom,Berryhill,66.5789
+,,62,Connie,Leyva,56.7991
+,,102,Kevin,De Leon,55.0322
+65,Senate Standing Committee on Transportation and Housing
+,,93,Mike,McGuire,111.2051
+,,58,Pat,Bates,107.2577
+,,52,Tony,Mendoza,84.7706
+,,55,Bob,Wieckowski,65.4109
+,,70,Benjamin,Allen,62.6543
+,,24,Ted,Gaines,49.5342
+,,106,Richard,Roth,48.9768
+,,62,Connie,Leyva,42.6966
+,,92,Jim,Beall,31.4229
+,,61,Anthony,Cannella,28.3011
+66,Senate Standing Committee on Veterans Affairs
+,,65,Janet,Nguyen,111.0000
+,,106,Richard,Roth,64.9769
+,,48,Ben,Hueso,53.0000
+,,68,Jim,Nielsen,45.6499
+,,70,Benjamin,Allen,33.3333
+67,"Senate Budget Subcommittee No. 5 on Corrections, Public Safety and the Judiciary"
+,,92,Jim,Beall,62.1419
+,,98,Loni,Hancock,50.4532
+,,57,Joel,Anderson,24.2593
+68,Senate Budget Subcommittee No. 1 on Education
+,,70,Benjamin,Allen,45.3702
+,,59,Marty,Block,34.8787
+,,4657,John,Moorlach,29.8052
+69,"Senate Budget Subcommittee No. 2 on Resources, Environmental Protection, Energy and Transportation"
+,,68,Jim,Nielsen,50.4704
+,,104,Fran,Pavley,42.1844
+,,94,Lois,Wolk,33.2789
+70,Senate Budget Subcommittee No. 3 on Health and Human Services
+,,26,Jeff,Stone,58.5404
+,,25,Bill,Monning,37.0789
+,,64,Holly,Mitchell,30.4566
+71,Senate Budget Subcommittee No. 4 on State Administration and General Government
+,,96,Richard,Pan,80.3182
+,,65,Janet,Nguyen,66.3077
+,,106,Richard,Roth,37.0570
+73,Assembly Select Committee on Aerospace
+,,6,Autumn,Burke,79.5000
+76,Assembly Select Committee on California's Clean Energy Economy
+,,47,Brian,Dahle,225.5000
+,,6,Autumn,Burke,100.0000
+,,120,Anthony,Rendon,75.0000
+,,2,Richard,Bloom,57.0000
+,,86,Jay,Obernolte,52.5882
+,,23,Bill,Quirk,50.6807
+,,12,Das,Williams,50.2500
+,,16,Jacqui,Irwin,46.2500
+,,22,Kevin,McCarty,41.0000
+,,116,Ed,Chau,38.0000
+78,Assembly Select Committee on Campus Climate
+,,108,James,Gallagher,541.0000
+,,44,Shirley,Weber,223.6538
+,,30,Philip,Ting,58.0000
+79,Assembly Select Committee on Career Technical Education and Building a 21st Century Workforce
+,,72,Jim,Wood,248.0000
+,,40,David,Hadley,179.8333
+,,17,Miguel,Santiago,126.7500
+,,6,Autumn,Burke,70.5000
+,,113,Patrick,O'Donnell,31.6667
+81,Assembly Select Committee on Coastal Protection
+,,30,Philip,Ting,271.0000
+,,20,Mark,Stone,70.8947
+82,Assembly Select Committee on Community and Law Enforcement Relations and Responsibilities
+,,44,Shirley,Weber,758.2000
+,,108,James,Gallagher,251.5000
+,,85,Rob,Bonta,161.0000
+,,87,Reginald,Jones-Sawyer,139.6316
+,,69,Freddie,Rodriguez,115.7500
+,,10,Tom,Lackey,106.1667
+,,21,Jim,Cooper,77.0241
+,,23,Bill,Quirk,76.6364
+83,Assembly Select Committee on Craft Brewing and Distilling
+,,36,Adrin,Nazarian,102.0000
+,,22,Kevin,McCarty,84.6000
+,,39,Eric,Linder,78.0000
+,,8,Marc,Levine,63.8824
+,,21,Jim,Cooper,15.0000
+,,80,Jimmy,Gomez,12.3333
+84,Assembly Select Committee on Cybersecurity
+,,21,Jim,Cooper,163.5000
+,,86,Jay,Obernolte,112.0000
+,,7,David,Chiu,73.3333
+,,116,Ed,Chau,53.5000
+,,16,Jacqui,Irwin,51.3077
+85,Assembly Select Committee on Digital Divide in Rural California
+,,72,Jim,Wood,66.4700
+88,Assembly Select Committee on Foster Care
+,,28,Mike,Gipson,133.0000
+,,16,Jacqui,Irwin,96.0000
+,,89,Patty,Lopez,55.0000
+,,45,Ken,Cooley,50.8491
+,,21,Jim,Cooper,32.0000
+92,Assembly Select Committee on Infectious Diseases in High Risk Disadvantaged Communities
+,,28,Mike,Gipson,64.9167
+,,29,Marie,Waldron,53.5000
+93,Assembly Select Committee on Local Emergency Preparedness
+,,69,Freddie,Rodriguez,104.8000
+,,12,Das,Williams,86.6875
+,,45,Ken,Cooley,41.0000
+,,21,Jim,Cooper,21.6667
+96,Assembly Select Committee on Rail
+,,27,Adam,Gray,183.6667
+99,Assembly Select Committee on Renewable Energy Development and Restoration of the Salton Sea
+,,79,Chad,Mayes,109.2500
+,,38,Eduardo,Garcia,85.6765
+,,120,Anthony,Rendon,54.0000
+,,71,Bill,Dodd,26.0000
+100,"Assembly Select Committee on Science, Technology, Engineering and Math Education"
+,,45,Ken,Cooley,766.0000
+,,3,Susan,Bonilla,188.6471
+102,Assembly Select Committee on Status of Boys and Men of Color
+,,4,Tony,Thurmond,153.1613
+,,85,Rob,Bonta,106.8448
+,,13,Cheryl,Brown,85.3214
+,,87,Reginald,Jones-Sawyer,66.1111
+,,120,Anthony,Rendon,59.0000
+,,30,Philip,Ting,44.0000
+103,Assembly Select Committee on Status of Girls and Women of Color
+,,38,Eduardo,Garcia,271.0000
+,,13,Cheryl,Brown,181.2500
+,,112,Cristina,Garcia,162.0000
+,,76,Nora,Campos,119.1304
+,,53,Lorena,Gonzalez,61.8980
+,,5,"K.H. ""Katcho""",Achadjian,37.6000
+106,Assembly Select Committee on Waste Reduction and Recycling in the 21st Century California
+,,47,Brian,Dahle,125.6667
+,,86,Jay,Obernolte,72.8000
+,,117,Richard,Gordon,54.6667
+,,22,Kevin,McCarty,32.8333
+107,Assembly Select Committee on Water Consumption and Alternative Sources
+,,82,Young,Kim,95.0000
+,,117,Richard,Gordon,64.9333
+,,17,Miguel,Santiago,37.0000
+,,5,"K.H. ""Katcho""",Achadjian,33.0000
+109,Assembly Select Committee on Women in the Workplace
+,,7,David,Chiu,228.0000
+,,112,Cristina,Garcia,196.6667
+,,47,Brian,Dahle,133.5000
+,,76,Nora,Campos,125.9583
+,,41,Melissa,Melendez,69.0000
+,,53,Lorena,Gonzalez,66.2233
+112,Assembly Select Committee on Youth and California's Future
+,,50,Matthew,Dababneh,274.4286
+,,21,Jim,Cooper,232.0000
+,,53,Lorena,Gonzalez,212.0000
+,,115,Ian,Calderon,162.6667
+115,"Senate Business, Professions and Economic Development Subcommittee on California's Innovation, Technology and Life Sciences Economy"
+,,66,Jerry,Hill,49.7895
+,,54,Tom,Berryhill,45.0000
+118,Senate Select Committee on Aging and Long Term Care
+,,63,Carol,Liu,102.0000
+,,93,Mike,McGuire,61.0000
+119,Senate Select Committee on California-Mexico Cooperation
+,,102,Kevin,De Leon,422.0000
+,,48,Ben,Hueso,70.5926
+,,70,Benjamin,Allen,59.5714
+,,51,Mike,Morrell,33.2857
+,,62,Connie,Leyva,24.4706
+121,Senate Select Committee on Climate Change and AB 32 Implementation
+,,102,Kevin,De Leon,1214.0000
+,,92,Jim,Beall,156.6667
+,,104,Fran,Pavley,97.3333
+,,60,Mark,Leno,66.2143
+122,Senate Select Committee on Defense and Aerospace
+,,58,Pat,Bates,154.5000
+,,70,Benjamin,Allen,77.6667
+,,49,Jean,Fuller,60.4000
+124,Senate Select Committee on Mental Health
+,,96,Richard,Pan,284.0000
+,,98,Loni,Hancock,83.8333
+,,92,Jim,Beall,71.8727
+,,25,Bill,Monning,65.0000
+,,57,Joel,Anderson,57.0000
+126,Senate Select Committee on Passenger Rail
+,,92,Jim,Beall,107.9000
+,,95,Cathleen,Galgiani,77.0000
+,,100,Hannah-Beth,Jackson,67.6338
+,,70,Benjamin,Allen,42.2500
+,,61,Anthony,Cannella,24.0000
+129,Senate Select Committee on The Sacramento-San Joaquin Delta
+,,98,Loni,Hancock,65.2500
+,,94,Lois,Wolk,63.2273
+130,Senate Select Committee on Women and Inequality: Strategies to Promote Opportunity
+,,93,Mike,McGuire,221.0000
+,,100,Hannah-Beth,Jackson,141.2143
+,,64,Holly,Mitchell,69.0385
+,,63,Carol,Liu,29.2353
+131,Assembly Select Committee on Civic Engagement
+,,73,Susan,Eggman,64.6000
+135,"Senate Energy, Utilities and Communications Subcommittee on Gas, Electric and Transportation Safety"
+,,66,Jerry,Hill,79.8148
+138,Senate Select Committee on Children with Special Needs
+,,96,Richard,Pan,92.6667
+140,Senate Governance and Finance Subcommittee on Modernizing Government
+,,99,Robert,Hertzberg,68.7287
+141,Budget Conference Committee
+,,2,Richard,Bloom,83.0536
+,,44,Shirley,Weber,80.8683
+,,68,Jim,Nielsen,57.9059
+,,107,Ricardo,Lara,50.1608
+,,60,Mark,Leno,32.1047
+,,41,Melissa,Melendez,28.0994
+143,Finance
+,,41,Melissa,Melendez,191.0000
+,,22,Kevin,McCarty,78.5000
+,,44,Shirley,Weber,48.1429
+,,30,Philip,Ting,24.5000
+144,Transportation and Infrastructure Development
+,,7,David,Chiu,309.0000
+,,113,Patrick,O'Donnell,98.8333
+,,39,Eric,Linder,88.0000
+,,6,Autumn,Burke,86.0000
+,,114,Jim,Frazier,53.3288
+,,46,Mike,Gatto,37.0000
+,,5,"K.H. ""Katcho""",Achadjian,33.7778
+,,71,Bill,Dodd,23.5000
+,,73,Susan,Eggman,9.0000
+145,Public Health and Developmental Services
+,,17,Miguel,Santiago,308.0000
+,,72,Jim,Wood,140.6111
+,,38,Eduardo,Garcia,127.1250
+,,74,Catharine,Baker,111.3889
+,,4,Tony,Thurmond,102.7436
+,,8,Marc,Levine,85.6667
+,,3,Susan,Bonilla,66.0952
+,,84,Brian,Maienschein,48.2000
+,,20,Mark,Stone,47.1667
+,,76,Nora,Campos,44.8182
+,,79,Chad,Mayes,41.1667
+,,85,Rob,Bonta,29.4783
+,,35,Marc,Steinorth,19.3333
+146,Transportation and Infrastructure Development
+,,61,Anthony,Cannella,238.1429
+,,93,Mike,McGuire,156.7059
+,,62,Connie,Leyva,134.5000
+,,104,Fran,Pavley,129.0000
+,,70,Benjamin,Allen,123.0667
+,,54,Tom,Berryhill,106.3750
+,,24,Ted,Gaines,95.1000
+,,55,Bob,Wieckowski,80.4651
+,,92,Jim,Beall,55.0199
+,,63,Carol,Liu,14.6667
+,,52,Tony,Mendoza,1.0000
+148,Public Health and Developmental Services
+,,96,Richard,Pan,163.2857
+,,92,Jim,Beall,139.2500
+,,51,Mike,Morrell,112.8500
+,,93,Mike,McGuire,109.6389
+,,25,Bill,Monning,91.7419
+,,60,Mark,Leno,90.5106
+,,57,Joel,Anderson,81.3200
+,,64,Holly,Mitchell,54.5750
+,,103,Ed,Hernandez,47.5495
+,,68,Jim,Nielsen,39.6506
+,,4657,John,Moorlach,36.6604
+,,94,Lois,Wolk,36.0000
+433,Conference Committee on SB 2 and AB 1
+,,108,James,Gallagher,232.0000
+,,68,Jim,Nielsen,139.0000
+,,85,Rob,Bonta,93.0000
+,,60,Mark,Leno,83.5000
+,,103,Ed,Hernandez,65.3043
+,,64,Holly,Mitchell,60.0000
+435,Assembly Floor
+,,44,Shirley,Weber,295.5585
+,,15,Kristin,Olsen,244.1456
+,,88,Donald,Wagner,231.0435
+,,77,Shannon,Grove,228.9793
+,,83,Rocky,Chavez,223.9200
+,,74,Catharine,Baker,219.6923
+,,45,Ken,Cooley,217.2698
+,,119,Jim,Patterson,215.5476
+,,2,Richard,Bloom,190.3415
+,,9,Luis,Alejo,187.2533
+,,4,Tony,Thurmond,182.5232
+,,87,Reginald,Jones-Sawyer,179.3379
+,,82,Young,Kim,173.4035
+,,108,James,Gallagher,170.9425
+,,53,Lorena,Gonzalez,169.1429
+,,46,Mike,Gatto,166.7182
+,,19,Scott,Wilk,165.7692
+,,17377,Joaquin,Arambula,164.3704
+,,37,Roger,Hernandez,164.2621
+,,73,Susan,Eggman,163.8667
+,,76,Nora,Campos,162.4684
+,,67,Sebastian,Ridley-Thomas,161.4526
+,,80,Jimmy,Gomez,160.0968
+,,86,Jay,Obernolte,158.7174
+,,40,David,Hadley,157.8353
+,,38,Eduardo,Garcia,156.3077
+,,117,Richard,Gordon,155.4809
+,,85,Rob,Bonta,154.5824
+,,109,Beth,Gaines,153.5769
+,,42,Brian,Jones,147.3576
+,,72,Jim,Wood,145.4031
+,,22,Kevin,McCarty,142.6700
+,,20,Mark,Stone,141.0194
+,,50,Matthew,Dababneh,140.0429
+,,8,Marc,Levine,135.5541
+,,12,Das,Williams,135.1159
+,,75,Devon,Mathis,135.0889
+,,18,Ling,Chang,134.5410
+,,47,Brian,Dahle,134.4127
+,,28,Mike,Gipson,133.7500
+,,79,Chad,Mayes,133.6364
+,,81,Jose,Medina,132.2090
+,,13,Cheryl,Brown,126.5000
+,,41,Melissa,Melendez,124.0385
+,,3,Susan,Bonilla,121.7087
+,,14,Matthew,Harper,119.0400
+,,23,Bill,Quirk,117.6923
+,,36,Adrin,Nazarian,116.5052
+,,111,William,Brough,114.6400
+,,114,Jim,Frazier,113.2208
+,,30,Philip,Ting,113.0938
+,,27,Adam,Gray,113.0125
+,,10,Tom,Lackey,111.2551
+,,91,Frank,Bigelow,110.5538
+,,110,Toni,Atkins,109.3411
+,,71,Bill,Dodd,108.5385
+,,39,Eric,Linder,106.3621
+,,116,Ed,Chau,103.8913
+,,16,Jacqui,Irwin,102.6000
+,,112,Cristina,Garcia,100.0769
+,,113,Patrick,O'Donnell,99.3626
+,,21,Jim,Cooper,95.6803
+,,84,Brian,Maienschein,92.7206
+,,118,Tom,Daly,88.9180
+,,11,Evan,Low,88.9060
+,,107,Ricardo,Lara,88.0000
+,,43,Travis,Allen,86.2950
+,,32,Kansen,Chu,86.2258
+,,33,Henry,Perea,86.1786
+,,17,Miguel,Santiago,85.6000
+,,69,Freddie,Rodriguez,85.5625
+,,120,Anthony,Rendon,84.6223
+,,5,"K.H. ""Katcho""",Achadjian,81.0588
+,,89,Patty,Lopez,80.9464
+,,35,Marc,Steinorth,80.9118
+,,34,Rudy,Salas,67.1304
+,,29,Marie,Waldron,64.4236
+,,115,Ian,Calderon,62.6234
+,,78,Chris,Holden,49.7907
+,,7,David,Chiu,35.8120
+,,31,Kevin,Mullin,30.5500
+,,6,Autumn,Burke,30.1462
+,,48,Ben,Hueso,19.3333
+452,Senate Floor
+,,26,Jeff,Stone,259.3724
+,,68,Jim,Nielsen,221.9888
+,,99,Robert,Hertzberg,187.8165
+,,105,Bob,Huff,176.9318
+,,93,Mike,McGuire,170.3418
+,,102,Kevin,De Leon,167.3583
+,,60,Mark,Leno,161.5602
+,,96,Richard,Pan,158.6821
+,,70,Benjamin,Allen,157.3826
+,,57,Joel,Anderson,157.1918
+,,10481,Steve,Glazer,155.4779
+,,104,Fran,Pavley,153.7085
+,,48,Ben,Hueso,153.2034
+,,51,Mike,Morrell,144.3564
+,,65,Janet,Nguyen,141.8951
+,,59,Marty,Block,134.6860
+,,103,Ed,Hernandez,124.8889
+,,94,Lois,Wolk,121.4439
+,,4656,Sharon,Runner,120.1096
+,,58,Pat,Bates,119.2732
+,,95,Cathleen,Galgiani,117.4345
+,,92,Jim,Beall,115.8162
+,,1,Isadore,Hall,115.2269
+,,54,Tom,Berryhill,114.3960
+,,63,Carol,Liu,111.8537
+,,66,Jerry,Hill,111.6955
+,,106,Richard,Roth,109.9712
+,,52,Tony,Mendoza,109.0486
+,,4657,John,Moorlach,106.0769
+,,98,Loni,Hancock,104.6034
+,,61,Anthony,Cannella,102.7368
+,,49,Jean,Fuller,100.3994
+,,55,Bob,Wieckowski,100.3409
+,,25,Bill,Monning,96.2130
+,,56,Andy,Vidak,79.7805
+,,100,Hannah-Beth,Jackson,38.0166
+,,107,Ricardo,Lara,32.1278
+,,24,Ted,Gaines,28.8591
+,,64,Holly,Mitchell,27.5149
+,,62,Connie,Leyva,26.5377
+455,Senate Budget and Fiscal Review Subcommittee No. 1 on Education
+,,70,Benjamin,Allen,52.2727
+,,59,Marty,Block,29.7328
+,,4657,John,Moorlach,20.5556
+457,Senate Budget and Fiscal Review Subcommittee No. 3 on Health and Human Services
+,,64,Holly,Mitchell,22.8136
+,,26,Jeff,Stone,21.3750
+,,25,Bill,Monning,16.6923
