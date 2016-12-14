@@ -135,22 +135,22 @@ QS_VOTE_ABS = '''SELECT DISTINCT xx.bid, xx.hid, DATE(xx.VoteDate) as date
 '''
 PARTICIPATION: Rank all 120 legislators by who, on average, makes the longest uninterrupted statements on the floor.
 '''
-QS_LONG_STMTS = '''SELECT s.pid, p.first, p.last, AVG(totalWords) as avg_statements
+QS_LONG_STMTS = '''SELECT s.pid, p.first, p.last, AVG(totalWords) as avg_statements_words, AVG(totalTime) as avg_statements_time, COUNT(*) as totalStatements
                   FROM Statement s, CommitteeHearings ch, Person p, Legislator l
                   WHERE s.hid = ch.hid AND ch.cid IN (SELECT cid FROM Committee WHERE name like '%Floor%')
                   AND p.pid = s.pid AND p.pid = l.pid AND l.state = "CA"
                   GROUP BY s.pid
-                  ORDER BY avg_statements DESC'''
+                  ORDER BY avg_statements_words DESC'''
 
 '''
 PARTICIPATION: For each committee, rank all committee members by who, on average, makes the longest uninterrupted statements.
 '''
-QS_LONG_STMTS_COM = '''SELECT s.pid, p.first, p.last, AVG(totalWords) as avg_statements
+QS_LONG_STMTS_COM = '''SELECT s.pid, p.first, p.last, AVG(totalWords) as avg_statements_words, AVG(totalTime) as avg_statements_time, COUNT(*) as totalStatements
                       FROM Statement s, CommitteeHearings ch, Person p, servesOn so
                       WHERE s.hid = ch.hid AND p.pid = s.pid AND so.pid = s.pid
                       AND ch.cid = so.cid AND so.cid = %s
                       GROUP BY s.pid
-                      ORDER BY avg_statements DESC'''
+                      ORDER BY avg_statements_words DESC'''
 
 QS_ALL_COMMITTEE = '''SELECT cid 
                       FROM Committee 
