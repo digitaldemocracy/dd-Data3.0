@@ -1,0 +1,17 @@
+Overview:
+
+    create_CalMatters.sql => Creates the DistrictCensus table that holds the census data
+    ca_import_census_data.py => Uses the U.S. Census API to import district data like demographics, emploment percentages, and so on
+
+    20_orgs => List of 20 organizations Christine wanted 
+    20_orgs_merged.txt => Notes and queries on how to collect all the oids of an organization under different names
+    merge_orgs.py => Script that inserts the 20 orgs and all their oids into OrgConcept and OrgConceptAffiliation tables
+
+    statement_table.py => Script that creates the statement table and inserts the statements created from the utterances
+
+    export_queries.py => Executes five queries from the list of queries Christine wanted and exports the results into individual csv files
+    output1.csv => Query #1 results
+    output2.csv => Query #2 results
+    output3.csv => Query #3 results
+    output4.csv => Query #21 results
+    output5.csv => Query #22 results

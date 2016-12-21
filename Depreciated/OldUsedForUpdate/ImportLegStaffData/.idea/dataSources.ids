@@ -1,0 +1,3936 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component name="dataSourceStorage">
+  <data-source name="MySQL - AndrewTest@digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com" uuid="6717978e-5447-4888-abc1-3ba4837eb7a3">
+    <database-info product="MySQL" version="5.6.23-log" jdbc-version="4.0" driver-name="MySQL Connector Java" driver-version="mysql-connector-java-5.1.35 ( Revision: 5fb9c5849535c13917c2cf9baaece6ef9693ef27 )">
+      <extra-name-characters>#@</extra-name-characters>
+      <identifier-quote-string>`</identifier-quote-string>
+    </database-info>
+    <case-sensitivity plain-identifiers="exact" quoted-identifiers="exact"/>
+    <database-model serializer="dbm" rdbms="MYSQL" format-version="2.5">
+      <schema id="1" name="AndrewTest"/>
+      <table id="2" parent="1" name="Action"/>
+      <table id="3" parent="1" name="Behests"/>
+      <table id="4" parent="1" name="Bill"/>
+      <table id="5" parent="1" name="BillAnalysis"/>
+      <table id="6" parent="1" name="BillDiscussion"/>
+      <table id="7" parent="1" name="BillSponsorRolls"/>
+      <table id="8" parent="1" name="BillSponsors"/>
+      <table id="9" parent="1" name="BillTypes"/>
+      <table id="10" parent="1" name="BillVersion"/>
+      <table id="11" parent="1" name="BillVoteDetail"/>
+      <table id="12" parent="1" name="BillVoteSummary"/>
+      <table id="13" parent="1" name="Committee"/>
+      <table id="14" parent="1" name="CommitteeAuthors"/>
+      <table id="15" parent="1" name="CommitteeHearings"/>
+      <table id="16" parent="1" name="Contribution"/>
+      <table id="17" parent="1" name="DeprecatedOrganization"/>
+      <table id="18" parent="1" name="DeprecatedPerson"/>
+      <table id="19" parent="1" name="District"/>
+      <table id="20" parent="1" name="GeneralPublic"/>
+      <table id="21" parent="1" name="Gift"/>
+      <table id="22" parent="1" name="Hearing"/>
+      <table id="23" parent="1" name="House"/>
+      <table id="24" parent="1" name="LegAnalystOffice"/>
+      <table id="25" parent="1" name="LegAnalystOfficeRepresentation"/>
+      <table id="26" parent="1" name="LegOfficePersonnel"/>
+      <table id="27" parent="1" name="LegStaffGifts"/>
+      <table id="28" parent="1" name="LegislativeStaff"/>
+      <table id="29" parent="1" name="LegislativeStaffRepresentation"/>
+      <table id="30" parent="1" name="Legislator"/>
+      <table id="31" parent="1" name="LegislatureOffice"/>
+      <table id="32" parent="1" name="LobbyingFirm"/>
+      <table id="33" parent="1" name="LobbyingFirmState"/>
+      <table id="34" parent="1" name="Lobbyist"/>
+      <table id="35" parent="1" name="LobbyistEmployer"/>
+      <table id="36" parent="1" name="LobbyistEmployment"/>
+      <table id="37" parent="1" name="LobbyistRepresentation"/>
+      <table id="38" parent="1" name="Motion"/>
+      <table id="39" parent="1" name="OfficePersonnel"/>
+      <table id="40" parent="1" name="OrgAlignments"/>
+      <table id="41" parent="1" name="Organizations"/>
+      <table id="42" parent="1" name="Payors"/>
+      <table id="43" parent="1" name="Person"/>
+      <table id="44" parent="1" name="SpeakerProfileTypes"/>
+      <table id="45" parent="1" name="State"/>
+      <table id="46" parent="1" name="StateAgency"/>
+      <table id="47" parent="1" name="StateAgencyRep"/>
+      <table id="48" parent="1" name="StateAgencyRepRepresentation"/>
+      <table id="49" parent="1" name="StateConstOffice"/>
+      <table id="50" parent="1" name="StateConstOfficeRep"/>
+      <table id="51" parent="1" name="StateConstOfficeRepRepresentation"/>
+      <table id="52" parent="1" name="TT_Cuts"/>
+      <table id="53" parent="1" name="TT_Editor"/>
+      <table id="54" parent="1" name="TT_EditorStates"/>
+      <table id="55" parent="1" name="TT_HostingUrl"/>
+      <table id="56" parent="1" name="TT_ServiceRequests"/>
+      <table id="57" parent="1" name="TT_Task"/>
+      <table id="58" parent="1" name="TT_Videos"/>
+      <table id="59" parent="1" name="Term"/>
+      <table id="60" parent="1" name="Utterance"/>
+      <table id="61" parent="1" name="Video"/>
+      <table id="62" parent="1" name="Video_ttml"/>
+      <table id="63" parent="1" name="authors"/>
+      <table id="64" parent="1" name="servesOn"/>
+      <table id="65" parent="1" name="HearingAgenda"/>
+      <table id="66" parent="1" name="LegAvgPercentParticipation"/>
+      <table id="67" parent="1" name="LegParticipation"/>
+      <table id="68" parent="1" name="TempTbl"/>
+      <view id="69" parent="1" name="BillAlignments">
+        <comment>VIEW</comment>
+      </view>
+      <view id="70" parent="1" name="FrequentDonors">
+        <comment>VIEW</comment>
+      </view>
+      <view id="71" parent="1" name="TT_currentCuts">
+        <comment>VIEW</comment>
+      </view>
+      <view id="72" parent="1" name="currentUtterance">
+        <comment>VIEW</comment>
+      </view>
+      <column id="73" parent="2" name="bid">
+        <data-type>varchar(23)</data-type>
+      </column>
+      <column id="74" parent="2" name="date">
+        <data-type>date</data-type>
+      </column>
+      <column id="75" parent="2" name="text">
+        <data-type>text</data-type>
+      </column>
+      <column id="76" parent="2" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="77" parent="2" name="dr_id">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <index id="78" parent="2" name="bid">
+        <columns>bid</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="79" parent="2" name="dr_id">
+        <columns>dr_id</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <key id="80" parent="2" name="dr_id">
+        <columns>dr_id</columns>
+        <underlying-index>dr_id</underlying-index>
+      </key>
+      <foreign-key id="81" parent="2" name="Action_ibfk_1">
+        <columns>bid</columns>
+        <ref-key>~.Bill.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="82" parent="2" name="Action_ibfk_2">
+        <columns>bid</columns>
+        <ref-key>~.Bill.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="83" parent="3" name="official">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="84" parent="3" name="datePaid">
+        <mandatory>1</mandatory>
+        <data-type>date</data-type>
+        <default-expression>&apos;0000-00-00&apos;</default-expression>
+      </column>
+      <column id="85" parent="3" name="payor">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="86" parent="3" name="amount">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="87" parent="3" name="payee">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="88" parent="3" name="description">
+        <data-type>text</data-type>
+      </column>
+      <column id="89" parent="3" name="purpose">
+        <data-type>varchar(200)</data-type>
+      </column>
+      <column id="90" parent="3" name="noticeReceived">
+        <data-type>date</data-type>
+      </column>
+      <column id="91" parent="3" name="state">
+        <data-type>varchar(2)</data-type>
+      </column>
+      <column id="92" parent="3" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="93" parent="3" name="dr_id">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <index id="94" parent="3" name="dr_id">
+        <columns>dr_id</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <index id="95" parent="3" name="payee">
+        <columns>payee</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="96" parent="3" name="payor">
+        <columns>payor</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="97" parent="3" name="state">
+        <columns>state</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <key id="98" parent="3" name="dr_id">
+        <columns>dr_id</columns>
+        <underlying-index>dr_id</underlying-index>
+      </key>
+      <key id="99" parent="3" name="PRIMARY">
+        <columns>official
+payor
+payee
+datePaid</columns>
+        <primary>1</primary>
+      </key>
+      <foreign-key id="100" parent="3" name="Behests_ibfk_1">
+        <columns>official</columns>
+        <ref-key>~.Person.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="101" parent="3" name="Behests_ibfk_2">
+        <columns>payor</columns>
+        <ref-key>~.Payors.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="102" parent="3" name="Behests_ibfk_3">
+        <columns>payee</columns>
+        <ref-key>~.Organizations.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="103" parent="3" name="Behests_ibfk_4">
+        <columns>state</columns>
+        <ref-key>~.State.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="104" parent="4" name="bid">
+        <mandatory>1</mandatory>
+        <data-type>varchar(23)</data-type>
+        <default-expression>&apos;&apos;</default-expression>
+      </column>
+      <column id="105" parent="4" name="type">
+        <mandatory>1</mandatory>
+        <data-type>varchar(5)</data-type>
+      </column>
+      <column id="106" parent="4" name="number">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="107" parent="4" name="billState">
+        <mandatory>1</mandatory>
+        <data-type>enum(&apos;Chaptered&apos;, &apos;Introduced&apos;, &apos;Amended Assembly&apos;, &apos;Amended Senate&apos;, &apos;Enrolled&apos;, &apos;Proposed&apos;, &apos;Amended&apos;, &apos;Vetoed&apos;)</data-type>
+      </column>
+      <column id="108" parent="4" name="status">
+        <data-type>varchar(60)</data-type>
+      </column>
+      <column id="109" parent="4" name="house">
+        <data-type>enum(&apos;Assembly&apos;, &apos;Senate&apos;, &apos;Secretary of State&apos;, &apos;Governor&apos;, &apos;Legislature&apos;)</data-type>
+      </column>
+      <column id="110" parent="4" name="session">
+        <data-type>int(1)</data-type>
+      </column>
+      <column id="111" parent="4" name="state">
+        <data-type>varchar(2)</data-type>
+      </column>
+      <column id="112" parent="4" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="113" parent="4" name="sessionYear">
+        <data-type>year(4)</data-type>
+      </column>
+      <column id="114" parent="4" name="dr_id">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <index id="115" parent="4" name="dr_id">
+        <columns>dr_id</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <index id="116" parent="4" name="name">
+        <columns>type
+number</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="117" parent="4" name="state">
+        <columns>state</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <key id="118" parent="4" name="dr_id">
+        <columns>dr_id</columns>
+        <underlying-index>dr_id</underlying-index>
+      </key>
+      <key id="119" parent="4" name="PRIMARY">
+        <columns>bid</columns>
+        <primary>1</primary>
+      </key>
+      <foreign-key id="120" parent="4" name="Bill_ibfk_1">
+        <columns>state</columns>
+        <ref-key>~.State.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="121" parent="5" name="analysis_id">
+        <mandatory>1</mandatory>
+        <data-type>decimal(22)</data-type>
+      </column>
+      <column id="122" parent="5" name="bill_id">
+        <data-type>varchar(23)</data-type>
+      </column>
+      <column id="123" parent="5" name="house">
+        <data-type>varchar(1)</data-type>
+      </column>
+      <column id="124" parent="5" name="analysis_type">
+        <data-type>varchar(100)</data-type>
+      </column>
+      <column id="125" parent="5" name="committee_code">
+        <data-type>varchar(6)</data-type>
+      </column>
+      <column id="126" parent="5" name="committee_name">
+        <data-type>varchar(200)</data-type>
+      </column>
+      <column id="127" parent="5" name="amendment_author">
+        <data-type>varchar(100)</data-type>
+      </column>
+      <column id="128" parent="5" name="analysis_date">
+        <data-type>datetime</data-type>
+      </column>
+      <column id="129" parent="5" name="amendment_date">
+        <data-type>datetime</data-type>
+      </column>
+      <column id="130" parent="5" name="page_num">
+        <data-type>decimal(22)</data-type>
+      </column>
+      <column id="131" parent="5" name="source_doc">
+        <data-type>longblob</data-type>
+      </column>
+      <column id="132" parent="5" name="released_floor">
+        <data-type>varchar(1)</data-type>
+      </column>
+      <column id="133" parent="5" name="active_flg">
+        <data-type>varchar(1)</data-type>
+        <default-expression>&apos;Y&apos;</default-expression>
+      </column>
+      <column id="134" parent="5" name="trans_uid">
+        <data-type>varchar(20)</data-type>
+      </column>
+      <column id="135" parent="5" name="trans_update">
+        <data-type>datetime</data-type>
+      </column>
+      <column id="136" parent="5" name="state">
+        <data-type>varchar(2)</data-type>
+      </column>
+      <column id="137" parent="5" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="138" parent="5" name="dr_id">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <index id="139" parent="5" name="bill_analysis_bill_id_idx">
+        <columns>bill_id</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="140" parent="5" name="dr_id">
+        <columns>dr_id</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <index id="141" parent="5" name="state">
+        <columns>state</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <key id="142" parent="5" name="dr_id">
+        <columns>dr_id</columns>
+        <underlying-index>dr_id</underlying-index>
+      </key>
+      <key id="143" parent="5" name="PRIMARY">
+        <columns>analysis_id</columns>
+        <primary>1</primary>
+      </key>
+      <foreign-key id="144" parent="5" name="BillAnalysis_ibfk_1">
+        <columns>state</columns>
+        <ref-key>~.State.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="145" parent="6" name="did">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <column id="146" parent="6" name="bid">
+        <data-type>varchar(23)</data-type>
+      </column>
+      <column id="147" parent="6" name="hid">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="148" parent="6" name="startVideo">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="149" parent="6" name="startTime">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="150" parent="6" name="endVideo">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="151" parent="6" name="endTime">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="152" parent="6" name="numVideos">
+        <data-type>int(4)</data-type>
+      </column>
+      <column id="153" parent="6" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <index id="154" parent="6" name="bid">
+        <columns>bid
+startVideo
+startTime</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <index id="155" parent="6" name="endVideo">
+        <columns>endVideo</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="156" parent="6" name="hid">
+        <columns>hid</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="157" parent="6" name="startVideo">
+        <columns>startVideo</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <key id="158" parent="6" name="bid">
+        <columns>bid
+startVideo
+startTime</columns>
+        <underlying-index>bid</underlying-index>
+      </key>
+      <key id="159" parent="6" name="PRIMARY">
+        <columns>did</columns>
+        <primary>1</primary>
+      </key>
+      <foreign-key id="160" parent="6" name="BillDiscussion_ibfk_1">
+        <columns>bid</columns>
+        <ref-key>~.Bill.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="161" parent="6" name="BillDiscussion_ibfk_2">
+        <columns>hid</columns>
+        <ref-key>~.Hearing.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="162" parent="6" name="BillDiscussion_ibfk_3">
+        <columns>startVideo</columns>
+        <ref-key>~.Video.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="163" parent="6" name="BillDiscussion_ibfk_4">
+        <columns>endVideo</columns>
+        <ref-key>~.Video.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="164" parent="7" name="roll">
+        <mandatory>1</mandatory>
+        <data-type>varchar(100)</data-type>
+        <default-expression>&apos;&apos;</default-expression>
+      </column>
+      <column id="165" parent="7" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <key id="166" parent="7" name="PRIMARY">
+        <columns>roll</columns>
+        <primary>1</primary>
+      </key>
+      <column id="167" parent="8" name="pid">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="168" parent="8" name="bid">
+        <mandatory>1</mandatory>
+        <data-type>varchar(23)</data-type>
+        <default-expression>&apos;&apos;</default-expression>
+      </column>
+      <column id="169" parent="8" name="vid">
+        <mandatory>1</mandatory>
+        <data-type>varchar(33)</data-type>
+        <default-expression>&apos;&apos;</default-expression>
+      </column>
+      <column id="170" parent="8" name="contribution">
+        <mandatory>1</mandatory>
+        <data-type>varchar(100)</data-type>
+        <default-expression>&apos;&apos;</default-expression>
+      </column>
+      <column id="171" parent="8" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="172" parent="8" name="dr_id">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <index id="173" parent="8" name="bid">
+        <columns>bid
+vid</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="174" parent="8" name="contribution">
+        <columns>contribution</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="175" parent="8" name="dr_id">
+        <columns>dr_id</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <key id="176" parent="8" name="dr_id">
+        <columns>dr_id</columns>
+        <underlying-index>dr_id</underlying-index>
+      </key>
+      <key id="177" parent="8" name="PRIMARY">
+        <columns>pid
+bid
+vid
+contribution</columns>
+        <primary>1</primary>
+      </key>
+      <foreign-key id="178" parent="8" name="BillSponsors_ibfk_1">
+        <columns>pid</columns>
+        <ref-key>AndrewTest.Legislator(pid)</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="179" parent="8" name="BillSponsors_ibfk_2">
+        <columns>bid
+vid</columns>
+        <ref-key>AndrewTest.BillVersion(bid,vid)</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="180" parent="8" name="BillSponsors_ibfk_3">
+        <columns>contribution</columns>
+        <ref-key>~.BillSponsorRolls.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="181" parent="9" name="Type">
+        <data-type>text</data-type>
+      </column>
+      <column id="182" parent="9" name="Label">
+        <data-type>text</data-type>
+      </column>
+      <column id="183" parent="9" name="House">
+        <data-type>text</data-type>
+      </column>
+      <column id="184" parent="9" name="State">
+        <data-type>text</data-type>
+      </column>
+      <column id="185" parent="9" name="LastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="186" parent="9" name="dr_id">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <index id="187" parent="9" name="dr_id">
+        <columns>dr_id</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <key id="188" parent="9" name="dr_id">
+        <columns>dr_id</columns>
+        <underlying-index>dr_id</underlying-index>
+      </key>
+      <column id="189" parent="10" name="vid">
+        <mandatory>1</mandatory>
+        <data-type>varchar(33)</data-type>
+        <default-expression>&apos;&apos;</default-expression>
+      </column>
+      <column id="190" parent="10" name="bid">
+        <data-type>varchar(23)</data-type>
+      </column>
+      <column id="191" parent="10" name="date">
+        <data-type>date</data-type>
+      </column>
+      <column id="192" parent="10" name="billState">
+        <mandatory>1</mandatory>
+        <data-type>enum(&apos;Chaptered&apos;, &apos;Introduced&apos;, &apos;Amended Assembly&apos;, &apos;Amended Senate&apos;, &apos;Enrolled&apos;, &apos;Proposed&apos;, &apos;Amended&apos;, &apos;Vetoed&apos;)</data-type>
+      </column>
+      <column id="193" parent="10" name="subject">
+        <data-type>text</data-type>
+      </column>
+      <column id="194" parent="10" name="appropriation">
+        <data-type>tinyint(1)</data-type>
+      </column>
+      <column id="195" parent="10" name="substantive_changes">
+        <data-type>tinyint(1)</data-type>
+      </column>
+      <column id="196" parent="10" name="title">
+        <data-type>text</data-type>
+      </column>
+      <column id="197" parent="10" name="digest">
+        <data-type>mediumtext</data-type>
+      </column>
+      <column id="198" parent="10" name="text">
+        <data-type>mediumtext</data-type>
+      </column>
+      <column id="199" parent="10" name="state">
+        <data-type>varchar(2)</data-type>
+      </column>
+      <column id="200" parent="10" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="201" parent="10" name="dr_id">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <index id="202" parent="10" name="bid">
+        <columns>bid</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="203" parent="10" name="dr_id">
+        <columns>dr_id</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <index id="204" parent="10" name="state">
+        <columns>state</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <key id="205" parent="10" name="dr_id">
+        <columns>dr_id</columns>
+        <underlying-index>dr_id</underlying-index>
+      </key>
+      <key id="206" parent="10" name="PRIMARY">
+        <columns>vid</columns>
+        <primary>1</primary>
+      </key>
+      <foreign-key id="207" parent="10" name="BillVersion_ibfk_1">
+        <columns>bid</columns>
+        <ref-key>~.Bill.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="208" parent="10" name="BillVersion_ibfk_2">
+        <columns>state</columns>
+        <ref-key>~.State.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="209" parent="11" name="pid">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="210" parent="11" name="voteId">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="211" parent="11" name="result">
+        <data-type>varchar(20)</data-type>
+      </column>
+      <column id="212" parent="11" name="state">
+        <data-type>varchar(2)</data-type>
+      </column>
+      <column id="213" parent="11" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="214" parent="11" name="dr_id">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <index id="215" parent="11" name="BillVoteDetail_ibfk_2">
+        <columns>state</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="216" parent="11" name="dr_id">
+        <columns>dr_id</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <index id="217" parent="11" name="voteId">
+        <columns>voteId</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <key id="218" parent="11" name="dr_id">
+        <columns>dr_id</columns>
+        <underlying-index>dr_id</underlying-index>
+      </key>
+      <key id="219" parent="11" name="PRIMARY">
+        <columns>pid
+voteId</columns>
+        <primary>1</primary>
+      </key>
+      <foreign-key id="220" parent="11" name="BillVoteDetail_ibfk_1">
+        <columns>voteId</columns>
+        <ref-key>~.BillVoteSummary.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="221" parent="11" name="BillVoteDetail_ibfk_2">
+        <columns>state</columns>
+        <ref-key>~.State.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="222" parent="12" name="voteId">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <column id="223" parent="12" name="bid">
+        <data-type>varchar(23)</data-type>
+      </column>
+      <column id="224" parent="12" name="mid">
+        <data-type>int(20)</data-type>
+      </column>
+      <column id="225" parent="12" name="cid">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="226" parent="12" name="VoteDate">
+        <data-type>datetime</data-type>
+      </column>
+      <column id="227" parent="12" name="ayes">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="228" parent="12" name="naes">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="229" parent="12" name="abstain">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="230" parent="12" name="result">
+        <data-type>varchar(20)</data-type>
+      </column>
+      <column id="231" parent="12" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="232" parent="12" name="VoteDateSeq">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+      </column>
+      <index id="233" parent="12" name="bid">
+        <columns>bid</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="234" parent="12" name="cid">
+        <columns>cid</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="235" parent="12" name="mid">
+        <columns>mid</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <key id="236" parent="12" name="PRIMARY">
+        <columns>voteId</columns>
+        <primary>1</primary>
+      </key>
+      <foreign-key id="237" parent="12" name="BillVoteSummary_ibfk_1">
+        <columns>mid</columns>
+        <ref-key>AndrewTest.Motion(mid)</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="238" parent="12" name="BillVoteSummary_ibfk_2">
+        <columns>bid</columns>
+        <ref-key>~.Bill.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="239" parent="12" name="BillVoteSummary_ibfk_3">
+        <columns>cid</columns>
+        <ref-key>~.Committee.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="240" parent="13" name="cid">
+        <mandatory>1</mandatory>
+        <data-type>int(3)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="241" parent="13" name="house">
+        <data-type>varchar(200)</data-type>
+      </column>
+      <column id="242" parent="13" name="name">
+        <mandatory>1</mandatory>
+        <data-type>varchar(200)</data-type>
+      </column>
+      <column id="243" parent="13" name="type">
+        <data-type>varchar(100)</data-type>
+      </column>
+      <column id="244" parent="13" name="state">
+        <data-type>varchar(2)</data-type>
+      </column>
+      <column id="245" parent="13" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="246" parent="13" name="short_name">
+        <data-type>varchar(100)</data-type>
+      </column>
+      <column id="247" parent="13" name="dr_id">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <index id="248" parent="13" name="dr_id">
+        <columns>dr_id</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <index id="249" parent="13" name="house">
+        <columns>house
+state</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="250" parent="13" name="state">
+        <columns>state</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <key id="251" parent="13" name="dr_id">
+        <columns>dr_id</columns>
+        <underlying-index>dr_id</underlying-index>
+      </key>
+      <key id="252" parent="13" name="PRIMARY">
+        <columns>cid</columns>
+        <primary>1</primary>
+      </key>
+      <foreign-key id="253" parent="13" name="Committee_ibfk_1">
+        <columns>state</columns>
+        <ref-key>~.State.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="254" parent="13" name="Committee_ibfk_2">
+        <columns>house
+state</columns>
+        <ref-key>~.House.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="255" parent="14" name="cid">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="256" parent="14" name="bid">
+        <mandatory>1</mandatory>
+        <data-type>varchar(23)</data-type>
+        <default-expression>&apos;&apos;</default-expression>
+      </column>
+      <column id="257" parent="14" name="vid">
+        <mandatory>1</mandatory>
+        <data-type>varchar(33)</data-type>
+        <default-expression>&apos;&apos;</default-expression>
+      </column>
+      <column id="258" parent="14" name="state">
+        <data-type>varchar(2)</data-type>
+      </column>
+      <column id="259" parent="14" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="260" parent="14" name="dr_id">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <index id="261" parent="14" name="bid">
+        <columns>bid</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="262" parent="14" name="CommitteeAuthors_ibfk_5">
+        <columns>state</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="263" parent="14" name="dr_id">
+        <columns>dr_id</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <index id="264" parent="14" name="vid">
+        <columns>vid</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <key id="265" parent="14" name="dr_id">
+        <columns>dr_id</columns>
+        <underlying-index>dr_id</underlying-index>
+      </key>
+      <key id="266" parent="14" name="PRIMARY">
+        <columns>cid
+bid
+vid</columns>
+        <primary>1</primary>
+      </key>
+      <foreign-key id="267" parent="14" name="CommitteeAuthors_ibfk_1">
+        <columns>bid</columns>
+        <ref-key>~.Bill.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="268" parent="14" name="CommitteeAuthors_ibfk_2">
+        <columns>cid</columns>
+        <ref-key>~.Committee.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="269" parent="14" name="CommitteeAuthors_ibfk_3">
+        <columns>vid</columns>
+        <ref-key>~.BillVersion.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="270" parent="14" name="CommitteeAuthors_ibfk_4">
+        <columns>vid</columns>
+        <ref-key>~.BillVersion.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="271" parent="14" name="CommitteeAuthors_ibfk_5">
+        <columns>state</columns>
+        <ref-key>~.State.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="272" parent="15" name="cid">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="273" parent="15" name="hid">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="274" parent="15" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="275" parent="15" name="dr_id">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <index id="276" parent="15" name="dr_id">
+        <columns>dr_id</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <index id="277" parent="15" name="hid">
+        <columns>hid</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <key id="278" parent="15" name="dr_id">
+        <columns>dr_id</columns>
+        <underlying-index>dr_id</underlying-index>
+      </key>
+      <key id="279" parent="15" name="PRIMARY">
+        <columns>cid
+hid</columns>
+        <primary>1</primary>
+      </key>
+      <foreign-key id="280" parent="15" name="CommitteeHearings_ibfk_1">
+        <columns>cid</columns>
+        <ref-key>~.Committee.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="281" parent="15" name="CommitteeHearings_ibfk_2">
+        <columns>hid</columns>
+        <ref-key>~.Hearing.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="282" parent="16" name="id">
+        <mandatory>1</mandatory>
+        <data-type>varchar(20)</data-type>
+        <default-expression>&apos;&apos;</default-expression>
+      </column>
+      <column id="283" parent="16" name="pid">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="284" parent="16" name="year">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="285" parent="16" name="date">
+        <data-type>datetime</data-type>
+      </column>
+      <column id="286" parent="16" name="house">
+        <data-type>varchar(200)</data-type>
+      </column>
+      <column id="287" parent="16" name="donorName">
+        <data-type>varchar(255)</data-type>
+      </column>
+      <column id="288" parent="16" name="donorOrg">
+        <data-type>varchar(255)</data-type>
+      </column>
+      <column id="289" parent="16" name="amount">
+        <data-type>double</data-type>
+      </column>
+      <column id="290" parent="16" name="state">
+        <data-type>varchar(2)</data-type>
+      </column>
+      <column id="291" parent="16" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="292" parent="16" name="oid">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="293" parent="16" name="dr_id">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <index id="294" parent="16" name="Contribution_ibfk_2">
+        <columns>state</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="295" parent="16" name="dr_id">
+        <columns>dr_id</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <index id="296" parent="16" name="pid">
+        <columns>pid</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <key id="297" parent="16" name="dr_id">
+        <columns>dr_id</columns>
+        <underlying-index>dr_id</underlying-index>
+      </key>
+      <key id="298" parent="16" name="PRIMARY">
+        <columns>id</columns>
+        <primary>1</primary>
+      </key>
+      <foreign-key id="299" parent="16" name="Contribution_ibfk_1">
+        <columns>pid</columns>
+        <ref-key>~.Person.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="300" parent="16" name="Contribution_ibfk_2">
+        <columns>state</columns>
+        <ref-key>~.State.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="301" parent="17" name="oid">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="302" parent="17" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="303" parent="17" name="dr_id">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <index id="304" parent="17" name="dr_id">
+        <columns>dr_id</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <key id="305" parent="17" name="dr_id">
+        <columns>dr_id</columns>
+        <underlying-index>dr_id</underlying-index>
+      </key>
+      <key id="306" parent="17" name="PRIMARY">
+        <columns>oid</columns>
+        <primary>1</primary>
+      </key>
+      <column id="307" parent="18" name="pid">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="308" parent="18" name="dr_id">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <index id="309" parent="18" name="dr_id">
+        <columns>dr_id</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <key id="310" parent="18" name="dr_id">
+        <columns>dr_id</columns>
+        <underlying-index>dr_id</underlying-index>
+      </key>
+      <key id="311" parent="18" name="PRIMARY">
+        <columns>pid</columns>
+        <primary>1</primary>
+      </key>
+      <column id="312" parent="19" name="state">
+        <mandatory>1</mandatory>
+        <data-type>varchar(2)</data-type>
+        <default-expression>&apos;&apos;</default-expression>
+      </column>
+      <column id="313" parent="19" name="house">
+        <mandatory>1</mandatory>
+        <data-type>varchar(200)</data-type>
+        <default-expression>&apos;&apos;</default-expression>
+      </column>
+      <column id="314" parent="19" name="did">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="315" parent="19" name="note">
+        <data-type>varchar(40)</data-type>
+        <default-expression>&apos;&apos;</default-expression>
+      </column>
+      <column id="316" parent="19" name="year">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="317" parent="19" name="region">
+        <data-type>text</data-type>
+      </column>
+      <column id="318" parent="19" name="geoData">
+        <data-type>mediumtext</data-type>
+      </column>
+      <column id="319" parent="19" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="320" parent="19" name="dr_id">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <index id="321" parent="19" name="dr_id">
+        <columns>dr_id</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <key id="322" parent="19" name="dr_id">
+        <columns>dr_id</columns>
+        <underlying-index>dr_id</underlying-index>
+      </key>
+      <key id="323" parent="19" name="PRIMARY">
+        <columns>state
+house
+did
+year</columns>
+        <primary>1</primary>
+      </key>
+      <foreign-key id="324" parent="19" name="District_ibfk_1">
+        <columns>state</columns>
+        <ref-key>~.State.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="325" parent="20" name="pid">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="326" parent="20" name="position">
+        <data-type>varchar(100)</data-type>
+      </column>
+      <column id="327" parent="20" name="RecordId">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <column id="328" parent="20" name="hid">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="329" parent="20" name="did">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="330" parent="20" name="oid">
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="331" parent="20" name="state">
+        <data-type>varchar(2)</data-type>
+      </column>
+      <column id="332" parent="20" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <index id="333" parent="20" name="did">
+        <columns>did</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="334" parent="20" name="hid">
+        <columns>hid</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="335" parent="20" name="oid">
+        <columns>oid</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="336" parent="20" name="pid">
+        <columns>pid</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="337" parent="20" name="state">
+        <columns>state</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <key id="338" parent="20" name="PRIMARY">
+        <columns>RecordId</columns>
+        <primary>1</primary>
+      </key>
+      <foreign-key id="339" parent="20" name="GeneralPublic_ibfk_1">
+        <columns>pid</columns>
+        <ref-key>~.Person.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="340" parent="20" name="GeneralPublic_ibfk_2">
+        <columns>hid</columns>
+        <ref-key>~.Hearing.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="341" parent="20" name="GeneralPublic_ibfk_3">
+        <columns>did</columns>
+        <ref-key>~.BillDiscussion.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="342" parent="20" name="GeneralPublic_ibfk_4">
+        <columns>oid</columns>
+        <ref-key>~.Organizations.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="343" parent="20" name="GeneralPublic_ibfk_5">
+        <columns>state</columns>
+        <ref-key>~.State.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="344" parent="21" name="RecordId">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <column id="345" parent="21" name="pid">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="346" parent="21" name="schedule">
+        <data-type>enum(&apos;D&apos;, &apos;E&apos;)</data-type>
+      </column>
+      <column id="347" parent="21" name="sourceName">
+        <data-type>varchar(150)</data-type>
+      </column>
+      <column id="348" parent="21" name="activity">
+        <data-type>varchar(256)</data-type>
+      </column>
+      <column id="349" parent="21" name="city">
+        <data-type>varchar(50)</data-type>
+      </column>
+      <column id="350" parent="21" name="cityState">
+        <data-type>varchar(30)</data-type>
+      </column>
+      <column id="351" parent="21" name="value">
+        <data-type>double</data-type>
+      </column>
+      <column id="352" parent="21" name="giftDate">
+        <data-type>date</data-type>
+      </column>
+      <column id="353" parent="21" name="reimbursed">
+        <data-type>tinyint(1)</data-type>
+      </column>
+      <column id="354" parent="21" name="giftIncomeFlag">
+        <data-type>tinyint(1)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="355" parent="21" name="speechFlag">
+        <data-type>tinyint(1)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="356" parent="21" name="description">
+        <data-type>varchar(150)</data-type>
+      </column>
+      <column id="357" parent="21" name="state">
+        <data-type>varchar(2)</data-type>
+      </column>
+      <column id="358" parent="21" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="359" parent="21" name="oid">
+        <data-type>int(11)</data-type>
+      </column>
+      <index id="360" parent="21" name="Gift_ibfk_3">
+        <columns>state</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="361" parent="21" name="pid">
+        <columns>pid</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <key id="362" parent="21" name="PRIMARY">
+        <columns>RecordId</columns>
+        <primary>1</primary>
+      </key>
+      <foreign-key id="363" parent="21" name="Gift_ibfk_1">
+        <columns>pid</columns>
+        <ref-key>~.Person.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="364" parent="21" name="Gift_ibfk_3">
+        <columns>state</columns>
+        <ref-key>~.State.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="365" parent="22" name="hid">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <column id="366" parent="22" name="date">
+        <data-type>date</data-type>
+      </column>
+      <column id="367" parent="22" name="state">
+        <data-type>varchar(2)</data-type>
+      </column>
+      <column id="368" parent="22" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="369" parent="22" name="type">
+        <data-type>enum(&apos;Regular&apos;, &apos;Budget&apos;, &apos;Informational&apos;, &apos;Summary&apos;)</data-type>
+        <default-expression>&apos;Regular&apos;</default-expression>
+      </column>
+      <index id="370" parent="22" name="state">
+        <columns>state</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <key id="371" parent="22" name="PRIMARY">
+        <columns>hid</columns>
+        <primary>1</primary>
+      </key>
+      <foreign-key id="372" parent="22" name="Hearing_ibfk_1">
+        <columns>state</columns>
+        <ref-key>~.State.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="373" parent="23" name="name">
+        <mandatory>1</mandatory>
+        <data-type>varchar(200)</data-type>
+        <default-expression>&apos;&apos;</default-expression>
+      </column>
+      <column id="374" parent="23" name="state">
+        <mandatory>1</mandatory>
+        <data-type>varchar(2)</data-type>
+        <default-expression>&apos;&apos;</default-expression>
+      </column>
+      <column id="375" parent="23" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="376" parent="23" name="type">
+        <data-type>varchar(200)</data-type>
+      </column>
+      <column id="377" parent="23" name="dr_id">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <index id="378" parent="23" name="dr_id">
+        <columns>dr_id</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <index id="379" parent="23" name="state">
+        <columns>state</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <key id="380" parent="23" name="dr_id">
+        <columns>dr_id</columns>
+        <underlying-index>dr_id</underlying-index>
+      </key>
+      <key id="381" parent="23" name="PRIMARY">
+        <columns>name
+state</columns>
+        <primary>1</primary>
+      </key>
+      <foreign-key id="382" parent="23" name="House_ibfk_1">
+        <columns>state</columns>
+        <ref-key>~.State.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="383" parent="24" name="pid">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="384" parent="24" name="state">
+        <data-type>varchar(2)</data-type>
+      </column>
+      <column id="385" parent="24" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="386" parent="24" name="dr_id">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <index id="387" parent="24" name="dr_id">
+        <columns>dr_id</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <index id="388" parent="24" name="state">
+        <columns>state</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <key id="389" parent="24" name="dr_id">
+        <columns>dr_id</columns>
+        <underlying-index>dr_id</underlying-index>
+      </key>
+      <key id="390" parent="24" name="PRIMARY">
+        <columns>pid</columns>
+        <primary>1</primary>
+      </key>
+      <foreign-key id="391" parent="24" name="LegAnalystOffice_ibfk_1">
+        <columns>pid</columns>
+        <ref-key>~.Person.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="392" parent="24" name="LegAnalystOffice_ibfk_2">
+        <columns>state</columns>
+        <ref-key>~.State.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="393" parent="25" name="pid">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="394" parent="25" name="hid">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="395" parent="25" name="state">
+        <data-type>varchar(2)</data-type>
+      </column>
+      <column id="396" parent="25" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="397" parent="25" name="dr_id">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <index id="398" parent="25" name="dr_id">
+        <columns>dr_id</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <index id="399" parent="25" name="hid">
+        <columns>hid</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="400" parent="25" name="state">
+        <columns>state</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <key id="401" parent="25" name="dr_id">
+        <columns>dr_id</columns>
+        <underlying-index>dr_id</underlying-index>
+      </key>
+      <key id="402" parent="25" name="PRIMARY">
+        <columns>pid
+hid</columns>
+        <primary>1</primary>
+      </key>
+      <foreign-key id="403" parent="25" name="LegAnalystOfficeRepresentation_ibfk_1">
+        <columns>pid</columns>
+        <ref-key>~.LegAnalystOffice.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="404" parent="25" name="LegAnalystOfficeRepresentation_ibfk_2">
+        <columns>hid</columns>
+        <ref-key>~.Hearing.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="405" parent="25" name="LegAnalystOfficeRepresentation_ibfk_3">
+        <columns>state</columns>
+        <ref-key>~.State.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="406" parent="26" name="staff_member">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="407" parent="26" name="legislator">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="408" parent="26" name="term_year">
+        <mandatory>1</mandatory>
+        <data-type>year(4)</data-type>
+        <default-expression>&apos;0000&apos;</default-expression>
+      </column>
+      <column id="409" parent="26" name="house">
+        <mandatory>1</mandatory>
+        <data-type>varchar(100)</data-type>
+        <default-expression>&apos;&apos;</default-expression>
+      </column>
+      <column id="410" parent="26" name="start_date">
+        <data-type>date</data-type>
+      </column>
+      <column id="411" parent="26" name="end_date">
+        <data-type>date</data-type>
+      </column>
+      <column id="412" parent="26" name="title">
+        <data-type>varchar(100)</data-type>
+      </column>
+      <column id="413" parent="26" name="state">
+        <mandatory>1</mandatory>
+        <data-type>char(2)</data-type>
+        <default-expression>&apos;&apos;</default-expression>
+      </column>
+      <column id="414" parent="26" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="415" parent="26" name="dr_id">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <index id="416" parent="26" name="dr_id">
+        <columns>dr_id</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <index id="417" parent="26" name="legislator">
+        <columns>legislator
+term_year
+house
+state</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <key id="418" parent="26" name="dr_id">
+        <columns>dr_id</columns>
+        <underlying-index>dr_id</underlying-index>
+      </key>
+      <key id="419" parent="26" name="PRIMARY">
+        <columns>staff_member
+legislator
+term_year
+house
+state</columns>
+        <primary>1</primary>
+      </key>
+      <foreign-key id="420" parent="26" name="LegOfficePersonnel_ibfk_1">
+        <columns>staff_member</columns>
+        <ref-key>~.LegislativeStaff.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="421" parent="26" name="LegOfficePersonnel_ibfk_2">
+        <columns>legislator
+term_year
+house
+state</columns>
+        <ref-key>~.Term.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="422" parent="27" name="year">
+        <data-type>year(4)</data-type>
+      </column>
+      <column id="423" parent="27" name="agency_name">
+        <data-type>varchar(100)</data-type>
+      </column>
+      <column id="424" parent="27" name="staff_member">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="425" parent="27" name="legislator">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="426" parent="27" name="position">
+        <data-type>varchar(200)</data-type>
+      </column>
+      <column id="427" parent="27" name="district_number">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="428" parent="27" name="jurisdiction">
+        <data-type>varchar(200)</data-type>
+      </column>
+      <column id="429" parent="27" name="source_name">
+        <data-type>varchar(100)</data-type>
+      </column>
+      <column id="430" parent="27" name="source_city">
+        <data-type>varchar(100)</data-type>
+      </column>
+      <column id="431" parent="27" name="source_state">
+        <data-type>varchar(100)</data-type>
+      </column>
+      <column id="432" parent="27" name="source_business">
+        <data-type>varchar(100)</data-type>
+      </column>
+      <column id="433" parent="27" name="date_given">
+        <data-type>date</data-type>
+      </column>
+      <column id="434" parent="27" name="gift_value">
+        <data-type>decimal(10)</data-type>
+      </column>
+      <column id="435" parent="27" name="reimbursed">
+        <data-type>tinyint(1)</data-type>
+      </column>
+      <column id="436" parent="27" name="gift_description">
+        <data-type>varchar(200)</data-type>
+      </column>
+      <column id="437" parent="27" name="speech_or_panel">
+        <data-type>tinyint(1)</data-type>
+      </column>
+      <column id="438" parent="27" name="image_url">
+        <data-type>varchar(2000)</data-type>
+      </column>
+      <column id="439" parent="27" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="440" parent="27" name="schedule">
+        <data-type>enum(&apos;D&apos;, &apos;E&apos;)</data-type>
+      </column>
+      <column id="441" parent="27" name="dr_id">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <index id="442" parent="27" name="dr_id">
+        <columns>dr_id</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <index id="443" parent="27" name="legislator">
+        <columns>legislator</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="444" parent="27" name="staff_member">
+        <columns>staff_member</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <key id="445" parent="27" name="dr_id">
+        <columns>dr_id</columns>
+        <underlying-index>dr_id</underlying-index>
+      </key>
+      <foreign-key id="446" parent="27" name="LegStaffGifts_ibfk_1">
+        <columns>staff_member</columns>
+        <ref-key>~.Person.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="447" parent="27" name="LegStaffGifts_ibfk_2">
+        <columns>legislator</columns>
+        <ref-key>AndrewTest.Legislator(pid)</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="448" parent="28" name="pid">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="449" parent="28" name="state">
+        <data-type>varchar(2)</data-type>
+      </column>
+      <column id="450" parent="28" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="451" parent="28" name="dr_id">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <index id="452" parent="28" name="dr_id">
+        <columns>dr_id</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <index id="453" parent="28" name="state">
+        <columns>state</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <key id="454" parent="28" name="dr_id">
+        <columns>dr_id</columns>
+        <underlying-index>dr_id</underlying-index>
+      </key>
+      <key id="455" parent="28" name="PRIMARY">
+        <columns>pid</columns>
+        <primary>1</primary>
+      </key>
+      <foreign-key id="456" parent="28" name="LegislativeStaff_ibfk_1">
+        <columns>pid</columns>
+        <ref-key>~.Person.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="457" parent="28" name="LegislativeStaff_ibfk_4">
+        <columns>state</columns>
+        <ref-key>~.State.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="458" parent="29" name="pid">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="459" parent="29" name="flag">
+        <data-type>tinyint(1)</data-type>
+      </column>
+      <column id="460" parent="29" name="legislator">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="461" parent="29" name="committee">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="462" parent="29" name="hid">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="463" parent="29" name="state">
+        <data-type>varchar(2)</data-type>
+      </column>
+      <column id="464" parent="29" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="465" parent="29" name="dr_id">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <index id="466" parent="29" name="committee">
+        <columns>committee</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="467" parent="29" name="dr_id">
+        <columns>dr_id</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <index id="468" parent="29" name="hid">
+        <columns>hid</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="469" parent="29" name="legislator">
+        <columns>legislator</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="470" parent="29" name="state">
+        <columns>state</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <key id="471" parent="29" name="dr_id">
+        <columns>dr_id</columns>
+        <underlying-index>dr_id</underlying-index>
+      </key>
+      <key id="472" parent="29" name="PRIMARY">
+        <columns>pid
+hid</columns>
+        <primary>1</primary>
+      </key>
+      <foreign-key id="473" parent="29" name="LegislativeStaffRepresentation_ibfk_1">
+        <columns>pid</columns>
+        <ref-key>~.LegislativeStaff.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="474" parent="29" name="LegislativeStaffRepresentation_ibfk_2">
+        <columns>legislator</columns>
+        <ref-key>AndrewTest.Legislator(pid)</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="475" parent="29" name="LegislativeStaffRepresentation_ibfk_3">
+        <columns>hid</columns>
+        <ref-key>~.Hearing.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="476" parent="29" name="LegislativeStaffRepresentation_ibfk_4">
+        <columns>committee</columns>
+        <ref-key>~.Committee.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="477" parent="29" name="LegislativeStaffRepresentation_ibfk_5">
+        <columns>state</columns>
+        <ref-key>~.State.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="478" parent="30" name="pid">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="479" parent="30" name="description">
+        <data-type>varchar(1000)</data-type>
+      </column>
+      <column id="480" parent="30" name="twitter_handle">
+        <data-type>varchar(100)</data-type>
+      </column>
+      <column id="481" parent="30" name="capitol_phone">
+        <data-type>varchar(30)</data-type>
+      </column>
+      <column id="482" parent="30" name="website_url">
+        <data-type>varchar(200)</data-type>
+      </column>
+      <column id="483" parent="30" name="room_number">
+        <data-type>varchar(10)</data-type>
+      </column>
+      <column id="484" parent="30" name="email_form_link">
+        <data-type>varchar(200)</data-type>
+      </column>
+      <column id="485" parent="30" name="OfficialBio">
+        <data-type>text</data-type>
+      </column>
+      <column id="486" parent="30" name="state">
+        <mandatory>1</mandatory>
+        <data-type>varchar(2)</data-type>
+        <default-expression>&apos;&apos;</default-expression>
+      </column>
+      <column id="487" parent="30" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="488" parent="30" name="dr_id">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <index id="489" parent="30" name="dr_id">
+        <columns>dr_id</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <key id="490" parent="30" name="dr_id">
+        <columns>dr_id</columns>
+        <underlying-index>dr_id</underlying-index>
+      </key>
+      <key id="491" parent="30" name="PRIMARY">
+        <columns>pid
+state</columns>
+        <primary>1</primary>
+      </key>
+      <foreign-key id="492" parent="30" name="Legislator_ibfk_1">
+        <columns>pid</columns>
+        <ref-key>~.Person.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="493" parent="31" name="lo_id">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <column id="494" parent="31" name="name">
+        <data-type>varchar(200)</data-type>
+      </column>
+      <column id="495" parent="31" name="house">
+        <data-type>varchar(200)</data-type>
+      </column>
+      <column id="496" parent="31" name="state">
+        <data-type>char(2)</data-type>
+      </column>
+      <column id="497" parent="31" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <index id="498" parent="31" name="house">
+        <columns>house
+state</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="499" parent="31" name="name">
+        <columns>name
+house
+state</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <key id="500" parent="31" name="name">
+        <columns>name
+house
+state</columns>
+        <underlying-index>name</underlying-index>
+      </key>
+      <key id="501" parent="31" name="PRIMARY">
+        <columns>lo_id</columns>
+        <primary>1</primary>
+      </key>
+      <foreign-key id="502" parent="31" name="LegislatureOffice_ibfk_1">
+        <columns>house
+state</columns>
+        <ref-key>~.House.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="503" parent="32" name="filer_naml">
+        <mandatory>1</mandatory>
+        <data-type>varchar(200)</data-type>
+        <default-expression>&apos;&apos;</default-expression>
+      </column>
+      <column id="504" parent="32" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="505" parent="32" name="dr_id">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <index id="506" parent="32" name="dr_id">
+        <columns>dr_id</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <key id="507" parent="32" name="dr_id">
+        <columns>dr_id</columns>
+        <underlying-index>dr_id</underlying-index>
+      </key>
+      <key id="508" parent="32" name="PRIMARY">
+        <columns>filer_naml</columns>
+        <primary>1</primary>
+      </key>
+      <column id="509" parent="33" name="filer_id">
+        <mandatory>1</mandatory>
+        <data-type>varchar(200)</data-type>
+        <default-expression>&apos;&apos;</default-expression>
+      </column>
+      <column id="510" parent="33" name="rpt_date">
+        <data-type>date</data-type>
+      </column>
+      <column id="511" parent="33" name="ls_beg_yr">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="512" parent="33" name="ls_end_yr">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="513" parent="33" name="filer_naml">
+        <data-type>varchar(200)</data-type>
+      </column>
+      <column id="514" parent="33" name="state">
+        <mandatory>1</mandatory>
+        <data-type>varchar(2)</data-type>
+        <default-expression>&apos;&apos;</default-expression>
+      </column>
+      <column id="515" parent="33" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="516" parent="33" name="dr_id">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <index id="517" parent="33" name="dr_id">
+        <columns>dr_id</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <index id="518" parent="33" name="filer_naml">
+        <columns>filer_naml</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="519" parent="33" name="state">
+        <columns>state</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <key id="520" parent="33" name="dr_id">
+        <columns>dr_id</columns>
+        <underlying-index>dr_id</underlying-index>
+      </key>
+      <key id="521" parent="33" name="PRIMARY">
+        <columns>filer_id
+state</columns>
+        <primary>1</primary>
+      </key>
+      <foreign-key id="522" parent="33" name="LobbyingFirmState_ibfk_1">
+        <columns>state</columns>
+        <ref-key>~.State.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="523" parent="33" name="LobbyingFirmState_ibfk_2">
+        <columns>filer_naml</columns>
+        <ref-key>~.LobbyingFirm.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="524" parent="34" name="pid">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="525" parent="34" name="filer_id">
+        <data-type>varchar(200)</data-type>
+      </column>
+      <column id="526" parent="34" name="state">
+        <mandatory>1</mandatory>
+        <data-type>varchar(2)</data-type>
+        <default-expression>&apos;&apos;</default-expression>
+      </column>
+      <column id="527" parent="34" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="528" parent="34" name="dr_id">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <index id="529" parent="34" name="dr_id">
+        <columns>dr_id</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <index id="530" parent="34" name="filer_id">
+        <columns>filer_id</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <key id="531" parent="34" name="dr_id">
+        <columns>dr_id</columns>
+        <underlying-index>dr_id</underlying-index>
+      </key>
+      <key id="532" parent="34" name="filer_id">
+        <columns>filer_id</columns>
+        <underlying-index>filer_id</underlying-index>
+      </key>
+      <key id="533" parent="34" name="PRIMARY">
+        <columns>pid
+state</columns>
+        <primary>1</primary>
+      </key>
+      <foreign-key id="534" parent="34" name="Lobbyist_ibfk_1">
+        <columns>pid</columns>
+        <ref-key>~.Person.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="535" parent="35" name="filer_id">
+        <data-type>varchar(200)</data-type>
+      </column>
+      <column id="536" parent="35" name="oid">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="537" parent="35" name="coalition">
+        <data-type>tinyint(1)</data-type>
+      </column>
+      <column id="538" parent="35" name="state">
+        <mandatory>1</mandatory>
+        <data-type>varchar(2)</data-type>
+        <default-expression>&apos;&apos;</default-expression>
+      </column>
+      <column id="539" parent="35" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="540" parent="35" name="dr_id">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <index id="541" parent="35" name="dr_id">
+        <columns>dr_id</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <index id="542" parent="35" name="filer_id">
+        <columns>filer_id
+state</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <index id="543" parent="35" name="LobbyistEmployer_ibfk_2">
+        <columns>state</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <key id="544" parent="35" name="dr_id">
+        <columns>dr_id</columns>
+        <underlying-index>dr_id</underlying-index>
+      </key>
+      <key id="545" parent="35" name="filer_id">
+        <columns>filer_id
+state</columns>
+        <underlying-index>filer_id</underlying-index>
+      </key>
+      <key id="546" parent="35" name="PRIMARY">
+        <columns>oid
+state</columns>
+        <primary>1</primary>
+      </key>
+      <foreign-key id="547" parent="35" name="LobbyistEmployer_ibfk_1">
+        <columns>oid</columns>
+        <ref-key>~.Organizations.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="548" parent="35" name="LobbyistEmployer_ibfk_2">
+        <columns>state</columns>
+        <ref-key>~.State.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="549" parent="36" name="pid">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="550" parent="36" name="sender_id">
+        <mandatory>1</mandatory>
+        <data-type>varchar(200)</data-type>
+        <default-expression>&apos;&apos;</default-expression>
+      </column>
+      <column id="551" parent="36" name="rpt_date">
+        <mandatory>1</mandatory>
+        <data-type>date</data-type>
+        <default-expression>&apos;0000-00-00&apos;</default-expression>
+      </column>
+      <column id="552" parent="36" name="ls_beg_yr">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="553" parent="36" name="ls_end_yr">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="554" parent="36" name="state">
+        <data-type>varchar(2)</data-type>
+      </column>
+      <column id="555" parent="36" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="556" parent="36" name="dr_id">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <index id="557" parent="36" name="dr_id">
+        <columns>dr_id</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <index id="558" parent="36" name="sender_id">
+        <columns>sender_id</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="559" parent="36" name="sender_id_2">
+        <columns>sender_id
+state</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="560" parent="36" name="state">
+        <columns>state</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <key id="561" parent="36" name="dr_id">
+        <columns>dr_id</columns>
+        <underlying-index>dr_id</underlying-index>
+      </key>
+      <key id="562" parent="36" name="PRIMARY">
+        <columns>pid
+sender_id
+rpt_date
+ls_end_yr</columns>
+        <primary>1</primary>
+      </key>
+      <foreign-key id="563" parent="36" name="LobbyistEmployment_ibfk_1">
+        <columns>state</columns>
+        <ref-key>~.State.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="564" parent="36" name="LobbyistEmployment_ibfk_2">
+        <columns>pid</columns>
+        <ref-key>~.Person.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="565" parent="36" name="LobbyistEmployment_ibfk_3">
+        <columns>sender_id
+state</columns>
+        <ref-key>~.LobbyingFirmState.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="566" parent="37" name="pid">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="567" parent="37" name="oid">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="568" parent="37" name="hearing_date">
+        <data-type>date</data-type>
+      </column>
+      <column id="569" parent="37" name="hid">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="570" parent="37" name="did">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="571" parent="37" name="state">
+        <data-type>varchar(2)</data-type>
+      </column>
+      <column id="572" parent="37" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="573" parent="37" name="RecordId">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <index id="574" parent="37" name="did">
+        <columns>did</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="575" parent="37" name="hid">
+        <columns>hid</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="576" parent="37" name="le_id">
+        <columns>oid</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="577" parent="37" name="LobbyistRepresentation_ibfk_4">
+        <columns>state</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="578" parent="37" name="pid">
+        <columns>pid
+oid
+hid
+did</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <key id="579" parent="37" name="pid">
+        <columns>pid
+oid
+hid
+did</columns>
+        <underlying-index>pid</underlying-index>
+      </key>
+      <key id="580" parent="37" name="PRIMARY">
+        <columns>RecordId</columns>
+        <primary>1</primary>
+      </key>
+      <foreign-key id="581" parent="37" name="LobbyistRepresentation_ibfk_1">
+        <columns>hid</columns>
+        <ref-key>~.Hearing.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="582" parent="37" name="LobbyistRepresentation_ibfk_2">
+        <columns>oid</columns>
+        <ref-key>AndrewTest.LobbyistEmployer(oid)</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="583" parent="37" name="LobbyistRepresentation_ibfk_3">
+        <columns>did</columns>
+        <ref-key>~.BillDiscussion.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="584" parent="37" name="LobbyistRepresentation_ibfk_4">
+        <columns>state</columns>
+        <ref-key>~.State.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="585" parent="38" name="mid">
+        <mandatory>1</mandatory>
+        <data-type>int(20)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="586" parent="38" name="date">
+        <mandatory>1</mandatory>
+        <data-type>datetime</data-type>
+        <default-expression>&apos;0000-00-00 00:00:00&apos;</default-expression>
+      </column>
+      <column id="587" parent="38" name="text">
+        <data-type>text</data-type>
+      </column>
+      <column id="588" parent="38" name="doPass">
+        <data-type>tinyint(1)</data-type>
+      </column>
+      <column id="589" parent="38" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="590" parent="38" name="dr_id">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <index id="591" parent="38" name="dr_id">
+        <columns>dr_id</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <key id="592" parent="38" name="dr_id">
+        <columns>dr_id</columns>
+        <underlying-index>dr_id</underlying-index>
+      </key>
+      <key id="593" parent="38" name="PRIMARY">
+        <columns>mid
+date</columns>
+        <primary>1</primary>
+      </key>
+      <column id="594" parent="39" name="staff_member">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="595" parent="39" name="office">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="596" parent="39" name="start_date">
+        <mandatory>1</mandatory>
+        <data-type>date</data-type>
+        <default-expression>&apos;0000-00-00&apos;</default-expression>
+      </column>
+      <column id="597" parent="39" name="end_date">
+        <data-type>date</data-type>
+      </column>
+      <column id="598" parent="39" name="state">
+        <data-type>char(2)</data-type>
+      </column>
+      <column id="599" parent="39" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="600" parent="39" name="dr_id">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <index id="601" parent="39" name="dr_id">
+        <columns>dr_id</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <index id="602" parent="39" name="office">
+        <columns>office</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <key id="603" parent="39" name="dr_id">
+        <columns>dr_id</columns>
+        <underlying-index>dr_id</underlying-index>
+      </key>
+      <key id="604" parent="39" name="PRIMARY">
+        <columns>staff_member
+office
+start_date</columns>
+        <primary>1</primary>
+      </key>
+      <foreign-key id="605" parent="39" name="OfficePersonnel_ibfk_1">
+        <columns>staff_member</columns>
+        <ref-key>~.LegislativeStaff.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="606" parent="39" name="OfficePersonnel_ibfk_2">
+        <columns>office</columns>
+        <ref-key>~.LegislatureOffice.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="607" parent="40" name="oid">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="608" parent="40" name="bid">
+        <data-type>varchar(23)</data-type>
+      </column>
+      <column id="609" parent="40" name="hid">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="610" parent="40" name="alignment">
+        <data-type>char(20)</data-type>
+      </column>
+      <column id="611" parent="40" name="oa_id">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <column id="612" parent="40" name="analysis_flag">
+        <data-type>tinyint(1)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <index id="613" parent="40" name="oid_2">
+        <columns>oid
+bid
+hid
+alignment
+analysis_flag</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <key id="614" parent="40" name="oid_2">
+        <columns>oid
+bid
+hid
+alignment
+analysis_flag</columns>
+        <underlying-index>oid_2</underlying-index>
+      </key>
+      <key id="615" parent="40" name="PRIMARY">
+        <columns>oa_id</columns>
+        <primary>1</primary>
+      </key>
+      <column id="616" parent="41" name="oid">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <column id="617" parent="41" name="name">
+        <data-type>varchar(200)</data-type>
+      </column>
+      <column id="618" parent="41" name="city">
+        <data-type>varchar(200)</data-type>
+      </column>
+      <column id="619" parent="41" name="stateHeadquartered">
+        <data-type>varchar(2)</data-type>
+      </column>
+      <column id="620" parent="41" name="type">
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="621" parent="41" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="622" parent="41" name="analysis_flag">
+        <data-type>tinyint(1)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <key id="623" parent="41" name="PRIMARY">
+        <columns>oid</columns>
+        <primary>1</primary>
+      </key>
+      <column id="624" parent="42" name="prid">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <column id="625" parent="42" name="name">
+        <data-type>varchar(200)</data-type>
+      </column>
+      <column id="626" parent="42" name="city">
+        <data-type>varchar(50)</data-type>
+      </column>
+      <column id="627" parent="42" name="state">
+        <data-type>varchar(2)</data-type>
+      </column>
+      <column id="628" parent="42" name="addressState">
+        <data-type>varchar(2)</data-type>
+      </column>
+      <column id="629" parent="42" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <index id="630" parent="42" name="addressState">
+        <columns>addressState</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <key id="631" parent="42" name="PRIMARY">
+        <columns>prid</columns>
+        <primary>1</primary>
+      </key>
+      <foreign-key id="632" parent="42" name="Payors_ibfk_1">
+        <columns>addressState</columns>
+        <ref-key>~.State.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="633" parent="43" name="pid">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <column id="634" parent="43" name="last">
+        <mandatory>1</mandatory>
+        <data-type>varchar(50)</data-type>
+      </column>
+      <column id="635" parent="43" name="first">
+        <mandatory>1</mandatory>
+        <data-type>varchar(50)</data-type>
+      </column>
+      <column id="636" parent="43" name="image">
+        <data-type>varchar(256)</data-type>
+      </column>
+      <column id="637" parent="43" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="638" parent="43" name="middle">
+        <data-type>varchar(50)</data-type>
+      </column>
+      <key id="639" parent="43" name="PRIMARY">
+        <columns>pid</columns>
+        <primary>1</primary>
+      </key>
+      <column id="640" parent="44" name="ProfileType">
+        <data-type>text</data-type>
+      </column>
+      <column id="641" parent="44" name="Label">
+        <data-type>text</data-type>
+      </column>
+      <column id="642" parent="44" name="State">
+        <data-type>text</data-type>
+      </column>
+      <column id="643" parent="44" name="LastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="644" parent="44" name="dr_id">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <index id="645" parent="44" name="dr_id">
+        <columns>dr_id</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <key id="646" parent="44" name="dr_id">
+        <columns>dr_id</columns>
+        <underlying-index>dr_id</underlying-index>
+      </key>
+      <column id="647" parent="45" name="abbrev">
+        <mandatory>1</mandatory>
+        <data-type>varchar(2)</data-type>
+        <default-expression>&apos;&apos;</default-expression>
+      </column>
+      <column id="648" parent="45" name="country">
+        <data-type>varchar(200)</data-type>
+      </column>
+      <column id="649" parent="45" name="name">
+        <data-type>varchar(200)</data-type>
+      </column>
+      <column id="650" parent="45" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="651" parent="45" name="dr_id">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <index id="652" parent="45" name="dr_id">
+        <columns>dr_id</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <key id="653" parent="45" name="dr_id">
+        <columns>dr_id</columns>
+        <underlying-index>dr_id</underlying-index>
+      </key>
+      <key id="654" parent="45" name="PRIMARY">
+        <columns>abbrev</columns>
+        <primary>1</primary>
+      </key>
+      <column id="655" parent="46" name="name">
+        <data-type>varchar(256)</data-type>
+      </column>
+      <column id="656" parent="46" name="state">
+        <mandatory>1</mandatory>
+        <data-type>varchar(2)</data-type>
+        <default-expression>&apos;&apos;</default-expression>
+      </column>
+      <column id="657" parent="46" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="658" parent="46" name="dr_id">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <index id="659" parent="46" name="dr_id">
+        <columns>dr_id</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <key id="660" parent="46" name="dr_id">
+        <columns>dr_id</columns>
+        <underlying-index>dr_id</underlying-index>
+      </key>
+      <column id="661" parent="47" name="pid">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="662" parent="47" name="state">
+        <data-type>varchar(2)</data-type>
+      </column>
+      <column id="663" parent="47" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="664" parent="47" name="dr_id">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <index id="665" parent="47" name="dr_id">
+        <columns>dr_id</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <index id="666" parent="47" name="state">
+        <columns>state</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <key id="667" parent="47" name="dr_id">
+        <columns>dr_id</columns>
+        <underlying-index>dr_id</underlying-index>
+      </key>
+      <key id="668" parent="47" name="PRIMARY">
+        <columns>pid</columns>
+        <primary>1</primary>
+      </key>
+      <foreign-key id="669" parent="47" name="StateAgencyRep_ibfk_1">
+        <columns>pid</columns>
+        <ref-key>~.Person.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="670" parent="47" name="StateAgencyRep_ibfk_2">
+        <columns>state</columns>
+        <ref-key>~.State.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="671" parent="48" name="pid">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="672" parent="48" name="employer">
+        <data-type>varchar(256)</data-type>
+      </column>
+      <column id="673" parent="48" name="position">
+        <data-type>varchar(100)</data-type>
+      </column>
+      <column id="674" parent="48" name="hid">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="675" parent="48" name="state">
+        <data-type>varchar(2)</data-type>
+      </column>
+      <column id="676" parent="48" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="677" parent="48" name="dr_id">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <index id="678" parent="48" name="dr_id">
+        <columns>dr_id</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <index id="679" parent="48" name="hid">
+        <columns>hid</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="680" parent="48" name="state">
+        <columns>state</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <key id="681" parent="48" name="dr_id">
+        <columns>dr_id</columns>
+        <underlying-index>dr_id</underlying-index>
+      </key>
+      <key id="682" parent="48" name="PRIMARY">
+        <columns>pid
+hid</columns>
+        <primary>1</primary>
+      </key>
+      <foreign-key id="683" parent="48" name="StateAgencyRepRepresentation_ibfk_1">
+        <columns>pid</columns>
+        <ref-key>~.StateAgencyRep.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="684" parent="48" name="StateAgencyRepRepresentation_ibfk_2">
+        <columns>hid</columns>
+        <ref-key>~.Hearing.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="685" parent="48" name="StateAgencyRepRepresentation_ibfk_3">
+        <columns>state</columns>
+        <ref-key>~.State.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="686" parent="49" name="name">
+        <data-type>varchar(200)</data-type>
+      </column>
+      <column id="687" parent="49" name="state">
+        <mandatory>1</mandatory>
+        <data-type>varchar(2)</data-type>
+        <default-expression>&apos;&apos;</default-expression>
+      </column>
+      <column id="688" parent="49" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="689" parent="49" name="dr_id">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <index id="690" parent="49" name="dr_id">
+        <columns>dr_id</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <key id="691" parent="49" name="dr_id">
+        <columns>dr_id</columns>
+        <underlying-index>dr_id</underlying-index>
+      </key>
+      <column id="692" parent="50" name="pid">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="693" parent="50" name="state">
+        <data-type>varchar(2)</data-type>
+      </column>
+      <column id="694" parent="50" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="695" parent="50" name="dr_id">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <index id="696" parent="50" name="dr_id">
+        <columns>dr_id</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <index id="697" parent="50" name="state">
+        <columns>state</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <key id="698" parent="50" name="dr_id">
+        <columns>dr_id</columns>
+        <underlying-index>dr_id</underlying-index>
+      </key>
+      <key id="699" parent="50" name="PRIMARY">
+        <columns>pid</columns>
+        <primary>1</primary>
+      </key>
+      <foreign-key id="700" parent="50" name="StateConstOfficeRep_ibfk_1">
+        <columns>pid</columns>
+        <ref-key>~.Person.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="701" parent="50" name="StateConstOfficeRep_ibfk_2">
+        <columns>state</columns>
+        <ref-key>~.State.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="702" parent="51" name="pid">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="703" parent="51" name="office">
+        <data-type>varchar(200)</data-type>
+      </column>
+      <column id="704" parent="51" name="position">
+        <data-type>varchar(200)</data-type>
+      </column>
+      <column id="705" parent="51" name="hid">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="706" parent="51" name="state">
+        <data-type>varchar(2)</data-type>
+      </column>
+      <column id="707" parent="51" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="708" parent="51" name="dr_id">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <index id="709" parent="51" name="dr_id">
+        <columns>dr_id</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <index id="710" parent="51" name="hid">
+        <columns>hid</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="711" parent="51" name="state">
+        <columns>state</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <key id="712" parent="51" name="dr_id">
+        <columns>dr_id</columns>
+        <underlying-index>dr_id</underlying-index>
+      </key>
+      <key id="713" parent="51" name="PRIMARY">
+        <columns>pid
+hid</columns>
+        <primary>1</primary>
+      </key>
+      <foreign-key id="714" parent="51" name="StateConstOfficeRepRepresentation_ibfk_1">
+        <columns>pid</columns>
+        <ref-key>~.StateConstOfficeRep.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="715" parent="51" name="StateConstOfficeRepRepresentation_ibfk_2">
+        <columns>hid</columns>
+        <ref-key>~.Hearing.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="716" parent="51" name="StateConstOfficeRepRepresentation_ibfk_3">
+        <columns>state</columns>
+        <ref-key>~.State.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="717" parent="52" name="cutId">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <column id="718" parent="52" name="videoId">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="719" parent="52" name="fileId">
+        <data-type>varchar(255)</data-type>
+      </column>
+      <column id="720" parent="52" name="fileName">
+        <data-type>varchar(255)</data-type>
+      </column>
+      <column id="721" parent="52" name="start_time">
+        <data-type>float</data-type>
+      </column>
+      <column id="722" parent="52" name="end_time">
+        <data-type>float</data-type>
+      </column>
+      <column id="723" parent="52" name="leading_silence">
+        <data-type>float</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="724" parent="52" name="type">
+        <mandatory>1</mandatory>
+        <data-type>enum(&apos;pause&apos;, &apos;silence&apos;)</data-type>
+      </column>
+      <column id="725" parent="52" name="finalized">
+        <mandatory>1</mandatory>
+        <data-type>tinyint(1)</data-type>
+      </column>
+      <column id="726" parent="52" name="current">
+        <mandatory>1</mandatory>
+        <data-type>tinyint(1)</data-type>
+      </column>
+      <column id="727" parent="52" name="created">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="728" parent="52" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="729" parent="52" name="parent">
+        <data-type>int(11)</data-type>
+      </column>
+      <index id="730" parent="52" name="videoId">
+        <columns>videoId</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <key id="731" parent="52" name="PRIMARY">
+        <columns>cutId</columns>
+        <primary>1</primary>
+      </key>
+      <foreign-key id="732" parent="52" name="TT_Cuts_ibfk_1">
+        <columns>videoId</columns>
+        <ref-key>~.TT_Videos.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="733" parent="53" name="id">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <column id="734" parent="53" name="username">
+        <mandatory>1</mandatory>
+        <data-type>varchar(50)</data-type>
+      </column>
+      <column id="735" parent="53" name="password">
+        <mandatory>1</mandatory>
+        <data-type>varchar(255)</data-type>
+      </column>
+      <column id="736" parent="53" name="created">
+        <mandatory>1</mandatory>
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="737" parent="53" name="active">
+        <mandatory>1</mandatory>
+        <data-type>tinyint(1)</data-type>
+      </column>
+      <column id="738" parent="53" name="role">
+        <mandatory>1</mandatory>
+        <data-type>varchar(15)</data-type>
+      </column>
+      <index id="739" parent="53" name="username">
+        <columns>username</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <key id="740" parent="53" name="PRIMARY">
+        <columns>id</columns>
+        <primary>1</primary>
+      </key>
+      <key id="741" parent="53" name="username">
+        <columns>username</columns>
+        <underlying-index>username</underlying-index>
+      </key>
+      <column id="742" parent="54" name="tt_user">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="743" parent="54" name="state">
+        <mandatory>1</mandatory>
+        <data-type>varchar(2)</data-type>
+        <default-expression>&apos;&apos;</default-expression>
+      </column>
+      <column id="744" parent="54" name="priority">
+        <data-type>int(11)</data-type>
+      </column>
+      <index id="745" parent="54" name="state">
+        <columns>state</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <key id="746" parent="54" name="PRIMARY">
+        <columns>tt_user
+state</columns>
+        <primary>1</primary>
+      </key>
+      <foreign-key id="747" parent="54" name="TT_EditorStates_ibfk_1">
+        <columns>tt_user</columns>
+        <ref-key>~.TT_Editor.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="748" parent="54" name="TT_EditorStates_ibfk_2">
+        <columns>state</columns>
+        <ref-key>~.State.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="749" parent="55" name="cutId">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="750" parent="55" name="url">
+        <data-type>varchar(255)</data-type>
+      </column>
+      <column id="751" parent="55" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="752" parent="55" name="streamUrl">
+        <data-type>varchar(255)</data-type>
+      </column>
+      <key id="753" parent="55" name="PRIMARY">
+        <columns>cutId</columns>
+        <primary>1</primary>
+      </key>
+      <foreign-key id="754" parent="55" name="TT_HostingUrl_ibfk_1">
+        <columns>cutId</columns>
+        <ref-key>~.TT_Cuts.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="755" parent="56" name="cutId">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="756" parent="56" name="serviceProvider">
+        <data-type>enum(&apos;cielo&apos;, &apos;green_button&apos;, &apos;other&apos;)</data-type>
+      </column>
+      <column id="757" parent="56" name="turnaround">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="758" parent="56" name="fidelity">
+        <data-type>varchar(255)</data-type>
+      </column>
+      <column id="759" parent="56" name="importance">
+        <data-type>varchar(255)</data-type>
+      </column>
+      <column id="760" parent="56" name="transcript">
+        <data-type>varchar(255)</data-type>
+      </column>
+      <column id="761" parent="56" name="job_id">
+        <data-type>varchar(255)</data-type>
+      </column>
+      <column id="762" parent="56" name="status">
+        <data-type>enum(&apos;in_progress&apos;, &apos;completed&apos;)</data-type>
+        <default-expression>&apos;in_progress&apos;</default-expression>
+      </column>
+      <column id="763" parent="56" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <key id="764" parent="56" name="PRIMARY">
+        <columns>cutId</columns>
+        <primary>1</primary>
+      </key>
+      <foreign-key id="765" parent="56" name="TT_ServiceRequests_ibfk_1">
+        <columns>cutId</columns>
+        <ref-key>~.TT_Cuts.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="766" parent="57" name="tid">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <column id="767" parent="57" name="hid">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="768" parent="57" name="did">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="769" parent="57" name="editor_id">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="770" parent="57" name="name">
+        <mandatory>1</mandatory>
+        <data-type>varchar(1000)</data-type>
+      </column>
+      <column id="771" parent="57" name="vid">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="772" parent="57" name="startTime">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="773" parent="57" name="endTime">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="774" parent="57" name="created">
+        <data-type>date</data-type>
+      </column>
+      <column id="775" parent="57" name="assigned">
+        <data-type>date</data-type>
+      </column>
+      <column id="776" parent="57" name="completed">
+        <data-type>date</data-type>
+      </column>
+      <column id="777" parent="57" name="priority">
+        <data-type>int(11)</data-type>
+      </column>
+      <index id="778" parent="57" name="did">
+        <columns>did</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="779" parent="57" name="editor_id">
+        <columns>editor_id</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="780" parent="57" name="hid">
+        <columns>hid</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="781" parent="57" name="vid">
+        <columns>vid</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <key id="782" parent="57" name="PRIMARY">
+        <columns>tid</columns>
+        <primary>1</primary>
+      </key>
+      <foreign-key id="783" parent="57" name="TT_Task_ibfk_1">
+        <columns>did</columns>
+        <ref-key>~.BillDiscussion.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="784" parent="57" name="TT_Task_ibfk_2">
+        <columns>editor_id</columns>
+        <ref-key>~.TT_Editor.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="785" parent="57" name="TT_Task_ibfk_3">
+        <columns>vid</columns>
+        <ref-key>~.Video.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="786" parent="57" name="TT_Task_ibfk_4">
+        <columns>hid</columns>
+        <ref-key>~.Hearing.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="787" parent="58" name="videoId">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <column id="788" parent="58" name="hearingName">
+        <data-type>varchar(255)</data-type>
+      </column>
+      <column id="789" parent="58" name="hearingDate">
+        <data-type>date</data-type>
+      </column>
+      <column id="790" parent="58" name="url">
+        <data-type>varchar(255)</data-type>
+      </column>
+      <column id="791" parent="58" name="sourceUrl">
+        <data-type>varchar(255)</data-type>
+      </column>
+      <column id="792" parent="58" name="fileName">
+        <data-type>varchar(255)</data-type>
+      </column>
+      <column id="793" parent="58" name="duration">
+        <data-type>float</data-type>
+      </column>
+      <column id="794" parent="58" name="state">
+        <data-type>varchar(2)</data-type>
+      </column>
+      <column id="795" parent="58" name="status">
+        <data-type>enum(&apos;downloading&apos;, &apos;downloaded&apos;, &apos;failed&apos;, &apos;skipped&apos;, &apos;queued&apos;, &apos;diarized&apos;, &apos;cut&apos;, &apos;approved&apos;, &apos;tasked&apos;, &apos;deleted&apos;, &apos;cutting&apos;)</data-type>
+      </column>
+      <column id="796" parent="58" name="glacierId">
+        <data-type>varchar(255)</data-type>
+      </column>
+      <column id="797" parent="58" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <key id="798" parent="58" name="PRIMARY">
+        <columns>videoId</columns>
+        <primary>1</primary>
+      </key>
+      <column id="799" parent="59" name="pid">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="800" parent="59" name="year">
+        <mandatory>1</mandatory>
+        <data-type>year(4)</data-type>
+        <default-expression>&apos;0000&apos;</default-expression>
+      </column>
+      <column id="801" parent="59" name="district">
+        <mandatory>1</mandatory>
+        <data-type>int(3)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="802" parent="59" name="house">
+        <mandatory>1</mandatory>
+        <data-type>varchar(200)</data-type>
+        <default-expression>&apos;&apos;</default-expression>
+      </column>
+      <column id="803" parent="59" name="party">
+        <data-type>enum(&apos;Republican&apos;, &apos;Democrat&apos;, &apos;Other&apos;)</data-type>
+      </column>
+      <column id="804" parent="59" name="start">
+        <data-type>date</data-type>
+      </column>
+      <column id="805" parent="59" name="end">
+        <data-type>date</data-type>
+      </column>
+      <column id="806" parent="59" name="state">
+        <mandatory>1</mandatory>
+        <data-type>varchar(2)</data-type>
+        <default-expression>&apos;&apos;</default-expression>
+      </column>
+      <column id="807" parent="59" name="caucus">
+        <data-type>varchar(200)</data-type>
+      </column>
+      <column id="808" parent="59" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="809" parent="59" name="dr_id">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <index id="810" parent="59" name="dr_id">
+        <columns>dr_id</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <index id="811" parent="59" name="house">
+        <columns>house
+state</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="812" parent="59" name="state">
+        <columns>state</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <key id="813" parent="59" name="dr_id">
+        <columns>dr_id</columns>
+        <underlying-index>dr_id</underlying-index>
+      </key>
+      <key id="814" parent="59" name="PRIMARY">
+        <columns>pid
+year
+house
+state</columns>
+        <primary>1</primary>
+      </key>
+      <foreign-key id="815" parent="59" name="Term_ibfk_1">
+        <columns>pid</columns>
+        <ref-key>AndrewTest.Legislator(pid)</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="816" parent="59" name="Term_ibfk_2">
+        <columns>house
+state</columns>
+        <ref-key>~.House.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="817" parent="59" name="Term_ibfk_3">
+        <columns>state</columns>
+        <ref-key>~.State.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="818" parent="60" name="uid">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <column id="819" parent="60" name="vid">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="820" parent="60" name="pid">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="821" parent="60" name="time">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="822" parent="60" name="endTime">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="823" parent="60" name="text">
+        <data-type>text</data-type>
+      </column>
+      <column id="824" parent="60" name="current">
+        <mandatory>1</mandatory>
+        <data-type>tinyint(1)</data-type>
+      </column>
+      <column id="825" parent="60" name="finalized">
+        <mandatory>1</mandatory>
+        <data-type>tinyint(1)</data-type>
+      </column>
+      <column id="826" parent="60" name="type">
+        <data-type>enum(&apos;Author&apos;, &apos;Testimony&apos;, &apos;Discussion&apos;)</data-type>
+      </column>
+      <column id="827" parent="60" name="alignment">
+        <data-type>enum(&apos;For&apos;, &apos;Against&apos;, &apos;For_if_amend&apos;, &apos;Against_unless_amend&apos;, &apos;Neutral&apos;, &apos;Indeterminate&apos;, &apos;NA&apos;)</data-type>
+      </column>
+      <column id="828" parent="60" name="dataFlag">
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="829" parent="60" name="diarizationTag">
+        <data-type>varchar(255)</data-type>
+      </column>
+      <column id="830" parent="60" name="did">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="831" parent="60" name="state">
+        <data-type>varchar(2)</data-type>
+      </column>
+      <column id="832" parent="60" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <index id="833" parent="60" name="did">
+        <columns>did</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="834" parent="60" name="pid">
+        <columns>pid</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="835" parent="60" name="uid">
+        <columns>uid
+vid
+pid
+current
+time</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <index id="836" parent="60" name="Utterance_ibfk_4">
+        <columns>state</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="837" parent="60" name="vid">
+        <columns>vid</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <key id="838" parent="60" name="PRIMARY">
+        <columns>uid</columns>
+        <primary>1</primary>
+      </key>
+      <key id="839" parent="60" name="uid">
+        <columns>uid
+vid
+pid
+current
+time</columns>
+        <underlying-index>uid</underlying-index>
+      </key>
+      <foreign-key id="840" parent="60" name="Utterance_ibfk_1">
+        <columns>pid</columns>
+        <ref-key>~.Person.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="841" parent="60" name="Utterance_ibfk_2">
+        <columns>vid</columns>
+        <ref-key>~.Video.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="842" parent="60" name="Utterance_ibfk_3">
+        <columns>did</columns>
+        <ref-key>~.BillDiscussion.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="843" parent="60" name="Utterance_ibfk_4">
+        <columns>state</columns>
+        <ref-key>~.State.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="844" parent="61" name="vid">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <column id="845" parent="61" name="fileId">
+        <data-type>varchar(50)</data-type>
+      </column>
+      <column id="846" parent="61" name="hid">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="847" parent="61" name="position">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="848" parent="61" name="startOffset">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="849" parent="61" name="duration">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="850" parent="61" name="srtFlag">
+        <data-type>tinyint(1)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="851" parent="61" name="state">
+        <data-type>varchar(2)</data-type>
+      </column>
+      <column id="852" parent="61" name="source">
+        <data-type>enum(&apos;YouTube&apos;, &apos;Local&apos;, &apos;Other&apos;)</data-type>
+      </column>
+      <column id="853" parent="61" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <index id="854" parent="61" name="hid">
+        <columns>hid</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="855" parent="61" name="Video_ibfk_2">
+        <columns>state</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <key id="856" parent="61" name="PRIMARY">
+        <columns>vid</columns>
+        <primary>1</primary>
+      </key>
+      <foreign-key id="857" parent="61" name="Video_ibfk_1">
+        <columns>hid</columns>
+        <ref-key>~.Hearing.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="858" parent="61" name="Video_ibfk_2">
+        <columns>state</columns>
+        <ref-key>~.State.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="859" parent="62" name="vid">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="860" parent="62" name="ttml">
+        <data-type>mediumtext</data-type>
+      </column>
+      <column id="861" parent="62" name="version">
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="862" parent="62" name="source">
+        <data-type>varchar(4)</data-type>
+      </column>
+      <column id="863" parent="62" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="864" parent="62" name="dr_id">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <index id="865" parent="62" name="dr_id">
+        <columns>dr_id</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <index id="866" parent="62" name="vid">
+        <columns>vid</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <key id="867" parent="62" name="dr_id">
+        <columns>dr_id</columns>
+        <underlying-index>dr_id</underlying-index>
+      </key>
+      <foreign-key id="868" parent="62" name="Video_ttml_ibfk_1">
+        <columns>vid</columns>
+        <ref-key>~.Video.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="869" parent="63" name="pid">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="870" parent="63" name="bid">
+        <mandatory>1</mandatory>
+        <data-type>varchar(23)</data-type>
+        <default-expression>&apos;&apos;</default-expression>
+      </column>
+      <column id="871" parent="63" name="vid">
+        <mandatory>1</mandatory>
+        <data-type>varchar(33)</data-type>
+        <default-expression>&apos;&apos;</default-expression>
+      </column>
+      <column id="872" parent="63" name="contribution">
+        <data-type>enum(&apos;Lead Author&apos;, &apos;Principal Coauthor&apos;, &apos;Coauthor&apos;)</data-type>
+        <default-expression>&apos;Coauthor&apos;</default-expression>
+      </column>
+      <column id="873" parent="63" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="874" parent="63" name="dr_id">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <index id="875" parent="63" name="bid">
+        <columns>bid
+vid</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="876" parent="63" name="dr_id">
+        <columns>dr_id</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <key id="877" parent="63" name="dr_id">
+        <columns>dr_id</columns>
+        <underlying-index>dr_id</underlying-index>
+      </key>
+      <key id="878" parent="63" name="PRIMARY">
+        <columns>pid
+bid
+vid</columns>
+        <primary>1</primary>
+      </key>
+      <foreign-key id="879" parent="63" name="authors_ibfk_1">
+        <columns>pid</columns>
+        <ref-key>AndrewTest.Legislator(pid)</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="880" parent="63" name="authors_ibfk_2">
+        <columns>bid
+vid</columns>
+        <ref-key>AndrewTest.BillVersion(bid,vid)</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="881" parent="63" name="authors_ibfk_3">
+        <columns>bid
+vid</columns>
+        <ref-key>AndrewTest.BillVersion(bid,vid)</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="882" parent="64" name="pid">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="883" parent="64" name="year">
+        <mandatory>1</mandatory>
+        <data-type>year(4)</data-type>
+        <default-expression>&apos;0000&apos;</default-expression>
+      </column>
+      <column id="884" parent="64" name="house">
+        <mandatory>1</mandatory>
+        <data-type>varchar(200)</data-type>
+        <default-expression>&apos;&apos;</default-expression>
+      </column>
+      <column id="885" parent="64" name="cid">
+        <mandatory>1</mandatory>
+        <data-type>int(3)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="886" parent="64" name="state">
+        <mandatory>1</mandatory>
+        <data-type>varchar(2)</data-type>
+        <default-expression>&apos;&apos;</default-expression>
+      </column>
+      <column id="887" parent="64" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="888" parent="64" name="position">
+        <data-type>enum(&apos;Chair&apos;, &apos;Vice-Chair&apos;, &apos;Co-Chair&apos;, &apos;Member&apos;)</data-type>
+      </column>
+      <column id="889" parent="64" name="dr_id">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <index id="890" parent="64" name="cid">
+        <columns>cid</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="891" parent="64" name="dr_id">
+        <columns>dr_id</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <index id="892" parent="64" name="house">
+        <columns>house
+state</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="893" parent="64" name="state">
+        <columns>state</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <key id="894" parent="64" name="dr_id">
+        <columns>dr_id</columns>
+        <underlying-index>dr_id</underlying-index>
+      </key>
+      <key id="895" parent="64" name="PRIMARY">
+        <columns>pid
+year
+house
+state
+cid</columns>
+        <primary>1</primary>
+      </key>
+      <foreign-key id="896" parent="64" name="servesOn_ibfk_2">
+        <columns>cid</columns>
+        <ref-key>~.Committee.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="897" parent="64" name="servesOn_ibfk_3">
+        <columns>state</columns>
+        <ref-key>~.State.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="898" parent="64" name="servesOn_ibfk_4">
+        <columns>house
+state</columns>
+        <ref-key>~.House.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="899" parent="65" name="hid">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="900" parent="65" name="bid">
+        <mandatory>1</mandatory>
+        <data-type>varchar(23)</data-type>
+        <default-expression>&apos;&apos;</default-expression>
+      </column>
+      <column id="901" parent="65" name="date_created">
+        <mandatory>1</mandatory>
+        <data-type>date</data-type>
+        <default-expression>&apos;0000-00-00&apos;</default-expression>
+      </column>
+      <column id="902" parent="65" name="current_flag">
+        <data-type>tinyint(1)</data-type>
+      </column>
+      <column id="903" parent="65" name="lastTouched">
+        <data-type>timestamp</data-type>
+        <default-expression>&apos;CURRENT_TIMESTAMP&apos;</default-expression>
+      </column>
+      <column id="904" parent="65" name="dr_id">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <sequence-identity>1</sequence-identity>
+      </column>
+      <index id="905" parent="65" name="bid">
+        <columns>bid</columns>
+        <desc-columns></desc-columns>
+      </index>
+      <index id="906" parent="65" name="dr_id">
+        <columns>dr_id</columns>
+        <desc-columns></desc-columns>
+        <unique>1</unique>
+      </index>
+      <key id="907" parent="65" name="dr_id">
+        <columns>dr_id</columns>
+        <underlying-index>dr_id</underlying-index>
+      </key>
+      <key id="908" parent="65" name="PRIMARY">
+        <columns>hid
+bid
+date_created</columns>
+        <primary>1</primary>
+      </key>
+      <foreign-key id="909" parent="65" name="HearingAgenda_ibfk_1">
+        <columns>bid</columns>
+        <ref-key>~.Bill.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <foreign-key id="910" parent="65" name="HearingAgenda_ibfk_2">
+        <columns>hid</columns>
+        <ref-key>~.Hearing.PRIMARY</ref-key>
+        <cascade-update-rule>restrict</cascade-update-rule>
+        <cascade-delete-rule>restrict</cascade-delete-rule>
+      </foreign-key>
+      <column id="911" parent="66" name="pid">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="912" parent="66" name="first">
+        <mandatory>1</mandatory>
+        <data-type>varchar(50)</data-type>
+      </column>
+      <column id="913" parent="66" name="last">
+        <mandatory>1</mandatory>
+        <data-type>varchar(50)</data-type>
+      </column>
+      <column id="914" parent="66" name="AvgPercentParticipation">
+        <data-type>decimal(58,4)</data-type>
+      </column>
+      <column id="915" parent="67" name="hid">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="916" parent="67" name="did">
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="917" parent="67" name="bid">
+        <data-type>varchar(23)</data-type>
+      </column>
+      <column id="918" parent="67" name="pid">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="919" parent="67" name="first">
+        <mandatory>1</mandatory>
+        <data-type>varchar(50)</data-type>
+      </column>
+      <column id="920" parent="67" name="last">
+        <mandatory>1</mandatory>
+        <data-type>varchar(50)</data-type>
+      </column>
+      <column id="921" parent="67" name="party">
+        <data-type>enum(&apos;Republican&apos;, &apos;Democrat&apos;, &apos;Other&apos;)</data-type>
+      </column>
+      <column id="922" parent="67" name="LegBillWordCount">
+        <mandatory>1</mandatory>
+        <data-type>decimal(32)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="923" parent="67" name="LegBillTime">
+        <mandatory>1</mandatory>
+        <data-type>decimal(33)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="924" parent="67" name="LegBillPercentWord">
+        <mandatory>1</mandatory>
+        <data-type>decimal(36,4)</data-type>
+        <default-expression>&apos;0.0000&apos;</default-expression>
+      </column>
+      <column id="925" parent="67" name="LegBillPercentTime">
+        <mandatory>1</mandatory>
+        <data-type>decimal(37,4)</data-type>
+        <default-expression>&apos;0.0000&apos;</default-expression>
+      </column>
+      <column id="926" parent="67" name="LegHearingWordCount">
+        <mandatory>1</mandatory>
+        <data-type>decimal(32)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="927" parent="67" name="LegHearingTime">
+        <mandatory>1</mandatory>
+        <data-type>decimal(33)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="928" parent="67" name="LegHearingPercentWord">
+        <mandatory>1</mandatory>
+        <data-type>decimal(36,4)</data-type>
+        <default-expression>&apos;0.0000&apos;</default-expression>
+      </column>
+      <column id="929" parent="67" name="LegHearingPercentTime">
+        <mandatory>1</mandatory>
+        <data-type>decimal(37,4)</data-type>
+        <default-expression>&apos;0.0000&apos;</default-expression>
+      </column>
+      <column id="930" parent="67" name="LegHearingAvg">
+        <mandatory>1</mandatory>
+        <data-type>decimal(58,4)</data-type>
+        <default-expression>&apos;0.0000&apos;</default-expression>
+      </column>
+      <column id="931" parent="67" name="BillWordCount">
+        <mandatory>1</mandatory>
+        <data-type>decimal(54)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="932" parent="67" name="HearingWordCount">
+        <mandatory>1</mandatory>
+        <data-type>decimal(54)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="933" parent="68" name="t">
+        <data-type>timestamp</data-type>
+      </column>
+      <column id="934" parent="68" name="d">
+        <data-type>date</data-type>
+      </column>
+      <column id="935" parent="69" name="uid">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="936" parent="69" name="pid">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="937" parent="69" name="alignment">
+        <data-type>enum(&apos;For&apos;, &apos;Against&apos;, &apos;For_if_amend&apos;, &apos;Against_unless_amend&apos;, &apos;Neutral&apos;, &apos;Indeterminate&apos;, &apos;NA&apos;)</data-type>
+      </column>
+      <column id="938" parent="69" name="did">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="939" parent="70" name="donorOrg">
+        <data-type>varchar(255)</data-type>
+      </column>
+      <column id="940" parent="70" name="foo">
+        <mandatory>1</mandatory>
+        <data-type>bigint(21)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="941" parent="71" name="cutId">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="942" parent="71" name="videoId">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="943" parent="71" name="fileId">
+        <data-type>varchar(255)</data-type>
+      </column>
+      <column id="944" parent="71" name="fileName">
+        <data-type>varchar(255)</data-type>
+      </column>
+      <column id="945" parent="71" name="start_time">
+        <data-type>float</data-type>
+      </column>
+      <column id="946" parent="71" name="end_time">
+        <data-type>float</data-type>
+      </column>
+      <column id="947" parent="71" name="leading_silence">
+        <data-type>float</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="948" parent="71" name="type">
+        <mandatory>1</mandatory>
+        <data-type>enum(&apos;pause&apos;, &apos;silence&apos;)</data-type>
+      </column>
+      <column id="949" parent="71" name="finalized">
+        <mandatory>1</mandatory>
+        <data-type>tinyint(1)</data-type>
+      </column>
+      <column id="950" parent="71" name="current">
+        <mandatory>1</mandatory>
+        <data-type>tinyint(1)</data-type>
+      </column>
+      <column id="951" parent="71" name="created">
+        <data-type>timestamp</data-type>
+      </column>
+      <column id="952" parent="71" name="lastTouched">
+        <data-type>timestamp</data-type>
+      </column>
+      <column id="953" parent="72" name="uid">
+        <mandatory>1</mandatory>
+        <data-type>int(11)</data-type>
+        <default-expression>&apos;0&apos;</default-expression>
+      </column>
+      <column id="954" parent="72" name="vid">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="955" parent="72" name="pid">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="956" parent="72" name="time">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="957" parent="72" name="endTime">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="958" parent="72" name="text">
+        <data-type>text</data-type>
+      </column>
+      <column id="959" parent="72" name="type">
+        <data-type>enum(&apos;Author&apos;, &apos;Testimony&apos;, &apos;Discussion&apos;)</data-type>
+      </column>
+      <column id="960" parent="72" name="alignment">
+        <data-type>enum(&apos;For&apos;, &apos;Against&apos;, &apos;For_if_amend&apos;, &apos;Against_unless_amend&apos;, &apos;Neutral&apos;, &apos;Indeterminate&apos;, &apos;NA&apos;)</data-type>
+      </column>
+      <column id="961" parent="72" name="state">
+        <data-type>varchar(2)</data-type>
+      </column>
+      <column id="962" parent="72" name="did">
+        <data-type>int(11)</data-type>
+      </column>
+      <column id="963" parent="72" name="lastTouched">
+        <data-type>timestamp</data-type>
+      </column>
+    </database-model>
+  </data-source>
+</component>

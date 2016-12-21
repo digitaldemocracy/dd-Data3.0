@@ -24,8 +24,8 @@ state = 'CA'
 # Querys used to Insert into the Database
 QI_STATE = '''INSERT INTO State (abbrev, country, name)
                           VALUES (%s, %s, %s)'''
-QI_STATE_AGENCY = '''INSERT INTO StateAgency (name, state)
-                            VALUES (%s, %s)'''
+QI_STATE_AGENCY = '''INSERT INTO StateAgency (name, acronym, state)
+                            VALUES (%s, %s, %s)'''
 QI_PERSON = '''INSERT INTO Person (first, middle, last)
                  VALUES (%s, %s, %s)'''
 QI_SERVES_ON = '''INSERT INTO servesOn (pid, year, agency, position)
@@ -91,12 +91,13 @@ def insert_state(dd_cursor, abbrev, country, name):
 Given a state agency's information, check if it's in DDDB. If not, add.
 |dd_cursor|: DDDB database cursor
 |name|: agency name
+|acronym|: agency acronym
 |state|: state abbreviation
 '''
-def insert_state_agency(dd_cursor, name, state):
+def insert_state_agency(dd_cursor, name, acronym, state):
   sa_id = get_state_agency(dd_cursor, name, state)
   if sa_id is None:
-    dd_cursor.execute(QI_STATE_AGENCY, (name, state))
+    dd_cursor.execute(QI_STATE_AGENCY, (name, acronym, state))
     sa_id = get_state_agency(dd_cursor, name, state)
   return sa_id
 
@@ -108,10 +109,10 @@ Given a person's name, check if it's in DDDB. If not, add.
 |last|: Last name of Person
 '''
 def insert_person(dd_cursor, first, middle, last):
-  pid = get_person(dd_cursor, last, middle, first)
+  pid = get_person(dd_cursor, first, middle, last)
   if pid is None:
-    dd_cursor.execute(QI_PERSON, (last, middle, first))
-    pid = get_person(dd_cursor, last, middle, first)
+    dd_cursor.execute(QI_PERSON, (first, middle, last))
+    pid = get_person(dd_cursor, first, middle, last)
   return pid
 
 '''
@@ -133,7 +134,9 @@ to_remove = [
     "mr",
     "ms",
     "mrs",
-    "ph.d"
+    "ph.d",
+    "assemblymember",
+    "senator"
 ]
 def split_name(full_name):
     names = full_name.split()
@@ -214,22 +217,22 @@ def extract_members(xlsx_name, verbose=False):
         row_types = sh.row_types(rownum)
         row = sh.row_values(rownum)
         if row[0] == "AGENCY":
-            index = 2
+            index = 3
             while "Board" in row[index]: index += 1
             end_board_members = index
         elif len(row[0]) > 0:
             agency = row[0]
+            acronym = row[1]
             board_members = [x.encode("utf-8").strip()
-                for x in row[2:end_board_members]
+                for x in row[3:end_board_members]
                     if len(x.strip()) > 0]
             staff = [x.encode("utf-8").strip()
                 for x in row[end_board_members:]
                     if len(x.strip()) > 0]
-            agency_dict[agency] = (board_members, staff)
+            agency_dict[(agency, acronym)] = (board_members, staff)
     return agency_dict
 
 def main():
-  extract_members("./sa.xlsx")
   xlsx_file = "./sa.xlsx"
   with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                          port=3306,
@@ -242,8 +245,8 @@ def main():
 
     insert_state(dd_cursor, "CA", "United States", "California")
 
-    for agency,(board,staff) in agency_dict.iteritems():
-        sa_id = insert_state_agency(dd_cursor, agency, "CA")
+    for (agency, acronym),(board,staff) in agency_dict.iteritems():
+        sa_id = insert_state_agency(dd_cursor, agency, acronym, "CA")
         for member in board:
             pid = insert_person(dd_cursor, *split_name(member))
             insert_serves_on(dd_cursor, pid, 2016, sa_id, "Boardmember")
@@ -253,6 +256,7 @@ def main():
         
     # Set foreign key checks on afterwards
     dd_cursor.execute('SET foreign_key_checks = 1')
+
       
 if __name__ == '__main__':
   main()
