@@ -19,7 +19,7 @@ if [ "$DAY" == "Sun" ]; then
    for t in `echo 'show tables;' | mysql -uroot capublic | grep -v Tables_in`; do
       mysql -uroot capublic -e "truncate $t"
    done
-   ZIP_NAME=$ZIP_NAME"2015"
+   ZIP_NAME=$ZIP_NAME"2017"
 else
    ZIP_NAME=$ZIP_NAME"daily_"$DAY
 fi
@@ -31,7 +31,7 @@ rm -rf $WORKING_DIR
 # Make the directory again.
 mkdir $WORKING_DIR 
 cd $WORKING_DIR
-wget ftp://www.leginfo.ca.gov/pub/bill/$ZIP_NAME.zip
+wget http://downloads.leginfo.legislature.ca.gov/$ZIP_NAME.zip
 unzip $ZIP_NAME.zip
 rm $ZIP_NAME.zip
 cd ..
