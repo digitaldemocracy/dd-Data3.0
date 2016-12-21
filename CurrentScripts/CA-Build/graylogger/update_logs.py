@@ -173,7 +173,7 @@ def table_names_to_tids(hit):
 
 def get_total_rows(table_name):
   # connect to dddb
-  with MySQLdb.connect(host='dddb2016-mysql5-7-11.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+  with MySQLdb.connect(host='dddb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
     user='awsDB',
     db='DDDB2016Aug',
     port=3306,

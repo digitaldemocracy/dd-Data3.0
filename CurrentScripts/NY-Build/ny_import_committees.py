@@ -138,12 +138,14 @@ def get_last_cid_db(cur):
 def is_comm_in_db(comm, cur):
                                                                      
     try:
-        cur.execute(select_committee, comm)
+        cur.execute(select_committee, {'house':comm['house'], 'name':comm['name'],
+          'state':comm['state']})
         query = cur.fetchone()
              
         if query is None:                   
             return False       
-    except:            
+    except:
+        print(traceback.format_exc())
         return False
     return query
 
@@ -152,7 +154,11 @@ def is_comm_in_db(comm, cur):
 def is_serveson_in_db(member, cur):
                                                                  
     try:
-        cur.execute(select_serveson, member)
+        temp = {'pid':member['pid'], 'house':member['house'],'state':member['state'], 'cid':member['cid'], 'year':member['year']}
+        print(temp == member)
+        cur.execute(select_serveson, temp)
+        #    {'pid':member['pid'], 'house':member['house'], 
+        #  'state':member['state'], 'cid':member['cid'], 'year':member['year']})
         query = cur.fetchone()
         
         if query is None:            

@@ -49,7 +49,7 @@ def query_ES():
             }
        },
        # Added size filter to make sure only 1 is passed through
-       "size" : 1,
+       #"size" : 1,
        # Show the most recent log
        "sort" : [
          {
@@ -165,14 +165,15 @@ def table_names_to_tids(hit):
       table_affected = tables.split(":")
       overlorddb_cursor.execute('''SELECT tid FROM DD_Table WHERE name = %s''', (table_affected[0].strip(),))
       if overlorddb_cursor.rowcount == 0:
-        print table_affected[0] + ' not found'
+        #print table_affected[0] + ' not found'
+        pass
       else:
         tid_array.append((overlorddb_cursor.fetchone()[0], table_affected[1]))
   return tid_array
 
 def get_total_rows(table_name):
   # connect to dddb
-  with MySQLdb.connect(host='dddb2016-mysql5-7-11.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+  with MySQLdb.connect(host='dddb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
     user='awsDB',
     db='DDDB2016Aug',
     port=3306,
