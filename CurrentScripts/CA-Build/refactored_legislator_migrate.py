@@ -1,4 +1,5 @@
 #!/usr/bin/env python27
+# -- coding: utf-8 --
 '''
 File: legislator_migrate.py
 Author: ???
@@ -32,6 +33,7 @@ Populates:
 
 from Database_Connection import mysql_connection
 import traceback
+import sys
 import MySQLdb
 from Name_Fixes_Legislator_Migrate import clean_name_legislator_migrate
 from graylogger.graylogger import GrayLogger
@@ -129,11 +131,13 @@ def migrate_legislators(ca_cursor, dd_cursor):
   for (last, first, year, district, house, party, active) in ca_cursor:
     house = _HOUSE.get(house)
     party = _PARTY.get(party)
-    exist = check_name(dd_cursor, last, first)
+    print(first.decode('latin-1').encode('utf-8'), last.decode('latin-1').encode('utf-8'))
+    exist = check_name(dd_cursor, last.decode('latin-1').encode('utf-8'), 
+        first.decode('latin-1').encode('utf-8'))
 
     # If this legislator isn't in DDDB, add them to Person table
     if exist is None:
-      logger.info('New Member: first: {0} last: {1}'.format(first, last))
+      #logger.info('New Member: first: {0} last: {1}'.format(first, last))
       try:
         dd_cursor.execute(QI_PERSON, (last, first))
         P_INSERT += dd_cursor.rowcount
@@ -154,7 +158,7 @@ def migrate_legislators(ca_cursor, dd_cursor):
                additional_fields=create_payload('Legislator' % (QI_LEGISLATOR, (pid, STATE))))
         try:
           dd_cursor.execute(QI_TERM, (pid, year, district, house, party, STATE))
-          T_INSERT += dd_cursor.insert
+          T_INSERT += dd_cursor.rowcount
         except MySQLdb.Error:
           logger.warning('Insert Failed', full_msg=traceback.format_exc(),
               additional_fields=create_payload('Term', 
@@ -183,16 +187,20 @@ def migrate_legislators(ca_cursor, dd_cursor):
                 (QI_TERM % (pid, year, district, house, party, STATE))))
 
 def main():
+  reload(sys)  
+  sys.setdefaultencoding('utf8')
+  print(sys.getdefaultencoding())
+  dbinfo = mysql_connection(sys.argv)
   with MySQLdb.connect(host='transcription.digitaldemocracy.org',
                        db='capublic',
                        user='monty',
                        passwd='python') as ca_cursor:
-#    with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-#                           port=3306,
-#                           db='EricTest',
-#                           user='awsDB',
-#                           passwd='digitaldemocracy789') as dd_cursor:
-      dd_cursor = mysql_connection()  
+    with MySQLdb.connect(host=dbinfo['host'],
+                           port=dbinfo['port'],
+                           db=dbinfo['db'],
+                           user=dbinfo['user'],
+                           passwd=dbinfo['passwd'],
+                           charset='latin-1') as dd_cursor:
       migrate_legislators(ca_cursor, dd_cursor)
       logger.info(__file__ + ' terminated successfully.', 
           full_msg='Inserted ' + str(P_INSERT) + ' rows in Person, inserted ' +
@@ -208,6 +216,6 @@ def main():
                              '_log_type':'Database'})
 
 if __name__ == "__main__":
-  with GrayLogger('http://development.digitaldemocracy.org:12202/gelf') as _logger:
+  with GrayLogger('http://dw.digitaldemocracy.org:12202/gelf') as _logger:
     logger = _logger
     main()

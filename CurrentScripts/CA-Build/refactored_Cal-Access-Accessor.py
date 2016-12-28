@@ -4,8 +4,8 @@
 '''
 File: Cal-Access-Accessor.py
 Author: Daniel Mangin
-Modified By: Mandy Chan, Freddy Hernandez, Matt Versaggi, Miguel Aguilar
-Last Modified: August 24th, 2016
+Modified By: Mandy Chan, Freddy Hernandez, Matt Versaggi, Miguel Aguilar, James Ly
+Last Modified: 12/21/16
 
 Description:
 - Goes through the file CVR_REGISTRATION_CD.TSV and places the data into DDDB
@@ -45,6 +45,7 @@ FS_INSERT = 0
 L_INSERT = 0
 P_INSERT = 0
 O_INSERT = 0
+OSA_INSERT = 0 
 ER_INSERT = 0
 EM_INSERT = 0
 DE_INSERT = 0
@@ -66,8 +67,10 @@ QI_LOBBYIST = '''INSERT INTO Lobbyist (pid, filer_id, state)
                  VALUES (%s, %s, %s)'''
 QI_PERSON = '''INSERT INTO Person (last, first)
                VALUES (%s, %s)'''
-QI_ORGANIZATIONS = '''INSERT INTO Organizations (name, city, stateHeadquartered)
-                      VALUES (%s, %s, %s)'''
+QI_ORGANIZATIONS = '''INSERT INTO Organizations (name, city, stateHeadquartered, source)
+                      VALUES (%s, %s, %s, %s)'''
+QI_ORG_STATE_AFF = '''INSERT INTO OrganizationStateAffiliation (oid, state)
+                      VALUES (%s, %s)'''
 QI_LOBBYIST_EMPLOYER = '''INSERT INTO LobbyistEmployer (filer_id, oid,
                            coalition, state)
                           VALUES (%s, %s, %s, %s)'''
@@ -109,6 +112,9 @@ QS_ORGANIZATIONS_MAX = '''SELECT oid
                           FROM Organizations
                           ORDER BY oid DESC
                           LIMIT 1'''
+QS_ORG_STATE_AFF = '''SELECT oid
+                      FROM OrganizationStateAffiliation
+                      WHERE oid = %s'''
 QS_LOBBYIST_EMPLOYER = '''SELECT oid
                           FROM LobbyistEmployer
                           WHERE oid = %s
@@ -238,7 +244,7 @@ def insert_organization(dd_cursor, filer_naml, bus_city, bus_state):
   dd_cursor.execute(QS_ORGANIZATIONS, (filer_naml, bus_state))
   if dd_cursor.rowcount == 0:
     try:
-      dd_cursor.execute(QI_ORGANIZATIONS, (filer_naml, bus_city, bus_state))
+      dd_cursor.execute(QI_ORGANIZATIONS, (filer_naml, bus_city, bus_state, 'refactored-Cal-Access-Accessor.py'))
       dd_cursor.execute(QS_ORGANIZATIONS_MAX)
       oid = dd_cursor.fetchone()[0]
       O_INSERT += dd_cursor.rowcount
@@ -249,7 +255,31 @@ def insert_organization(dd_cursor, filer_naml, bus_city, bus_state):
   else:
     oid = dd_cursor.fetchone()[0]
 
+  insert_org_state_aff(dd_cursor, oid, bus_state)
+
   return oid
+
+'''
+Given an organization id and state, check if oid is in DDDB, if not, try to add it
+|dd_cursor|: DDDB_cursor
+|oid|: organization id
+|bus_state|: state that the organization is affiliated with
+'''
+
+def insert_org_state_aff(dd_cursor, oid, bus_state):
+  global OSA_INSERT
+
+  dd_cursor.execute(QS_ORG_STATE_AFF, (oid,))
+  if dd_cursor.rowcount == 0:
+    try:
+      dd_cursor.execute(QI_ORG_STATE_AFF, (oid, bus_state))
+      OSA_INSERT += dd_cursor.rowcount
+    except MySQLdb.Error:
+      logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+          additional_fields=create_payload('OrganizationStateAffliation', 
+            (QI_ORG_STATE_AFF % (oid, bus_state))))
+
+
 
 '''
 Given a person's information, check if it's in DDDB. Otherwise, add.
