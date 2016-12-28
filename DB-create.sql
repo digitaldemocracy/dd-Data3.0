@@ -170,6 +170,21 @@ CREATE TABLE IF NOT EXISTS Organizations (
   CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /*
+  Holds information about merged organizations. We
+  use this because we want to retain the names of Organizations
+  we think should be considered the same.
+ */
+CREATE TABLE IF NOT EXISTS MergedOrgs (
+  oid INT,
+  merged_name VARCHAR(255),
+
+  PRIMARY KEY (oid, merged_name),
+  FOREIGN KEY (oid) REFERENCES Organizations(oid)
+)
+  ENGINE = INNODB
+  CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+/*
     Tracks the relationship between Organizations and their affiliated states.
 
    Sources: CA: Transcription Tool,
@@ -273,7 +288,7 @@ CREATE TABLE IF NOT EXISTS Committee (
   name   VARCHAR(200) NOT NULL,    -- committee name
   short_name   VARCHAR(200) NOT NULL,    -- committee name
   type   VARCHAR(100),
-  room INT,
+  room VARCHAR(255),
   phone VARCHAR(30),
   fax VARCHAR(30),
   email VARCHAR(256),
@@ -299,7 +314,7 @@ CREATE TABLE IF NOT EXISTS Committee (
 */
 CREATE TABLE IF NOT EXISTS servesOn (
   pid      INTEGER,                               -- Person id (ref. Person.pid)
-  year     YEAR,                                  -- year served
+  year     YEAR,                                  -- The session year
   house    VARCHAR(100),
   cid      INTEGER(3),                            -- Committee id (ref. Committee.cid)
   position ENUM('Chair', 'Vice-Chair', 'Co-Chair', 'Member'),
