@@ -4,7 +4,7 @@
  */
 CREATE OR REPLACE VIEW currentUtterance
 AS SELECT uid, vid, pid, time, endTime, text, type, alignment, state, did,
-     lastTouched
+     lastTouched, lastTouched_ts
    FROM Utterance
    WHERE current = TRUE AND finalized = TRUE ORDER BY time DESC;
 
