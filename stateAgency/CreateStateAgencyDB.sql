@@ -264,7 +264,7 @@ CREATE TABLE IF NOT EXISTS TT_Videos (
    duration FLOAT,
    sourceUrl VARCHAR(255),
    state VARCHAR(2),
-   status ENUM('downloading','downloaded','download failed','skipped','queued','cut','cutting','cutting failed','approved','tasked'),
+   status ENUM('downloading','downloaded','download failed','skipped','queued','cut','cutting','cutting failed','approved','tasked','deleted','tasking','tasking failed','archived'),
    glacierId VARCHAR(255),
    hid INT(11),
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
