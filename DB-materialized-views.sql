@@ -4,7 +4,7 @@
  */
 CREATE OR REPLACE VIEW currentUtterance
 AS SELECT uid, vid, pid, time, endTime, text, type, alignment, state, did,
-     lastTouched
+     lastTouched, lastTouched_ts
    FROM Utterance
    WHERE current = TRUE AND finalized = TRUE ORDER BY time DESC;
 
@@ -192,6 +192,7 @@ CREATE TABLE IF NOT EXISTS BillVersionCurrent (
   CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 
+-- Should be combined
 CREATE TABLE UnionedRepresentations (
   pid INT,
   hid INT,
@@ -302,8 +303,8 @@ CREATE TABLE AlignmentScoresAggregated (
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-
-CREATE OR REPLACE VIEW CombinedAlignmentScores
+drop table CombinedAlignmentScores;
+CREATE TABLE CombinedAlignmentScores
 AS
   SELECT a.pid,
     a.oid,
@@ -313,12 +314,13 @@ AS
     a.AndrewScore as score,
     asei.positions_registered,
     asei.votes_in_agreement,
-    asei.votes_in_disagreement
+    asei.votes_in_disagreement,
+    a.pid as pid_house_party
   FROM AlignmentScores a
     INNER JOIN AlignmentScoresExtraInfo asei
       ON asei.oid = a.oid AND asei.pid = a.pid
   UNION
-  SELECT null,
+  SELECT null as pid,
     asa.oid,
     asa.house,
     asa.party,
@@ -326,5 +328,13 @@ AS
     asa.score,
     asa.positions_registered,
     asa.votes_in_agreement,
-    asa.votes_in_disagreement
+    asa.votes_in_disagreement,
+    CONCAT_WS('',null,house,IF(LENGTH(house) > 0," (", ""),party, IF(LENGTH(house) > 0,")", "")) as pid_house_party
   FROM AlignmentScoresAggregated asa;
+
+alter table CombinedAlignmentScores
+    add dr_id int unique AUTO_INCREMENT;
+
+alter table Contribution
+    add index donorName_idx (donorName);
+
