@@ -37,8 +37,12 @@ insert_serveson = '''INSERT INTO servesOn
 update_serveson = '''UPDATE servesOn
                      SET end_date = %(end_date)s,
                       current_flag = %(current_flag)s
-                     WHERE pid = %(pid)s,
-                      cid = %(cid)s'''
+                     WHERE pid = %(pid)s
+                      AND cid = %(cid)s
+                      AND house = %(house)s
+                      AND state = %(state)s
+                      AND year = %(year)s
+                      '''
 
 select_committee = '''SELECT cid 
                       FROM Committee
@@ -70,7 +74,8 @@ select_current_members = '''SELECT pid
                             WHERE house = %(house)s
                              AND cid = %(cid)s
                              AND state = %(state)s
-                             AND current_flag = true'''
+                             AND current_flag = true
+                             AND year = %(year)s'''
 
 YEAR = '2015'
 STATE = 'NY'                                         
@@ -95,13 +100,15 @@ def get_last_cid_db(dddb):
 
 def is_comm_in_db(comm, dddb):                                                            
     try:
-        dddb.execute(select_committee, comm)
+        dddb.execute(select_committee, {'house':comm['house'], 'name':comm['name'],
+         'state':comm['state']})
         query = dddb.fetchone()
              
         if query is None:                   
             return False       
     except:            
-        return False
+        logger.warning("Select query failed", full_msg = traceback.format_exc(),
+         additional_fields = create_payload("Committee", (select_committee % comm)))
     return query
     
 def is_serveson_in_db(member, dddb):                                                                   
@@ -112,7 +119,8 @@ def is_serveson_in_db(member, dddb):
         if query is None:            
             return False       
     except:            
-        return False    
+        logger.warning("Select query failed", full_msg = traceback.format_exc(),
+         additional_fields = create_payload("servesOn", (select_serveson % member)))
     
     return True
 
@@ -194,21 +202,30 @@ def get_committees_html():
 
 def get_past_members(committee, dddb):
     update_members = list()
-    dddb.execute(select_current_members, {'house':committee['house'], 'cid':committee['cid'],
-        'state':committee['state']})
-    query = dddb.fetchall()
-    for member in query:
-        isCurrent = False
-        for comMember in committee['members']:
-            if member[0] == comMember['pid']:
-                isCurrent = True
-        if isCurrent == False:
-            mem = dict()
-            mem['current_flag'] = 0
-            mem['end_date'] = dt.datetime.today().strftime("%Y-%m-%d")
-            mem['pid'] = member[0]
-            mem['cid'] = committee['cid']
-            update_members.append(mem)
+    try:
+        dddb.execute(select_current_members, {'house':committee['house'], 'cid':committee['cid'],
+            'state':committee['state'], 'year':YEAR})
+        query = dddb.fetchall()
+        for member in query:
+            isCurrent = False
+            for comMember in committee['members']:
+                if member[0] == comMember['pid']:
+                    isCurrent = True
+            if isCurrent == False:
+                mem = dict()
+                mem['current_flag'] = 0
+                mem['end_date'] = dt.datetime.today().strftime("%Y-%m-%d")
+                mem['pid'] = member[0]
+                mem['cid'] = committee['cid']
+                mem['house'] = "Assembly"
+                mem['year'] = YEAR
+                mem['state'] = STATE
+                update_members.append(mem)
+    except:
+        logger.warning("Select query failed", full_msg = traceback.format_exc(),
+         additional_fields = create_payload("servesOn", (select_current_members % {'house':committee['house'],
+         'cid':committee['cid'], 'state':committee['state'], 'year':YEAR})))
+
     return update_members
 
 def add_committees_db(dddb):
