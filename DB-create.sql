@@ -1769,4 +1769,4 @@ CREATE TABLE IF NOT EXISTS TT_HostingUrl (
 
 CREATE OR REPLACE VIEW TT_currentCuts
 AS SELECT * FROM TT_Cuts
-WHERE current = TRUE AND finalized = FALSE ORDER BY videoId DESC, cutId ASC;
+WHERE current = TRUE ORDER BY videoId DESC, cutId ASC;
