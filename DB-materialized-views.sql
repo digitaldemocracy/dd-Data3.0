@@ -8,6 +8,16 @@ AS SELECT uid, vid, pid, time, endTime, text, type, alignment, state, did,
    FROM Utterance
    WHERE current = TRUE AND finalized = TRUE ORDER BY time DESC;
 
+/*
+  The same as currentUtterance except that this is without sort.
+  *Note that this is actually maintained as a regular view.
+ */
+CREATE OR REPLACE VIEW currentUtteranceUnsorted
+AS SELECT uid, vid, pid, time, endTime, text, type, alignment, state, did,
+     lastTouched, lastTouched_ts
+   FROM Utterance
+   WHERE current = TRUE AND finalized = TRUE;
+
 
 /*
   Gives the participation for non-legislator speakers in transcribed Hearings
