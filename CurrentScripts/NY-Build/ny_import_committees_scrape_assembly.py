@@ -16,10 +16,13 @@ from lxml import html
 import requests
 import MySQLdb
 from graylogger.graylogger import GrayLogger                                    
+import datetime as dt
+from time import strftime
 GRAY_URL = 'http://dw.digitaldemocracy.org:12202/gelf'                 
 logger = None
 C_INSERTED = 0
 S_INSERTED = 0
+S_UPDATED = 0
 
 insert_committee = '''INSERT INTO Committee
                        (cid, house, name, state)
@@ -27,9 +30,19 @@ insert_committee = '''INSERT INTO Committee
                        (%(cid)s, %(house)s, %(name)s, %(state)s);'''
                     
 insert_serveson = '''INSERT INTO servesOn
-                      (pid, year, house, cid, state, position)
+                      (pid, year, house, cid, state, position, current_flag, start_date)
                      VALUES
-                      (%(pid)s, %(year)s, %(house)s, %(cid)s, %(state)s, %(position)s);'''                            
+                      (%(pid)s, %(year)s, %(house)s, %(cid)s, %(state)s, %(position)s, %(current_flag)s, %(start_date)s);'''
+
+update_serveson = '''UPDATE servesOn
+                     SET end_date = %(end_date)s,
+                      current_flag = %(current_flag)s
+                     WHERE pid = %(pid)s
+                      AND cid = %(cid)s
+                      AND house = %(house)s
+                      AND state = %(state)s
+                      AND year = %(year)s
+                      '''
 
 select_committee = '''SELECT cid 
                       FROM Committee
@@ -55,6 +68,15 @@ select_serveson = '''SELECT pid
                       AND house = %(house)s 
                       AND cid = %(cid)s 
                       AND state = %(state)s'''
+
+select_current_members = '''SELECT pid
+                            FROM servesOn
+                            WHERE house = %(house)s
+                             AND cid = %(cid)s
+                             AND state = %(state)s
+                             AND current_flag = true
+                             AND year = %(year)s'''
+
 YEAR = '2015'
 STATE = 'NY'                                         
 COMMITTEES_URL = 'http://assembly.state.ny.us/comm/'
@@ -78,13 +100,15 @@ def get_last_cid_db(dddb):
 
 def is_comm_in_db(comm, dddb):                                                            
     try:
-        dddb.execute(select_committee, comm)
+        dddb.execute(select_committee, {'house':comm['house'], 'name':comm['name'],
+         'state':comm['state']})
         query = dddb.fetchone()
              
         if query is None:                   
             return False       
     except:            
-        return False
+        logger.warning("Select query failed", full_msg = traceback.format_exc(),
+         additional_fields = create_payload("Committee", (select_committee % comm)))
     return query
     
 def is_serveson_in_db(member, dddb):                                                                   
@@ -95,7 +119,8 @@ def is_serveson_in_db(member, dddb):
         if query is None:            
             return False       
     except:            
-        return False    
+        logger.warning("Select query failed", full_msg = traceback.format_exc(),
+         additional_fields = create_payload("servesOn", (select_serveson % member)))
     
     return True
 
@@ -175,8 +200,36 @@ def get_committees_html():
     #print "Scraped %d committees..." % len(ret_comms)
     return ret_comms                 
 
+def get_past_members(committee, dddb):
+    update_members = list()
+    try:
+        dddb.execute(select_current_members, {'house':committee['house'], 'cid':committee['cid'],
+            'state':committee['state'], 'year':YEAR})
+        query = dddb.fetchall()
+        for member in query:
+            isCurrent = False
+            for comMember in committee['members']:
+                if member[0] == comMember['pid']:
+                    isCurrent = True
+            if isCurrent == False:
+                mem = dict()
+                mem['current_flag'] = 0
+                mem['end_date'] = dt.datetime.today().strftime("%Y-%m-%d")
+                mem['pid'] = member[0]
+                mem['cid'] = committee['cid']
+                mem['house'] = "Assembly"
+                mem['year'] = YEAR
+                mem['state'] = STATE
+                update_members.append(mem)
+    except:
+        logger.warning("Select query failed", full_msg = traceback.format_exc(),
+         additional_fields = create_payload("servesOn", (select_current_members % {'house':committee['house'],
+         'cid':committee['cid'], 'state':committee['state'], 'year':YEAR})))
+
+    return update_members
+
 def add_committees_db(dddb):
-    global C_INSERTED, S_INSERTED
+    global C_INSERTED, S_INSERTED, S_UPDATED
     committees = get_committees_html()
     count = 0
     y = 0
@@ -205,6 +258,8 @@ def add_committees_db(dddb):
                 member['cid'] = committee['cid']
                 if is_serveson_in_db(member, dddb) == False:                
                     if member['pid'] != None:
+                      member['current_flag'] = '1'
+                      member['start_date'] = dt.datetime.today().strftime("%Y-%m-%d")
                       try:
                         dddb.execute(insert_serveson, member)
                         S_INSERTED += dddb.rowcount
@@ -212,7 +267,16 @@ def add_committees_db(dddb):
                         logger.warning('Insert Failed', full_msg=traceback.format_exc(),
                             additional_fields=create_payload('servesOn', (insert_serveson % member)))
                       y = y + 1
-                        
+
+            updatedMems = get_past_members(committee, dddb)
+            
+            if len(updatedMems) > 0:
+                for member in updatedMems:
+                    try:
+                        dddb.execute(update_serveson, member)
+                        S_UPDATED += dddb.rowcount
+                    except MySQLdb.Error:
+                        logger.warning('Update Failed', full_msg = traceback.format_exc())
     #print "Inserted %d committees and %d members" % (count, y)
                 
 
@@ -238,9 +302,10 @@ def main():
           full_msg='Inserted ' + str(C_INSERTED) + ' rows in Committee and inserted ' 
                     + str(S_INSERTED) + ' rows in servesOn',
           additional_fields={'_affected_rows':'Committee:'+str(C_INSERTED)+
-                                         ', servesOn:'+str(S_INSERTED),
+                                         ', servesOn:'+str(S_INSERTED + S_UPDATED),
                              '_inserted':'Committee:'+str(C_INSERTED)+
                                          ', servesOn:'+str(S_INSERTED),
+                             '_updated':'servesOn:'+str(S_UPDATED),
                              '_state':'NY'})
 
 if __name__ == '__main__':                                                      
