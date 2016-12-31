@@ -216,12 +216,9 @@ def create_behest(dd_cursor,
                      %(payee_id)s, %(descr)s, %(purpose)s, %(notice_rec)s, %(session_year)s)
                 ''' 
   
-  #dd_cursor.execute(insert_stmt, 
-  behest_dict = {'off_pid':off_pid, 'datePaid':date_paid,
+  dd_cursor.execute(insert_stmt, {'off_pid':off_pid, 'datePaid':date_paid,
     'payor_id':payor_id, 'amount':amt, 'payee_id':payee_id, 'descr':descr,
     'purpose':purpose, 'notice_rec':notice_rec, 'session_year':session_year}
-  print(behest_dict)
-  dd_cursor.execute(insert_stmt, behest_dict)
 
 '''
 Parse the row and insert the information to DDDB. It then returns the current 
@@ -269,7 +266,6 @@ def parse_row(dd_cursor, attribs, official):
     #pattern = '\d{1,2}/\d{1,2}-\d{1,2}/\d{1,2}/\d{2}'
     #if re.match(pattern, date_paid):
     date_paid = date_paid.split('-')[0].strip()
-    print(date_paid)
     try:
       date_paid = (datetime.strptime(date_paid, '%m/%d/%y').
        strftime('%Y-%m-%d'))
@@ -320,17 +316,12 @@ def main():
   download_behests()
 
   # Opening db connection
-  #with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-  #                     port=3306,
-  #                     db='DDDB2015July',
-  #                     user='awsDB',
-  #                     passwd='digitaldemocracy789') as dd_cursor:
+  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+                       port=3306,
+                       db='DDDB2015July',
+                       user='awsDB',
+                       passwd='digitaldemocracy789') as dd_cursor:
 
-  with MySQLdb.connect(host = 'dev.digitaldemocracy.org',
-                       port = 3306,
-                       db = 'parose_dddb',
-                       user = 'parose',
-                       passwd = 'parose221') as dd_cursor:
     # Opening file and start at the header_line number
     assembly = openpyxl.load_workbook("assembly_behests.xlsx", data_only = True)
     assembly_ws = assembly['Sheet1']
