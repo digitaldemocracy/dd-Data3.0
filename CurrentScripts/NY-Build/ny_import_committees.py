@@ -47,15 +47,23 @@ select_serveson = '''SELECT pid
                       AND state = %(state)s'''
 
 insert_committee = '''INSERT INTO Committee
-                       (cid, house, name, state)
+                       (cid, house, name, state, room)
                       VALUES
-                       (%(cid)s, %(house)s, %(name)s, %(state)s);'''                                                       
+                       (%(cid)s, %(house)s, %(name)s, %(state)s, %(room)s);'''                                                       
 
 insert_serveson = '''INSERT INTO servesOn
                       (pid, year, house, cid, state, position)
                      VALUES
                       (%(pid)s, %(year)s, %(house)s, %(cid)s, %(state)s,
                       %(position)s);'''
+
+update_committee_contact = '''UPDATE Committee
+                              SET room = %(room)s
+                              WHERE cid = %(cid)s
+                               AND house = %(house)s
+                               AND state = %(state)s
+                               AND name = %(name)s'''
+
 API_YEAR = 2016
 API_URL = "http://legislation.nysenate.gov/api/3/{0}/{1}{2}?full=true&"
 API_URL += "limit=1000&key=31kNDZZMhlEjCOV8zkBG1crgWAGxwDIS&offset={3}"
@@ -145,7 +153,7 @@ def is_comm_in_db(comm, cur):
         if query is None:                   
             return False       
     except:
-        print(traceback.format_exc())
+        logger.warning('Select query failed', full_msg = traceback.format_exc())
         return False
     return query
 
@@ -161,12 +169,22 @@ def is_serveson_in_db(member, cur):
         #  'state':member['state'], 'cid':member['cid'], 'year':member['year']})
         query = cur.fetchone()
         
-        if query is None:            
+        if query is None:
             return False       
-    except:            
-        return False    
+    except:         
+        logger.warning('Select query failed', full_msg = traceback.format_exc())   
     
     return True
+
+def update_contact_info(comm, cur):
+    if comm['room'] != None:
+        try:
+            temp = {'cid': comm['cid'], 'name': comm['name'], 'house':comm['house'], 'state':comm['state'], 'room':comm['room']}
+            print(temp)
+            cur.execute(update_committee_contact, temp)
+        except:
+            logger.warning('Update failed', full_msg = traceback.format_exc(),
+             additional_fields = create_payload('Committee', (update_committee_contact % temp)))
 
 #function to call senate API and process all necessary data into lists and     
 #dictionaries. Returns list of committee dicts
@@ -179,6 +197,10 @@ def get_committees_api():
         committee['name'] = comm['name']        
         committee['house'] = "Senate"
         committee['state'] = STATE
+        print(comm['location'])
+        committee['room'] = None
+        if len(comm['location'].split(" ")) >= 2:
+            committee['room'] = comm['location'].split(" ")[1]
         committee['members'] = list()
         members = comm['committeeMembers']['items']
         
@@ -224,13 +246,14 @@ def add_committees_db(cur):
             committee['cid'] = str(cid)
             try:
               cur.execute(insert_committee, {'cid':committee['cid'], 
-                'house':committee['house'], 'name':committee['name'], 'state':committee['state']})
+                  'house':committee['house'], 'name':committee['name'], 'state':committee['state'], 'room':committee['room']})
               C_INSERTED += cur.rowcount
             except MySQLdb.Error:
               logger.warning('Insert Failed', full_msg=traceback.format_exc(),        
                     additional_fields=create_payload('Committee', (insert_committee % committee)))
         else:
             committee['cid'] = get_cid[0]
+            update_contact_info(committee, cur)
                    
         for member in committee['members']:
             member['pid'] = get_pid_db(member, cur)
@@ -244,7 +267,7 @@ def add_committees_db(cur):
                 logger.warning('Insert Failed', full_msg=traceback.format_exc(),        
                       additional_fields=create_payload('servesOn', (insert_serveson % member)))
               y += 1
-                
+            
     #print "Added %d committees and %d members" % (x,y)                        
 
 #function to get PID of person based on name.     
