@@ -31,6 +31,7 @@ Populates:
 from Database_Connection import mysql_connection
 import traceback
 from lxml import etree 
+import unicodedata
 import MySQLdb
 import re
 from graylogger.graylogger import GrayLogger                                    
@@ -133,6 +134,7 @@ def billparse(ca_cursor, dd_cursor):
   for vid, xml in get_bill_versions(ca_cursor):
     # This line will fail if |xml| is not valid XML.
     try:
+      xml = unicodedata.normalize('NFKD', xml).encode('ascii', 'ignore')
       root = etree.fromstring(xml)
       print('passed'+vid)
     except:
