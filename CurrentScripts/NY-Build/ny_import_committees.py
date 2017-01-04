@@ -15,11 +15,13 @@ from Database_Connection import mysql_connection
 import traceback
 import requests
 import MySQLdb
+import re
 from graylogger.graylogger import GrayLogger
 GRAY_URL = 'http://dw.digitaldemocracy.org:12202/gelf'
 logger = None
 C_INSERTED = 0
 S_INSERTED = 0
+C_UPDATED = 0
 
 select_committee_last = '''SELECT cid FROM Committee
                            ORDER BY cid DESC
@@ -177,14 +179,16 @@ def is_serveson_in_db(member, cur):
     return True
 
 def update_contact_info(comm, cur):
+    rows_updated = 0
     if comm['room'] != None:
         try:
             temp = {'cid': comm['cid'], 'name': comm['name'], 'house':comm['house'], 'state':comm['state'], 'room':comm['room']}
-            print(temp)
             cur.execute(update_committee_contact, temp)
+            rows_updated += 1
         except:
             logger.warning('Update failed', full_msg = traceback.format_exc(),
              additional_fields = create_payload('Committee', (update_committee_contact % temp)))
+    return rows_updated
 
 #function to call senate API and process all necessary data into lists and     
 #dictionaries. Returns list of committee dicts
@@ -197,10 +201,10 @@ def get_committees_api():
         committee['name'] = comm['name']        
         committee['house'] = "Senate"
         committee['state'] = STATE
-        print(comm['location'])
         committee['room'] = None
-        if len(comm['location'].split(" ")) >= 2:
-            committee['room'] = comm['location'].split(" ")[1]
+        room_num = re.findall(r'\d+', comm['location'])
+        if len(room_num) > 0:
+            committee['room'] = room_num[0]
         committee['members'] = list()
         members = comm['committeeMembers']['items']
         
@@ -233,7 +237,7 @@ def get_committees_api():
 #only adds committees if they do not exist and only adds to servesOn if member
 #is not already there.
 def add_committees_db(cur):
-    global C_INSERTED, S_INSERTED
+    global C_INSERTED, S_INSERTED, C_UPDATED
     committees = get_committees_api()
     x = 0
     y = 0
@@ -253,7 +257,7 @@ def add_committees_db(cur):
                     additional_fields=create_payload('Committee', (insert_committee % committee)))
         else:
             committee['cid'] = get_cid[0]
-            update_contact_info(committee, cur)
+            C_UPDATED += update_contact_info(committee, cur)
                    
         for member in committee['members']:
             member['pid'] = get_pid_db(member, cur)
@@ -293,6 +297,7 @@ def main():
                                          ', servesOn:'+str(S_INSERTED),
                              '_inserted':'Committee:'+str(C_INSERTED)+
                                          ', servesOn:'+str(S_INSERTED),
+                             '_updated':'Committee:'+str(C_UPDATED),
                              '_state':'NY'})
 
 if __name__ == '__main__':
