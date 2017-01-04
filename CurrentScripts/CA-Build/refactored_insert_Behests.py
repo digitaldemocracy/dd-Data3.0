@@ -40,8 +40,15 @@ import MySQLdb
 import openpyxl
 from pprint import pprint
 from datetime import datetime
+from Database_Connection import mysql_connection
+from graylogger.graylogger import GrayLogger
 
 # Global Data
+#GreyLogger info
+API_URL = "http://dw.digitaldemocracy.org:12202/gelf"
+logger = None
+B_INSERT = 0
+
 #URLS for behest data
 ASSEMBLY_URL = "http://www.fppc.ca.gov/content/dam/fppc/documents/behested-payments/2016/2016_Assembly.xlsx"
 
@@ -79,6 +86,11 @@ NAME_EXCEPTIONS = {
     "Vidak, James Andy":"Vidak, Andy",
 }
 
+def create_payload(table, sqlstmt):
+  return {'_table':table,
+          '_sqlstmt':sqlstmt,
+          '_state':'CA'}
+
 '''
 Finds the pid of the official. If found, returns tuple (name, pid). Otherwise,
 (name, -1).
@@ -110,7 +122,15 @@ def create_organization(dd_cursor, org, city, state):
                    VALUES
                    (%(name)s, %(city)s, %(state)s);
                 '''
-  dd_cursor.execute(insert_stmt, {'name':org, 'city':city, 'state':state})
+  
+  temp = {'name': org, 'city': city, 'state':state}
+
+  try:
+    dd_cursor.execute(insert_stmt, temp)
+  except:
+    logger.warning("Insert statement failed.", full_msg = traceback.format_exc(),
+     additional_fields = create_payload('Organizations', (insert_stmt % temp)))
+  
   return dd_cursor.lastrowid
 
 '''
@@ -138,7 +158,13 @@ def create_payor(dd_cursor, payor, city, state):
   insert_stmt = '''INSERT INTO Payors (name, city, state)
                    VALUES (%(name)s, %(city)s, %(state)s);
                 '''
-  dd_cursor.execute(insert_stmt, {'name':payor, 'city':city, 'state':state})
+  temp = {'name':payor, 'city':city, 'state':state}
+    
+  try:
+    dd_cursor.execute(insert_stmt, temp)
+  except:
+    logger.warning("Insert statement failed.", full_msg = traceback.format_exc(),
+     additional_fields = create_payload('Payors', (insert_stmt % temp)))
   return dd_cursor.lastrowid
 
 '''
@@ -205,7 +231,7 @@ def create_behest(dd_cursor,
     off_pid, date_paid, payor_id, amt, payee_id, descr, purpose, notice_rec):
   if duplicate_behest(dd_cursor, off_pid, date_paid, payor_id, amt, payee_id,
       descr, purpose, notice_rec):
-    return -1
+    return 0
 
   session_year = get_session_year(dd_cursor)
 
@@ -216,9 +242,17 @@ def create_behest(dd_cursor,
                      %(payee_id)s, %(descr)s, %(purpose)s, %(notice_rec)s, %(session_year)s)
                 ''' 
   
-  dd_cursor.execute(insert_stmt, {'off_pid':off_pid, 'datePaid':date_paid,
-    'payor_id':payor_id, 'amount':amt, 'payee_id':payee_id, 'descr':descr,
-    'purpose':purpose, 'notice_rec':notice_rec, 'session_year':session_year}
+  temp = {'off_pid':off_pid, 'datePaid':date_paid, 'payor_id':payor_id,
+    'amount':amt, 'payee_id':payee_id, 'descr':descr, 'purpose':purpose,
+    'notice_rec':notice_rec, 'session_year':session_year}
+
+  try:
+    dd_cursor.execute(insert_stmt, temp)
+  except:
+    logger.warning("Insert statement failed.", full_msg = traceback.format_exc(),
+     additional_fields = create_payload('Behests', (insert_stmt % temp)))
+
+  return dd_cursor.rowcount
 
 '''
 Parse the row and insert the information to DDDB. It then returns the current 
@@ -226,6 +260,8 @@ official because the Behest files don't have the officials mentioned every
 line. (see Behest data)
 '''
 def parse_row(dd_cursor, attribs, official):
+  global B_INSERT
+
   # Assume if Official and Payor are blank, the line is unnecessary
   if attribs[COL['official']].value == None and attribs[COL['payor']].value == None:
     return official
@@ -275,25 +311,13 @@ def parse_row(dd_cursor, attribs, official):
     #else:
     #  print('Incorrect date format! %s' % date_paid)
  
-  create_behest(dd_cursor, pid, date_paid, payor_id, amount, payee_id, descr, 
+  B_INSERT += create_behest(dd_cursor, pid, date_paid, payor_id, amount, payee_id, descr, 
       purpose, notice_rec)
   return official
 
 '''
-Check the arguments passed in for any initial errors and raise an error if so
+Downloads behest information from the FPPC website
 '''
-def check_args(args):
-  # Check number of arguments
-  if len(args) != NUM_ARGS:
-    print('usage: python insert_Behests.py [file_name.csv]')
-    print('Ex: python insert_Behests.py 2015-Senate.csv')
-    raise Exception('Bad arguments')
-
-  # Check if file is .csv
-  elif (os.path.basename(args[1])).split('.')[1] != 'csv':
-    print('Please use .csv file')
-    raise Exception('Bad arguments')
-
 def download_behests():
   with open("senate_behests.xlsx", "wb") as file:
     response = requests.get(SENATE_URL)
@@ -309,35 +333,38 @@ def main():
   # Current Official (as (name, pid) tuple)
   cur_official = (None, -1)
 
-  # Check arguments
-  #check_args(sys.argv)
-  #file_name = sys.argv[1]
-
   download_behests()
 
+  dbinfo = mysql_connection(sys.argv)
+
   # Opening db connection
-  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-                       port=3306,
-                       db='DDDB2015July',
-                       user='awsDB',
-                       passwd='digitaldemocracy789') as dd_cursor:
+  with MySQLdb.connect(host = dbinfo['host'],
+                       port = dbinfo['port'],
+                       db = dbinfo['db'],
+                       user = dbinfo['user'],
+                       passwd = dbinfo['passwd']) as dd_cursor:
+    with GrayLogger(API_URL) as _logger:
+      logger = _logger  
+      
+      # Opening file and start at the header_line number
+      assembly = openpyxl.load_workbook("assembly_behests.xlsx", data_only = True)
+      assembly_ws = assembly['Sheet1']
 
-    # Opening file and start at the header_line number
-    assembly = openpyxl.load_workbook("assembly_behests.xlsx", data_only = True)
-    assembly_ws = assembly['Sheet1']
+      for row in assembly_ws.iter_rows(min_row = 6, max_row = assembly_ws.max_row):
+        cur_official = parse_row(dd_cursor, row, cur_official)
 
-    for row in assembly_ws.iter_rows(min_row = 6, max_row = assembly_ws.max_row):
-    #if row[COL['official']].value != None:
-      #print row[COL['official']].value
-      cur_official = parse_row(dd_cursor, row, cur_official)
+      senate = openpyxl.load_workbook("senate_behests.xlsx", data_only = True)
+      senate_ws = senate['Sheet1']
 
-    senate = openpyxl.load_workbook("senate_behests.xlsx", data_only = True)
-    senate_ws = senate['Sheet1']
+      for row in senate_ws.iter_rows(min_row = 6, max_row = senate_ws.max_row):
+        cur_official = parse_row(dd_cursor, row, cur_official)
 
-    for row in senate_ws.iter_rows(min_row = 6, max_row = senate_ws.max_row):
-      #if row[COL['official']].value != None:
-        #print row[COL['official']].value
-      cur_official = parse_row(dd_cursor, row, cur_official)
+      logger.info(__file__ + " terminated successfully.",
+        full_msg = "Inserted " + str(B_INSERT) + " rows in Behests.",
+        additional_fields = {'_affected_rows': "Behests: " + str(B_INSERT),
+                             '_inserted': "Behests: " + str(B_INSERT),
+                             '_state': 'CA',
+                             '_log_type': 'Database'})
 
 if __name__ == "__main__":
   main()
