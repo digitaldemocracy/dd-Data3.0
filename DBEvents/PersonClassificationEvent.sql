@@ -1,14 +1,3 @@
-describe PersonClassifications;
-
-select count(*)
-from Person;
-
-select count(*)
-from Person p
-  left join PersonClassifications pc
-    on pc.pid = p.pid
-where pc.pid is null;
-
 CREATE OR REPLACE VIEW LabeledLeg
 AS
   SELECT p.pid,
@@ -19,6 +8,7 @@ AS
   JOIN Legislator l
   ON p.pid = l.pid;
 
+-- Currently Term doesn't have values for start and end and this is fucking you
 CREATE OR REPLACE VIEW SplitTerm
   AS
 SELECT t1.pid, t1.year as session_year, YEAR(t1.start) as specific_year
@@ -399,7 +389,7 @@ where pc.pid is null;
 
 
 alter table PersonClassifications
-  add dr_id INT UNIQUE;
+  add dr_id INT AUTO_INCREMENT UNIQUE ;
 
 alter table PersonClassifications
     add index person_type_idx (PersonType),
@@ -424,5 +414,7 @@ DROP VIEW LobTerms;
 DROP VIEW LabeledLobFull;
 DROP TABLE AllPeeps;
 DROP VIEW UnlabeledPeople;
+
+alter table PersonClassifications
 
 -- DROP TABLE LabeledUtterances;

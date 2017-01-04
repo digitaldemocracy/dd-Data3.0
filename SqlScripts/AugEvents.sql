@@ -346,6 +346,7 @@ DO
 delimiter ;
 
 
+
 DROP EVENT IF EXISTS OrgAlignments;
 delimiter |
 

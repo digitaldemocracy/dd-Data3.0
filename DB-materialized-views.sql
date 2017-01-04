@@ -8,6 +8,15 @@ AS SELECT uid, vid, pid, time, endTime, text, type, alignment, state, did,
    FROM Utterance
    WHERE current = TRUE AND finalized = TRUE ORDER BY time DESC;
 
+/*
+  Unsorted version maintained because it speeds up indexing
+*/
+CREATE OR REPLACE VIEW currentUtteranceUnsorted
+AS SELECT uid, vid, pid, time, endTime, text, type, alignment, state, did,
+     lastTouched, lastTouched_ts
+   FROM Utterance
+   WHERE current = TRUE AND finalized = TRUE;
+
 
 /*
   Gives the participation for non-legislator speakers in transcribed Hearings
@@ -165,7 +174,10 @@ CREATE TABLE `GiftCombined` (
   KEY `state` (`state`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-# Basically like current utterance. Rebuilt every night
+
+/*
+  Site uses this to know which BillVersion is the latest and keep track of what to display.
+*/
 CREATE TABLE IF NOT EXISTS BillVersionCurrent (
   vid                 VARCHAR(33),
   bid                 VARCHAR(23),
@@ -201,14 +213,23 @@ CREATE TABLE UnionedRepresentations (
   state VARCHAR(2)
 );
 
-CREATE TABLE UnionedLobbyistEmployers (
+
+/*
+  Used for diplaying 'Known Employers' on the site.
+*/
+CREATE TABLE IF NOT EXISTS CombinedLobbyistEmployers (
   pid INT,
   assoc_name VARCHAR(255),
   rpt_date DATE,
   rpt_date_ts INT,
-  beg_year YEAR,
-  end_year YEAR,
-  state VARCHAR(2)
+  ls_beg_yr YEAR,
+  ls_end_yr YEAR,
+  state VARCHAR(2),
+
+  INDEX pid_idx (pid),
+  INDEX state_idx (state),
+  INDEX ls_beg_yr_idx (ls_beg_yr),
+  INDEX ls_end_yr_idx (ls_end_yr)
 );
 
 CREATE TABLE KnownClients (

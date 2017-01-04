@@ -266,7 +266,9 @@ alter table KnownClients
 
 
 alter table Behests
-  add Index sessionYear (sessionYear);
+    drop INDEX sessionYear;
+alter table Behests
+  add Index sessionYear_idx (sessionYear);
 
 alter table Gift
   add Index session_year_idx (sessionYear);
@@ -315,3 +317,26 @@ alter table Hearing
 
 alter table Organizations
   add index name_idx (name);
+
+alter table LegAvgPercentParticipation
+    add INDEX pid_idx (pid);
+
+alter table LegParticipation
+  add INDEX pid_idx (pid),
+  add INDEX  hid_idx (hid),
+  add INDEX  did_idx (did),
+  add INDEX  bid_idx (bid);
+
+alter table CombinedLobbyistEmployers
+    add index pid_idx (pid),
+    add INDEX state_idx (state),
+    add INDEX ls_beg_yr_idx (ls_beg_yr),
+    add INDEX ls_end_yr_idx (ls_end_yr);
+
+-- Missing from materialized views script
+alter table CombinedRepresentations
+    add INDEX state_idx (state);
+
+
+show tables;
+

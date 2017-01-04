@@ -15,11 +15,16 @@ note: this will only work on the currently used database
   Represents a state. e.g. California, Arizona
 
   Sources: None (Done manually)
+  NOTE:
+    - Our server is on GMT time
+    - Florida has two time zones, we default to using the capital
+    - Arizona switches time zones which could screw up that gmt offset
 */
 CREATE TABLE IF NOT EXISTS State (
   abbrev  VARCHAR(2),  -- eg CA, AZ
   country  VARCHAR(200), -- eg United States
   name   VARCHAR(200), -- eg Caliornia, Arizona
+  gmt_offset INT, -- Hour difference between this states time zone and GMT
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
   lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
   dr_id INTEGER UNIQUE AUTO_INCREMENT,
@@ -164,7 +169,9 @@ CREATE TABLE IF NOT EXISTS Organizations (
   lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
 
   PRIMARY KEY (oid),
-  FOREIGN KEY (stateHeadquarterd) REFERENCES State(abbrev)
+  FOREIGN KEY (stateHeadquarterd) REFERENCES State(abbrev),
+
+  INDEX name_idx (name)
 )
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
@@ -281,7 +288,7 @@ CREATE TABLE IF NOT EXISTS Term (
             NY: ny_import_committees.py, ny_import_committees_scrape_assembly.py
 */
 CREATE TABLE IF NOT EXISTS Committee (
-  cid    INTEGER(3),               -- Committee id
+  cid    INTEGER(3) AUTO_INCREMENT,               -- Committee id
   session_year YEAR,
   current_flag BOOL,
   house  VARCHAR(200) NOT NULL,
@@ -295,10 +302,11 @@ CREATE TABLE IF NOT EXISTS Committee (
   state VARCHAR(2),
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
   lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
-  dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
   PRIMARY KEY (cid),
   UNIQUE (session_year, house, name, state),
+  UNIQUE (cid, session_year, house, state), -- This shouldn't be necessary, but we have
+  -- redundant info in servesOn and I want to enforce a foreign key
   FOREIGN KEY (state) REFERENCES State(abbrev),
   FOREIGN KEY (house, state) REFERENCES House(name, state)
 )
@@ -327,6 +335,9 @@ CREATE TABLE IF NOT EXISTS servesOn (
   dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
   PRIMARY KEY (pid, year, house, state, cid),
+  FOREIGN KEY (cid, year, house, state) REFERENCES Committee(cid, year, house, state),
+  -- ^^ This key is really gross, but we have this data in servesOn and I need
+  -- to enforce this constraint to avoid problems.
   FOREIGN KEY (cid) REFERENCES Committee(cid),
   FOREIGN KEY (house, state) REFERENCES House(name, state),
   FOREIGN KEY (state) REFERENCES State(abbrev)
@@ -452,7 +463,10 @@ CREATE TABLE IF NOT EXISTS Hearing (
 
 
   PRIMARY KEY (hid),
-  FOREIGN KEY (state) REFERENCES State(abbrev)
+  FOREIGN KEY (state) REFERENCES State(abbrev),
+
+  INDEX session_year_id (session_year),
+  INDEX date_idx (date)
 )
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
@@ -807,7 +821,6 @@ CREATE TABLE IF NOT EXISTS Utterance (
   CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 
-
 /*
   Whenever an organization gives something to a legislator, that must be recorded. This table
   keeps track of all those "gifts".
@@ -839,7 +852,9 @@ CREATE TABLE IF NOT EXISTS Gift (
   PRIMARY KEY(RecordId),
   FOREIGN KEY (oid) REFERENCES Organizations(oid),
   FOREIGN KEY (pid) REFERENCES Person(pid),
-  FOREIGN KEY (state) REFERENCES State(abbrev)
+  FOREIGN KEY (state) REFERENCES State(abbrev),
+
+  INDEX session_year_idx (session_year)
 )
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
@@ -882,7 +897,7 @@ CREATE TABLE IF NOT EXISTS Contribution (
   Sources: CA: refactored_Cal-Access-Accessor.py
            NY: ny_import_lobbyists.py
  */
-CREATE TABLE IF NOT EXISTS Lobbyist(
+CREATE TABLE IF NOT EXISTS Lobbyist (
   pid INTEGER,   -- added
   -- FILER_NAML VARCHAR(50),               modified, needs to be same as Person.last
   -- FILER_NAMF VARCHAR(50),               modified, needs to be same as Person.first
@@ -894,7 +909,9 @@ CREATE TABLE IF NOT EXISTS Lobbyist(
 
   PRIMARY KEY (pid, state),                    -- added
   FOREIGN KEY (pid) REFERENCES Person(pid),
-  FOREIGN KEY (state) REFERENCES State(abbrev)
+  FOREIGN KEY (state) REFERENCES State(abbrev),
+
+  INDEX session_year_idx (session_year)
 )
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
@@ -1186,7 +1203,7 @@ CREATE TABLE IF NOT EXISTS LegAnalystOffice(
   Source: CA: Transcription Tool
           NY: Transcription Tool
  */
-CREATE TABLE IF NOT EXISTS LegAnalystOfficeRepresentation(
+CREATE TABLE IF NOT EXISTS LegAnalystOfficeRepresentation (
   pid INTEGER REFERENCES Person(pid),   -- added
   hid   INTEGER,                       -- added
   did INTEGER,
@@ -1397,7 +1414,10 @@ CREATE TABLE IF NOT EXISTS Behests (
   FOREIGN KEY(official) REFERENCES Person(pid),
   FOREIGN KEY(payor) REFERENCES Payors(prid),
   FOREIGN KEY(payee) REFERENCES Organizations(oid),
-  FOREIGN KEY (state) REFERENCES State(abbrev)
+  FOREIGN KEY (state) REFERENCES State(abbrev),
+
+  INDEX sessionYear_idx (sessionYear),
+  INDEX oid_idx (oid)
 )
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
