@@ -32,6 +32,53 @@ where lr.did = 0
            or bd.bid = 'NY_NO BILL DISCUSSED');
 
 
+-- Clear cut case of one bill discussion
+select *
+from LobbyistRepresentation lr
+  join (select hid, did
+        from BillDiscussion bd
+        group by hid
+        having count(distinct did) = 1) t
+    on lr.hid = t.hid
+  join BillDiscussion bd
+    on lr.did = bd.did
+where lr.hid != bd.hid;
+
+
+update LobbyistRepresentation lr
+  join (select hid, did
+        from BillDiscussion bd
+        group by hid
+        having count(distinct did) = 1) t
+    on lr.hid = t.hid
+  join BillDiscussion bd
+    on lr.did = bd.did
+set lr.did = t.did
+where lr.hid != bd.hid;
+
+select *
+from GeneralPublic lr
+  join (select hid, did
+        from BillDiscussion bd
+        group by hid
+        having count(distinct did) = 1) t
+    on lr.hid = t.hid
+  join BillDiscussion bd
+    on lr.did = bd.did
+where lr.hid != bd.hid;
+
+
+update GeneralPublic lr
+  join (select hid, did
+        from BillDiscussion bd
+        group by hid
+        having count(distinct did) = 1) t
+    on lr.hid = t.hid
+  join BillDiscussion bd
+    on lr.did = bd.did
+set lr.did = t.did
+where lr.hid != bd.hid;
+
 -- This case is the same as above, but for general public
 select count(distinct lr.pid, lr.oid, bd.did)
 from GeneralPublic lr
@@ -413,7 +460,7 @@ from LegislativeStaffRepresentation lr
 where lr.did = 0 or lr.did is null;
 
 -- smaller number but whatever, we're still gaining data
-select count(distinct lr.pid)
+select count(distinct lr.pid, v.hid)
 from LegislativeStaffRepresentation lr
   join Video v
     on lr.hid = v.hid

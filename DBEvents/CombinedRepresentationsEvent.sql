@@ -8,7 +8,6 @@ CREATE EVENT CombinedRepresentations_event
 DO
   BEGIN
 
-    drop table CombinedRepresentations;
     CREATE TABLE IF NOT EXISTS CombinedRepresentations (
       pid INT,
       hid INT,
@@ -19,7 +18,7 @@ DO
       lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
       dr_id INT AUTO_INCREMENT,
 
-#       PRIMARY KEY (pid, did, oid),
+      PRIMARY KEY (pid, did, oid),
       UNIQUE (dr_id),
 
       FOREIGN KEY (pid) REFERENCES Person(pid),
@@ -38,7 +37,7 @@ DO
     ENGINE = INNODB
     CHARACTER SET utf8 COLLATE utf8_general_ci;
 
-    CREATE VIEW CombinedRepresentationsView
+    CREATE OR REPLACE VIEW CombinedRepresentationsView
       AS
       SELECT
         pid,
@@ -73,6 +72,8 @@ DO
     WHERE t.pid IS NULL
       AND t.did IS NULL
       AND t.oid IS NULL;
+
+    DROP VIEW CombinedRepresentationsView;
 
     END |
 

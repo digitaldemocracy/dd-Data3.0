@@ -15,16 +15,11 @@ note: this will only work on the currently used database
   Represents a state. e.g. California, Arizona
 
   Sources: None (Done manually)
-  NOTE:
-    - Our server is on GMT time
-    - Florida has two time zones, we default to using the capital
-    - Arizona switches time zones which could screw up that gmt offset
 */
 CREATE TABLE IF NOT EXISTS State (
   abbrev  VARCHAR(2),  -- eg CA, AZ
   country  VARCHAR(200), -- eg United States
   name   VARCHAR(200), -- eg Caliornia, Arizona
-  gmt_offset INT, -- Hour difference between this states time zone and GMT
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
   lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
   dr_id INTEGER UNIQUE AUTO_INCREMENT,
@@ -120,6 +115,8 @@ CREATE TABLE IF NOT EXISTS Person (
   image VARCHAR(256),              -- path to image (if exists)
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
   lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
+  dr_changed INT DEFAULT NOW() ON UPDATE NOW(),
+  dr_changed_ts INT AS (UNIX_TIMESTAMP(dr_changed)),
 
   PRIMARY KEY (pid)
 )
@@ -234,7 +231,9 @@ CREATE TABLE IF NOT EXISTS Legislator (
 
   PRIMARY KEY (pid, state),
   FOREIGN KEY (pid) REFERENCES Person(pid),
-  FOREIGN KEY (state) REFERENCES State(abbrev)
+  FOREIGN KEY (state) REFERENCES State(abbrev),
+
+  INDEX state_idx (state)
 )
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
@@ -302,13 +301,18 @@ CREATE TABLE IF NOT EXISTS Committee (
   state VARCHAR(2),
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
   lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
+  dr_changed INT DEFAULT NOW() ON UPDATE NOW(),
+  dr_changed_ts INT AS (UNIX_TIMESTAMP(dr_changed)),
 
   PRIMARY KEY (cid),
   UNIQUE (session_year, house, name, state),
   UNIQUE (cid, session_year, house, state), -- This shouldn't be necessary, but we have
   -- redundant info in servesOn and I want to enforce a foreign key
   FOREIGN KEY (state) REFERENCES State(abbrev),
-  FOREIGN KEY (house, state) REFERENCES House(name, state)
+  FOREIGN KEY (house, state) REFERENCES House(name, state),
+
+  INDEX name_idx (name),
+  INDEX stae_idx (state)
 )
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
@@ -369,7 +373,11 @@ CREATE TABLE IF NOT EXISTS ConsultantServesOn (
   PRIMARY KEY (pid, cid, start_date),
   FOREIGN KEY (cid) REFERENCES Committee(cid),
   FOREIGN KEY (pid) REFERENCES LegislativeStaff(pid),
-  FOREIGN KEY (state) REFERENCES State(abbrev)
+  FOREIGN KEY (state) REFERENCES State(abbrev),
+
+  INDEX start_date_ts_idx (start_date_ts),
+  INDEX end_date_ts_idx (end_date_ts),
+  INDEX current_flag_idx (current_flag_idx)
 )
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
@@ -400,10 +408,13 @@ CREATE TABLE IF NOT EXISTS Bill (
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
   lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
   dr_id INTEGER UNIQUE AUTO_INCREMENT,
+  dr_changed INT DEFAULT NOW() ON UPDATE NOW(),
+  dr_changed_ts INT AS (UNIX_TIMESTAMP(dr_changed))
 
   PRIMARY KEY (bid),
   FOREIGN KEY (state) REFERENCES State(abbrev),
-  INDEX name (type, number)
+  INDEX name (type, number),
+  INDEX state_idx (state)
 )
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
@@ -460,13 +471,17 @@ CREATE TABLE IF NOT EXISTS Hearing (
   state  VARCHAR(2),
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
   lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
+  dr_changed INT DEFAULT NOW() ON UPDATE NOW(),
+  dr_changed_ts INT AS (UNIX_TIMESTAMP(dr_changed)),
 
 
   PRIMARY KEY (hid),
   FOREIGN KEY (state) REFERENCES State(abbrev),
 
-  INDEX session_year_id (session_year),
-  INDEX date_idx (date)
+  INDEX session_year_idx (session_year),
+  INDEX date_idx (date),
+  INDEX date_ts_idx (date_ts),
+  INDEX state_idx (state)
 )
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
@@ -537,7 +552,9 @@ CREATE TABLE IF NOT EXISTS Action (
   lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
   dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
-  FOREIGN KEY (bid) REFERENCES Bill(bid)
+  FOREIGN KEY (bid) REFERENCES Bill(bid),
+
+  INDEX date_ts_idx (date_ts)
 )
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
@@ -564,7 +581,9 @@ CREATE TABLE IF NOT EXISTS Video (
 
   PRIMARY KEY (vid),
   FOREIGN KEY (hid) REFERENCES Hearing(hid),
-  FOREIGN KEY (state) REFERENCES State(abbrev)
+  FOREIGN KEY (state) REFERENCES State(abbrev),
+
+  INDEX state_idx (state)
 )
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
@@ -606,6 +625,8 @@ CREATE TABLE IF NOT EXISTS BillDiscussion (
   numVideos   INTEGER(4),
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
   lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
+  dr_changed INT DEFAULT NOW() ON UPDATE NOW(),
+  dr_changed_ts INT AS (UNIX_TIMESTAMP(dr_changed))
 
   PRIMARY KEY (did),
   UNIQUE KEY (bid, startVideo, startTime),
@@ -661,7 +682,9 @@ CREATE TABLE IF NOT EXISTS BillVoteSummary (
   PRIMARY KEY(voteId),
   FOREIGN KEY (mid) REFERENCES Motion(mid),
   FOREIGN KEY (bid) REFERENCES Bill(bid),
-  FOREIGN KEY (cid) REFERENCES Committee(cid)
+  FOREIGN KEY (cid) REFERENCES Committee(cid),
+
+  INDEX VoteDate_ts_idex (VoteDate_ts)
 )
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
@@ -809,13 +832,17 @@ CREATE TABLE IF NOT EXISTS Utterance (
   state VARCHAR(2),
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
   lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
+  dr_changed INT DEFAULT NOW() ON UPDATE NOW(),
+  dr_changed_ts INT AS (UNIX_TIMESTAMP(dr_changed))
 
   PRIMARY KEY (uid),
   UNIQUE KEY (uid, vid, pid, current, time),
   FOREIGN KEY (pid) REFERENCES Person(pid),
   FOREIGN KEY (vid) REFERENCES Video(vid),
   FOREIGN KEY (did) REFERENCES BillDiscussion(did),
-  FOREIGN KEY (state) REFERENCES State(abbrev)
+  FOREIGN KEY (state) REFERENCES State(abbrev),
+
+  INDEX state_idx (state)
 )
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
@@ -885,7 +912,11 @@ CREATE TABLE IF NOT EXISTS Contribution (
   PRIMARY KEY(id),
   FOREIGN KEY (oid) REFERENCES Organizations(oid),
   FOREIGN KEY (pid) REFERENCES Person(pid),
-  FOREIGN KEY (state) REFERENCES State(abbrev)
+  FOREIGN KEY (state) REFERENCES State(abbrev),
+
+  INDEX state_idx (state),
+  INDEX date_ts_idx (date_ts),
+  INDEX donorName_idx (donorName)
 )
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
@@ -911,7 +942,8 @@ CREATE TABLE IF NOT EXISTS Lobbyist (
   FOREIGN KEY (pid) REFERENCES Person(pid),
   FOREIGN KEY (state) REFERENCES State(abbrev),
 
-  INDEX session_year_idx (session_year)
+  INDEX session_year_idx (session_year),
+  INDEX state_idx (state)
 )
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
@@ -956,7 +988,8 @@ CREATE TABLE IF NOT EXISTS LobbyingFirmState (
 
   PRIMARY KEY (filer_id, state),
   FOREIGN KEY (state) REFERENCES State(abbrev),
-  FOREIGN KEY (filer_naml) REFERENCES LobbyingFirm(filer_naml)
+  FOREIGN KEY (filer_naml) REFERENCES LobbyingFirm(filer_naml),
+
 )
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
@@ -974,7 +1007,7 @@ CREATE TABLE IF NOT EXISTS LobbyistEmployer (
    coalition TINYINT(1),
    state VARCHAR(2),
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
-  lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
+   lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
    dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
    PRIMARY KEY (oid, state),
@@ -1083,10 +1116,10 @@ CREATE TABLE IF NOT EXISTS LobbyistRepresentation (
    did INTEGER,
    state VARCHAR(2),
    lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
-  lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
+   lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
    dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
-   PRIMARY KEY(pid, oid, hid, did),                 -- added
+   PRIMARY KEY(pid, did, oid),                 -- added
    FOREIGN KEY (pid) REFERENCES Lobbyist(pid),
    FOREIGN KEY (hid) REFERENCES Hearing(hid),
    FOREIGN KEY (oid, state) REFERENCES LobbyistEmployer(oid, state),
@@ -1103,7 +1136,7 @@ CHARACTER SET utf8 COLLATE utf8_general_ci;
   Sources: CA: Transcription Tool
            NY: Transcription Tool
  */
-CREATE TABLE IF NOT EXISTS GeneralPublic(
+CREATE TABLE IF NOT EXISTS GeneralPublic (
   pid INTEGER,   -- added
   position VARCHAR(100),
   RecordId INTEGER AUTO_INCREMENT,
@@ -1115,6 +1148,8 @@ CREATE TABLE IF NOT EXISTS GeneralPublic(
   lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
 
   PRIMARY KEY (RecordId),
+  UNIQUE (pid, did, oid),
+
   FOREIGN KEY (pid) REFERENCES Person(pid),
   FOREIGN KEY (hid) REFERENCES Hearing(hid),
   FOREIGN KEY (did) REFERENCES BillDiscussion(did),
@@ -1163,7 +1198,7 @@ CREATE TABLE IF NOT EXISTS LegislativeStaffRepresentation (
   lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
   dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
-  PRIMARY KEY (pid, hid, did),                    -- added
+  PRIMARY KEY (pid, hid),                    -- added
   FOREIGN KEY (pid) REFERENCES LegislativeStaff(pid),
   FOREIGN KEY (legislator) REFERENCES Legislator(pid),
   FOREIGN KEY (hid) REFERENCES Hearing(hid),
@@ -1235,7 +1270,9 @@ CREATE TABLE IF NOT EXISTS StateAgency (
   dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
   PRIMARY KEY (name, state),
-  FOREIGN KEY (state) REFERENCES State(abbrev)
+  FOREIGN KEY (state) REFERENCES State(abbrev),
+
+  INDEX state_idx (state)
 )
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
@@ -1304,7 +1341,9 @@ CREATE TABLE IF NOT EXISTS StateConstOffice (
   dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
   PRIMARY KEY (name, state),
-  FOREIGN KEY (state) REFERENCES State(abbrev)
+  FOREIGN KEY (state) REFERENCES State(abbrev),
+
+  INDEX state_idx (state)
 )
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
@@ -1377,7 +1416,9 @@ CREATE TABLE IF NOT EXISTS Payors (
 
   PRIMARY KEY(prid),
   FOREIGN KEY (addressState) REFERENCES State(abbrev),
-  FOREIGN KEY (state) REFERENCES State(abbrev)
+  FOREIGN KEY (state) REFERENCES State(abbrev),
+
+  INDEX state_idx (state)
 )
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
@@ -1417,7 +1458,8 @@ CREATE TABLE IF NOT EXISTS Behests (
   FOREIGN KEY (state) REFERENCES State(abbrev),
 
   INDEX sessionYear_idx (sessionYear),
-  INDEX oid_idx (oid)
+  INDEX oid_idx (oid),
+  INDEX state_idx (state)
 )
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
@@ -1630,6 +1672,21 @@ CREATE TABLE OrgConceptAffiliation (
 )
 ENGINE = INNODB
 CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+
+/*
+  Used to track runs of your triggers for updating the Solr tables.
+ */
+CREATE TABLE DrChangedLogs (
+  solr_tbl VARCHAR(50),
+  solr_tbl_col VARCHAR(50),
+  update_tbl VARCHAR(50),
+  update_tbl_col VARCHAR(50),
+  type ENUM('UPDATE', 'INSERT', 'DELETE'),
+  lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW()
+)
+  ENGINE = INNODB
+  CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 
 -- TODO this should no longer be necessary

@@ -33,15 +33,6 @@ DO
       and did > -2
       group by pid, did;
 
-    alter table Utterance
-      drop current_utterance_flag;
-
-    CREATE OR REPLACE VIEW currentUtterance
-    AS SELECT uid, vid, pid, time, endTime, text, type, alignment, state, did,
-         lastTouched
-       FROM Utterance
-       WHERE current = TRUE AND finalized = TRUE ORDER BY time DESC;
-
   END |
 delimiter ;
 
