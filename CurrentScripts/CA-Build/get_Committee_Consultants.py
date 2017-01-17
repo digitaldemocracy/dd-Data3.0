@@ -14,7 +14,8 @@ Sources:
 
 Populates:
     - ConsultantServesOn (pid, session_year, cid, position, current_flag, start_date, end_date, state)
-
+    - Person (pid, first, last)
+    - LegislativeStaff (pid, state)
 '''
 
 from Database_Connection import mysql_connection
@@ -31,12 +32,19 @@ logger = None
 # Global Counters
 C_INSERT = 0
 C_UPDATE = 0
+P_INSERT = 0
+PSA_INSERT = 0
+L_INSERT = 0
 
 STATE = 'CA'
-SENATE_PROBLEM_SITES = ['seuc', 'shum', 'sjud', 'spsf', 'srul', 'stran', 'svet', 'shea']
+
+SENATE_PROBLEM_SITES = ['seuc', 'shum', 'sjud', 'spsf', 'srul', 'stran', 'svet', 'shea',
+                        'apia', 'childrenspecialneeds', 'mobilehomes', 'smup', 'sros', 'womenandinequality']
+
+SENATE_SELECT_STAFF = ['altc', 'apia', 'childrenspecialneeds', 'mobilehomes', 'smup', 'sros', 'womenandinequality']
+
 
 # SQL Queries
-
 SELECT_SESSION_YEAR = '''SELECT MAX(start_year)
                          FROM Session
                          WHERE state = 'CA'
@@ -92,6 +100,13 @@ INSERT_LEGSTAFF = '''INSERT
                      (%(pid)s, %(state)s)
                   '''
 
+INSERT_PERSON_STATE_AFF = '''INSERT
+                             INTO PersonStateAffiliation
+                             (pid, state)
+                             VALUES
+                             (%(pid)s, %(state)s)
+                          '''
+
 INSERT_CONSULT_SERVESON = '''INSERT
                              INTO ConsultantServesOn
                              (pid, session_year, cid, position, current_flag, start_date, state)
@@ -119,8 +134,7 @@ def create_payload(table, sqlstmt):
 def clean_strings(con_name):
     cleaned_strings = []
 
-    if 'NavigableString' in str(type(con_name)):
-        con_name = str(con_name.encode('utf-8'))
+    con_name = str(con_name.encode('utf-8'))
 
     # Remove whitespace and colons from string
     con_name = con_name.strip(':').strip('\xc2\xa0').strip()
@@ -186,6 +200,7 @@ def get_consultant_pid(consultant, dd):
         else:
             insert_person(consultant, dd)
             legstaff_pid = is_person_in_db(consultant, dd)
+            insert_person_state_aff(legstaff_pid, dd)
             insert_legstaff(legstaff_pid, dd)
             return legstaff_pid
 
@@ -236,20 +251,36 @@ def is_consultant_in_db(consultant, house, dd):
 
 
 def insert_person(consultant, dd):
+    global P_INSERT
     insert_dict = {'first': consultant['first'], 'last': consultant['last']}
 
     try:
         dd.execute(INSERT_PERSON, insert_dict)
+        P_INSERT += dd.rowcount
     except MySQLdb.Error:
         logger.warning("Insert statement failed", full_msg = traceback.format_exc(),
                        additional_fields = create_payload('Person', (INSERT_PERSON % insert_dict)))
 
 
+def insert_person_state_aff(legstaff_pid, dd):
+    global PSA_INSERT
+    insert_dict = {'pid': legstaff_pid, 'state': STATE}
+
+    try:
+        dd.execute(INSERT_PERSON_STATE_AFF, insert_dict)
+        PSA_INSERT += dd.rowcount
+    except MySQLdb.Error:
+        logger.warning("Insert statement failed", full_msg = traceback.format_exc(),
+                       additional_fields = create_payload('PersonStateAffiliation', (INSERT_PERSON_STATE_AFF % insert_dict)))
+
+
 def insert_legstaff(legstaff_pid, dd):
+    global L_INSERT
     insert_dict = {'pid': legstaff_pid, 'state': STATE}
 
     try:
         dd.execute(INSERT_LEGSTAFF, insert_dict)
+        L_INSERT += dd.rowcount
     except MySQLdb.Error:
         logger.warning("Insert statement failed", full_msg = traceback.format_exc(),
                        additional_fields = create_payload('LegislativeStaff', (INSERT_LEGSTAFF % insert_dict)))
@@ -274,13 +305,11 @@ def get_consultant_info(name, header, dd):
         consultant['first'] = names[0]
         consultant['last'] = names[1]
 
-    print(header.contents)
-
-    if 'Deputy Chief' in header.contents[0]:
+    if 'Deputy Chief' in header:
         consultant['position'] = 'Deputy Chief Consultant'
-    elif 'Secretary' in header.contents[0]:
+    elif 'Secretary' in header:
         consultant['position'] = 'Committee Secretary'
-    elif 'Chief' in header.contents[0]:
+    elif 'Chief' in header:
         consultant['position'] = 'Chief Consultant'
     else:
         consultant['position'] = None
@@ -308,12 +337,44 @@ def get_problematic_sites(comm_url, dd):
     htmlSoup = BeautifulSoup(urllib2.urlopen(comm_url).read())
 
     print("Problem site identified: " + commName)
-    if commName == 'shum':
+    #Select Committee Sites
+    if commName == 'apia':
+        header = htmlSoup.find('div', 'sidebar-information').find('p').find_all('strong')[1]
+        title_header = header.contents[4]
+        for name in clean_strings(header.contents[6]):
+            consultant_names.append(get_consultant_info(name, title_header, dd))
+    elif commName == 'childrenspecialneeds':
+        for header in htmlSoup.find_all('div', 'sidebar-information')[1].find_all('p'):
+            hcontents = header.contents[0]
+            if hcontents.name is None:
+                split_contents = hcontents.split(',')
+                for name in clean_strings(split_contents[0]):
+                    consultant_names.append(get_consultant_info(name, ''.join(split_contents[1:]), dd))
+    elif commName == 'mobilehomes':
+        header = htmlSoup.find('div', 'sidebar-information').find('p')
+        title_header = header.find_all('strong')[-1].contents[0]
+        for name in clean_strings(header.find('a').contents[0]):
+            consultant_names.append(get_consultant_info(name, title_header, dd))
+    elif commName == 'smup':
+        header = htmlSoup.find_all('div', 'sidebar-information')[1]
+        for name in clean_strings(header.find('li').contents[0]):
+            consultant_names.append(get_consultant_info(name, '', dd))
+    elif commName == 'sros':
+        header = htmlSoup.find_all('div', 'sidebar-information')[1].find('p')
+        title_header = header.contents[2]
+        for name in clean_strings(header.find('strong').contents[0].split(',')[0]):
+            consultant_names.append(get_consultant_info(name, title_header, dd))
+    elif commName == 'womenandinequality':
+        header = htmlSoup.find_all('div', 'sidebar-information')[1].find('p')
+        for name in clean_strings(header.contents[0]):
+            consultant_names.append(get_consultant_info(name, '', dd))
+    #Standing Committee Sites
+    elif commName == 'shum':
         for header in htmlSoup.find_all('div', 'sidebar-information')[1].find_all('ul'):
             #print(header.contents[1].string)
             title_header = header.find_previous_sibling('p').find('strong')
             for name in clean_strings(header.contents[1].string):
-                consultant_names.append(get_consultant_info(name, title_header, dd))
+                consultant_names.append(get_consultant_info(name, title_header.contents[0], dd))
     elif commName == 'spsf':
         for header in htmlSoup.find_all('div', 'sidebar-information')[1].find_all('p'):
             hcontents = header.contents[0]
@@ -322,21 +383,21 @@ def get_problematic_sites(comm_url, dd):
             elif hcontents.name is None:
                 #print(hcontents)
                 for name in clean_strings(hcontents):
-                    consultant_names.append(get_consultant_info(name, title_header, dd))
+                    consultant_names.append(get_consultant_info(name, title_header.contents[0], dd))
     elif commName == 'srul':
         header = htmlSoup.find_all('div', 'sidebar-information')[1].find('strong')
         #print(header.next_sibling)
         #print(header.find_next_sibling('a').string)
         for name in clean_strings(header.next_sibling):
-            consultant_names.append(get_consultant_info(name, header, dd))
+            consultant_names.append(get_consultant_info(name, header.contents[0], dd))
         for name in clean_strings(header.find_next_sibling('a').string):
-            consultant_names.append(get_consultant_info(name, header, dd))
+            consultant_names.append(get_consultant_info(name, header.contents[0], dd))
     else:
         for header in htmlSoup.find_all('div', 'sidebar-information')[1].find_all('strong'):
             if commName == 'seuc':
                 #print(header.find_next_sibling('a').string)
                 for name in clean_strings(header.find_next_sibling('a').string):
-                    consultant_names.append(get_consultant_info(name, header, dd))
+                    consultant_names.append(get_consultant_info(name, header.contents[0], dd))
             if commName == 'sjud':
                 nextSib = header.next_sibling
                 if nextSib is not None:
@@ -344,11 +405,11 @@ def get_problematic_sites(comm_url, dd):
                     if sibName != 'br':
                         #print(nextSib)
                         for name in clean_strings(nextSib):
-                            consultant_names.append(get_consultant_info(name, header, dd))
+                            consultant_names.append(get_consultant_info(name, header.contents[0], dd))
             if commName == 'stran' or commName == 'svet':
                 #print(header.find_next_sibling('a').string)
                 for name in clean_strings(header.find_next_sibling('a').string):
-                    consultant_names.append(get_consultant_info(name, header, dd))
+                    consultant_names.append(get_consultant_info(name, header.contents[0], dd))
             if commName == 'shea':
                 nextSib = header.next_sibling
                 sibName = nextSib.name
@@ -359,7 +420,7 @@ def get_problematic_sites(comm_url, dd):
                         nextSib = nextSib.next_sibling
                     else:
                         for name in clean_strings(nextSib):
-                            consultant_names.append(get_consultant_info(name, header, dd))
+                            consultant_names.append(get_consultant_info(name, header.contents[0], dd))
                         nextSib = nextSib.next_sibling
     return consultant_names
 
@@ -393,7 +454,7 @@ def scrape_consultants(comm_url, house, dd):
                         sibName = nextSib.name
                     #print(nextSib)
                     for name in clean_strings(nextSib):
-                        consultant_names.append(get_consultant_info(name, header, dd))
+                        consultant_names.append(get_consultant_info(name, header.contents[0], dd))
     #print(consultant_names)
     return consultant_names
 
@@ -408,7 +469,6 @@ def get_past_consultants(consultants, house, committee, dd):
         for consultant in query:
             isCurrent = False
             for commStaff in consultants:
-                print(str(consultant[0]) + ", " + commStaff['pid'])
                 if str(consultant[0]) == commStaff['pid']:
                     isCurrent = True
             if isCurrent is False:
@@ -436,13 +496,20 @@ def get_committees(house, dd):
                 print(link.get('href'))
                 consultants = scrape_consultants(link.get('href'), house, dd)
                 insert_consultants(consultants, house, link.string, dd)
+        elif 'Select' in block.find('h2').string:
+            for link in block.find(class_ = 'content').find_all('a'):
+                comm_name = link.get('href')
+                print(comm_name)
+                if comm_name.split('.')[0][7:] in SENATE_SELECT_STAFF:
+                    consultants = scrape_consultants(link.get('href'), house, dd)
+                    insert_consultants(consultants, house, link.string, dd)
+
 
 
 def insert_consultants(consultants, house, committee, dd):
     global C_INSERT, C_UPDATE
 
     for consultant in consultants:
-        print(consultant)
         cid = get_committee_cid(house, committee, dd)
         pid = get_consultant_pid(consultant, dd)
         consultant['cid'] = str(cid)
@@ -478,8 +545,25 @@ def main():
                          passwd=dbinfo['passwd'],
                          charset='utf8') as dd:
         get_committees('Senate', dd)
+        logger.info(__file__ + " terminated successfully.",
+                    full_msg = 'Inserted ' + str(P_INSERT) + ' rows in Person, '
+                               + str(PSA_INSERT) + ' rows in PersonStateAffiliation, '
+                               + str(L_INSERT) + ' rows in LegislativeStaff, and inserted '
+                               + str(C_INSERT) + ' rows and updated '
+                               + str(C_UPDATE) + ' rows in ConsultantServesOn',
+                    additional_fields = {'_affected_rows': 'ConsultantServesOn: '+str(C_INSERT + C_UPDATE)
+                                                           + ', Person: ' + str(P_INSERT)
+                                                           + ', PersonStateAffiliation: ' + str(PSA_INSERT)
+                                                           + ', LegislativeStaff: ' + str(L_INSERT),
+                                         '_inserted': 'ConsultantServesOn: '+str(C_INSERT)
+                                                      + ', Person: ' + str(P_INSERT)
+                                                      + ', PersonStateAffiliation: ' + str(PSA_INSERT)
+                                                      + ', LegislativeStaff: ' + str(L_INSERT),
+                                         '_updated': 'ConsultantServesOn: '+str(C_UPDATE),
+                                         '_state': 'CA'})
 
 if __name__ == '__main__':
     with GrayLogger(API_URL) as _logger:
         logger = _logger
-    main()
+        main()
+
