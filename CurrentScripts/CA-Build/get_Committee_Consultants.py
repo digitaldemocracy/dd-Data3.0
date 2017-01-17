@@ -274,12 +274,13 @@ def get_consultant_info(name, header, dd):
         consultant['first'] = names[0]
         consultant['last'] = names[1]
 
-    consultant['name'] = name
-    if 'Deputy Chief' in header.contents:
+    print(header.contents)
+
+    if 'Deputy Chief' in header.contents[0]:
         consultant['position'] = 'Deputy Chief Consultant'
-    elif 'Secretary' in header.contents:
+    elif 'Secretary' in header.contents[0]:
         consultant['position'] = 'Committee Secretary'
-    elif 'Chief' in header.contents:
+    elif 'Chief' in header.contents[0]:
         consultant['position'] = 'Chief Consultant'
     else:
         consultant['position'] = None
@@ -407,7 +408,8 @@ def get_past_consultants(consultants, house, committee, dd):
         for consultant in query:
             isCurrent = False
             for commStaff in consultants:
-                if consultant[0] == commStaff['pid']:
+                print(str(consultant[0]) + ", " + commStaff['pid'])
+                if str(consultant[0]) == commStaff['pid']:
                     isCurrent = True
             if isCurrent is False:
                 staff = dict()
@@ -455,16 +457,16 @@ def insert_consultants(consultants, house, committee, dd):
                 logger.warning("Insert statement failed", full_msg = traceback.format_exc(),
                                additional_fields = create_payload("ConsultantServesOn", (INSERT_CONSULT_SERVESON % consultant)))
 
-    #update_consultants = get_past_consultants(consultants, house, committee, dd)
+    update_consultants = get_past_consultants(consultants, house, committee, dd)
 
-    #if len(update_consultants) > 0:
-    #   for consultant in update_consultants:
-    #        try:
-    #            dd.execute(UPDATE_CONSULTANTS, consultant)
-    #            C_UPDATE += dd.rowcount
-    #        except MySQLdb.Error:
-    #            logger.warning("Update failed", full_msg = traceback.format_exc(),
-    #                           additional_fields = create_payload("ConsultantServesOn", (UPDATE_CONSULTANTS % consultant)))
+    if len(update_consultants) > 0:
+        for consultant in update_consultants:
+            try:
+                dd.execute(UPDATE_CONSULTANTS, consultant)
+                C_UPDATE += dd.rowcount
+            except MySQLdb.Error:
+                logger.warning("Update failed", full_msg = traceback.format_exc(),
+                               additional_fields = create_payload("ConsultantServesOn", (UPDATE_CONSULTANTS % consultant)))
 
 
 def main():
