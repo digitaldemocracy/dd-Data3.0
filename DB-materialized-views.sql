@@ -36,7 +36,9 @@ CREATE TABLE SpeakerParticipation (
   FOREIGN KEY (pid) REFERENCES Person(pid),
   FOREIGN KEY (session_year, state) REFERENCES Session(start_year, state),
   FOREIGN KEY (state) REFERENCES State(abbrev),
-  UNIQUE (dr_id)
+  UNIQUE (dr_id),
+
+  INDEX state_idx (state)
 );
 
 CREATE TABLE OrgAlignments (
@@ -50,7 +52,9 @@ CREATE TABLE OrgAlignments (
 
   PRIMARY KEY(oa_id),
   UNIQUE (oid, bid, hid, alignment, analysis_flag),
-  FOREIGN KEY (state) REFERENCES State(abbrev)
+  FOREIGN KEY (state) REFERENCES State(abbrev),
+
+  INDEX state_idx (state)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE LegParticipation
@@ -172,7 +176,8 @@ CREATE TABLE `GiftCombined` (
   KEY `agencyName` (`agencyName`),
   KEY `sourceName` (`sourceName`),
   KEY `giftValue` (`giftValue`),
-  KEY `state` (`state`)
+  KEY `state` (`state`),
+
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 # Basically like current utterance. Rebuilt every night
@@ -196,36 +201,45 @@ CREATE TABLE IF NOT EXISTS BillVersionCurrent (
 
   PRIMARY KEY (vid),
   FOREIGN KEY (bid) REFERENCES Bill(bid),
-  FOREIGN KEY (state) REFERENCES State(abbrev)
+  FOREIGN KEY (state) REFERENCES State(abbrev),
+
+  INDEX state_idx (state),
+  INDEX date_ts_idx (date_ts)
 )
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 
 -- Should be combined
-CREATE TABLE UnionedRepresentations (
+CREATE TABLE CombinedRepresentations (
   pid INT,
   hid INT,
   did INT,
   oid INT,
-  state VARCHAR(2)
+  state VARCHAR(2),
+
+  INDEX state_idx (state)
 );
 
-CREATE TABLE UnionedLobbyistEmployers (
+CREATE TABLE CombinedLobbyistEmployers (
   pid INT,
   assoc_name VARCHAR(255),
   rpt_date DATE,
   rpt_date_ts INT,
   beg_year YEAR,
   end_year YEAR,
-  state VARCHAR(2)
+  state VARCHAR(2),
+
+  INDEX rpt_date_ts_idx (rpt_date_ts)
 );
 
 CREATE TABLE KnownClients (
   pid INT,
   assoc_name VARCHAR(255),
   oid INT,
-  state VARCHAR(2)
+  state VARCHAR(2),
+
+  INDEX state_idx (state)
 );
 
 CREATE TABLE BillAlignmentScoresMiguel (
@@ -345,6 +359,10 @@ AS
 alter table CombinedAlignmentScores
     add dr_id int unique AUTO_INCREMENT;
 
-alter table Contribution
-    add index donorName_idx (donorName);
+alter table CombinedAlignmentScores
+  add INDEX pid_idx (pid),
+  add INDEX oid_idx (oid),
+  add INDEX state_idx (state),
+  add INDEX pid_house_party_idx (pid, house, party);
+
 

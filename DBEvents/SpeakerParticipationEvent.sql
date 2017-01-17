@@ -1,9 +1,9 @@
 -- Creates the SpeakerParticipation table
 
-DROP EVENT IF EXISTS PersonAffiliations_event;
+DROP EVENT IF EXISTS SpeakerParticipation_event;
 delimiter |
 
-CREATE EVENT SpeakerParticipation
+CREATE EVENT SpeakerParticipation_event
   ON SCHEDULE
     EVERY 1 DAY STARTS '2016-09-21 07:00:00'
 DO
@@ -25,19 +25,20 @@ DO
     ALTER TABLE UtterInfo ADD INDEX idx (pid);
 
     CREATE TABLE SpeakerParticipation
-      AS
+    AS
       SELECT p.pid,
-             h.session_year,
-             u.state,
-             SUM(WordCount) AS WordCountTotal,
-             SUM(WordCount) / COUNT(DISTINCT h.hid) AS WordCountHearingAvg,
-             SUM(Time) AS TimeTotal,
-             SUM(Time) / COUNT(DISTINCT h.hid) AS TimeHearingAvg
+        h.session_year,
+        u.state,
+        SUM(WordCount) AS WordCountTotal,
+        SUM(WordCount) / COUNT(DISTINCT h.hid) AS WordCountHearingAvg,
+        SUM(Time) AS TimeTotal,
+        SUM(Time) / COUNT(DISTINCT h.hid) AS TimeHearingAvg
       FROM UtterInfo u
-        JOIN (SELECT DISTINCT pid FROM PersonClassifications WHERE PersonType != 'Legislator') p
-        ON u.pid = p.pid
         JOIN Hearing h
-        ON u.hid = h.hid
+          ON u.hid = h.hid
+        JOIN (SELECT DISTINCT pid, session_year FROM PersonClassifications WHERE PersonType != 'Legislator') p
+          ON u.pid = p.pid
+             AND h.session_year = p.session_year
       GROUP BY p.pid, h.session_year, u.state
       ORDER BY WordCountTotal;
 

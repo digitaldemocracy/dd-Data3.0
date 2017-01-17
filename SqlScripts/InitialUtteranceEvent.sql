@@ -1,4 +1,4 @@
-drop table InitialUtterance;
+DROP TABLE InitialUtterance;
 
 CREATE TABLE IF NOT EXISTS InitialUtterance (
   pid INT,
