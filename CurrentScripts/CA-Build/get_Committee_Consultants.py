@@ -54,7 +54,7 @@ SELECT_COMMITTEE_CID = '''SELECT cid
                           FROM Committee
                           WHERE house = %(house)s
                           AND state = 'CA'
-                          AND short_name = %(committee)s
+                          AND name = %(committee)s
                        '''
 
 SELECT_CONSULT_PID = '''SELECT p.pid
@@ -425,6 +425,43 @@ def get_problematic_sites(comm_url, dd):
     return consultant_names
 
 
+def scrape_joint_committees(comm_url, dd):
+    consultant_names = list()
+
+    comm_name = comm_url.split('.')[0][7:]
+    htmlSoup = BeautifulSoup(urllib2.urlopen(comm_url).read())
+
+    if 'senate' in comm_name:
+        comm_name = comm_url.split('/')[-1]
+
+        if comm_name == 'legislativebudget' or comm_name == 'fairsallocation':
+            content_div = htmlSoup.find('div', 'content')
+            title_header = content_div.find_all('p')[-1].find('strong')
+            next_sib = title_header.next_sibling
+            for name in clean_strings(next_sib):
+                consultant_names.append(get_consultant_info(name, title_header.contents[0], dd))
+        elif comm_name == 'jointrules':
+            content_div = htmlSoup.find('div', 'content').find_all('p')[-1]
+            title_header = content_div.find('strong')
+            for name in clean_strings(title_header.next_sibling):
+                consultant_names.append(get_consultant_info(name, title_header.contents[0], dd))
+        elif comm_name == 'legislativeaudit':
+            content_div = htmlSoup.find('div', 'content').find_all('p')[1]
+            for header in content_div.find_all('strong')[:2]:
+                next_sib = header.next_sibling
+                for name in clean_strings(next_sib):
+                    consultant_names.append(get_consultant_info(name, header.contents[0], dd))
+    elif 'fisheries' in comm_name:
+        content_div = htmlSoup.find_all('div', 'sidebar-information')[1]
+        for header in content_div.find_all('strong'):
+            consultant_info = header.find_next_sibling('a').contents[0]
+            consultant_info = consultant_info.split(', ')
+            for name in clean_strings(consultant_info[0]):
+                consultant_names.append(get_consultant_info(name, consultant_info[1], dd))
+
+    return consultant_names
+
+
 def scrape_consultants(comm_url, house, dd):
     global SENATE_PROBLEM_SITES
     consultant_names = list()
@@ -495,15 +532,32 @@ def get_committees(house, dd):
             for link in block.find(class_ = 'content').find_all('a'):
                 print(link.get('href'))
                 consultants = scrape_consultants(link.get('href'), house, dd)
-                insert_consultants(consultants, house, link.string, dd)
+                committee = house + ' Standing Committee on ' + link.string
+                insert_consultants(consultants, house, committee, dd)
         elif 'Select' in block.find('h2').string:
             for link in block.find(class_ = 'content').find_all('a'):
                 comm_name = link.get('href')
                 print(comm_name)
                 if comm_name.split('.')[0][7:] in SENATE_SELECT_STAFF:
                     consultants = scrape_consultants(link.get('href'), house, dd)
-                    insert_consultants(consultants, house, link.string, dd)
-
+                    committee = house + ' Select Committee on ' + link.string
+                    insert_consultants(consultants, house, committee, dd)
+        elif 'Joint' in block.find('h2').string:
+            for link in block.find(class_ = 'content').find_all('a'):
+                comm_name = link.get('href').split('.')[0][7:]
+                print(link.get('href'))
+                if comm_name == 'arts' or comm_name == 'emergencymanagement':
+                    consultants = scrape_consultants(link.get('href'), house, dd)
+                    insert_consultants(consultants, 'Joint', link.string, dd)
+                else:
+                    consultants = scrape_joint_committees(link.get('href'), dd)
+                    insert_consultants(consultants, 'Joint', link.string, dd)
+        else:
+            for link in block.find(class_ = 'content').find_all('a'):
+                print(link.get('href'))
+                consultants = scrape_consultants(link.get('href'), house, dd)
+                committee = house + ' Committee on ' + link.string
+                insert_consultants(consultants, house, committee, dd)
 
 
 def insert_consultants(consultants, house, committee, dd):
