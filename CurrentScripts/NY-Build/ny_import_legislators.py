@@ -26,9 +26,9 @@ T_INSERT = 0
 T_UPDATE = 0
 
 insert_person = '''INSERT INTO Person
-                (last, first, image)
+                (last, first, image, source)
                 VALUES
-                (%(last)s, %(first)s, %(image)s);'''
+                (%(last)s, %(first)s, %(image)s, "ny_import_legislators.py");'''
 
 insert_legislator = '''INSERT INTO Legislator
                 (pid, state)
@@ -36,9 +36,9 @@ insert_legislator = '''INSERT INTO Legislator
                 (%(pid)s, %(state)s);'''
 
 insert_term = '''INSERT INTO Term
-                (pid, year, house, state, district)
+                (pid, year, house, state, district, current_term)
                 VALUES
-                (%(pid)s, %(year)s, %(house)s, %(state)s, %(district)s);'''
+                (%(pid)s, %(year)s, %(house)s, %(state)s, %(district)s, %(current)s);'''
                 
 select_legislator = '''SELECT p.pid 
                        FROM Person p, Legislator l
@@ -47,7 +47,7 @@ select_legislator = '''SELECT p.pid
                         AND state = %(state)s
                         AND p.pid = l.pid'''
 
-select_term = '''SELECT district
+select_term = '''SELECT district, current_term
                  FROM Term
                  WHERE pid = %(pid)s 
                   AND state = %(state)s
@@ -55,13 +55,13 @@ select_term = '''SELECT district
                   AND house = %(house)s'''
 
 QU_TERM = '''UPDATE Term
-             SET district = %(district)s
+             SET district = %(district)s, current_term = 1
              WHERE pid = %(pid)s
               AND state = %(state)s
               AND year = %(year)s
               AND house = %(house)s'''                        
                                            
-API_YEAR = 2016
+API_YEAR = 2017
 API_URL = "http://legislation.nysenate.gov/api/3/{0}/{1}{2}?full=true&"
 API_URL += "limit=1000&key=31kNDZZMhlEjCOV8zkBG1crgWAGxwDIS&offset={3}"
 
@@ -103,6 +103,16 @@ def clean_name(name):
         "HARRIS":("Pamela", "Harris"),
         "CASTORINA":("Ron", "Castorina", "Jr"),
         "CANCEL":("Alice", "Cancel"),
+        "BARNWELL":("Brian", "Barnwell"),
+        "BYRNE":("Kevin", "Byrne"),
+        "CARROLL":("Robert", "CARROLL"),
+        "ERRIGO":("Joseph", "Errigo"),
+        "HEASTIE":("Carl", "Heastie"),
+        "JONES":("Billy", "Jones"),
+        "NORRIS":("Michael", "Norris"),
+        "VANEL":("Clyde", "Vanel"),
+        "WALSH":("Mary", "Walsh"),
+        "MILLER":("Brian", "Miller"),
     }
     
     ending = {'Jr':', Jr.','Sr':', Sr.','II':' II','III':' III', 'IV':' IV'}
@@ -115,6 +125,8 @@ def clean_name(name):
     if len(name_arr) == 1 and name_arr[0] in problem_names.keys():
       name_arr = list(problem_names[name_arr[0]])
 
+    if len(name_arr) > 2:
+      print(name_arr)
           
     for word in name_arr:
         if word != name_arr[0] and (len(word) <= 1 or word in ending.keys()):
@@ -168,7 +180,7 @@ def is_term_in_db(senator, dddb):
         dddb.execute(select_term, senator)
         query = dddb.fetchone()
 
-        if query[0] != senator['district']:
+        if query[0] != senator['district'] or query[1] == 0:
             #print "Hella updated! Radical!~~~~~"
             #print 'updated', senator
             try:
@@ -239,6 +251,7 @@ def add_senator_db(senator, dddb):
     if is_term_in_db(senator, dddb) == False:   
       #print insert_term % senator  
       try:
+        senator['current'] = 1
         dddb.execute(insert_term, senator)
         T_INSERT += dddb.rowcount
       except MySQLdb.Error:
