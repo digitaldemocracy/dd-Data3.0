@@ -60,8 +60,8 @@ STATE = 'CA'
 
 # Database Queries
 # INSERTS
-QI_COMMITTEE = '''INSERT INTO Committee (cid, house, name, type, state, room, phone, fax)
-                      VALUES (%s, %s, %s, %s, %s, %s, %s, %s)'''
+QI_COMMITTEE = '''INSERT INTO Committee (cid, house, name, type, state, room, phone, fax, session_year)
+                      VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)'''
 QI_SERVESON = '''INSERT INTO servesOn (pid, year, house, cid, position, state, start_date) 
                      VALUES (%s, %s, %s, %s, %s, %s, %s)'''
 
@@ -82,7 +82,8 @@ QS_COMMITTEE = '''SELECT cid
                   WHERE house = %s
                    AND name = %s
                    AND type = %s
-                   AND state = %s'''
+                   AND state = %s
+                   AND session_year = %s'''
 QS_COMMITTEE_MAX_CID = '''SELECT cid
                           FROM Committee
                           ORDER BY cid DESC
@@ -220,18 +221,18 @@ Inserts committee
 
 Returns the new cid.
 '''
-def insert_committee(cursor, house, name, commType, room, phone, fax):
+def insert_committee(cursor, house, name, commType, room, phone, fax, year):
   global C_INSERT
   try:
     # Get the next available cid
     cursor.execute(QS_COMMITTEE_MAX_CID)
     cid = cursor.fetchone()[0] + 1
-    cursor.execute(QI_COMMITTEE, (cid, house, name, commType, STATE, room, phone, fax))
+    cursor.execute(QI_COMMITTEE, (cid, house, name, commType, STATE, room, phone, fax, year))
     C_INSERT += cursor.rowcount
     return cid
   except MySQLdb.Error:
     logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-      additional_fields=create_payload('Committee',(QI_COMMITTEE%(cid, house, name, commType, STATE, room, phone, fax))))
+      additional_fields=create_payload('Committee',(QI_COMMITTEE%(cid, house, name, commType, STATE, room, phone, fax, year))))
     return -1
 
 '''
@@ -282,7 +283,7 @@ obtained.
 
 Returns the committee id and insert Committee count.
 '''
-def get_committee_id(cursor, house, name, commType, comm_count, room, phone, fax):
+def get_committee_id(cursor, house, name, commType, comm_count, room, phone, fax, year):
   # Tweak committee type slightly for Subcommittees/Budget Subcommittees
   if "Sub" in commType:
     commType += "committee"
@@ -290,7 +291,7 @@ def get_committee_id(cursor, house, name, commType, comm_count, room, phone, fax
       commType = "Budget " + commType
 
   try:
-    cursor.execute(QS_COMMITTEE, (house, name, commType, STATE))
+    cursor.execute(QS_COMMITTEE, (house, name, commType, STATE, year))
     com = cursor.fetchone()
   except MySQLdb.Error:
     logger.warning('Select Failed', full_msg=traceback.format_exc(),
@@ -299,7 +300,7 @@ def get_committee_id(cursor, house, name, commType, comm_count, room, phone, fax
   if com is None:
     comm_count = comm_count + 1
 
-  return insert_committee(cursor, house, name, commType, room, phone, fax) if com is None else com[0], comm_count
+  return insert_committee(cursor, house, name, commType, room, phone, fax, year) if com is None else com[0], comm_count
 
 '''
 Finds the id of a person.
@@ -728,7 +729,7 @@ def update_committees(cursor, house, year, comm_count, serve_count, pfinder, cur
   room = ""
   phone = ""
   fax = ""
-  floor_cid, comm_count = get_committee_id(cursor, house, '%s Floor' % house, "Floor", comm_count, room, phone, fax)
+  floor_cid, comm_count = get_committee_id(cursor, house, '%s Floor' % house, "Floor", comm_count, room, phone, fax, year)
   #clean_servesOn(cursor, floor_cid, house, year)
   for pid in term_pids:
     serve_count = insert_serveson(cursor, pid, year, house, floor_cid, 'Member', serve_count)
@@ -741,7 +742,7 @@ def update_committees(cursor, house, year, comm_count, serve_count, pfinder, cur
 
     # Joint committees are recorded with a house of 'Joint'.
     cid, comm_count = get_committee_id(cursor, 'Joint' if 'Joint' in name else house,
-                           name, commType, comm_count, room, phone, fax)
+                           name, commType, comm_count, room, phone, fax, year)
     #clean_servesOn(cursor, cid, house, year)
 
     #update contact info in Committee table
