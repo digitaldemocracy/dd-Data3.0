@@ -56,7 +56,8 @@ S_COMMITTEE = '''SELECT cid
                  WHERE short_name IS NOT NULL 
                  AND house = %s
                  AND name = %s
-                 AND state = %s'''
+                 AND state = %s
+                 AND session_year = %s'''
 S_COMMITTEE_HEARINGS = '''SELECT cid, hid
                           FROM CommitteeHearings
                           WHERE cid = %s
@@ -180,8 +181,8 @@ finds committee id if it is in db, returns None if it is not in db
 |house|: house the committee belongs to
 |name|: name of committee
 '''
-def get_cid(cursor, house, name):
-    cursor.execute(S_COMMITTEE, (house, name, STATE))
+def get_cid(cursor, house, name, year):
+    cursor.execute(S_COMMITTEE, (house, name, STATE, year))
     if cursor.rowcount > 0:
         result = cursor.fetchone()[0]
     else:
@@ -434,7 +435,7 @@ def main():
         for hearing in assembly_comm_hearings:
             insert_hearing(dddb, hearing['date'], year)
             hid = get_hid(dddb, hearing['date'], year)
-            cid = get_cid(dddb, 'Assembly', hearing['name'])
+            cid = get_cid(dddb, 'Assembly', hearing['name'], year)
             if hid != None and cid != None:
                 insert_comm_hearing(dddb, cid, hid)
             bills = scrape_hearing_agenda(dddb, hearing['url'], 'Assembly')
@@ -447,7 +448,7 @@ def main():
         for hearing in senate_comm_hearings:
             insert_hearing(dddb, hearing['date'], year)
             hid = get_hid(dddb, hearing['date'], year)
-            cid = get_cid(dddb, 'Senate', hearing['name'])
+            cid = get_cid(dddb, 'Senate', hearing['name'], year)
             if hid != None and cid != None:
                 insert_comm_hearing(dddb, cid, hid)
             bills = scrape_senate_agenda(dddb, hearing['url'])
