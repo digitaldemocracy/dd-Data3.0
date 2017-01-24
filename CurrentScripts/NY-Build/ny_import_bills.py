@@ -12,11 +12,13 @@ Description:
 - Currently configured to test DB
 '''
 
+from datetime import datetime
 import sys
 from Database_Connection import mysql_connection
 import traceback
 import requests
 import MySQLdb
+import time
 from graylogger.graylogger import GrayLogger
 GRAY_URL = 'http://dw.digitaldemocracy.org:12202/gelf'
 logger = None
@@ -56,7 +58,7 @@ select_billversion = '''SELECT vid
                         FROM BillVersion   
                         WHERE vid = %(vid)s'''                 
 
-API_YEAR = 2016
+API_YEAR = 2017
 API_URL = "http://legislation.nysenate.gov/api/3/{0}/{1}{2}?full=true&" 
 API_URL += "limit=1000&key=31kNDZZMhlEjCOV8zkBG1crgWAGxwDIS&offset={3}&"
 STATE = 'NY'                 
@@ -100,7 +102,7 @@ def get_bills_api(resolution):
         bills = call[0]
         #TODO change this back if the api is fixed. API doesnt allow for offset greater than 10k
         #total = call[1]
-        total = 9999
+        total = call[1]
         
         for bill in bills:
             bill = bill['result']             
@@ -220,6 +222,8 @@ def add_bills_db( dddb):
     #print "Inserted %d bills" % bcount
                     
 def main():
+    global API_YEAR 
+    API_YEAR = datetime.now().year
     ddinfo = mysql_connection(sys.argv)
     with MySQLdb.connect(host=ddinfo['host'],
                         user=ddinfo['user'],

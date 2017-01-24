@@ -70,7 +70,7 @@ select_billvotedetail = '''SELECT voteId
                            WHERE voteId = %(voteId)s 
                             AND pid = %(pid)s'''                        
                                                                 
-API_YEAR = 2016
+API_YEAR = 2017
 API_URL = "http://legislation.nysenate.gov/api/3/{0}/{1}{2}?full=true&"
 API_URL += "limit=1000&key=31kNDZZMhlEjCOV8zkBG1crgWAGxwDIS&offset={3}"
 ASSEMBLY_URL = 'http://assembly.state.ny.us/leg/?default_fld=&leg_video=&bn={0}&term={1}&Committee%26nbspVotes=Y&Floor%26nbspVotes=Y'
@@ -288,7 +288,7 @@ def get_db_name(dddb, name):
 
 def get_vote_sums_assem(dddb, bid, bill):
     ret_arr = list()
-    api_year = 2015
+    api_year = 2017
     url = ASSEMBLY_URL.format(bill, api_year)
     page = requests.get(url)
 
@@ -371,8 +371,11 @@ def get_vote_details_assem(dddb, bid, votes):
 
 def get_pid_db(dddb, person):
     try:
-        dddb.execute(select_person, person)
+        temp = {'last':person['last'], 'state':person['state'], 'house':person['house']}
+        dddb.execute(select_person, temp)
         query = dddb.fetchone()
+        if query is None:
+            return None
         return query[0]
     except MySQLdb.Error:
         logger.warning('Select Failed', full_msg=traceback.format_exc(),
@@ -393,7 +396,9 @@ def get_speaker_name():
     
 def is_billvotesum_in_db(dddb, bv):                                                    
     try:
-        dddb.execute(select_billvotesummary, bv)
+        temp = {'bid':bv['bid'], 'VoteDate':bv['VoteDate'], 'cid':bv['cid'], 
+                'ayes':bv['ayes'], 'naes':bv['naes'], 'abstain':bv['abstain']}
+        dddb.execute(select_billvotesummary, temp)
         query = dddb.fetchone()
         if query is None:                   
             return False 
@@ -405,7 +410,8 @@ def is_billvotesum_in_db(dddb, bv):
     
 def is_bvd_in_db(dddb, bvd):
     try:
-        dddb.execute(select_billvotedetail, bvd)
+        temp = {'voteId':bvd['voteId'], 'pid':bvd['pid']}
+        dddb.execute(select_billvotedetail, temp)
         query = dddb.fetchone()
         if query is None:                   
             return False 
@@ -422,7 +428,8 @@ def insert_bvd_db(dddb, votes, voteId, none_count):
            
             if not is_bvd_in_db(dddb, bvd) and bvd['pid'] is not None:
                 try:
-                    dddb.execute(insert_billvotedetail, bvd)
+                    temp = {'pid':bvd['pid'], 'voteId':bvd['voteId'], 'result':bvd['result'], 'state':bvd['state']}
+                    dddb.execute(insert_billvotedetail, temp)
                     VD_INSERTED += dddb.rowcount
                 except MySQLdb.Error:
                     logger.warning('Insert Failed', full_msg=traceback.format_exc(),
@@ -443,7 +450,8 @@ def insert_billvotesums_db(dddb, bills):
         
             if not voteId:                
                 try:
-                    dddb.execute(insert_billvotesummary, bv)
+                    temp = {'bid':bv['bid'], 'cid':bv['cid'], 'VoteDate':bv['VoteDate'], 'VoteDateSeq':bv['VoteDateSeq'], 'ayes':bv['ayes'], 'naes':bv['naes'], 'abstain':bv['abstain'], 'result':bv['result']}
+                    dddb.execute(insert_billvotesummary, temp)
                     VS_INSERTED += dddb.rowcount
                     sum_count = sum_count + 1
                 except MySQLdb.Error:
@@ -459,6 +467,7 @@ def insert_billvotesums_db(dddb, bills):
 
 speaker = get_speaker_name()
 def main():
+    API_YEAR = datetime.now().year
     ddinfo = mysql_connection(sys.argv)
     with MySQLdb.connect(host=ddinfo['host'],
                         user=ddinfo['user'],

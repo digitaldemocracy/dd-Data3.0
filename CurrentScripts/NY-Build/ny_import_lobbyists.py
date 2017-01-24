@@ -86,9 +86,9 @@ QI_LOBBYINGFIRM = '''INSERT INTO LobbyingFirm
                     (%(filer_naml)s)'''   
 
 QI_ORGANIZATIONS = '''INSERT INTO Organizations
-                      (name, city, stateHeadquartered)
+                      (name, city, stateHeadquartered, source)
                       VALUES
-                      (%s, %s, %s)''' 
+                      (%s, %s, %s, "import_lobbyists_ny.py")''' 
 QI_LOBBYISTEMPLOYER = '''INSERT INTO LobbyistEmployer
                          (oid, filer_id, state)
                          VALUES
