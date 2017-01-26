@@ -26,9 +26,9 @@ S_INSERTED = 0
 S_UPDATED = 0
 
 insert_committee = '''INSERT INTO Committee
-                       (house, name, state, session_year)
+                       (house, name, state, type, short_name, session_year)
                       VALUES
-                       (%(house)s, %(name)s, %(state)s, %(session_year)s);'''
+                       (%(house)s, %(name)s, %(state)s, %(type)s, %(name)s, %(session_year)s);'''
 
 insert_serveson = '''INSERT INTO servesOn
                       (pid, year, house, cid, state, position, current_flag, start_date)
@@ -183,7 +183,7 @@ def get_committees_html():
             link = tree.xpath(COMMITTEE_LINK_XP.format(x, y))
             committee = dict()
             committee['name'] = comm
-            committee['type'] = category
+            committee['type'] = category.rstrip('s')
             committee['house'] = "Assembly"
             committee['state'] = STATE
             committee['members'] = list()
@@ -265,7 +265,8 @@ def add_committees_db(dddb):
             count = count + 1
             try:
                 dddb.execute(insert_committee, {'house': committee['house'], 'name': committee['name'],
-                                                'state': committee['state'], 'session_year': committee['session_year']})
+                                                'state': committee['state'], 'type': committee['type'],
+                                                'session_year': committee['session_year']})
                 C_INSERTED += dddb.rowcount
             except MySQLdb.Error:
                 logger.warning('Insert Failed', full_msg=traceback.format_exc(),
