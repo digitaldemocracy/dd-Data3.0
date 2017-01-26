@@ -183,7 +183,7 @@ def get_committees_html():
             link = tree.xpath(COMMITTEE_LINK_XP.format(x, y))
             committee = dict()
             committee['name'] = comm
-            committee['type'] = category.rstrip('s')
+            committee['type'] = category
             committee['house'] = "Assembly"
             committee['state'] = STATE
             committee['members'] = list()
