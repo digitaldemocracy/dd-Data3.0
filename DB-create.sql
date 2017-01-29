@@ -223,6 +223,7 @@ CREATE TABLE IF NOT EXISTS Legislator (
   capitol_phone  VARCHAR(30),   -- phone number (format: (xxx) xxx-xxxx)
   website_url    VARCHAR(200),  -- url
   room_number    VARCHAR(10),       -- room number
+  email VARCHAR(255),
   email_form_link VARCHAR(200), -- email link
   state    VARCHAR(2), -- state where term was served
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
@@ -1555,6 +1556,7 @@ CREATE TABLE IF NOT EXISTS LegStaffGifts (
   speech_or_panel BOOLEAN, -- flag to see if was for a speech
   image_url VARCHAR(2000),
   schedule ENUM('D', 'E'),
+  state VARCHAR(2),
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
   lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
   dr_id INTEGER UNIQUE AUTO_INCREMENT,

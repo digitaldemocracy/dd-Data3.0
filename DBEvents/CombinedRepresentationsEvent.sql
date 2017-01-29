@@ -18,7 +18,6 @@ DO
       lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
       dr_id INT AUTO_INCREMENT,
 
-      PRIMARY KEY (pid, did, oid),
       UNIQUE (dr_id),
 
       FOREIGN KEY (pid) REFERENCES Person(pid),
@@ -72,6 +71,15 @@ DO
     WHERE t.pid IS NULL
       AND t.did IS NULL
       AND t.oid IS NULL;
+
+    delete t from CombinedRepresentations t
+      left join CombinedRepresentationsView v
+        ON v.pid = t.pid
+           AND v.did = t.did
+           AND v.oid = t.oid
+    WHERE v.pid IS NULL
+          AND v.did IS NULL
+          AND v.oid IS NULL;
 
     DROP VIEW CombinedRepresentationsView;
 

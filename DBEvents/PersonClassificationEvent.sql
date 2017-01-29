@@ -452,24 +452,70 @@ DO
     where tmp.pid is null;
 
 
-    drop table if exists CurrentClass;
-    create temporary table CurrentClass
+    drop table if exists LatestClass;
+    create temporary table LatestClass
       as
       select pid, max(specific_year) as recent_year
       from PersonClassifications
       group by pid;
 
-    alter table CurrentClass
+    alter table LatestClass
         add INdex pid_idx (pid);
 
+    drop table if exists CurrentClassLegs;
+    create temporary table CurrentClassLegs
+    as
+      select c.pid, recent_year
+      from LatestClass c
+        join Term t
+          on c.pid = t.pid
+      where t.current_term = 1;
+
+    alter table CurrentClassLegs
+      add INdex pid_idx (pid);
+
     update PersonClassifications p
-        join CurrentClass c
+        join CurrentClassLegs c
         on p.pid = c.pid
           and p.specific_year = c.recent_year
-      set  is_current = True;
+        set is_current = True
+        where p.PersonType = 'Legislator';
 
+    update PersonClassifications p
+      left join CurrentClassLegs c
+        on p.pid = c.pid
+           and p.specific_year = c.recent_year
+    set is_current = False
+    where p.PersonType = 'Legislator' and c.pid is null;
+
+    drop table if exists CurrentClassUtter;
+    create temporary table CurrentClassUtter
+      as
+      select distinct pid, session_year
+      from currentUtterance u
+        join Video v
+          on u.vid = v.vid
+        join Hearing h
+          on v.hid = h.hid
+      where session_year = 2017;
+
+    update PersonClassifications p
+      join CurrentClassUtter c
+        on p.pid = c.pid
+           and p.session_year = c.session_year
+    set is_current = True
+    where p.PersonType != 'Legislator';
+
+    update PersonClassifications p
+      left join CurrentClassUtter c
+        on p.pid = c.pid
+           and p.session_year = c.session_year
+    set is_current = False
+    where p.PersonType != 'Legislator' and c.pid is null;
 
     drop table if EXISTS NumRange;
+    drop table if EXISTS CurrentClassUtter;
+    drop table if EXISTS CurrentClassLegs;
 
     DROP VIEW if exists LabeledLeg;
     DROP VIEW if exists SplitTerm;
@@ -500,4 +546,3 @@ DO
   END |
 
 DELIMITER ;
-
