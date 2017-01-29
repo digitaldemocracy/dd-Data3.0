@@ -12,6 +12,7 @@ Description:
 - Currently configured to test DB
 '''
 
+from datetime import datetime
 import sys
 from Database_Connection import mysql_connection
 import traceback
@@ -101,7 +102,7 @@ def get_bills_api(resolution):
         bills = call[0]
         #TODO change this back if the api is fixed. API doesnt allow for offset greater than 10k
         #total = call[1]
-        total = 9999
+        total = call[1]
         
         for bill in bills:
             bill = bill['result']             
@@ -221,6 +222,8 @@ def add_bills_db( dddb):
     #print "Inserted %d bills" % bcount
                     
 def main():
+    global API_YEAR 
+    API_YEAR = datetime.now().year
     ddinfo = mysql_connection(sys.argv)
     with MySQLdb.connect(host=ddinfo['host'],
                         user=ddinfo['user'],

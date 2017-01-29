@@ -71,7 +71,7 @@ QS_TERM = '''SELECT pid
              WHERE house = %s
               AND year BETWEEN %s AND %s
               AND state = %s'''
-QS_TERM_2 = '''SELECT year
+QS_TERM_2 = '''SELECT MAX(year)
                FROM Term
                WHERE pid = %s
                 AND house = %s
@@ -193,7 +193,15 @@ def clean_url(url, house, host):
   if url.startswith('/'):
     # |url| is a relative link; make it an absolute link.
     url = '%s%s' % (host, url)
+  soup = BeautifulSoup(urllib2.urlopen(url).read())
   if house == 'Assembly':
+    if "sub" not in url and "special" not in url.lower():  
+      for s in soup.find_all("li"):
+        if "Member" in s.get_text() and "Staff" in s.get_text():
+          a = s.find("a", href=True)
+          if "member" in a['href']:
+            url += a['href']
+    '''
     #print 'HERE URL: %s   LEN: %d'%(url, len(url.split('/')))
     if len(url.split('/')) == 3:
       # Special case for Assembly Standing Committee on Water, Parks, and Wildlife
@@ -202,6 +210,7 @@ def clean_url(url, house, host):
       else:
       # No resource requested in |url|. Add the default one.
         url += '/membersstaff'
+      print "length 3"
     if len(url.split('/')) == 4 and url.endswith('/'):
       # Same as above except url ends with another forward slash
       if 'expandingaccesstocanaturalresources' in url:
@@ -210,6 +219,9 @@ def clean_url(url, house, host):
         url += 'content/members'
       else:
         url += 'membersstaff'
+      print "length 4"
+    '''
+      
   return url
 
 '''
@@ -233,6 +245,7 @@ def insert_committee(cursor, house, name, commType, room, phone, fax, year):
   except MySQLdb.Error:
     logger.warning('Insert Failed', full_msg=traceback.format_exc(),
       additional_fields=create_payload('Committee',(QI_COMMITTEE%(cid, house, name, commType, STATE, room, phone, fax, year))))
+    print "cid:", cid, "house:", house, "name:", name, "commT:", commType, "state:", STATE, "room", room, "phone", phone, "fax", fax, "year", year
     return -1
 
 '''
@@ -257,14 +270,17 @@ def insert_serveson(cursor, pid, year, house, cid, position, serve_count):
     # First get year of Term served by Person represented by pid
     cursor.execute(QS_TERM_2, (pid, house, year, STATE))
     termYear = cursor.fetchone()[0]
-    cursor.execute(QS_SERVESON, (pid, house, termYear, cid, STATE))
-    if (cursor.rowcount == 0):
-      #print 'About to insert pid:{0} year:{1} house:{2} cid:{3} position:{4} \
-             #state:{5}'.format(pid, termYear, house, cid, position, STATE)
-      today = time.strftime("%Y-%m-%d")
-      cursor.execute(QI_SERVESON, (pid, termYear, house, cid, position, STATE, today))
-      S_INSERT += cursor.rowcount
-      serve_count = serve_count + 1
+    if year - termYear < 2:
+      cursor.execute(QS_SERVESON, (pid, house, termYear, cid, STATE))
+      if (cursor.rowcount == 0):
+        #print 'About to insert pid:{0} year:{1} house:{2} cid:{3} position:{4} \
+               #state:{5}'.format(pid, termYear, house, cid, position, STATE)
+        today = time.strftime("%Y-%m-%d")
+        cursor.execute(QI_SERVESON, (pid, termYear, house, cid, position, STATE, today))
+        S_INSERT += cursor.rowcount
+        serve_count = serve_count + 1
+    else:
+        print "in insert_serveson: termYear", termYear, "for pid:", pid, "year:", year, "house:", house, "cid:", cid, "position:", position
   except MySQLdb.Error:
     logger.warning('Insert Failed', full_msg=traceback.format_exc(),
     additional_fields=create_payload('servesOn',(QI_SERVESON%(pid, termYear, house, cid, position, STATE, today))))
@@ -592,6 +608,18 @@ def get_committee_contact(commUrl, commType):
           room = line[start + 4:]
           if "," in room:
             room = room.split(",")[0]
+          # if room line has more than three words
+          temp = room.split(" ")
+          if len(temp) >= 3:
+            if temp[0] == '':
+              room = temp[1]
+            if temp[0] != '':
+              room = temp[0]
+          if "and" in room:
+            ndx = room.find("and")
+            room = room[0:ndx - 1]
+
+
         if "phone" in line:
           start = line.find("phone")
           # case where phone in (xxx) xxx-xxxx format

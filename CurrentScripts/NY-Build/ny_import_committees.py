@@ -11,6 +11,7 @@ Description:
 '''
 
 import sys
+from datetime import datetime
 from Database_Connection import mysql_connection
 import traceback
 import requests
@@ -31,7 +32,8 @@ select_committee = '''SELECT cid
                       FROM Committee
                       WHERE house = %(house)s 
                        AND name = %(name)s 
-                       AND state = %(state)s'''   
+                       AND state = %(state)s
+                       AND session_year = %(year)s'''   
                                                 
 select_person = '''SELECT p.pid 
                    FROM Person p, Legislator l
@@ -47,17 +49,23 @@ select_serveson = '''SELECT pid
                       AND house = %(house)s 
                       AND cid = %(cid)s 
                       AND state = %(state)s'''
+QS_SERVESON_MEMBERS = '''SELECT pid
+                         FROM servesOn
+                         WHERE year = %s
+                          AND cid = %s
+                          AND state = %s
+                          AND end_date IS NULL'''
 
 insert_committee = '''INSERT INTO Committee
-                       (cid, house, name, state, room)
+                       (cid, house, name, state, room, session_year)
                       VALUES
-                       (%(cid)s, %(house)s, %(name)s, %(state)s, %(room)s);'''                                                       
+                       (%(cid)s, %(house)s, %(name)s, %(state)s, %(room)s, %(year)s);'''                                                       
 
 insert_serveson = '''INSERT INTO servesOn
-                      (pid, year, house, cid, state, position)
+                      (pid, year, house, cid, state, position, start_date)
                      VALUES
                       (%(pid)s, %(year)s, %(house)s, %(cid)s, %(state)s,
-                      %(position)s);'''
+                      %(position)s, %(date)s);'''
 
 update_committee_contact = '''UPDATE Committee
                               SET room = %(room)s
@@ -65,6 +73,14 @@ update_committee_contact = '''UPDATE Committee
                                AND house = %(house)s
                                AND state = %(state)s
                                AND name = %(name)s'''
+QU_SERVESON_END_DATE = '''UPDATE servesOn
+                          SET end_date = %s
+                          WHERE pid = %s
+                           AND cid = %s
+                           AND year = %s
+                           AND state = "NY"
+                           AND house = %s
+                           AND end_date IS NULL'''
 
 API_YEAR = 2016
 API_URL = "http://legislation.nysenate.gov/api/3/{0}/{1}{2}?full=true&"
@@ -132,6 +148,7 @@ def call_senate_api(restCall, house, offset):
     if house != "":
         house = "/" + house
     url = API_URL.format(restCall, API_YEAR, house, offset)
+    print(url)
     r = requests.get(url)
     out = r.json()
     return out["result"]["items"]
@@ -149,7 +166,7 @@ def is_comm_in_db(comm, cur):
                                                                      
     try:
         cur.execute(select_committee, {'house':comm['house'], 'name':comm['name'],
-          'state':comm['state']})
+          'state':comm['state'], 'year':comm['year']})
         query = cur.fetchone()
              
         if query is None:                   
@@ -165,7 +182,6 @@ def is_serveson_in_db(member, cur):
                                                                  
     try:
         temp = {'pid':member['pid'], 'house':member['house'],'state':member['state'], 'cid':member['cid'], 'year':member['year']}
-        print(temp == member)
         cur.execute(select_serveson, temp)
         #    {'pid':member['pid'], 'house':member['house'], 
         #  'state':member['state'], 'cid':member['cid'], 'year':member['year']})
@@ -202,6 +218,7 @@ def get_committees_api():
         committee['house'] = "Senate"
         committee['state'] = STATE
         committee['room'] = None
+        committee['year'] = comm['sessionYear']
         room_num = re.findall(r'\d+', comm['location'])
         if len(room_num) > 0:
             committee['room'] = room_num[0]
@@ -238,6 +255,7 @@ def get_committees_api():
 #is not already there.
 def add_committees_db(cur):
     global C_INSERTED, S_INSERTED, C_UPDATED
+    date = datetime.now().strftime('%Y-%m-%d')
     committees = get_committees_api()
     x = 0
     y = 0
@@ -250,11 +268,16 @@ def add_committees_db(cur):
             committee['cid'] = str(cid)
             try:
               cur.execute(insert_committee, {'cid':committee['cid'], 
-                  'house':committee['house'], 'name':committee['name'], 'state':committee['state'], 'room':committee['room']})
+                'house':committee['house'], 'name':committee['name'], 
+                'state':committee['state'], 'room':committee['room'], 
+                'year':committee['year']})
               C_INSERTED += cur.rowcount
             except MySQLdb.Error:
               logger.warning('Insert Failed', full_msg=traceback.format_exc(),        
-                    additional_fields=create_payload('Committee', (insert_committee % committee)))
+                  additional_fields=create_payload('Committee', 
+                    (insert_committee % {'cid':committee['cid'], 'house':committee['house'], 
+                    'name':committee['name'], 'state':committee['state'], 'room':committee['room'], 
+                    'year':committee['year']})))
         else:
             committee['cid'] = get_cid[0]
             C_UPDATED += update_contact_info(committee, cur)
@@ -263,16 +286,47 @@ def add_committees_db(cur):
             member['pid'] = get_pid_db(member, cur)
             member['cid'] = committee['cid']
             
-            if is_serveson_in_db(member, cur) == False:                
+            if is_serveson_in_db(member, cur) == False:
               try:
+                member['date'] = date
                 cur.execute(insert_serveson, member)
                 S_INSERTED += cur.rowcount
               except MySQLdb.Error:
                 logger.warning('Insert Failed', full_msg=traceback.format_exc(),        
                       additional_fields=create_payload('servesOn', (insert_serveson % member)))
               y += 1
+        check_committee_members(committee, cur)
             
     #print "Added %d committees and %d members" % (x,y)                        
+
+temp2 = set()
+# Checks if the member in database still exists.
+# If member is no longer in api then fills in end_date field.
+def check_committee_members(committee, cur):
+  date = datetime.now().strftime('%Y-%m-%d')
+  temp = dict()
+
+  cur.execute(QS_SERVESON_MEMBERS, (committee['year'], committee['cid'], 'NY'))
+  members = cur.fetchall()
+
+  #print(members)
+  for member in committee['members']:
+    temp[member['pid']] = member
+
+  for member in members:
+    if member[0] not in temp:
+      temp2.add(member[0])
+      print(member[0], committee['cid'], len(committee['members']))
+      try:
+        cur.execute(QU_SERVESON_END_DATE, (date, member[0], committee['cid'], 
+          committee['year'], committee['house']))
+      except MySQLdb.Error:
+        logger.warning('Update Failed', full_msg=traceback.format_exc(),
+            additional_fields=create_payload('servesOn', 
+              (QU_SERVESON_END_DATE % (date, member[0], committee['cid'], 
+               committee['year'], committee['house']))))
+  print(temp2)
+
 
 #function to get PID of person based on name.     
 def get_pid_db(person, cur):    
@@ -282,6 +336,8 @@ def get_pid_db(person, cur):
     return query[0]    
 
 def main():
+    global API_YEAR
+    API_YEAR = datetime.now().year
     ddinfo = mysql_connection(sys.argv)
     with MySQLdb.connect(host=ddinfo['host'],
                         user=ddinfo['user'],

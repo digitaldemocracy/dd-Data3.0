@@ -1,5 +1,5 @@
 #!/usr/bin/env python27
-# -- coding: utf-8 --
+
 '''
 File: legislator_migrate.py
 Author: ???
@@ -31,17 +31,21 @@ Populates:
   - Term (pid, year, district, house, party, state)
 '''
 
+from unidecode import unidecode
+from slugify import slugify, Slugify, slugify_unicode
 from Database_Connection import mysql_connection
 import traceback
 import sys
 import MySQLdb
 from Name_Fixes_Legislator_Migrate import clean_name_legislator_migrate
 from graylogger.graylogger import GrayLogger
+from datetime import datetime
 
 logger = None
 P_INSERT = 0
 L_INSERT = 0
 T_INSERT = 0
+T_UPDATE = 0
 
 # U.S. State
 STATE = 'CA'
@@ -67,8 +71,14 @@ QI_PERSON = '''INSERT INTO Person (last, first)
                VALUES (%s, %s)'''
 QI_LEGISLATOR = '''INSERT INTO Legislator (pid, state) 
                    VALUES (%s, %s)'''
-QI_TERM = '''INSERT INTO Term (pid, year, district, house, party, state) 
-             VALUES (%s, %s, %s, %s, %s, %s)'''
+QI_TERM = '''INSERT INTO Term (pid, year, district, house, party, state, start) 
+             VALUES (%s, %s, %s, %s, %s, %s, %s)'''
+
+QU_TERM_END_DATE = '''UPDATE Term
+                      SET end = %s, current_term = 0
+                      WHERE pid = %s
+                       AND year = %s
+                       AND end IS NULL'''
 
 # Dictionaries
 _HOUSE = {
@@ -124,19 +134,25 @@ def check_name(cursor, last, first):
 Gets the legislators from Leginfo (capublic DB) and migrate them to DDDB
 '''
 def migrate_legislators(ca_cursor, dd_cursor):
-  global P_INSERT, L_INSERT, T_INSERT
+  global P_INSERT, L_INSERT, T_INSERT, T_UPDATE
   ca_cursor.execute(QS_CPUB_LEGISLATOR)
+  date = datetime.now().strftime('%Y-%m-%d')
 
   # Check each legislator in capublic
   for (last, first, year, district, house, party, active) in ca_cursor:
     house = _HOUSE.get(house)
     party = _PARTY.get(party)
-    print(first.decode('latin-1').encode('utf-8'), last.decode('latin-1').encode('utf-8'))
-    exist = check_name(dd_cursor, last.decode('latin-1').encode('utf-8'), 
-        first.decode('latin-1').encode('utf-8'))
+    last = unidecode(last)
+    first = unidecode(first)
+    print(last, first)
+    exist = check_name(dd_cursor, last, first)
+    if last == 'Reyes':
+      print(last, first, exist)
 
     # If this legislator isn't in DDDB, add them to Person table
     if exist is None:
+      print('   ', type(first), type(last))
+      print('       ', unidecode(first), unidecode(last))
       #logger.info('New Member: first: {0} last: {1}'.format(first, last))
       try:
         dd_cursor.execute(QI_PERSON, (last, first))
@@ -157,12 +173,12 @@ def migrate_legislators(ca_cursor, dd_cursor):
            logger.warning('Insert Failed', full_msg=traceback.format_exc(),
                additional_fields=create_payload('Legislator' % (QI_LEGISLATOR, (pid, STATE))))
         try:
-          dd_cursor.execute(QI_TERM, (pid, year, district, house, party, STATE))
+          dd_cursor.execute(QI_TERM, (pid, year, district, house, party, STATE, date))
           T_INSERT += dd_cursor.rowcount
         except MySQLdb.Error:
           logger.warning('Insert Failed', full_msg=traceback.format_exc(),
               additional_fields=create_payload('Term', 
-                (QI_TERM % (pid, year, district, house, party, STATE))))
+                (QI_TERM % (pid, year, district, house, party, STATE, date))))
 
     # If this legislator is in DDDB, check if they're also in the Legislator 
     # and Term tables if they're active.
@@ -179,39 +195,47 @@ def migrate_legislators(ca_cursor, dd_cursor):
       result = check_term(dd_cursor, pid, year, district, house)
       if result is None and active == 'Y':
         try:
-          result = dd_cursor.execute(QI_TERM, (pid, year, district, house, party, STATE))
+          result = dd_cursor.execute(QI_TERM, (pid, year, district, house, party, STATE, date))
           T_INSERT += dd_cursor.rowcount
         except MySQLdb.Error:
           logger.warning('Insert Failed', full_msg=traceback.format_exc(),
               additional_fields=create_payload('Term',
-                (QI_TERM % (pid, year, district, house, party, STATE))))
+                (QI_TERM % (pid, year, district, house, party, STATE, date))))
+      if result is not None and active == 'N':
+        try:
+          dd_cursor.execute(QU_TERM_END_DATE, (date, pid, year))
+          T_UPDATE += dd_cursor.rowcount
+        except MySQLdb.Error:
+          logger.warning('Update Failed', full_msg=taceback.format_exc(),
+              additional_fields=create_payload('Term',
+                (QU_TERM_END_DATE % (date, pid, year))))
 
 def main():
-  reload(sys)  
-  sys.setdefaultencoding('utf8')
-  print(sys.getdefaultencoding())
   dbinfo = mysql_connection(sys.argv)
   with MySQLdb.connect(host='transcription.digitaldemocracy.org',
                        db='capublic',
                        user='monty',
-                       passwd='python') as ca_cursor:
+                       passwd='python',
+                       charset='utf8') as ca_cursor:
     with MySQLdb.connect(host=dbinfo['host'],
                            port=dbinfo['port'],
                            db=dbinfo['db'],
                            user=dbinfo['user'],
                            passwd=dbinfo['passwd'],
-                           charset='latin-1') as dd_cursor:
+                           charset='utf8') as dd_cursor:
       migrate_legislators(ca_cursor, dd_cursor)
+      #raise TypeError
       logger.info(__file__ + ' terminated successfully.', 
           full_msg='Inserted ' + str(P_INSERT) + ' rows in Person, inserted ' +
                    str(L_INSERT) + ' rows in Legislator and inserted '
-                    + str(T_INSERT) + ' rows in Term',
+                    + str(T_INSERT) + ' rows and updated ' + str(T_UPDATE) + ' rows in Term',
           additional_fields={'_affected_rows':'Person:'+str(P_INSERT)+
                                          ', Legislator:'+str(L_INSERT)+
-                                         ', Term:'+str(T_INSERT),
+                                         ', Term:'+str(T_INSERT + T_UPDATE),
                              '_inserted':'Person:'+str(P_INSERT)+
                                          ', Legislator:'+str(L_INSERT)+
                                          ', Term:'+str(T_INSERT),
+                             '_updated':'Term:'+str(T_UPDATE),
                              '_state':'CA',
                              '_log_type':'Database'})
 
