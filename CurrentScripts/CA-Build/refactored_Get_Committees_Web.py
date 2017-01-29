@@ -60,8 +60,8 @@ STATE = 'CA'
 
 # Database Queries
 # INSERTS
-QI_COMMITTEE = '''INSERT INTO Committee (cid, house, name, type, state, room, phone, fax)
-                      VALUES (%s, %s, %s, %s, %s, %s, %s, %s)'''
+QI_COMMITTEE = '''INSERT INTO Committee (cid, house, name, type, state, room, phone, fax, session_year)
+                      VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)'''
 QI_SERVESON = '''INSERT INTO servesOn (pid, year, house, cid, position, state, start_date) 
                      VALUES (%s, %s, %s, %s, %s, %s, %s)'''
 
@@ -71,7 +71,7 @@ QS_TERM = '''SELECT pid
              WHERE house = %s
               AND year BETWEEN %s AND %s
               AND state = %s'''
-QS_TERM_2 = '''SELECT year
+QS_TERM_2 = '''SELECT MAX(year)
                FROM Term
                WHERE pid = %s
                 AND house = %s
@@ -82,7 +82,8 @@ QS_COMMITTEE = '''SELECT cid
                   WHERE house = %s
                    AND name = %s
                    AND type = %s
-                   AND state = %s'''
+                   AND state = %s
+                   AND session_year = %s'''
 QS_COMMITTEE_MAX_CID = '''SELECT cid
                           FROM Committee
                           ORDER BY cid DESC
@@ -192,7 +193,15 @@ def clean_url(url, house, host):
   if url.startswith('/'):
     # |url| is a relative link; make it an absolute link.
     url = '%s%s' % (host, url)
+  soup = BeautifulSoup(urllib2.urlopen(url).read())
   if house == 'Assembly':
+    if "sub" not in url and "special" not in url.lower():  
+      for s in soup.find_all("li"):
+        if "Member" in s.get_text() and "Staff" in s.get_text():
+          a = s.find("a", href=True)
+          if "member" in a['href']:
+            url += a['href']
+    '''
     #print 'HERE URL: %s   LEN: %d'%(url, len(url.split('/')))
     if len(url.split('/')) == 3:
       # Special case for Assembly Standing Committee on Water, Parks, and Wildlife
@@ -201,6 +210,7 @@ def clean_url(url, house, host):
       else:
       # No resource requested in |url|. Add the default one.
         url += '/membersstaff'
+      print "length 3"
     if len(url.split('/')) == 4 and url.endswith('/'):
       # Same as above except url ends with another forward slash
       if 'expandingaccesstocanaturalresources' in url:
@@ -209,6 +219,9 @@ def clean_url(url, house, host):
         url += 'content/members'
       else:
         url += 'membersstaff'
+      print "length 4"
+    '''
+      
   return url
 
 '''
@@ -220,18 +233,19 @@ Inserts committee
 
 Returns the new cid.
 '''
-def insert_committee(cursor, house, name, commType, room, phone, fax):
+def insert_committee(cursor, house, name, commType, room, phone, fax, year):
   global C_INSERT
   try:
     # Get the next available cid
     cursor.execute(QS_COMMITTEE_MAX_CID)
     cid = cursor.fetchone()[0] + 1
-    cursor.execute(QI_COMMITTEE, (cid, house, name, commType, STATE, room, phone, fax))
+    cursor.execute(QI_COMMITTEE, (cid, house, name, commType, STATE, room, phone, fax, year))
     C_INSERT += cursor.rowcount
     return cid
   except MySQLdb.Error:
     logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-      additional_fields=create_payload('Committee',(QI_COMMITTEE%(cid, house, name, commType, STATE, room, phone, fax))))
+      additional_fields=create_payload('Committee',(QI_COMMITTEE%(cid, house, name, commType, STATE, room, phone, fax, year))))
+    print "cid:", cid, "house:", house, "name:", name, "commT:", commType, "state:", STATE, "room", room, "phone", phone, "fax", fax, "year", year
     return -1
 
 '''
@@ -256,14 +270,17 @@ def insert_serveson(cursor, pid, year, house, cid, position, serve_count):
     # First get year of Term served by Person represented by pid
     cursor.execute(QS_TERM_2, (pid, house, year, STATE))
     termYear = cursor.fetchone()[0]
-    cursor.execute(QS_SERVESON, (pid, house, termYear, cid, STATE))
-    if (cursor.rowcount == 0):
-      #print 'About to insert pid:{0} year:{1} house:{2} cid:{3} position:{4} \
-             #state:{5}'.format(pid, termYear, house, cid, position, STATE)
-      today = time.strftime("%Y-%m-%d")
-      cursor.execute(QI_SERVESON, (pid, termYear, house, cid, position, STATE, today))
-      S_INSERT += cursor.rowcount
-      serve_count = serve_count + 1
+    if year - termYear < 2:
+      cursor.execute(QS_SERVESON, (pid, house, termYear, cid, STATE))
+      if (cursor.rowcount == 0):
+        #print 'About to insert pid:{0} year:{1} house:{2} cid:{3} position:{4} \
+               #state:{5}'.format(pid, termYear, house, cid, position, STATE)
+        today = time.strftime("%Y-%m-%d")
+        cursor.execute(QI_SERVESON, (pid, termYear, house, cid, position, STATE, today))
+        S_INSERT += cursor.rowcount
+        serve_count = serve_count + 1
+    else:
+        print "in insert_serveson: termYear", termYear, "for pid:", pid, "year:", year, "house:", house, "cid:", cid, "position:", position
   except MySQLdb.Error:
     logger.warning('Insert Failed', full_msg=traceback.format_exc(),
     additional_fields=create_payload('servesOn',(QI_SERVESON%(pid, termYear, house, cid, position, STATE, today))))
@@ -282,7 +299,7 @@ obtained.
 
 Returns the committee id and insert Committee count.
 '''
-def get_committee_id(cursor, house, name, commType, comm_count, room, phone, fax):
+def get_committee_id(cursor, house, name, commType, comm_count, room, phone, fax, year):
   # Tweak committee type slightly for Subcommittees/Budget Subcommittees
   if "Sub" in commType:
     commType += "committee"
@@ -290,7 +307,7 @@ def get_committee_id(cursor, house, name, commType, comm_count, room, phone, fax
       commType = "Budget " + commType
 
   try:
-    cursor.execute(QS_COMMITTEE, (house, name, commType, STATE))
+    cursor.execute(QS_COMMITTEE, (house, name, commType, STATE, year))
     com = cursor.fetchone()
   except MySQLdb.Error:
     logger.warning('Select Failed', full_msg=traceback.format_exc(),
@@ -299,7 +316,7 @@ def get_committee_id(cursor, house, name, commType, comm_count, room, phone, fax
   if com is None:
     comm_count = comm_count + 1
 
-  return insert_committee(cursor, house, name, commType, room, phone, fax) if com is None else com[0], comm_count
+  return insert_committee(cursor, house, name, commType, room, phone, fax, year) if com is None else com[0], comm_count
 
 '''
 Finds the id of a person.
@@ -591,6 +608,18 @@ def get_committee_contact(commUrl, commType):
           room = line[start + 4:]
           if "," in room:
             room = room.split(",")[0]
+          # if room line has more than three words
+          temp = room.split(" ")
+          if len(temp) >= 3:
+            if temp[0] == '':
+              room = temp[1]
+            if temp[0] != '':
+              room = temp[0]
+          if "and" in room:
+            ndx = room.find("and")
+            room = room[0:ndx - 1]
+
+
         if "phone" in line:
           start = line.find("phone")
           # case where phone in (xxx) xxx-xxxx format
@@ -728,7 +757,7 @@ def update_committees(cursor, house, year, comm_count, serve_count, pfinder, cur
   room = ""
   phone = ""
   fax = ""
-  floor_cid, comm_count = get_committee_id(cursor, house, '%s Floor' % house, "Floor", comm_count, room, phone, fax)
+  floor_cid, comm_count = get_committee_id(cursor, house, '%s Floor' % house, "Floor", comm_count, room, phone, fax, year)
   #clean_servesOn(cursor, floor_cid, house, year)
   for pid in term_pids:
     serve_count = insert_serveson(cursor, pid, year, house, floor_cid, 'Member', serve_count)
@@ -741,7 +770,7 @@ def update_committees(cursor, house, year, comm_count, serve_count, pfinder, cur
 
     # Joint committees are recorded with a house of 'Joint'.
     cid, comm_count = get_committee_id(cursor, 'Joint' if 'Joint' in name else house,
-                           name, commType, comm_count, room, phone, fax)
+                           name, commType, comm_count, room, phone, fax, year)
     #clean_servesOn(cursor, cid, house, year)
 
     #update contact info in Committee table

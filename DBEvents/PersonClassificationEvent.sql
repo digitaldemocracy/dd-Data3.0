@@ -11,6 +11,7 @@ CREATE EVENT PersonClassificationsEvent_event
     EVERY 1 DAY STARTS '2017-1-1 07:00:00'
 DO
   BEGIN
+    DROP TABLE IF EXISTS NumRange;
     CREATE TABLE NumRange
     AS
       SELECT
@@ -447,7 +448,7 @@ DO
     from PersonClassifications pc
       left join PersonClassificationsTmp tmp
       on pc.pid = tmp.pid and pc.PersonType = tmp.PersonType
-        and pc.specific_year = tmp.specific_year and tmp.session_year = og.session_year
+        and pc.specific_year = tmp.specific_year and tmp.session_year = pc.session_year
     where tmp.pid is null;
 
 
