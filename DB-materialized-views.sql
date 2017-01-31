@@ -142,41 +142,44 @@ CREATE TABLE IF NOT EXISTS InitialUtterance (
 
 
 -- A combination of Gift and LegStaffGifts. Rebuilds each night from a mysql event
-CREATE TABLE `GiftCombined` (
-  `RecordId` int(11) NOT NULL AUTO_INCREMENT,
-  `recipientPid` int(11) DEFAULT NULL,
-  `legislatorPid` int(11) DEFAULT NULL,
-  `giftDate` date DEFAULT NULL,
-  `giftDate_ts` int(11) DEFAULT NULL,
-  `year` year(4) DEFAULT NULL,
-  `description` varchar(150) DEFAULT NULL,
-  `giftValue` double DEFAULT NULL,
-  `agencyName` varchar(100) DEFAULT NULL,
-  `sourceName` varchar(150) DEFAULT NULL,
-  `sourceBusiness` varchar(100) DEFAULT NULL,
-  `sourceCity` varchar(50) DEFAULT NULL,
-  `sourceState` varchar(30) DEFAULT NULL,
-  `imageUrl` varchar(200) DEFAULT NULL,
-  `oid` int(11) DEFAULT NULL,
-  `activity` varchar(256) DEFAULT NULL,
-  `position` varchar(200) DEFAULT NULL,
-  `schedule` enum('D','E') DEFAULT NULL,
-  `jurisdiction` varchar(200) DEFAULT NULL,
-  `distictNumber` int(11) DEFAULT NULL,
-  `reimbursed` tinyint(1) DEFAULT NULL,
-  `giftIncomeFlag` tinyint(1) DEFAULT '0',
-  `speechFlag` tinyint(1) DEFAULT '0',
-  `speechOrPanel` tinyint(1) DEFAULT NULL,
-  `state` varchar(2) DEFAULT NULL,
-  `lastTouched` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`RecordId`),
-  KEY `giftDate_ts` (`giftDate_ts`),
-  KEY `recipientPid` (`recipientPid`),
-  KEY `legislatorPid` (`legislatorPid`),
-  KEY `agencyName` (`agencyName`),
-  KEY `sourceName` (`sourceName`),
-  KEY `giftValue` (`giftValue`),
-  KEY `state` (`state`),
+CREATE TABLE GiftCombined (
+  RecordId int(11) NOT NULL AUTO_INCREMENT,
+  recipientPid int(11) DEFAULT NULL,
+  legislatorPid int(11) DEFAULT NULL,
+  giftDate date DEFAULT NULL,
+  giftDate_ts int(11) DEFAULT NULL,
+  year year(4) DEFAULT NULL,
+  description varchar(150) DEFAULT NULL,
+  giftValue double DEFAULT NULL,
+  agencyName varchar(100) DEFAULT NULL,
+  sourceName varchar(150) DEFAULT NULL,
+  sourceBusiness varchar(100) DEFAULT NULL,
+  sourceCity varchar(50) DEFAULT NULL,
+  sourceState varchar(30) DEFAULT NULL,
+  imageUrl varchar(200) DEFAULT NULL,
+  oid int(11) DEFAULT NULL,
+  activity varchar(256) DEFAULT NULL,
+  position varchar(200) DEFAULT NULL,
+  schedule enum('D','E') DEFAULT NULL,
+  jurisdiction varchar(200) DEFAULT NULL,
+  districtNumber int(11) DEFAULT NULL,
+  reimbursed tinyint(1) DEFAULT NULL,
+  giftIncomeFlag tinyint(1) DEFAULT '0',
+  speechFlag tinyint(1) DEFAULT '0',
+  speechOrPanel tinyint(1) DEFAULT NULL,
+  sessionYear YEAR,
+  state varchar(2) DEFAULT NULL,
+  lastTouched timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (RecordId),
+  KEY giftDate_ts (giftDate_ts),
+  KEY recipientPid (recipientPid),
+  KEY legislatorPid (legislatorPid),
+  KEY agencyName (agencyName),
+  KEY sourceName (sourceName),
+  KEY giftValue (giftValue),
+  KEY state (state),
+  key session_year_idx (sessionYear),
+  key oid_idx (oid)
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -210,7 +213,6 @@ CREATE TABLE IF NOT EXISTS BillVersionCurrent (
   CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 
--- Should be combined
 CREATE TABLE CombinedRepresentations (
   pid INT,
   hid INT,
@@ -364,5 +366,26 @@ alter table CombinedAlignmentScores
   add INDEX oid_idx (oid),
   add INDEX state_idx (state),
   add INDEX pid_house_party_idx (pid, house, party);
+
+select *
+from CombinedAlignmentScores
+where pid is null and oid = -21;
+
+-- Note this is a one time run to add this data
+insert into CombinedAlignmentScores
+(pid, oid, house, party, state, score, positions_registered, votes_in_agreement, votes_in_disagreement, pid_house_party)
+select null as pid,
+  oid,
+  null as house,
+  null as party,
+  'CA' as state,
+  avg(score) as score,
+  sum(positions_registered) as positions_registered,
+  sum(votes_in_agreement) as votes_in_agreement,
+  sum(votes_in_disagreement) as votes_in_disagreement,
+  null as pid_house_party
+from CombinedAlignmentScores
+where pid is null
+group by oid;
 
 
