@@ -5,7 +5,7 @@ File: Get_Committees_Web.py
 Author: Daniel Mangin
 Modified By: Mandy Chan, Freddy Hernandez, Matt Versaggi, Miguel Aguilar, James Ly
 Date: 06/11/2015
-Last Modified: 01/03/2017
+Last Modified: 01/30/2017
 
 Description:
 - Scrapes the Assembly and Senate websites to gather committees and memberships
@@ -580,6 +580,30 @@ def get_committee_url(url):
   return commUrl
 
 '''
+cleans room string
+'''
+def clean_room(room):
+  if 'X' in room:
+      room = ""
+  elif ':' in room:
+      ndx = room.find(':')
+      room = room[ndx + 1:]
+  return room
+
+'''
+cleans phone string to be in (XXX) XXX-XXXX format
+'''
+def clean_phone(phone):
+  if 'X' in phone:
+      phone = ""
+  if "fax" in phone:
+     phone = ""
+  elif '.' in phone:
+    temp = phone.split('.')
+    phone = "(" + temp[0] + ") " + temp[1] + "-" + temp[2]
+  return phone
+
+'''
 Given a committee url scrape the page for room, phone, and fax number
 returns room, phone, and fax number as strings. They will be empty if none.
 
@@ -661,7 +685,7 @@ def get_committee_contact(commUrl, commType):
           start = phone.lower().find("phone")
           phone = phone[start+7:]
         if "fax" in line.lower():
-          start = line.lower().find("fax")
+          start = line.lower().find("fax:")
           fax = line[start + 4:]
         # cause where no room number but suite address
         if "Suite" in line:
@@ -670,9 +694,12 @@ def get_committee_contact(commUrl, commType):
 
   room = room.strip(".,")
   room = room.strip()
+  room = clean_room(room)
   phone = phone.strip(".,")
   phone = phone.strip()
+  phone = clean_phone(phone)
   fax = fax.strip()
+  fax = clean_phone(fax)
   return room, phone, fax
 
 
