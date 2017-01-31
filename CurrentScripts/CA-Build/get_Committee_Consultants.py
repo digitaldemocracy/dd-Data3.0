@@ -58,6 +58,8 @@ SELECT_COMMITTEE_CID = '''SELECT cid
                           WHERE house = %(house)s
                           AND state = 'CA'
                           AND name = %(committee)s
+                          AND session_year = %(year)s
+                          AND current_flag = TRUE
                        '''
 
 SELECT_CONSULT_PID = '''SELECT p.pid
@@ -148,7 +150,6 @@ def clean_strings(con_name):
     if ',' in con_name and 'Jr.' not in con_name\
             and 'Ph.D' not in con_name:
         name_list = con_name.split(',')
-        #print(name_list)
         for name in name_list:
             strip_name = name.strip().strip('\xc2\xa0')
 
@@ -158,32 +159,29 @@ def clean_strings(con_name):
                 for a_name in and_names:
                     strip_name = a_name.strip().strip('\xc2\xa0')
                     if len(strip_name) >= 1:
-                        #print(strip_name)
                         cleaned_strings.append(strip_name)
             else:
                 strip_name = name.strip().strip('\xc2\xa0')
                 if len(strip_name) >= 1:
-                    #print(strip_name)
                     cleaned_strings.append(strip_name)
     # If consultant names are separated with 'and', separate.
     elif ' and ' in con_name:
         name_list = con_name.split(' and ')
         for name in name_list:
             strip_name = name.strip().strip('\xc2\xa0')
-            #print(strip_name)
             cleaned_strings.append(strip_name)
     else:
         if len(con_name) >= 1:
-            #print(con_name)
             cleaned_strings.append(con_name)
     return cleaned_strings
 
 
-def get_committee_cid(house, committee, dd):
-    query_dict = {'house': house, 'committee': committee}
+def get_committee_cid(house, committee, session_year, dd):
+    query_dict = {'house': house, 'committee': committee, 'year': session_year}
 
     try:
         dd.execute(SELECT_COMMITTEE_CID, query_dict)
+
         cid = dd.fetchone()[0]
     except:
         logger.warning("Committee selection failed", full_msg = traceback.format_exc(),
@@ -320,9 +318,8 @@ def get_consultant_info(name, header, dd):
         consultant['position'] = 'Chief Consultant'
     else:
         consultant['position'] = None
-    consultant['session_year'] = get_session_year(dd)
 
-    print(consultant)
+
     return consultant
 
 
@@ -739,9 +736,9 @@ def scrape_consultants(comm_url, house, dd):
     return consultant_names
 
 
-def get_past_consultants(consultants, house, committee, dd):
+def get_past_consultants(consultants, house, committee, session_year, dd):
     update_consultants = list()
-    cid = get_committee_cid(house, committee, dd)
+    cid = get_committee_cid(house, committee, session_year, dd)
     select_dict = {'cid': str(cid)}
     try:
         dd.execute(SELECT_CURRENT_MEMBERS, select_dict)
@@ -790,20 +787,26 @@ def get_committees(house, dd):
                 for link in block.find(class_ = 'content').find_all('a'):
                     comm_name = link.get('href').split('.')[0][7:]
                     print(link.get('href'))
+                    committee = link.string
+                    if 'Committee' not in committee:
+                        committee += " Committee"
                     if comm_name == 'arts' or comm_name == 'emergencymanagement':
                         consultants = scrape_consultants(link.get('href'), house, dd)
-                        insert_consultants(consultants, 'Joint', link.string, dd)
+                        insert_consultants(consultants, 'Joint', committee, dd)
                     else:
                         consultants = scrape_joint_committees(link.get('href'), dd)
-                        insert_consultants(consultants, 'Joint', link.string, dd)
-            else:
+                        insert_consultants(consultants, 'Joint', committee, dd)
+            elif 'Sub' in block.find('h2').string:
+                comm_type = block.find('h3').contents[0]
                 for link in block.find(class_ = 'content').find_all('a'):
                     print(link.get('href'))
                     consultants = scrape_consultants(link.get('href'), house, dd)
-                    if 'Sub' in link.string:
-                        committee = house + ' Budget ' + link.string
-                    else:
-                        committee = house + ' Committee On ' + link.string
+                    committee = house + ' ' + comm_type + ' ' + link.string
+                    insert_consultants(consultants, house, committee, dd)
+            else:
+                for link in block.find(class_ = 'content').find_all('a'):
+                    consultants = scrape_consultants(link.get('href'), house, dd)
+                    committee = house + ' Committee On ' + link.string
                     insert_consultants(consultants, house, committee, dd)
 
     elif house.lower() == 'assembly':
@@ -812,10 +815,7 @@ def get_committees(house, dd):
                 for link in block.find(class_ = 'content').find_all('a'):
                     print(link.get('href'))
                     consultants = scrape_consultants(link.get('href'), house, dd)
-                    if 'Utilities' in link.string:
-                        committee = house + ' Standing Committee on Utilities and Commerce'
-                    else:
-                        committee = house + ' Standing Committee on ' + link.string
+                    committee = house + ' Standing Committee on ' + link.string
                     insert_consultants(consultants, house, committee, dd)
             if 'Joint' in block.find('h2').string:
                 for link in block.find(class_ = 'content').find_all('a'):
@@ -840,11 +840,14 @@ def insert_consultants(consultants, house, committee, dd):
     global C_INSERT, C_UPDATE
 
     if consultants is not None and len(consultants) > 0:
+        session_year = get_session_year(dd)
+
         for consultant in consultants:
-            cid = get_committee_cid(house, committee, dd)
+            cid = get_committee_cid(house, committee, session_year, dd)
             pid = get_consultant_pid(consultant, dd)
             consultant['cid'] = str(cid)
             consultant['pid'] = str(pid)
+            consultant['session_year'] = session_year
             if is_consultant_in_db(consultant, house, dd) is False:
                 consultant['current_flag'] = '1'
                 consultant['start_date'] = dt.datetime.today().strftime("%Y-%m-%d")
@@ -855,7 +858,7 @@ def insert_consultants(consultants, house, committee, dd):
                     logger.warning("Insert statement failed", full_msg = traceback.format_exc(),
                                    additional_fields = create_payload("ConsultantServesOn", (INSERT_CONSULT_SERVESON % consultant)))
 
-        update_consultants = get_past_consultants(consultants, house, committee, dd)
+        update_consultants = get_past_consultants(consultants, house, committee, session_year, dd)
 
         if len(update_consultants) > 0:
             for consultant in update_consultants:
