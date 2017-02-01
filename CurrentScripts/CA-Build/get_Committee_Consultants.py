@@ -294,7 +294,7 @@ def get_consultant_info(name, header, dd):
     consultant = dict()
 
     names = name.strip().split(' ')
-    print(names)
+
     if len(names) > 2:
         if 'Jr' in names[-1] or 'Sr' in names[-1]\
                 or 'Ph.D' in names[-1]:
@@ -310,15 +310,14 @@ def get_consultant_info(name, header, dd):
         consultant['first'] = names[0]
         consultant['last'] = names[1]
 
-    if 'Deputy Chief' in header:
-        consultant['position'] = 'Deputy Chief Consultant'
-    elif 'Secretary' in header:
-        consultant['position'] = 'Committee Secretary'
-    elif 'Chief' in header:
-        consultant['position'] = 'Chief Consultant'
+    if header is None:
+        consultant['position'] = 'Consultant'
+    elif header.strip() == '':
+        consultant['position'] = 'Consultant'
     else:
-        consultant['position'] = None
-
+        consultant['position'] = header.strip(',').strip().strip(':')
+        if consultant['position'][-1] == 's':
+            consultant['position'] = consultant['position'][:-1]
 
     return consultant
 
@@ -597,7 +596,7 @@ def get_problematic_sites(comm_url, dd):
         for header in htmlSoup.find_all('div', 'sidebar-information')[1].find_all('p'):
             hcontents = header.contents[0]
             if hcontents.name is not None:
-                title_header = hcontents
+                title_header = hcontents.find('em')
             elif hcontents.name is None:
                 #print(hcontents)
                 for name in clean_strings(hcontents):
