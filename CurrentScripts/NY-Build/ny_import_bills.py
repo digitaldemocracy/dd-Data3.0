@@ -3,9 +3,9 @@
 '''
 File: ny_import_bills.py
 Author: John Alkire
-maintained: Miguel Aguilar, Eric Roh
+maintained: Miguel Aguilar, Eric Roh, James Ly
 Date: 11/26/2015
-Last Update: 6/21/2016
+Last Update: 1/31/2017
 Description:
 - Imports NY bills using senate API
 - Fills Bill and BillVersion
@@ -29,7 +29,8 @@ BV_UPDATED = 0
 
 update_billversion = '''UPDATE BillVersion
                         SET bid = %(bid)s, date = %(date)s, state = %(state)s, 
-                         subject = %(subject)s, title = %(title)s, text = %(text)s                    
+                         subject = %(subject)s, title = %(title)s, text = %(text)s,
+                         digest = %(digest)s
                         WHERE vid = %(vid)s;'''
 
 update_bill =  '''UPDATE Bill
@@ -45,10 +46,10 @@ insert_bill = '''INSERT INTO Bill
                   %(session)s, %(sessionYear)s);'''
 
 insert_billversion = '''INSERT INTO BillVersion
-                         (vid, bid, date, state, subject, title, text)
+                         (vid, bid, date, state, subject, title, text, digest)
                         VALUES
                          (%(vid)s, %(bid)s, %(date)s, %(state)s, %(subject)s, %(title)s,
-                         %(text)s);'''                
+                         %(text)s, %(digest)s);'''                
 
 select_bill = '''SELECT bid 
                  FROM Bill   
@@ -105,7 +106,7 @@ def get_bills_api(resolution):
         total = call[1]
         
         for bill in bills:
-            bill = bill['result']             
+            bill = bill['result']
             b = dict()
             b['number'] = bill['basePrintNo'][1:]
             b['type'] = bill['basePrintNo'][0:1]
@@ -117,7 +118,8 @@ def get_bills_api(resolution):
             b['title'] = bill['title']
             b['versions'] = bill['amendments']['items']    
             b['bid'] = STATE + "_" + str(bill['session']) + str(int(bill['session'])+1) 
-            b['bid'] += b['session'] + b['type'] + b['number']            
+            b['bid'] += b['session'] + b['type'] + b['number']   
+            b['summary'] = bill['summary']
             ret_bills.append(b)  
                       
         cur_offset += BILL_API_INCREMENT
@@ -191,6 +193,7 @@ def insert_billversions_db(bill, dddb):
         bv['subject'] = bill['title']
         bv['title'] = bill['versions'][key]['actClause']
         bv['text'] = bill['versions'][key]['fullText']
+        bv['digest'] = bill['summary']
         
         if not is_bv_in_db(bv, dddb):
           try:
