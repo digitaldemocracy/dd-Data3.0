@@ -48,7 +48,8 @@ select_committee = '''SELECT cid
                       FROM Committee
                       WHERE house = %(house)s 
                        AND name = %(name)s 
-                       AND state = %(state)s'''
+                       AND state = %(state)s
+                       AND session_year = %(session_year)s'''
 
 select_committee_2 = '''SELECT name 
                       FROM Committee
@@ -161,15 +162,19 @@ def clean_name(name):
     
 def get_comm_cid(dddb, comm):
     try:
-      dddb.execute(select_committee, {'house':comm['house'], 'name':comm['name'], 'state':comm['state']})
+        temp = {'house':comm['house'], 'name':comm['name'], 'state':comm['state'], 'session_year':API_YEAR}
+        dddb.execute(select_committee, temp)
     except MySQLdb.Error:
         logger.warning('Select Failed', full_msg=traceback.format_exc(),
-        additional_fields=create_payload('Committee',(select_committee%comm)))
+        additional_fields=create_payload('Committee',(select_committee%temp)))
 
     query = dddb.fetchone()
            
-    if query is None:              
-        raise Exception('No CID found')   
+    if query is None: 
+        logger.warning('cid not found for ' + comm['name'], full_msg='cid not found for ' + comm['name'],
+               additional_fields=create_payload('Committee', (select_committee%temp))) 
+        #raise Exception('No CID found')
+        return None
     
     return query[0]
     
@@ -281,8 +286,12 @@ def get_db_name(dddb, name):
     dddb.execute(select_committee_2, ('Assembly', 'NY', '%'+'%'.join(name.split())+'%'))
     query = dddb.fetchone()
 
-    if query is None:              
-        raise Exception('No Name found')
+    if query is None:
+        logger.warning('Committee not found ' + name, full_msg='Committee not found for ' + name,
+               additional_fields=create_payload('Committee', 
+                   select_committee_2 % ('Assembly', 'NY', '%'+'%'.join(name.split())+'%')))
+        #raise Exception('No Name found')
+        return None
 
     return query[0]
 
