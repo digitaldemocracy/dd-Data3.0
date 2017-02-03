@@ -30,7 +30,7 @@ BV_UPDATED = 0
 update_billversion = '''UPDATE BillVersion
                         SET bid = %(bid)s, date = %(date)s, state = %(state)s, 
                          subject = %(subject)s, title = %(title)s, text = %(text)s,
-                         digest = %(digest)s
+                         digest = %(digest)s, billState = %(billState)s
                         WHERE vid = %(vid)s;'''
 
 update_bill =  '''UPDATE Bill
@@ -46,10 +46,10 @@ insert_bill = '''INSERT INTO Bill
                   %(session)s, %(sessionYear)s);'''
 
 insert_billversion = '''INSERT INTO BillVersion
-                         (vid, bid, date, state, subject, title, text, digest)
+                         (vid, bid, date, state, subject, title, text, digest, billState)
                         VALUES
                          (%(vid)s, %(bid)s, %(date)s, %(state)s, %(subject)s, %(title)s,
-                         %(text)s, %(digest)s);'''                
+                         %(text)s, %(digest)s, %(billState)s);'''                
 
 select_bill = '''SELECT bid 
                  FROM Bill   
@@ -59,7 +59,7 @@ select_billversion = '''SELECT vid
                         FROM BillVersion   
                         WHERE vid = %(vid)s'''                 
 
-API_YEAR = 2017
+API_YEAR = datetime.now().year
 API_URL = "http://legislation.nysenate.gov/api/3/{0}/{1}{2}?full=true&" 
 API_URL += "limit=1000&key=31kNDZZMhlEjCOV8zkBG1crgWAGxwDIS&offset={3}&"
 STATE = 'NY'                 
@@ -194,6 +194,7 @@ def insert_billversions_db(bill, dddb):
         bv['title'] = bill['versions'][key]['actClause']
         bv['text'] = bill['versions'][key]['fullText']
         bv['digest'] = bill['summary']
+        bv['billState'] = bill['status']
         
         if not is_bv_in_db(bv, dddb):
           try:
