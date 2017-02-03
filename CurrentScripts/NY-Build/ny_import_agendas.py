@@ -380,6 +380,9 @@ def get_senate_comm_hearings():
         if "Committee" in name:
             name = name.split("Committee")
             name = name[0].strip()
+        if "Meeting" in name:
+            name = name.split("Meeting")
+            name = name[0].strip()
         date = s.find("h4").get_text().strip()
         if "Meeting" in date:
             date = date.split("Meeting")
@@ -436,6 +439,7 @@ def main():
             insert_hearing(dddb, hearing['date'], year)
             hid = get_hid(dddb, hearing['date'], year)
             cid = get_cid(dddb, 'Assembly', hearing['name'], year)
+            
             if hid != None and cid != None:
                 insert_comm_hearing(dddb, cid, hid)
             bills = scrape_hearing_agenda(dddb, hearing['url'], 'Assembly')
