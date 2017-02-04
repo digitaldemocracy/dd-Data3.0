@@ -72,7 +72,8 @@ S_BILL = '''SELECT bid
 S_HEARING_AGENDA = '''SELECT hid, bid, date_created
                       FROM HearingAgenda
                       WHERE hid = %s
-                      AND bid = %s'''
+                      AND bid = %s
+                      AND date_created = %s'''
 
 #INSERT QUERIES
 I_HEARING = '''INSERT INTO Hearing (date, state, session_year)
@@ -275,8 +276,8 @@ else returns None
 |hid|: hearing id
 |bid|: bill id
 '''
-def get_hearing_agenda(cursor, hid, bid):
-    cursor.execute(S_HEARING_AGENDA, (hid, bid))
+def get_hearing_agenda(cursor, hid, bid, date):
+    cursor.execute(S_HEARING_AGENDA, (hid, bid, date))
     r_hid = None
     r_bid = None
     r_date = None
@@ -299,7 +300,7 @@ inserts hearing agenda if it is not in db
 def insert_hearing_agenda(cursor, hid, bid):
     global I_HA
     date = time.strftime("%Y-%m-%d")
-    r_hid, r_bid, r_date = get_hearing_agenda(cursor, hid, bid)
+    r_hid, r_bid, r_date = get_hearing_agenda(cursor, hid, bid, date)
     if r_hid == None:
         try:
             cursor.execute(I_HEARING_AGENDA, (hid, bid, date))
