@@ -53,8 +53,7 @@ S_SESSION = '''SELECT MAX(start_year)
                WHERE start_year <= %s'''
 S_COMMITTEE = '''SELECT cid
                  FROM Committee
-                 WHERE short_name IS NOT NULL 
-                 AND house = %s
+                 WHERE house = %s
                  AND name = %s
                  AND state = %s
                  AND session_year = %s'''
