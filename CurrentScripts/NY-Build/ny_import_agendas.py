@@ -66,7 +66,9 @@ S_BILL = '''SELECT bid
             FROM Bill
             WHERE type = %s
             AND number = %s
-            AND house = %s'''
+            AND house = %s
+            AND state = %s
+            AND sessionYear = %s'''
 S_HEARING_AGENDA = '''SELECT hid, bid, date_created
                       FROM HearingAgenda
                       WHERE hid = %s
@@ -234,7 +236,9 @@ returns a bid if found in db, else returns None
 |house|: house the bill belongs to
 '''
 def get_bid(cursor, b_type, b_number, house):
-    cursor.execute(S_BILL, (b_type, b_number, house))
+    state = "NY"
+    year = time.strftime("%Y")
+    cursor.execute(S_BILL, (b_type, b_number, house, state, year))
     if cursor.rowcount > 0:
         result = cursor.fetchone()[0]
     else:
