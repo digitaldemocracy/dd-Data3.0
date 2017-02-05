@@ -196,6 +196,7 @@ def insert_billversions_db(bill, dddb):
         bv['digest'] = bill['summary']
         bv['billState'] = bill['status']
         
+
         if not is_bv_in_db(bv, dddb):
           try:
             dddb.execute(insert_billversion, bv)
@@ -205,6 +206,8 @@ def insert_billversions_db(bill, dddb):
                 additional_fields=create_payload('BillVersion',( insert_billversion % bv)))
         else:            
           try:
+            if bv['digest'] == '':
+                bv['digest'] = None
             dddb.execute(update_billversion, bv)
             BV_UPDATED += dddb.rowcount
           except MySQLdb.Error:
