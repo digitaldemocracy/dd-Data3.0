@@ -36,14 +36,14 @@ update_billversion = '''UPDATE BillVersion
 update_bill =  '''UPDATE Bill
                   SET number = %(number)s, type = %(type)s, status = %(status)s, 
                    house = %(house)s, state = %(state)s, session = %(session)s, 
-                   sessionYear = %(sessionYear)s
+                   sessionYear = %(sessionYear)s, billState = %(billState)s
                   WHERE bid = %(bid)s;'''
 
 insert_bill = '''INSERT INTO Bill
-                  (bid, number, type, status, house, state, session, sessionYear)
+                  (bid, number, type, status, house, state, session, sessionYear, billState)
                  VALUES
                   (%(bid)s, %(number)s, %(type)s, %(status)s, %(house)s, %(state)s,
-                  %(session)s, %(sessionYear)s);'''
+                  %(session)s, %(sessionYear)s, %(billState)s);'''
 
 insert_billversion = '''INSERT INTO BillVersion
                          (vid, bid, date, state, subject, title, text, digest, billState)
@@ -131,24 +131,21 @@ def get_bills_api(resolution):
 #insertion occurs, false otherwise                          
 def insert_bill_db(bill, dddb):
     global INSERTED, UPDATED
-    if not is_bill_in_db(bill, dddb):                        
+    temp = {'bid':bill['bid'], 'number':bill['number'], 'type':bill['type'], 'status':bill['status'], 'house':bill['house'], 'state':bill['state'], 'session':bill['session'], 'sessionYear':bill['sessionYear'], 'billState':bill['status']}
+    if not is_bill_in_db(bill, dddb):
       try:
-        dddb.execute(insert_bill, {'bid':bill['bid'], 'number':bill['number'], 
-          'type':bill['type'], 'status':bill['status'], 'house':bill['house'], 
-          'state':bill['state'], 'session':bill['session'], 'sessionYear':bill['sessionYear']})
+        dddb.execute(insert_bill, temp)
         INSERTED += dddb.rowcount
       except MySQLdb.Error:
         logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-            additional_fields=create_payload('Bill', (insert_bill % bill)))
+            additional_fields=create_payload('Bill', (insert_bill % temp)))
     else:        
       try:
-        dddb.execute(update_bill, {'number':bill['number'], 'type':bill['type'],
-          'status':bill['status'], 'house':bill['house'], 'state':bill['state'],
-          'session':bill['session'], 'sessionYear':bill['sessionYear'], 'bid':bill['bid']})
+        dddb.execute(update_bill, temp)
         UPDATED += dddb.rowcount
       except MySQLdb.Error:
         logger.warning('Update Failed', full_msg=traceback.format_exc(),
-              additional_fields=create_payload('Bill', (update_bill % bill)))
+              additional_fields=create_payload('Bill', (update_bill % temp)))
         return False   
               
     return True
