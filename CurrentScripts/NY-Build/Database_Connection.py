@@ -17,7 +17,7 @@ QS_DBINFO = '''SELECT * FROM DBConnection
 
 def mysql_connection(args):
   if len(args) == 1:
-    return {'host':'dddb2016-mysql5-7-11.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+    return {'host':'dddb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
             'port':3306,
             'db':'EricTest',
             #'db':'DDDB2016Aug',

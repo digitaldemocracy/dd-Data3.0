@@ -39,6 +39,14 @@ update_bill =  '''UPDATE Bill
                    sessionYear = %(sessionYear)s, billState = %(billState)s
                   WHERE bid = %(bid)s;'''
 
+update_Bill_billState = '''UPDATE Bill
+                            SET billState = %(billState)s
+                            WHERE bid = %(bid)s'''
+
+update_BillVersion_billState = '''UPDATE BillVersion
+                                    SET billState = %(billState)s
+                                    WHERE vid = %(vid)s'''
+
 insert_bill = '''INSERT INTO Bill
                   (bid, number, type, status, house, state, session, sessionYear, billState)
                  VALUES
@@ -132,6 +140,14 @@ def get_bills_api(resolution):
 def insert_bill_db(bill, dddb):
     global INSERTED, UPDATED
     temp = {'bid':bill['bid'], 'number':bill['number'], 'type':bill['type'], 'status':bill['status'], 'house':bill['house'], 'state':bill['state'], 'session':bill['session'], 'sessionYear':bill['sessionYear'], 'billState':bill['status']}
+    
+    lastVersion = str(bill['versions'].keys()[-1])
+    billVid = bill['bid'] + lastVersion
+    if billVid[-1].isalpha():
+        temp['billState'] = "Ammended " + billVid[-1].upper();
+    elif billVid[-1].isdigit():
+        temp['billState'] = "Introduced"
+    
     if not is_bill_in_db(bill, dddb):
       try:
         dddb.execute(insert_bill, temp)
@@ -192,7 +208,11 @@ def insert_billversions_db(bill, dddb):
         bv['text'] = bill['versions'][key]['fullText']
         bv['digest'] = bill['summary']
         bv['billState'] = bill['status']
-        
+
+        if bv['vid'][-1].isalpha():
+            bv['billState'] = 'Ammended ' + str(bv['vid'][-1]).upper();
+        elif bv['vid'][-1].isdigit():
+            bv['billState'] = 'Introduced'
 
         if not is_bv_in_db(bv, dddb):
           try:
@@ -222,7 +242,7 @@ def add_bills_db( dddb):
         if insert_bill_db(bill, dddb):
             bcount = bcount + 1
         insert_billversions_db(bill, dddb)
-
+        
     #print "Inserted %d bills" % bcount
                     
 def main():
