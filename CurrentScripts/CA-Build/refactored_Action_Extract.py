@@ -44,13 +44,21 @@ QI_ACTION = '''INSERT INTO Action (bid, date, text, seq_num)
                VALUES (%s, %s, %s, %s)'''
 
 # SELECTS
-QS_BILL_HISTORY_TBL = '''SELECT bill_id, action_date, action, bill_history_id
+QS_BILL_HISTORY_TBL = '''SELECT bill_id, action_date, action, action_sequence
                          FROM bill_history_tbl'''
 QS_ACTION_CHECK = '''SELECT bid
                      FROM Action
                      WHERE bid = %s
                       AND date = %s
                       AND seq_num = %s'''
+QS_ACTION_SEQ_CHECK = '''
+SELECT bid
+FROM Action
+WHERE bid = %s
+ AND date = %s
+ AND text = %s
+ AND seq_num != %s
+'''
 QS_ACTION_TEXT = '''SELECT bid
                      FROM Action
                      WHERE bid = %s
@@ -121,7 +129,7 @@ def update_Action(dd_cursor, values):
   values[0] = '%s_%s' % (STATE, values[0])
 
   # Check if DDDB already has this action
-  dd_cursor.execute(QS_ACTION_CHECK, (values[0], values[1], values[2]))
+  dd_cursor.execute(QS_ACTION_SEQ_CHECK, (values[0], values[1], values[2], values[3]))
 
   if dd_cursor.rowcount == 1:
     dd_cursor.execute(QU_ACTION_SEQ, (values[3], values[0], values[1], values [2]))
@@ -147,6 +155,7 @@ def main():
 
       for record in ca_cursor.fetchall():
         insert_Action(dd_cursor, list(record))
+        update_Action(dd_cursor, list(record))
       logger.info(__file__ + ' terminated successfully.', 
           full_msg='Inserted ' + str(INSERTED) + ' and updated ' + str(UPDATED) + ' rows in Action',
           additional_fields={'_affected_rows':'Action:'+str(INSERTED + UPDATED),
