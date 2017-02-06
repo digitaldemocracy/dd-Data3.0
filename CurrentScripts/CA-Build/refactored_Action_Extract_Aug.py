@@ -44,7 +44,7 @@ QI_ACTION = '''INSERT INTO Action (bid, date, text, seq_num)
                VALUES (%s, %s, %s, %s)'''
 
 # SELECTS
-QS_BILL_HISTORY_TBL = '''SELECT bill_id, action_date, action, bill_history_id
+QS_BILL_HISTORY_TBL = '''SELECT bill_id, action_date, action, action_sequence
                          FROM bill_history_tbl'''
 QS_ACTION_CHECK = '''SELECT bid
                      FROM Action
