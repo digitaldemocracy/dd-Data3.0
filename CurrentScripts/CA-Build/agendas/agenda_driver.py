@@ -87,7 +87,6 @@ update_agenda_date = '''
 UPDATE HearingAgenda
 SET current_flag=0
 WHERE date_created < date(%s)
- AND bid LIKE '%CA_%'
 '''
 
 
@@ -178,7 +177,7 @@ def update_db(cursor):
                 'when trying to update database.')
     logger.error('Update Failed', full_msg=traceback.format_exc(),
         additional_fields=create_payload('HearingAgenda',
-          update_agenda_date % (cur_date.date())))
+          update_agenda_date % (cur_date.date(),)))
     return False
   return True
   #Get every row where current flag is set to true
