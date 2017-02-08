@@ -144,7 +144,7 @@ def insert_bill_db(bill, dddb):
     lastVersion = str(bill['versions'].keys()[-1])
     billVid = bill['bid'] + lastVersion
     if billVid[-1].isalpha():
-        temp['billState'] = "Ammended " + billVid[-1].upper();
+        temp['billState'] = "Amended " + billVid[-1].upper();
     elif billVid[-1].isdigit():
         temp['billState'] = "Introduced"
     
@@ -210,7 +210,7 @@ def insert_billversions_db(bill, dddb):
         bv['billState'] = bill['status']
 
         if bv['vid'][-1].isalpha():
-            bv['billState'] = 'Ammended ' + str(bv['vid'][-1]).upper();
+            bv['billState'] = 'Amended ' + str(bv['vid'][-1]).upper();
         elif bv['vid'][-1].isdigit():
             bv['billState'] = 'Introduced'
 
