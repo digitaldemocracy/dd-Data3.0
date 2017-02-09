@@ -53,8 +53,7 @@ S_SESSION = '''SELECT MAX(start_year)
                WHERE start_year <= %s'''
 S_COMMITTEE = '''SELECT cid
                  FROM Committee
-                 WHERE short_name IS NOT NULL 
-                 AND house = %s
+                 WHERE house = %s
                  AND name = %s
                  AND state = %s
                  AND session_year = %s'''
@@ -66,11 +65,14 @@ S_BILL = '''SELECT bid
             FROM Bill
             WHERE type = %s
             AND number = %s
-            AND house = %s'''
+            AND house = %s
+            AND state = %s
+            AND sessionYear = %s'''
 S_HEARING_AGENDA = '''SELECT hid, bid, date_created
                       FROM HearingAgenda
                       WHERE hid = %s
-                      AND bid = %s'''
+                      AND bid = %s
+                      AND date_created = %s'''
 
 #INSERT QUERIES
 I_HEARING = '''INSERT INTO Hearing (date, state, session_year)
@@ -234,7 +236,9 @@ returns a bid if found in db, else returns None
 |house|: house the bill belongs to
 '''
 def get_bid(cursor, b_type, b_number, house):
-    cursor.execute(S_BILL, (b_type, b_number, house))
+    state = "NY"
+    year = time.strftime("%Y")
+    cursor.execute(S_BILL, (b_type, b_number, house, state, year))
     if cursor.rowcount > 0:
         result = cursor.fetchone()[0]
     else:
@@ -271,8 +275,8 @@ else returns None
 |hid|: hearing id
 |bid|: bill id
 '''
-def get_hearing_agenda(cursor, hid, bid):
-    cursor.execute(S_HEARING_AGENDA, (hid, bid))
+def get_hearing_agenda(cursor, hid, bid, date):
+    cursor.execute(S_HEARING_AGENDA, (hid, bid, date))
     r_hid = None
     r_bid = None
     r_date = None
@@ -295,7 +299,7 @@ inserts hearing agenda if it is not in db
 def insert_hearing_agenda(cursor, hid, bid):
     global I_HA
     date = time.strftime("%Y-%m-%d")
-    r_hid, r_bid, r_date = get_hearing_agenda(cursor, hid, bid)
+    r_hid, r_bid, r_date = get_hearing_agenda(cursor, hid, bid, date)
     if r_hid == None:
         try:
             cursor.execute(I_HEARING_AGENDA, (hid, bid, date))
@@ -380,6 +384,9 @@ def get_senate_comm_hearings():
         if "Committee" in name:
             name = name.split("Committee")
             name = name[0].strip()
+        if "Meeting" in name:
+            name = name.split("Meeting")
+            name = name[0].strip()
         date = s.find("h4").get_text().strip()
         if "Meeting" in date:
             date = date.split("Meeting")
@@ -436,6 +443,7 @@ def main():
             insert_hearing(dddb, hearing['date'], year)
             hid = get_hid(dddb, hearing['date'], year)
             cid = get_cid(dddb, 'Assembly', hearing['name'], year)
+            
             if hid != None and cid != None:
                 insert_comm_hearing(dddb, cid, hid)
             bills = scrape_hearing_agenda(dddb, hearing['url'], 'Assembly')

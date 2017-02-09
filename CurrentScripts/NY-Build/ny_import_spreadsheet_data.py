@@ -79,7 +79,7 @@ def get_pid_from_Person(dddb, legislator):
 # else:
 #   pid_value = -1
   if legislator not in logged_list:
-    logged_list.append(legislaotr)
+    logged_list.append(legislator)
     logger.warining('Person not fond ' + legislator['first'] + ' ' + legislaotr['last'],
         additional_fields={'_state':'NY'})
   return None

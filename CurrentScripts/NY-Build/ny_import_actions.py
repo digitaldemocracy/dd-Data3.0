@@ -16,6 +16,7 @@ import requests
 import MySQLdb
 import traceback
 from graylogger.graylogger import GrayLogger
+from datetime import datetime
 GRAY_URL = 'http://dw.digitaldemocracy.org:12202/gelf'
 logger = None
 INSERTED = 0
@@ -30,7 +31,7 @@ select_action = '''SELECT bid, text
                  WHERE bid = %(bid)s;'''
 
 
-API_YEAR = 2016
+API_YEAR = datetime.now().year if datetime.now().year % 2 == 1 else datetime.now().year - 1
 API_URL = "http://legislation.nysenate.gov/api/3/{0}/{1}{2}?full=true&" 
 API_URL += "limit=1000&key=31kNDZZMhlEjCOV8zkBG1crgWAGxwDIS&offset={3}&"
 STATE = 'NY'                 
@@ -91,6 +92,7 @@ def get_bills_api(resolution):
     return ret_bills
 
 def is_act_in_db(act, dddb):
+    temp = {'bid':act['bid']}
     dddb.execute(select_action, act)
     act_list = dddb.fetchall()
 
@@ -98,8 +100,22 @@ def is_act_in_db(act, dddb):
         return True
     return False
 
+'''
+    tempList = bill['actions']
+    print " "
+    print "orignal list", len(bill['actions'])
+    print bill['actions']
+    print "iterate"
+    for i in range(0,len(tempList)):
+        print tempList[i]
+        act = dict()
+        act['bid'] = bill['bid']
+        act['date'] = tempList[i]['date']
+        act['text'] = tempList[i]['text']
+ '''
 def insert_actions_db(bill, dddb):
     global INSERTED
+    
     for action in bill['actions']:
         act = dict()
         act['bid'] = bill['bid']
@@ -113,8 +129,6 @@ def insert_actions_db(bill, dddb):
             except MySQLdb.Error:
                 logger.warning('Insert Failed', full_msg=traceback.format_exc(),
                 additional_fields=create_payload('Action',(insert_action%act)))
-            return True
-        return False
 
 #function to loop over all bills and insert bill actions        
 def add_bill_actions_db(dddb):
@@ -124,10 +138,9 @@ def add_bill_actions_db(dddb):
     act_count = 0
 
     for bill in bills:
-        if insert_actions_db(bill, dddb):
-            act_count = act_count + 1
+        insert_actions_db(bill, dddb)
 
-    print "Inserted %d actions" % act_count
+    print "Inserted %d actions" % INSERTED
 
 def main():
   dd_info = mysql_connection(sys.argv)

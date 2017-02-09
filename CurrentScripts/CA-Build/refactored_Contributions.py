@@ -23,6 +23,7 @@ Sources:
 '''
 
 from Database_Connection import mysql_connection
+from datetime import datetime
 import urllib
 import zipfile
 import os
@@ -75,14 +76,14 @@ QS_ORGANIZATION = '''SELECT oid
 QD_CONTRIBUTION = '''DELETE FROM Contribution
                      WHERE id = %s'''
 
-zipURL = '''http://data.maplight.org/CA/2015/records/cand.zip'''
+zipURL = '''http://data.maplight.org/CA/{0}/records/cand.zip'''
 zipName = '''cand.zip'''
 
 def dl_csv():
   remove_zip()
   try:
     url = urllib.urlretrieve(zipURL, zipName)
-    print url
+    print('url', zipURL)
   except:
     print zipURL, 'download failed'
 
@@ -146,6 +147,8 @@ def getPerson(cursor, first, last, floor):
       else:
         #print "could not find {0} {1}".format(first, last)
         pass
+  if pid == -1:
+    print(first, last, floor)
   return pid
 
 
@@ -162,6 +165,7 @@ def get_oid(cursor, donorOrg):
     oid = cursor.fetchone()[0]
     #print 'found oid: ', oid
     return oid
+  print('did nto find donorOrg',donorOrg)
   notfound_org.add(donorOrg)
   return None
 
@@ -233,7 +237,6 @@ def getContributions(file, conn):
           if house != "null" and pid != -1:
             try:
                 insert_Contributor(conn, id, pid, year, date, house, donorName, donorOrg, amount, oid)
-                index = index + 1
             except:
                 print(traceback.format_exc())
                 raise
@@ -252,26 +255,20 @@ def getContributions(file, conn):
           print traceback.format_exc()
           exit(0)
       print 'no pid and house', val
-      print 'legislator', index
 
 def main():
-  #getContributions('cand_2001.csv')
-  #getContributions('cand_2003.csv')
-  #getContributions('cand_2005.csv')
-  #getContributions('cand_2007.csv')
-  #getContributions('cand_2009.csv')
-  #getContributions('cand_2011.csv')
-  #getContributions('cand_2013.csv')
-  #getContributions('../../../Contribution_Data/cand_2015_windows.csv')
-  #db.close()
+  global zipURL
   dbinfo = mysql_connection(sys.argv)
   with MySQLdb.connect(host=dbinfo['host'],
                          port=dbinfo['port'],
                          db=dbinfo['db'],
                          user=dbinfo['user'],
                          passwd=dbinfo['passwd']) as dd_cursor:
+    year = datetime.now().year
+    sessionyear = year + 1 if year % 2 == 0 else year
+    zipURL = zipURL.format(sessionyear)
     dl_csv()
-    getContributions('cand_2015.csv', dd_cursor)
+    getContributions('cand_{0}.csv'.format(sessionyear), dd_cursor)
     print 'orgs not found', len(notfound_org)
     logger.info(__file__ + ' terminated successfully.',
         full_msg='Inserted ' + str(C_INSERT) + ' rows in Contribution',

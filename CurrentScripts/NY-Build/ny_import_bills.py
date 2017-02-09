@@ -30,26 +30,34 @@ BV_UPDATED = 0
 update_billversion = '''UPDATE BillVersion
                         SET bid = %(bid)s, date = %(date)s, state = %(state)s, 
                          subject = %(subject)s, title = %(title)s, text = %(text)s,
-                         digest = %(digest)s
+                         digest = %(digest)s, billState = %(billState)s
                         WHERE vid = %(vid)s;'''
 
 update_bill =  '''UPDATE Bill
                   SET number = %(number)s, type = %(type)s, status = %(status)s, 
                    house = %(house)s, state = %(state)s, session = %(session)s, 
-                   sessionYear = %(sessionYear)s
+                   sessionYear = %(sessionYear)s, billState = %(billState)s
                   WHERE bid = %(bid)s;'''
 
+update_Bill_billState = '''UPDATE Bill
+                            SET billState = %(billState)s
+                            WHERE bid = %(bid)s'''
+
+update_BillVersion_billState = '''UPDATE BillVersion
+                                    SET billState = %(billState)s
+                                    WHERE vid = %(vid)s'''
+
 insert_bill = '''INSERT INTO Bill
-                  (bid, number, type, status, house, state, session, sessionYear)
+                  (bid, number, type, status, house, state, session, sessionYear, billState)
                  VALUES
                   (%(bid)s, %(number)s, %(type)s, %(status)s, %(house)s, %(state)s,
-                  %(session)s, %(sessionYear)s);'''
+                  %(session)s, %(sessionYear)s, %(billState)s);'''
 
 insert_billversion = '''INSERT INTO BillVersion
-                         (vid, bid, date, state, subject, title, text, digest)
+                         (vid, bid, date, state, subject, title, text, digest, billState)
                         VALUES
                          (%(vid)s, %(bid)s, %(date)s, %(state)s, %(subject)s, %(title)s,
-                         %(text)s, %(digest)s);'''                
+                         %(text)s, %(digest)s, %(billState)s);'''                
 
 select_bill = '''SELECT bid 
                  FROM Bill   
@@ -59,7 +67,7 @@ select_billversion = '''SELECT vid
                         FROM BillVersion   
                         WHERE vid = %(vid)s'''                 
 
-API_YEAR = 2017
+API_YEAR = datetime.now().year
 API_URL = "http://legislation.nysenate.gov/api/3/{0}/{1}{2}?full=true&" 
 API_URL += "limit=1000&key=31kNDZZMhlEjCOV8zkBG1crgWAGxwDIS&offset={3}&"
 STATE = 'NY'                 
@@ -131,24 +139,29 @@ def get_bills_api(resolution):
 #insertion occurs, false otherwise                          
 def insert_bill_db(bill, dddb):
     global INSERTED, UPDATED
-    if not is_bill_in_db(bill, dddb):                        
+    temp = {'bid':bill['bid'], 'number':bill['number'], 'type':bill['type'], 'status':bill['status'], 'house':bill['house'], 'state':bill['state'], 'session':bill['session'], 'sessionYear':bill['sessionYear'], 'billState':bill['status']}
+    
+    lastVersion = str(bill['versions'].keys()[-1])
+    billVid = bill['bid'] + lastVersion
+    if billVid[-1].isalpha():
+        temp['billState'] = "Amended " + billVid[-1].upper();
+    elif billVid[-1].isdigit():
+        temp['billState'] = "Introduced"
+    
+    if not is_bill_in_db(bill, dddb):
       try:
-        dddb.execute(insert_bill, {'bid':bill['bid'], 'number':bill['number'], 
-          'type':bill['type'], 'status':bill['status'], 'house':bill['house'], 
-          'state':bill['state'], 'session':bill['session'], 'sessionYear':bill['sessionYear']})
+        dddb.execute(insert_bill, temp)
         INSERTED += dddb.rowcount
       except MySQLdb.Error:
         logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-            additional_fields=create_payload('Bill', (insert_bill % bill)))
+            additional_fields=create_payload('Bill', (insert_bill % temp)))
     else:        
       try:
-        dddb.execute(update_bill, {'number':bill['number'], 'type':bill['type'],
-          'status':bill['status'], 'house':bill['house'], 'state':bill['state'],
-          'session':bill['session'], 'sessionYear':bill['sessionYear'], 'bid':bill['bid']})
+        dddb.execute(update_bill, temp)
         UPDATED += dddb.rowcount
       except MySQLdb.Error:
         logger.warning('Update Failed', full_msg=traceback.format_exc(),
-              additional_fields=create_payload('Bill', (update_bill % bill)))
+              additional_fields=create_payload('Bill', (update_bill % temp)))
         return False   
               
     return True
@@ -194,7 +207,13 @@ def insert_billversions_db(bill, dddb):
         bv['title'] = bill['versions'][key]['actClause']
         bv['text'] = bill['versions'][key]['fullText']
         bv['digest'] = bill['summary']
-        
+        bv['billState'] = bill['status']
+
+        if bv['vid'][-1].isalpha():
+            bv['billState'] = 'Amended ' + str(bv['vid'][-1]).upper();
+        elif bv['vid'][-1].isdigit():
+            bv['billState'] = 'Introduced'
+
         if not is_bv_in_db(bv, dddb):
           try:
             dddb.execute(insert_billversion, bv)
@@ -204,6 +223,8 @@ def insert_billversions_db(bill, dddb):
                 additional_fields=create_payload('BillVersion',( insert_billversion % bv)))
         else:            
           try:
+            if bv['digest'] == '':
+                bv['digest'] = None
             dddb.execute(update_billversion, bv)
             BV_UPDATED += dddb.rowcount
           except MySQLdb.Error:
@@ -221,7 +242,7 @@ def add_bills_db( dddb):
         if insert_bill_db(bill, dddb):
             bcount = bcount + 1
         insert_billversions_db(bill, dddb)
-
+        
     #print "Inserted %d bills" % bcount
                     
 def main():

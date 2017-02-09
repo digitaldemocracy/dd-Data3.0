@@ -15,6 +15,7 @@ import sys
 from Database_Connection import mysql_connection
 import traceback
 import requests
+from datetime import datetime
 import MySQLdb
 from graylogger.graylogger import GrayLogger                                    
 API_URL = 'http://dw.digitaldemocracy.org:12202/gelf'                  
@@ -102,7 +103,7 @@ def get_author_api(year):
     #total = call[1]
     total = 9999
     for bill in bills:
-      if bill['sponsor']['member'] is not None:
+      if bill['sponsor'] is not None and bill['sponsor']['member'] is not None:
         try:
           b = dict()
           b['type'] = bill['basePrintNo']
@@ -306,7 +307,8 @@ def main():
             port=ddinfo['port'],
             passwd=ddinfo['passwd'],
             charset='utf8') as dddb:
-    add_authors_db(2015, dddb)
+    year = datetime.now().year
+    add_authors_db(year, dddb)
     logger.info(__file__ + ' terminated successfully.', 
         full_msg='Inserted ' + str(INSERTED) + ' and updated ' + str(A_UPDATE) + ' rows in authors and ' 
                   + str(BS_INSERTED) + ' rows in BillSponsors',

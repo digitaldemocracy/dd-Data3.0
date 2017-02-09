@@ -19,8 +19,8 @@ def mysql_connection(args):
   if len(args) == 1:
     return {'host':'dddb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
             'port':3306,
-            'db':'EricTest',
-            #'db':'DDDB2016Aug',
+            #'db':'EricTest',
+            'db':'DDDB2016Aug',
             'user':'awsDB',
             'passwd':'digitaldemocracy789'}
   else:

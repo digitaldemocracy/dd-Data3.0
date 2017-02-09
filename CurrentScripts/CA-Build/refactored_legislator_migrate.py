@@ -73,7 +73,8 @@ QI_LEGISLATOR = '''INSERT INTO Legislator (pid, state)
                    VALUES (%s, %s)'''
 QI_TERM = '''INSERT INTO Term (pid, year, district, house, party, state, start) 
              VALUES (%s, %s, %s, %s, %s, %s, %s)'''
-
+QI_PERSON_STATE = '''INSERT INTO PersonStateAffiliation (pid, state)
+                     VALUES (%s, "CA")'''
 QU_TERM_END_DATE = '''UPDATE Term
                       SET end = %s, current_term = 0
                       WHERE pid = %s
