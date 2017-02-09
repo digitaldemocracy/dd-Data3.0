@@ -22,13 +22,19 @@ from time import strftime
 GRAY_URL = 'http://dw.digitaldemocracy.org:12202/gelf'
 logger = None
 C_INSERTED = 0
+CN_INSERTED = 0
 S_INSERTED = 0
 S_UPDATED = 0
+
+insert_committee_name = '''INSERT INTO CommitteeNames
+                             (name, house, state)
+                           VALUES
+                             (%(name)s, %(house)s, %(state)s)'''
 
 insert_committee = '''INSERT INTO Committee
                        (house, name, state, type, short_name, session_year)
                       VALUES
-                       (%(house)s, %(name)s, %(state)s, %(type)s, %(name)s, %(session_year)s);'''
+                       (%(house)s, %(name)s, %(state)s, %(type)s, %(short_name)s, %(session_year)s);'''
 
 insert_serveson = '''INSERT INTO servesOn
                       (pid, year, house, cid, state, position, current_flag, start_date)
@@ -84,6 +90,12 @@ select_current_members = '''SELECT pid
                              AND current_flag = true
                              AND year = %(year)s'''
 
+select_committee_name = '''SELECT cn_id
+                           FROM CommitteeNames
+                           WHERE name = %(name)s
+                           AND state = %(state)s
+                           AND house = %(house)s'''
+
 STATE = 'NY'
 COMMITTEES_URL = 'http://assembly.state.ny.us/comm/'
 CATEGORIES_XP = '//*[@id="sitelinks"]/span//text()'
@@ -114,6 +126,18 @@ def get_session_year(dddb):
     return query[0]
 
 
+def is_comm_name_in_db(comm, dddb):
+    try:
+        dddb.execute(select_committee_name, {'name': comm['name'], 'state': comm['state'], 'house': comm['house']})
+        query = dddb.fetchone()
+
+        if query is None:
+            return False
+    except MySQLdb.Error:
+        logger.warning("Select query failed", full_msg= traceback.format_exc(),
+                       additional_fields=create_payload("CommitteeNames", (select_committee_name % comm)))
+
+
 def is_comm_in_db(comm, dddb):
     try:
         dddb.execute(select_committee, {'house': comm['house'], 'name': comm['name'],
@@ -140,6 +164,15 @@ def is_serveson_in_db(member, dddb):
                        additional_fields=create_payload("servesOn", (select_serveson % member)))
 
     return True
+
+
+def format_comm_name(category, comm):
+    category = category.split(' and ')[0]
+    category = category.rstrip('s')
+
+    comm_name = 'Assembly ' + category + ' on ' + comm
+
+    return comm_name
 
 
 def clean_name(name):
@@ -182,12 +215,13 @@ def get_committees_html():
         for comm in committees_html:
             link = tree.xpath(COMMITTEE_LINK_XP.format(x, y))
             committee = dict()
-            committee['name'] = comm
+            committee['name'] = format_comm_name(category, comm)
             committee['type'] = category
             committee['house'] = "Assembly"
             committee['state'] = STATE
             committee['members'] = list()
-            # print "    "+comm
+            committee['short_name'] = comm
+            print committee
 
             if len(link) > 0:
                 strip_link = link[0][0:len(link[0]) - 1]
@@ -252,13 +286,23 @@ def get_past_members(committee, dddb):
 
 
 def add_committees_db(dddb):
-    global C_INSERTED, S_INSERTED, S_UPDATED
+    global C_INSERTED, CN_INSERTED, S_INSERTED, S_UPDATED
     committees = get_committees_html()
     count = 0
     y = 0
 
     for committee in committees:
         committee['session_year'] = get_session_year(dddb)
+
+        if is_comm_name_in_db(committee, dddb) is False:
+            try:
+                dddb.execute(insert_committee_name, {'name': committee['name'], 'house': committee['house'],
+                                                     'state': committee['state']})
+                CN_INSERTED += dddb.rowcount
+            except MySQLdb.Error:
+                logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+                               additional_fields=create_payload('Committee', (insert_committee_name % committee)))
+
         get_cid = is_comm_in_db(committee, dddb)
 
         if get_cid is False:
@@ -266,6 +310,7 @@ def add_committees_db(dddb):
             try:
                 dddb.execute(insert_committee, {'house': committee['house'], 'name': committee['name'],
                                                 'state': committee['state'], 'type': committee['type'],
+                                                'short_name': committee['short_name'],
                                                 'session_year': committee['session_year']})
                 C_INSERTED += dddb.rowcount
             except MySQLdb.Error:
@@ -328,9 +373,11 @@ def main():
                     full_msg='Inserted ' + str(C_INSERTED) + ' rows in Committee and inserted '
                              + str(S_INSERTED) + ' rows in servesOn',
                     additional_fields={'_affected_rows': 'Committee:' + str(C_INSERTED) +
-                                                         ', servesOn:' + str(S_INSERTED + S_UPDATED),
+                                                         ', servesOn:' + str(S_INSERTED + S_UPDATED) +
+                                                         ', CommitteeNames: ' + str(CN_INSERTED),
                                        '_inserted': 'Committee:' + str(C_INSERTED) +
-                                                    ', servesOn:' + str(S_INSERTED),
+                                                    ', servesOn:' + str(S_INSERTED) +
+                                                    ', CommitteeNames: ' + str(CN_INSERTED),
                                        '_updated': 'servesOn:' + str(S_UPDATED),
                                        '_state': 'NY'})
 
