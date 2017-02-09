@@ -731,7 +731,7 @@ def scrape_consultants(comm_url, house, dd):
                     #print(nextSib)
                     for name in clean_strings(nextSib):
                         consultant_names.append(get_consultant_info(name, header.contents[0], dd))
-    print(consultant_names)
+    #print(consultant_names)
     return consultant_names
 
 
@@ -773,7 +773,7 @@ def get_committees(house, dd):
                     print(link.get('href'))
                     consultants = scrape_consultants(link.get('href'), house, dd)
                     committee = house + ' Standing Committee on ' + link.string
-                    #insert_consultants(consultants, house, committee, dd)
+                    insert_consultants(consultants, house, committee, dd)
             elif 'Select' in block.find('h2').string:
                 for link in block.find(class_ = 'content').find_all('a'):
                     comm_name = link.get('href')
@@ -781,7 +781,7 @@ def get_committees(house, dd):
                     if comm_name.split('.')[0][7:] in SENATE_SELECT_STAFF:
                         consultants = scrape_consultants(link.get('href'), house, dd)
                         committee = house + ' Select Committee on ' + link.string
-                        #insert_consultants(consultants, house, committee, dd)
+                        insert_consultants(consultants, house, committee, dd)
             elif 'Joint' in block.find('h2').string:
                 for link in block.find(class_ = 'content').find_all('a'):
                     comm_name = link.get('href').split('.')[0][7:]
@@ -791,22 +791,22 @@ def get_committees(house, dd):
                         committee += " Committee"
                     if comm_name == 'arts' or comm_name == 'emergencymanagement':
                         consultants = scrape_consultants(link.get('href'), house, dd)
-                        #insert_consultants(consultants, 'Joint', committee, dd)
+                        insert_consultants(consultants, 'Joint', committee, dd)
                     else:
                         consultants = scrape_joint_committees(link.get('href'), dd)
-                        #insert_consultants(consultants, 'Joint', committee, dd)
+                        insert_consultants(consultants, 'Joint', committee, dd)
             elif 'Sub' in block.find('h2').string:
                 comm_type = block.find('h3').contents[0]
                 for link in block.find(class_ = 'content').find_all('a'):
                     print(link.get('href'))
                     consultants = scrape_consultants(link.get('href'), house, dd)
                     committee = house + ' ' + comm_type + ' ' + link.string
-                    #insert_consultants(consultants, house, committee, dd)
+                    insert_consultants(consultants, house, committee, dd)
             else:
                 for link in block.find(class_ = 'content').find_all('a'):
                     consultants = scrape_consultants(link.get('href'), house, dd)
                     committee = house + ' Committee On ' + link.string
-                    #insert_consultants(consultants, house, committee, dd)
+                    insert_consultants(consultants, house, committee, dd)
 
     elif house.lower() == 'assembly':
         for block in htmlSoup.find_all('div', 'block-views'):
@@ -815,7 +815,7 @@ def get_committees(house, dd):
                     print(link.get('href'))
                     consultants = scrape_consultants(link.get('href'), house, dd)
                     committee = house + ' Standing Committee on ' + link.string
-                    #insert_consultants(consultants, house, committee, dd)
+                    insert_consultants(consultants, house, committee, dd)
             if 'Joint' in block.find('h2').string:
                 for link in block.find(class_ = 'content').find_all('a'):
                     print(link.get('href'))
@@ -823,7 +823,7 @@ def get_committees(house, dd):
                     committee = link.string
                     if 'Audit' in committee:
                         committee += ' Committee'
-                    #insert_consultants(consultants, 'Joint', committee, dd)
+                    insert_consultants(consultants, 'Joint', committee, dd)
             if 'Special' in block.find('h2').string:
                 for link in block.find(class_ = 'content').find_all('a'):
                     print(link.get('href'))
@@ -832,7 +832,7 @@ def get_committees(house, dd):
                         committee = 'Assembly Special Committee on ' + link.string
                     else:
                         committee = 'Assembly ' + link.string
-                    #insert_consultants(consultants, house, committee, dd)
+                    insert_consultants(consultants, house, committee, dd)
 
 
 def insert_consultants(consultants, house, committee, dd):
