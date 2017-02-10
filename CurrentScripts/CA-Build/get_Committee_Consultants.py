@@ -38,7 +38,7 @@ L_INSERT = 0
 
 STATE = 'CA'
 
-ASSEMBLY_PROBLEM_SITES = ['aaar', 'abnk', 'acom', 'altc', 'apro', 'agri', 'abgt', 'abp', 'aedn', 'aesm', 'agov', 'ahea','ahed', 'ahum',
+ASSEMBLY_PROBLEM_SITES = ['aaar', 'abnk', 'acom', 'altc', 'apro', 'agri', 'abp', 'aedn', 'aesm', 'agov', 'ahea','ahed', 'ahum',
                           'ains', 'ajed', 'antr', 'privacycp', 'aper', 'apsf', 'arev', 'arul', 'atrn', 'autl', 'avet', 'awpw']
 
 SENATE_PROBLEM_SITES = ['seuc', 'shum', 'sjud', 'spsf', 'srul', 'stran', 'svet', 'shea',
@@ -408,6 +408,7 @@ def get_assembly_problem_sites(comm_url, dd):
                         nextSib = nextSib.next_sibling
                     for name in clean_strings(child):
                         consultant_names.append(get_consultant_info(name, title_header, dd))
+
     elif commName == 'abp':
         for header in htmlSoup.find('div', 'content').find_all('ul'):
             title_header = header.find_previous_sibling('h3')
@@ -494,6 +495,38 @@ def get_assembly_problem_sites(comm_url, dd):
                         consultant_names.append(get_consultant_info(name, consultant[0], dd))
 
     return consultant_names
+
+
+def scrape_budget_committees(comm_url, house, dd):
+    comm_url += '/committeestaff'
+
+    htmlSoup = BeautifulSoup(urllib2.urlopen(comm_url).read(), 'lxml')
+
+    header = htmlSoup.find('div', class_='field-item even')
+
+    committee = 'Assembly Standing Committee on Budget'
+    consultant_names = list()
+
+    for tag in header.contents:
+        if tag.name == 'h3':
+            if tag.contents[0].name is None:
+                insert_consultants(consultant_names, house, committee, dd)
+                committee = 'Assembly Budget ' + tag.contents[0].replace('#', 'No. ', 1)
+                consultant_names = list()
+        elif tag.name == 'p':
+            for child in tag.contents:
+                if child.name is None:
+                    title_header = ''
+                    nextSib = child.next_sibling
+                    while nextSib is not None:
+                        if nextSib.name is None:
+                            title_header = nextSib
+                        nextSib = nextSib.next_sibling
+                    for name in clean_strings(child):
+                        consultant_names.append(get_consultant_info(name, title_header, dd))
+                    break
+
+    insert_consultants(consultant_names, house, committee, dd)
 
 
 def get_assembly_special_comms(comm_url, dd):
@@ -813,9 +846,13 @@ def get_committees(house, dd):
             if 'Standing' in block.find('h2').string:
                 for link in block.find(class_ = 'content').find_all('a'):
                     print(link.get('href'))
-                    consultants = scrape_consultants(link.get('href'), house, dd)
-                    committee = house + ' Standing Committee on ' + link.string
-                    insert_consultants(consultants, house, committee, dd)
+                    comm_name = link.get('href')
+                    if comm_name.split('.')[0][7:] == 'abgt':
+                        scrape_budget_committees(link.get('href'), house, dd)
+                    else:
+                        consultants = scrape_consultants(link.get('href'), house, dd)
+                        committee = house + ' Standing Committee on ' + link.string
+                        insert_consultants(consultants, house, committee, dd)
             if 'Joint' in block.find('h2').string:
                 for link in block.find(class_ = 'content').find_all('a'):
                     print(link.get('href'))
