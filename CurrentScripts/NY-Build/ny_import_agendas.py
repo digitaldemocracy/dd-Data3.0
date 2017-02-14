@@ -54,7 +54,7 @@ S_SESSION = '''SELECT MAX(start_year)
 S_COMMITTEE = '''SELECT cid
                  FROM Committee
                  WHERE house = %s
-                 AND short_name = %s
+                 AND name = %s
                  AND state = %s
                  AND session_year = %s'''
 S_COMMITTEE_HEARINGS = '''SELECT cid, hid
