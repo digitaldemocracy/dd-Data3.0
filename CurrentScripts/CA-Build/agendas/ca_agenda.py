@@ -66,7 +66,6 @@ def change_committee_names(agendas):
     item = list(item)
     if item[2] == 'Water, Parks and Wildlife':
       item[2] = 'Water, Parks, and Wildlife'
-    print(item[2])
 
     item[2] = item[2].lower().title()
     new_agendas.append(item)

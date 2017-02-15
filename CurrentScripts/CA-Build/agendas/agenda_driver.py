@@ -25,7 +25,9 @@ from graylogger.graylogger import GrayLogger
 
 #Whenever you need to add a scraper just import the driver function
 from ca_agenda import ca_scraper 
-
+LOG = {'Hearing' : {'inserted' : 0},
+    'CommitteeHearings' : {'inserted' : 0},
+    'HearingAgenda' : {'inserted' : 0, 'updated' : 0}}
 GRAY_URL = 'http://dw.digitaldemocracy.org:12202/gelf'
 
 #and add the function to this list
@@ -41,12 +43,19 @@ scraper_keys = [
  'bid'
 ]
 
+QS_HEARING_CHECK = '''
+SELECT *
+From Hearing h
+JOIN CommitteeHearings c
+ ON h.hid = c.hid
+WHERE cid = %s
+ AND date = %s
+'''
 
 #used in ins_hearing()
 insert_hearing = '''
 INSERT INTO Hearing (Date, state)
-VALUES (date(%s), 
-        (SELECT abbrev FROM State WHERE name=%s))
+VALUES (date(%s), 'CA')
 '''
 
 #used in ins_hearing()
@@ -87,6 +96,7 @@ update_agenda_date = '''
 UPDATE HearingAgenda
 SET current_flag=0
 WHERE date_created < date(%s)
+ AND bill like %s
 '''
 
 
@@ -162,14 +172,15 @@ Sets the flags of the HearingAgenda items to not current if they are old.
 |connection|: The mysql connection to DDDB
 '''
 def update_db(cursor):
+  global LOG
   cur_date = datetime.datetime.today()
   #Go into HearingAgenda table of database
   #with connection.cursor() as cursor:
   try:
     #set anything old to inactive 
     cursor.execute(update_agenda_date,
-                   (cur_date.date(),))
-        
+                   (cur_date.date(), '%CA%'))
+    LOG['HearingAgenda']['updated'] += cursor.rowcount
   except:
     exception = sys.exc_info()[0]
     error_msg = ('Error: ' +
@@ -177,7 +188,7 @@ def update_db(cursor):
                 'when trying to update database.')
     logger.error('Update Failed', full_msg=traceback.format_exc(),
         additional_fields=create_payload('HearingAgenda',
-          update_agenda_date % (cur_date.date(),)))
+          update_agenda_date % (cur_date.date(), '%CA%')))
     return False
   return True
   #Get every row where current flag is set to true
@@ -191,6 +202,7 @@ of DDDB.
 |connection|: The mysql connection to DDDB
 '''
 def insert_hearing_agenda(agendas, cursor):
+  global LOG
   #just take the agendas and throw them in the database
   cur_date = datetime.datetime.today()
   #with connection.cursor() as cursor:
@@ -201,6 +213,7 @@ def insert_hearing_agenda(agendas, cursor):
                        (agenda['hid'],
                         agenda['bid'], 
                         cur_date.date()))
+        LOG['HearingAgenda']['inserted'] += cursor.rowcount
   except:
     exception = sys.exc_info()[0]
     error_msg = ('Error: ' +
@@ -274,7 +287,7 @@ Returns the updated list of hearings with cids and hids for each hearing.
 '''
 def insert_hearings(hearings, cursor):
   #with connection.cursor() as cursor:
-    #check if every scraped hearing is already a part of the database
+  #check if every scraped hearing is already a part of the database
   for i in range(0, len(hearings)):
     try:
       cursor.execute(check_db_hearing, 
@@ -284,7 +297,7 @@ def insert_hearings(hearings, cursor):
     except MySQLdb.Error:
       exception = sys.exc_info()[0]
       error_msg = ('Error: ' + 
-                    exception + 
+                    str(exception) + 
                     'exception during selection of DDDB hearings.')
       logger.error('Select failed', full_msg=traceback.format_exc(),
           additional_fields={'_state':'CA'})
@@ -301,9 +314,9 @@ def insert_hearings(hearings, cursor):
         except:
           exception = sys.exc_info()[0]
           error_msg = ('Error: ' + 
-                       exception + 
+                       str(exception) + 
                        'exception during selection of committee hearings.')
-          logger.error(error_msg,
+          logger.error(error_msg, full_msg=traceback.format_exc(),
                        additional_fields={'_state':'CA'})
           return False
  
@@ -327,51 +340,54 @@ with the new hid and cid.
 |cursor|: The DDDB connection cursor
 '''
 def ins_hearing(hearing, cursor):
-  #insert into Hearing table
-  try:
-    cursor.execute(insert_hearing,
-                   (hearing['date'],
-                    hearing['state']))
+  global LOG
+  cursor.execute(select_committee_hearing, (hearing['c_name'],))
+  cid = cursor.fetchone()[0]
+  cursor.execute(QS_HEARING_CHECK, (cid, hearing['date']))
+  hearing['cid'] = cid
+  if cursor.rowcount == 0:
+    #insert into Hearing table
+    try:
+      cursor.execute(insert_hearing,
+                     (hearing['date'],))
+      LOG['Hearing']['inserted'] += cursor.rowcount
+      hearing['hid'] = cursor.lastrowid
+    except:
+      exception = sys.exc_info()[0]
+      logger.error('Insert failed for hearing', full_msg=traceback.format_exc(),
+                   additional_fields={'_state':hearing['state']})
+      return False
 
-    hearing['hid'] = cursor.lastrowid
-  except:
-    exception = sys.exc_info()[0]
-    error_msg = ('Error: ' +
-                 exception + 
-                 'exception during insertion of Hearing.')
-    logger.error(error_msg,
-                 additional_fields={'_state':hearing['state']})
-    return False
+    #insert into CommitteeHearing table
+    try:
+      cursor.execute(insert_committee_hearing,
+                    (hearing['c_name'],
+                     hearing['hid']))
+      LOG['CommitteeHearings']['inserted'] += cursor.rowcount
+    except:
+      exception = sys.exc_info()[0]
+      error_msg = ('Error: ' + 
+                   str(exception) + 
+                   'exception during inesrtion of CommitteeHearing.')
+      logger.error(error_msg, full_msg=traceback.format_exc(),
+                   additional_fields=create_payload('CommitteeHearing',
+                     insert_committee_hearing % (hearing['c_name'], hearing['hid'])))
+      return False
 
-  #insert into CommitteeHearing table
-  try:
-    cursor.execute(insert_committee_hearing,
-                   (hearing['c_name'],
-                    hearing['hid']))
-  except:
-    exception = sys.exc_info()[0]
-    error_msg = ('Error: ' + 
-                 str(exception) + 
-                 'exception during inesrtion of CommitteeHearing.')
-    logger.error(error_msg, full_msg=traceback.format_exc(),
-                 additional_fields=create_payload('CommitteeHearing',
-                   insert_committee_hearing % (hearing['c_name'], hearing['hid'])))
-    return False
+    #Get the CID of the hearing
+    try:
+      cursor.execute(select_committee_hearing, 
+                     (hearing['c_name'],))
+    except MySQLdb.Error:
+      exception = sys.exc_info()[0]
+      error_msg = ('Error: ' + 
+                   str(exception) + 
+                   'exception during selection of cid.')
+      logger.error(error_msg,
+                   additional_fields={'_state':hearing['state']})
+      return False
 
-  #Get the CID of the hearing
-  try:
-    cursor.execute(select_committee_hearing, 
-                   (hearing['c_name'],))
-  except MySQLdb.Error:
-    exception = sys.exc_info()[0]
-    error_msg = ('Error: ' + 
-                 str(exception) + 
-                 'exception during selection of cid.')
-    logger.error(error_msg,
-                 additional_fields={'_state':hearing['state']})
-    return False
-
-  hearing['cid'] = cursor.fetchone()
+    hearing['cid'] = cursor.fetchone()
   return hearing
 
 
@@ -383,6 +399,7 @@ then set the in_db flag to True.
 |connection|: The DDDB connection
 '''
 def check_agendas(agendas, cursor):
+  global LOG
   #with connection.cursor() as cursor:
     #Fetch all active agendas
   try:
@@ -410,6 +427,7 @@ def check_agendas(agendas, cursor):
         cursor.execute(db_set_inactive, 
                        (agenda[0],
                         agenda[1]))
+        LOG['HearingAgenda']['updated'] += cursor.rowcount
       except:
         exception = sys.exc_info()[0]
         error_msg = ('Error: ' + 
@@ -466,16 +484,15 @@ def main():
                                charset='utf8') as connection:
     #set all agendas that aren't current (Today and afterwards) to inactive
     update_db(connection)
-    print(len(hearings),hearings)
-
     #insert the new hearings (and only them)
     hearings = insert_hearings(hearings, connection)
-    print(hearings)
+    #print(hearings)
     #check if any of the scraped agendas are already in the database
     hearings = check_agendas(hearings, connection)
-
+    #print(hearings)
     #insert agendas that aren't already in the database
     insert_hearing_agenda(hearings, connection)
+    print(LOG)
 
 #  connection.commit()
 #  connection.close()
