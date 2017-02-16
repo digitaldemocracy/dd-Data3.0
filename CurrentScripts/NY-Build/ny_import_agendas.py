@@ -73,6 +73,11 @@ S_HEARING_AGENDA = '''SELECT hid, bid, date_created
                       WHERE hid = %s
                       AND bid = %s
                       AND date_created = %s'''
+S_HEARING_AGENDA_2 = '''SELECT hid, bid, date_created
+                        FROM HearingAgenda
+                        WHERE date_created < %s
+                        AND bid LIKE %s
+                        AND current_flag = 1'''
 
 #INSERT QUERIES
 I_HEARING = '''INSERT INTO Hearing (date, state, session_year)
@@ -86,7 +91,9 @@ I_HEARING_AGENDA = '''INSERT INTO HearingAgenda (hid, bid, date_created, current
 #UPDATE QUERIES
 U_HEARING_AGENDA = '''UPDATE HearingAgenda
                       SET current_flag = 0
-                      WHERE hid = %s'''
+                      WHERE hid = %s
+                      AND bid = %s
+                      AND date_created = %s'''
 
 def create_payload(table, sqlstmt):
     return {
@@ -309,16 +316,17 @@ def insert_hearing_agenda(cursor, hid, bid):
                 additional_fields=create_payload('HearingAgenda',(I_HEARING_AGENDA % (hid, bid, date))))
 
 '''
-returns a list of current hid from Hearing with dates prior to today
+returns a list of current hid,bid,date_created from HearingAgenda with date_created prior to today
 |cursor|: dddb connection
 '''
 def get_curr_hearing_agenda(cursor):
     date = time.strftime("%Y-%m-%d")
-    cursor.execute(S_HEARING_2, (date, STATE))
+    bid = "NY%"
+    cursor.execute(S_HEARING_AGENDA_2, (date, bid))
     result = []
     if cursor.rowcount > 0:
         for ha in cursor.fetchall():           
-            result.append(ha[0])
+            result.append(ha)
     return result
 
 '''
@@ -326,13 +334,16 @@ executes update query to set current_flag in HearingAgenda to 0
 |cursor|: dddb connection
 |hid|: hearing id
 '''
-def set_inactive(cursor, hid):
+def set_inactive(cursor, ha):
     global U_HA
-    cursor.execute(U_HEARING_AGENDA, (hid,))
+    hid = ha[0]
+    bid = ha[1]
+    dateCreated = ha[2]
+    cursor.execute(U_HEARING_AGENDA, (hid, bid, dateCreated))
     U_HA += cursor.rowcount
 
 '''
-finds all current hearing agendas and sets the ones prior to today to inactive
+finds all current hearing agendas and sets the ones with date_created prior to today to inactive
 |cursor|: dddb connection
 '''
 def update_hearing_agenda(cursor):
@@ -372,31 +383,51 @@ returns a list of dictionaries {url: url to senate committee agenda,
                                 name: name of committee}
 '''
 def get_senate_comm_hearings():
-    page = requests.get("https://www.nysenate.gov/search/legislation?sort=desc&searched=true&type=f_agenda&agenda_year=2017&page=1")
+    year = time.strftime("%Y")
+    mainUrl = "https://www.nysenate.gov/search/legislation?sort=desc&searched=true&type=f_agenda&agenda_year=" + year + "&page=1"
+    page = requests.get(mainUrl)
     soup = BeautifulSoup(page.content, 'html.parser')
+
+    #find number of pages
+    agendaPages = soup.find_all(class_="pagination pager")
+    for ap in agendaPages:
+        p = ap.find_all("li")
     
+    numPages = len(p)
+
+    mainUrl = "https://www.nysenate.gov/search/legislation?sort=desc&searched=true&type=f_agenda&agenda_year=" + year + "&page="
     results = []
-    for s in soup.find_all("div", class_="c-block c-list-item c-block-legislation"):
-        h3 = s.find("h3")
-        a = h3.find("a", href=True)
-        url = "https://www.nysenate.gov/" + a['href']
-        name = s.get_text().strip()
-        if "Committee" in name:
-            name = name.split("Committee")
-            name = name[0].strip()
-        if "Meeting" in name:
-            name = name.split("Meeting")
-            name = name[0].strip()
-        date = s.find("h4").get_text().strip()
-        if "Meeting" in date:
-            date = date.split("Meeting")
-            date = date[1].strip()
-            date = convert_senate_date(date)
-        d = dict()
-        d['url'] = url
-        d['date'] = date
-        d['name'] = name
-        results.append(d)
+
+    # for each page
+    for i in range(1, numPages):
+        newUrl = mainUrl + str(i)
+        page = requests.get(newUrl)
+        soup = BeautifulSoup(page.content, 'html.parser')
+
+        #look for meetings and grab the committee names and dates
+        for s in soup.find_all("div", class_="c-block c-list-item c-block-legislation"):
+            h3 = s.find("h3")
+            a = h3.find("a", href=True)
+            url = "https://www.nysenate.gov/" + a['href']
+            name = s.get_text().strip()
+            if "Committee" in name:
+                name = name.split("Committee")
+                name = name[0].strip()
+            if "Meeting" in name:
+                name = name.split("Meeting")
+                name = name[0].strip()
+            date = s.find("h4").get_text().strip()
+            if "Meeting" in date:
+                date = date.split("Meeting")
+                date = date[1].strip()
+                date = convert_senate_date(date)
+            d = dict()
+            d['url'] = url
+            d['date'] = date
+            d['name'] = name
+            results.append(d)
+
+    
     return results
 
 
