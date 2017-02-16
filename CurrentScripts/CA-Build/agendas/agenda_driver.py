@@ -61,7 +61,7 @@ VALUES (date(%s), 'CA')
 #used in ins_hearing()
 insert_committee_hearing = '''
 INSERT INTO CommitteeHearings (cid, hid)
-VALUES ((SELECT cid FROM Committee WHERE name=%s LIMIT 1), 
+VALUES ((SELECT cid FROM Committee WHERE name=%s and session_year = 2017 LIMIT 1), 
         (SELECT hid FROM Hearing WHERE hid=%s LIMIT 1)) 
 '''
 
@@ -70,7 +70,7 @@ check_db_c_hearing = '''
 SELECT cid
 FROM CommitteeHearings
 WHERE hid =%s
-AND cid = (SELECT cid FROM Committee WHERE name=%s LIMIT 1)
+AND cid = (SELECT cid FROM Committee WHERE name=%s and session_year = 2017 LIMIT 1)
 '''
 
 
@@ -78,7 +78,7 @@ AND cid = (SELECT cid FROM Committee WHERE name=%s LIMIT 1)
 select_committee_hearing = '''
 SELECT cid 
 FROM Committee
-WHERE name=%s
+WHERE name=%s and session_year = 2017
 LIMIT 1
 '''
 
