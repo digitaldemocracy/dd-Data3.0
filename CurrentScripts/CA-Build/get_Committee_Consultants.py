@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#  -*- coding: utf-8 -*-
 '''
 File: get_Committee_Consultants.py
 Author: Andrew Rose
@@ -562,23 +562,23 @@ def get_assembly_special_comms(comm_url, dd):
                                 consultant_names.append(get_consultant_info(name,
                                                                             line.find_next_sibling('em').contents[0],
                                                                             dd))
-    else:
-        host = comm_url + '/committeestaff'
-        try:
-            htmlSoup = BeautifulSoup(urllib2.urlopen(host).read(), 'lxml')
-        except urllib2.HTTPError:
-            logger.warning("HTTP Error connecting to %s" % host, full_msg=traceback.format_exc())
-            return consultant_names
+    # else:
+    #    host = comm_url + '/committeestaff'
+    #    try:
+    #        htmlSoup = BeautifulSoup(urllib2.urlopen(host).read(), 'lxml')
+    #    except urllib2.HTTPError:
+    #        logger.warning("HTTP Error connecting to %s" % host, full_msg=traceback.format_exc())
+    #        return consultant_names
 
-        if commName == 'legaudit':
-            for header in htmlSoup.find('div', 'content').find_all('p')[:-2]:
-                for name in clean_strings(header.contents[0]):
-                    consultant_names.append(get_consultant_info(name, header.contents[2], dd))
-        elif commName == 'jtemergencymanagement':
-            for header in htmlSoup.find('div', 'content').find_all('p'):
-                consultant = header.contents[0].split('-')
-                for name in clean_strings(consultant[0]):
-                    consultant_names.append(get_consultant_info(name, consultant[1], dd))
+    #    if commName == 'legaudit':
+    #        for header in htmlSoup.find('div', 'content').find_all('p')[:-2]:
+    #            for name in clean_strings(header.contents[0]):
+    #                consultant_names.append(get_consultant_info(name, header.contents[2], dd))
+    #    elif commName == 'jtemergencymanagement':
+    #        for header in htmlSoup.find('div', 'content').find_all('p'):
+    #            consultant = header.contents[0].split('-')
+    #            for name in clean_strings(consultant[0]):
+    #                consultant_names.append(get_consultant_info(name, consultant[1], dd))
 
     return consultant_names
 
@@ -834,16 +834,20 @@ def get_committees(house, dd):
                     if comm_name == 'arts' or comm_name == 'emergencymanagement':
                         consultants = scrape_consultants(link.get('href'), house, dd)
                         insert_consultants(consultants, 'Joint', committee, dd)
-                    else:
+                    elif committee != 'Joint Legislative Budget':
                         consultants = scrape_joint_committees(link.get('href'), dd)
                         insert_consultants(consultants, 'Joint', committee, dd)
             elif 'Sub' in block.find('h2').string:
-                comm_type = block.find('h3').contents[0]
-                for link in block.find(class_='content').find_all('a'):
-                    print(link.get('href'))
-                    consultants = scrape_consultants(link.get('href'), house, dd)
-                    committee = house + ' ' + comm_type + ' ' + link.string
-                    insert_consultants(consultants, house, committee, dd)
+                section = block.find(class_='content').find('h3')
+                comm_type = section.contents[0]
+                for tag in section.next_siblings:
+                    if tag.name == 'h3':
+                        comm_type = tag.contents[0]
+                    elif tag.name == 'div' and tag.find('a') is not None:
+                        link = tag.find('a')
+                        consultants = scrape_consultants(link.get('href'), house, dd)
+                        committee = house + ' ' + comm_type + ' ' + link.string
+                        insert_consultants(consultants, house, committee, dd)
             else:
                 for link in block.find(class_='content').find_all('a'):
                     print(link.get('href'))
