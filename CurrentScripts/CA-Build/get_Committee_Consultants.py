@@ -42,6 +42,7 @@ L_INSERT = 0
 
 STATE = 'CA'
 
+# These are all the websites that have to be webscraped differently. Yes, it's a lot.
 ASSEMBLY_PROBLEM_SITES = ['aaar', 'abnk', 'acom', 'altc', 'apro', 'agri', 'abp', 'aedn', 'aesm', 'agov', 'ahea', 'ahed',
                           'ahum',
                           'ains', 'ajed', 'antr', 'privacycp', 'aper', 'apsf', 'arev', 'arul', 'atrn', 'autl', 'avet',
@@ -245,7 +246,7 @@ def is_person_in_db(consultant, dd):
         return None
 
 
-def is_consultant_in_db(consultant, house, dd):
+def is_consultant_in_db(consultant, dd):
     query_dict = {'pid': consultant['pid'], 'cid': consultant['cid'], 'year': consultant['session_year']}
 
     try:
@@ -296,7 +297,7 @@ def insert_legstaff(legstaff_pid, dd):
                        additional_fields=create_payload('LegislativeStaff', (INSERT_LEGSTAFF % insert_dict)))
 
 
-def get_consultant_info(name, header, dd):
+def get_consultant_info(name, header):
     consultant = dict()
 
     names = name.strip().split(' ')
@@ -341,7 +342,7 @@ def get_session_year(dd):
     return year
 
 
-def get_assembly_problem_sites(comm_url, dd):
+def scrape_assembly_problem_sites(comm_url):
     consultant_names = list()
     commName = comm_url.split('.')[0][7:]
 
@@ -363,12 +364,12 @@ def get_assembly_problem_sites(comm_url, dd):
         for header in htmlSoup.find('div', 'content').find_all('strong'):
             nextSib = header.next_sibling
             for name in clean_strings(nextSib):
-                consultant_names.append(get_consultant_info(name, header.contents[0], dd))
+                consultant_names.append(get_consultant_info(name, header.contents[0]))
     elif commName in ['altc', 'ajed', 'avet', 'acom']:
         for header in htmlSoup.find('div', 'content').find_all('strong'):
             nextSib = header.next_sibling
             for name in clean_strings(header.contents[0]):
-                consultant_names.append(get_consultant_info(name, nextSib, dd))
+                consultant_names.append(get_consultant_info(name, nextSib))
     elif commName in ['ahed', 'antr', 'arul', 'atrn']:
         for header in htmlSoup.find('div', 'content').find_all('li'):
             if commName == 'ahed':
@@ -376,22 +377,21 @@ def get_assembly_problem_sites(comm_url, dd):
             else:
                 consultant = header.contents[0].split(',')
             for name in clean_strings('-'.join(consultant[:-1])):
-                consultant_names.append(get_consultant_info(name, consultant[-1], dd))
+                consultant_names.append(get_consultant_info(name, consultant[-1]))
     elif commName == 'aaar':
         header = htmlSoup.find('div', 'content')
         for link in header.find_all('a'):
             for name in clean_strings(link.previous_sibling):
-                consultant_names.append(get_consultant_info(name, '', dd))
+                consultant_names.append(get_consultant_info(name, ''))
     elif commName == 'abnk':
         for header in htmlSoup.find('div', 'content').find_all('p'):
             consultant = header.contents[0].split(':')
             if len(consultant) > 1:
                 for name in clean_strings(consultant[-1]):
-                    consultant_names.append(get_consultant_info(name, consultant[0], dd))
+                    consultant_names.append(get_consultant_info(name, consultant[0]))
     elif commName == 'apro':
         header = htmlSoup.find('div', 'field-item even')
         for title_header in header.children:
-            print(title_header)
             if title_header.name == 'h2' and 'Contact Information' in title_header.contents[0]:
                 break
             elif title_header.name == 'p':
@@ -401,7 +401,7 @@ def get_assembly_problem_sites(comm_url, dd):
                         consultant = consultant[0].split(',')
                         if len(consultant) > 1:
                             for name in clean_strings(consultant[0]):
-                                consultant_names.append(get_consultant_info(name, consultant[1], dd))
+                                consultant_names.append(get_consultant_info(name, consultant[1]))
     elif commName == 'abgt':
         for header in htmlSoup.find('div', 'content').find_all('p'):
             for child in header.contents:
@@ -413,7 +413,7 @@ def get_assembly_problem_sites(comm_url, dd):
                             title_header = nextSib
                         nextSib = nextSib.next_sibling
                     for name in clean_strings(child):
-                        consultant_names.append(get_consultant_info(name, title_header, dd))
+                        consultant_names.append(get_consultant_info(name, title_header))
 
     elif commName == 'abp':
         for header in htmlSoup.find('div', 'content').find_all('ul'):
@@ -423,72 +423,75 @@ def get_assembly_problem_sites(comm_url, dd):
             if title_header.name == 'h2':
                 for title in header.find_all('p'):
                     for name in clean_strings(title.contents[0].split('(')[0]):
-                        consultant_names.append(get_consultant_info(name, title_header.contents[0], dd))
+                        consultant_names.append(get_consultant_info(name, title_header.contents[0]))
             elif title_header.name == 'h3':
                 for title in header.find_all('li'):
                     for name in clean_strings(title.contents[0].split('(')[0]):
-                        consultant_names.append(get_consultant_info(name, title_header.contents[0], dd))
+                        if 'Vacant' not in name:
+                            consultant_names.append(get_consultant_info(name, title_header.contents[0]))
     elif commName == 'agov':
         for header in htmlSoup.find('div', 'content').find_all('p'):
             consultant = header.contents[0].split(' ')
             for name in clean_strings(' '.join(consultant[3:])):
-                consultant_names.append(get_consultant_info(name, ' '.join(consultant[:2]), dd))
+                consultant_names.append(get_consultant_info(name, ' '.join(consultant[:2])))
     elif commName == 'ahea':
         header = htmlSoup.find('div', 'content').find('h4')
         for title_header in header.find_all('strong'):
             for name in clean_strings(title_header.contents[0]):
-                consultant_names.append(get_consultant_info(name, title_header.contents[1].contents[0], dd))
+                consultant_names.append(get_consultant_info(name, title_header.contents[1].contents[0]))
         for paragraph_header in header.find_next_siblings('p')[:2]:
             for title_header in paragraph_header.find_all('strong'):
-                for name in clean_strings(title_header.contents[0]):
-                    consultant_names.append(get_consultant_info(name, title_header.contents[1].contents[0], dd))
+                for child in title_header.children:
+                    if child.name is None:
+                        for name in clean_strings(child):
+                            consultant_names.append(get_consultant_info(name, child.find_next_sibling('em').contents[0]))
+                    elif child.name == 'em' and len(child.contents[0].split(',')) > 1:
+                        consultant = child.contents[0].split(',')
+                        for name in clean_strings(consultant[0]):
+                            consultant_names.append(get_consultant_info(name, consultant[1]))
     elif commName == 'ahum':
         for header in htmlSoup.find('div', 'content').find_all('td'):
             consultant = header.find_all('p')
             if len(consultant) > 0:
                 for name in clean_strings(consultant[0].contents[0]):
-                    consultant_names.append(get_consultant_info(name, consultant[1].contents[0], dd))
+                    consultant_names.append(get_consultant_info(name, consultant[1].contents[0]))
     elif commName == 'ains':
         for header in htmlSoup.find('div', 'content').find_all('strong'):
             for name in clean_strings(header.contents[0]):
-                consultant_names.append(get_consultant_info(name, header.contents[1].contents[0], dd))
+                consultant_names.append(get_consultant_info(name, header.contents[1].contents[0]))
     elif commName == 'privacycp':
         for header in htmlSoup.find('div', 'content').find('p').find_all('strong'):
             nextSib = header.next_sibling
             for name in clean_strings(nextSib):
-                consultant_names.append(get_consultant_info(name, header.contents[0], dd))
+                consultant_names.append(get_consultant_info(name, header.contents[0]))
     elif commName == 'aper':
         for header in htmlSoup.find('div', 'content').find_all('p'):
-            print(header.contents)
             for child in header.contents:
-                print(child.name)
                 if child.name is None:
                     if len(child.strip()) < 1:
                         continue
                     title_header = child.next_sibling.next_sibling
                     for name in clean_strings(child):
-                        consultant_names.append(get_consultant_info(name, title_header, dd))
+                        consultant_names.append(get_consultant_info(name, title_header))
                     break
     elif commName == 'apsf':
         for header in htmlSoup.find('div', 'content').find_all('h3'):
             for title_header in header.find_next_sibling('ul').children:
                 if title_header.name == 'li':
                     for name in clean_strings(title_header.contents[0]):
-                        consultant_names.append(get_consultant_info(name, header.contents[0], dd))
+                        consultant_names.append(get_consultant_info(name, header.contents[0]))
     elif commName == 'arev':
         for header in htmlSoup.find('div', 'content').find_all('h3'):
             consultant = header.contents[0].split('-')
             for name in clean_strings('-'.join(consultant[:-1])):
-                consultant_names.append(get_consultant_info(name, consultant[-1], dd))
+                consultant_names.append(get_consultant_info(name, consultant[-1]))
     elif commName == 'autl':
         for header in htmlSoup.find('div', 'content').find_all('p')[1:-1]:
-            print(header.contents)
             for child in header.contents:
-                print(child.name)
                 if child.name is None:
                     title_header = child.next_sibling.next_sibling
                     for name in clean_strings(child):
-                        consultant_names.append(get_consultant_info(name, title_header, dd))
+                        consultant_names.append(get_consultant_info(name, title_header))
                     break
     elif commName == 'awpw':
         content_div = htmlSoup.find('div', 'content')
@@ -498,7 +501,7 @@ def get_assembly_problem_sites(comm_url, dd):
                 if child.name is None:
                     consultant = child.split(',')
                     for name in clean_strings(consultant[1]):
-                        consultant_names.append(get_consultant_info(name, consultant[0], dd))
+                        consultant_names.append(get_consultant_info(name, consultant[0]))
 
     return consultant_names
 
@@ -508,17 +511,26 @@ def scrape_budget_committees(comm_url, house, dd):
 
     htmlSoup = BeautifulSoup(urllib2.urlopen(comm_url).read(), 'lxml')
 
+    budg_comms = list()
+
     header = htmlSoup.find('div', class_='field-item even')
 
-    committee = 'Assembly Standing Committee on Budget'
-    consultant_names = list()
+    comm = dict()
+    comm['link'] = comm_url
+    comm['name'] = 'Assembly Standing Committee on Budget'
+    comm['house'] = 'Assembly'
+    comm['type'] = 'Budget'
+    comm['staff'] = list()
 
     for tag in header.contents:
         if tag.name == 'h3':
             if tag.contents[0].name is None:
-                insert_consultants(consultant_names, house, committee, dd)
-                committee = 'Assembly Budget ' + tag.contents[0].replace('#', 'No. ', 1)
-                consultant_names = list()
+                budg_comms.append(comm)
+                comm = dict()
+                comm['name'] = 'Assembly Budget ' + tag.contents[0].replace('#', 'No. ', 1)
+                comm['type'] = 'Budget'
+                comm['house'] = 'Assembly'
+                comm['staff'] = list()
         elif tag.name == 'p':
             for child in tag.contents:
                 if child.name is None:
@@ -529,13 +541,13 @@ def scrape_budget_committees(comm_url, house, dd):
                             title_header = nextSib
                         nextSib = nextSib.next_sibling
                     for name in clean_strings(child):
-                        consultant_names.append(get_consultant_info(name, title_header, dd))
+                        comm['staff'].append(get_consultant_info(name, title_header))
                     break
 
-    insert_consultants(consultant_names, house, committee, dd)
+    return budg_comms
 
 
-def get_assembly_special_comms(comm_url, dd):
+def scrape_assembly_special_comms(comm_url):
     consultant_names = list()
     commName = comm_url.split('.')[0][7:]
 
@@ -550,9 +562,8 @@ def get_assembly_special_comms(comm_url, dd):
 
         if commName == 'specialcmtelegethics':
             header = htmlSoup.find('div', 'content').find_all('p')[-1]
-            print(header)
             for name in clean_strings(header.contents[0]):
-                consultant_names.append(get_consultant_info(name, 'Counsel', dd))
+                consultant_names.append(get_consultant_info(name, 'Counsel'))
         elif commName == 'Specialcmteattygen':
             for header in htmlSoup.find('div', 'content').find_all('h2'):
                 if header.contents[0] == 'Committee Staff':
@@ -560,30 +571,11 @@ def get_assembly_special_comms(comm_url, dd):
                         if line.name is None:
                             for name in clean_strings(line):
                                 consultant_names.append(get_consultant_info(name,
-                                                                            line.find_next_sibling('em').contents[0],
-                                                                            dd))
-    # else:
-    #    host = comm_url + '/committeestaff'
-    #    try:
-    #        htmlSoup = BeautifulSoup(urllib2.urlopen(host).read(), 'lxml')
-    #    except urllib2.HTTPError:
-    #        logger.warning("HTTP Error connecting to %s" % host, full_msg=traceback.format_exc())
-    #        return consultant_names
-
-    #    if commName == 'legaudit':
-    #        for header in htmlSoup.find('div', 'content').find_all('p')[:-2]:
-    #            for name in clean_strings(header.contents[0]):
-    #                consultant_names.append(get_consultant_info(name, header.contents[2], dd))
-    #    elif commName == 'jtemergencymanagement':
-    #        for header in htmlSoup.find('div', 'content').find_all('p'):
-    #            consultant = header.contents[0].split('-')
-    #            for name in clean_strings(consultant[0]):
-    #                consultant_names.append(get_consultant_info(name, consultant[1], dd))
-
+                                                                            line.find_next_sibling('em').contents[0]))
     return consultant_names
 
 
-def get_problematic_sites(comm_url, dd):
+def scrape_problematic_sites(comm_url):
     consultant_names = list()
     commName = comm_url.split('.')[0][7:]
 
@@ -599,140 +591,155 @@ def get_problematic_sites(comm_url, dd):
         header = htmlSoup.find('div', 'sidebar-information').find('p').find_all('strong')[1]
         title_header = header.contents[4]
         for name in clean_strings(header.contents[6]):
-            consultant_names.append(get_consultant_info(name, title_header, dd))
+            consultant_names.append(get_consultant_info(name, title_header))
     elif commName == 'childrenspecialneeds':
         for header in htmlSoup.find_all('div', 'sidebar-information')[1].find_all('p'):
             hcontents = header.contents[0]
             if hcontents.name is None:
                 split_contents = hcontents.split(',')
                 for name in clean_strings(split_contents[0]):
-                    consultant_names.append(get_consultant_info(name, ''.join(split_contents[1:]), dd))
+                    consultant_names.append(get_consultant_info(name, ''.join(split_contents[1:])))
     elif commName == 'mobilehomes':
         header = htmlSoup.find('div', 'sidebar-information').find('p')
         title_header = header.find_all('strong')[-1].contents[0]
         for name in clean_strings(header.find('a').contents[0]):
-            consultant_names.append(get_consultant_info(name, title_header, dd))
+            consultant_names.append(get_consultant_info(name, title_header))
     elif commName == 'smup':
         header = htmlSoup.find_all('div', 'sidebar-information')[1]
         for name in clean_strings(header.find('li').contents[0]):
-            consultant_names.append(get_consultant_info(name, '', dd))
+            consultant_names.append(get_consultant_info(name, ''))
     elif commName == 'sros':
         header = htmlSoup.find_all('div', 'sidebar-information')[1].find('p')
         title_header = header.contents[2]
         for name in clean_strings(header.find('strong').contents[0].split(',')[0]):
-            consultant_names.append(get_consultant_info(name, title_header, dd))
+            consultant_names.append(get_consultant_info(name, title_header))
     elif commName == 'womenandinequality':
         header = htmlSoup.find_all('div', 'sidebar-information')[1].find('p')
         for name in clean_strings(header.contents[0]):
-            consultant_names.append(get_consultant_info(name, '', dd))
+            consultant_names.append(get_consultant_info(name, ''))
     # Standing Committee Sites
     elif commName == 'shum':
         for header in htmlSoup.find_all('div', 'sidebar-information')[1].find_all('ul'):
-            # print(header.contents[1].string)
             title_header = header.find_previous_sibling('p').find('strong')
             for name in clean_strings(header.contents[1].string):
-                consultant_names.append(get_consultant_info(name, title_header.contents[0], dd))
+                consultant_names.append(get_consultant_info(name, title_header.contents[0]))
     elif commName == 'spsf':
         for header in htmlSoup.find_all('div', 'sidebar-information')[1].find_all('p'):
             hcontents = header.contents[0]
             if hcontents.name is not None:
                 title_header = hcontents.find('em')
-
                 if title_header is None:
                     title_header = hcontents.find('strong')
             elif hcontents.name is None:
                 for name in clean_strings(hcontents):
-                    consultant_names.append(get_consultant_info(name, title_header.contents[0], dd))
+                    consultant_names.append(get_consultant_info(name, title_header.contents[0]))
     elif commName == 'srul':
         header = htmlSoup.find_all('div', 'sidebar-information')[1].find('strong')
-        # print(header.next_sibling)
-        # print(header.find_next_sibling('a').string)
         for name in clean_strings(header.next_sibling):
-            consultant_names.append(get_consultant_info(name, header.contents[0], dd))
+            consultant_names.append(get_consultant_info(name, header.contents[0]))
         for name in clean_strings(header.find_next_sibling('a').string):
-            consultant_names.append(get_consultant_info(name, header.contents[0], dd))
+            consultant_names.append(get_consultant_info(name, header.contents[0]))
     else:
         for header in htmlSoup.find_all('div', 'sidebar-information')[1].find_all('strong'):
             if commName == 'seuc':
-                # print(header.find_next_sibling('a').string)
                 for name in clean_strings(header.find_next_sibling('a').string):
-                    consultant_names.append(get_consultant_info(name, header.contents[0], dd))
+                    consultant_names.append(get_consultant_info(name, header.contents[0]))
             if commName == 'sjud':
                 nextSib = header.next_sibling
                 if nextSib is not None:
                     sibName = header.next_sibling.name
                     if sibName != 'br':
-                        # print(nextSib)
                         for name in clean_strings(nextSib):
-                            consultant_names.append(get_consultant_info(name, header.contents[0], dd))
+                            consultant_names.append(get_consultant_info(name, header.contents[0]))
             if commName == 'stran' or commName == 'svet':
-                # print(header.find_next_sibling('a').string)
                 for name in clean_strings(header.find_next_sibling('a').string):
-                    consultant_names.append(get_consultant_info(name, header.contents[0], dd))
+                    consultant_names.append(get_consultant_info(name, header.contents[0]))
             if commName == 'shea':
                 nextSib = header.next_sibling
-                sibName = nextSib.name
                 while nextSib is not None:
                     if nextSib.name == 'strong':
-                        break;
+                        break
                     elif nextSib.name == 'br':
                         nextSib = nextSib.next_sibling
                     else:
                         for name in clean_strings(nextSib):
-                            consultant_names.append(get_consultant_info(name, header.contents[0], dd))
+                            consultant_names.append(get_consultant_info(name, header.contents[0]))
                         nextSib = nextSib.next_sibling
     return consultant_names
 
 
-def scrape_joint_committees(comm_url, dd):
+def scrape_joint_committees(comm_url):
     consultant_names = list()
 
     comm_name = comm_url.split('.')[0][7:]
+
+    if comm_name == 'legaudit':
+        comm_url += '/committeestaff'
+
     try:
         htmlSoup = BeautifulSoup(urllib2.urlopen(comm_url).read(), 'lxml')
     except urllib2.HTTPError:
         logger.warning("HTTP Error connecting to %s" % comm_url, full_msg=traceback.format_exc())
         return consultant_names
 
-    if 'senate' in comm_name:
+    if 'senate' in comm_name or 'assembly' in comm_name:
         comm_name = comm_url.split('/')[-1]
 
-        if comm_name == 'legislativebudget' or comm_name == 'fairsallocation':
-            content_div = htmlSoup.find('div', 'content')
-            title_header = content_div.find_all('p')[-1].find('strong')
-            next_sib = title_header.next_sibling
-            for name in clean_strings(next_sib):
-                consultant_names.append(get_consultant_info(name, title_header.contents[0], dd))
-        elif comm_name == 'jointrules':
+        #if comm_name == 'legislativebudget':
+        #    content_div = htmlSoup.find('div', 'content')
+        #    title_header = content_div.find_all('p')[-1].find('strong')
+        #    next_sib = title_header.next_sibling
+        #    for name in clean_strings(next_sib):
+        #        consultant_names.append(get_consultant_info(name, title_header.contents[0], dd))
+        if comm_name == 'jointrules':
             content_div = htmlSoup.find('div', 'content').find_all('p')[-1]
             title_header = content_div.find('strong')
             for name in clean_strings(title_header.next_sibling):
-                consultant_names.append(get_consultant_info(name, title_header.contents[0], dd))
-        elif comm_name == 'legislativeaudit':
-            content_div = htmlSoup.find('div', 'content').find_all('p')[1]
-            for header in content_div.find_all('strong')[:2]:
-                next_sib = header.next_sibling
-                for name in clean_strings(next_sib):
-                    consultant_names.append(get_consultant_info(name, header.contents[0], dd))
+                consultant_names.append(get_consultant_info(name, title_header.contents[0]))
+        elif comm_name == 'fairsallocation':
+            content_div = htmlSoup.find('div', 'content')
+            header = content_div.find_all('h3')[-1]
+            print(header)
+            nextSib = header.find_next_sibling('p')
+            print(nextSib)
+            for name in clean_strings(nextSib.contents[0]):
+                consultant_names.append(get_consultant_info(name, header.contents[0]))
+    elif 'legaudit' in comm_name:
+        content_div = htmlSoup.find('div', 'content')
+        for header in content_div.find_all('p')[:2]:
+            print(header)
+            for name in clean_strings(header.contents[0]):
+                consultant_names.append(get_consultant_info(name, header.contents[2]))
     elif 'fisheries' in comm_name:
         content_div = htmlSoup.find_all('div', 'sidebar-information')[1]
         for header in content_div.find_all('strong'):
             consultant_info = header.find_next_sibling('a').contents[0]
             consultant_info = consultant_info.split(', ')
             for name in clean_strings(consultant_info[0]):
-                consultant_names.append(get_consultant_info(name, consultant_info[1], dd))
+                consultant_names.append(get_consultant_info(name, consultant_info[1]))
+    elif 'emergencymanagement' not in comm_name:
+        for header in htmlSoup.find_all('div', 'sidebar-information')[1].find_all('strong'):
+            nextSib = header.next_sibling
+            if nextSib is not None:
+                sibName = header.next_sibling.name
+                while sibName == 'br':
+                    nextSib = nextSib.next_sibling
+                    sibName = nextSib.name
+                for name in clean_strings(nextSib):
+                    consultant_names.append(get_consultant_info(name, header.contents[0]))
 
+    print(consultant_names)
     return consultant_names
 
 
-def scrape_consultants(comm_url, house, dd):
+def scrape_consultants(comm_url, house):
     global SENATE_PROBLEM_SITES
     consultant_names = list()
 
     if house.lower() == 'assembly':
         commName = comm_url.split('.')[0][7:]
         if commName in ASSEMBLY_PROBLEM_SITES:
-            consultant_names = get_assembly_problem_sites(comm_url, dd)
+            consultant_names = scrape_assembly_problem_sites(comm_url)
         else:
             host = comm_url + '/committeestaff'
             try:
@@ -748,12 +755,12 @@ def scrape_consultants(comm_url, house, dd):
                     if child.name is None:
                         consultant = child.split(',')
                         for name in clean_strings(consultant[0]):
-                            consultant_names.append(get_consultant_info(name, consultant[1], dd))
+                            consultant_names.append(get_consultant_info(name, consultant[1]))
 
     elif house.lower() == 'senate':
         commName = comm_url.split('.')[0][7:]
         if commName in SENATE_PROBLEM_SITES:
-            consultant_names = get_problematic_sites(comm_url, dd)
+            consultant_names = scrape_problematic_sites(comm_url)
         else:
             host = comm_url
             try:
@@ -766,14 +773,12 @@ def scrape_consultants(comm_url, house, dd):
                 nextSib = header.next_sibling
                 if nextSib is not None:
                     sibName = header.next_sibling.name
-                    # print("Sibling name is: %s" % sibName)
                     while sibName == 'br':
                         nextSib = nextSib.next_sibling
                         sibName = nextSib.name
-                    # print(nextSib)
                     for name in clean_strings(nextSib):
-                        consultant_names.append(get_consultant_info(name, header.contents[0], dd))
-    # print(consultant_names)
+                        consultant_names.append(get_consultant_info(name, header.contents[0]))
+
     return consultant_names
 
 
@@ -808,52 +813,65 @@ def get_committees(house, dd):
     host = 'http://%s.ca.gov/committees' % house.lower()
     htmlSoup = BeautifulSoup(urllib2.urlopen(host).read(), 'lxml')
 
+    committees = list()
+
     if house.lower() == 'senate':
         for block in htmlSoup.find_all('div', 'block-views'):
             if 'Standing' in block.find('h2').string:
                 for link in block.find(class_='content').find_all('a'):
                     print(link.get('href'))
-                    consultants = scrape_consultants(link.get('href'), house, dd)
-                    committee = house + ' Standing Committee on ' + link.string
-                    insert_consultants(consultants, house, committee, dd)
+                    committee = dict()
+                    committee['link'] = link.get('href')
+                    committee['name'] = house + ' Standing Committee on ' + link.string
+                    committee['type'] = 'Standing'
+                    committee['house'] = 'Senate'
+                    committees.append(committee)
             elif 'Select' in block.find('h2').string:
                 for link in block.find(class_='content').find_all('a'):
                     comm_name = link.get('href')
                     print(comm_name)
                     if comm_name.split('.')[0][7:] in SENATE_SELECT_STAFF:
-                        consultants = scrape_consultants(link.get('href'), house, dd)
-                        committee = house + ' Select Committee on ' + link.string
-                        insert_consultants(consultants, house, committee, dd)
+                        committee = dict()
+                        committee['link'] = comm_name
+                        committee['name'] = house + ' Select Committee on ' + link.string
+                        committee['house'] = 'Senate'
+                        committee['type'] = 'Select'
+                        committees.append(committee)
             elif 'Joint' in block.find('h2').string:
                 for link in block.find(class_='content').find_all('a'):
                     comm_name = link.get('href').split('.')[0][7:]
                     print(link.get('href'))
-                    committee = link.string
-                    if 'Committee' not in committee:
-                        committee += " Committee"
-                    if comm_name == 'arts' or comm_name == 'emergencymanagement':
-                        consultants = scrape_consultants(link.get('href'), house, dd)
-                        insert_consultants(consultants, 'Joint', committee, dd)
-                    elif committee != 'Joint Legislative Budget':
-                        consultants = scrape_joint_committees(link.get('href'), dd)
-                        insert_consultants(consultants, 'Joint', committee, dd)
-            elif 'Sub' in block.find('h2').string:
+                    committee = dict()
+                    committee['link'] = link.get('href')
+                    committee['name'] = link.string
+                    if 'Committee' not in committee['name']:
+                        committee['name'] += " Committee"
+                    committee['house'] = 'Joint'
+                    committee['type'] = 'Joint'
+                    committees.append(committee)
+            elif 'Sub Committees' in block.find('h2').string:
                 section = block.find(class_='content').find('h3')
                 comm_type = section.contents[0]
                 for tag in section.next_siblings:
                     if tag.name == 'h3':
                         comm_type = tag.contents[0]
                     elif tag.name == 'div' and tag.find('a') is not None:
+                        committee = dict()
                         link = tag.find('a')
-                        consultants = scrape_consultants(link.get('href'), house, dd)
-                        committee = house + ' ' + comm_type + ' ' + link.string
-                        insert_consultants(consultants, house, committee, dd)
+                        committee['link'] = link.get('href')
+                        committee['name'] = house + ' ' + comm_type + ' ' + link.string
+                        committee['house'] = 'Senate'
+                        committee['type'] = 'Subcommittee'
+                        committees.append(committee)
             else:
                 for link in block.find(class_='content').find_all('a'):
                     print(link.get('href'))
-                    consultants = scrape_consultants(link.get('href'), house, dd)
-                    committee = house + ' Committee On ' + link.string
-                    insert_consultants(consultants, house, committee, dd)
+                    committee = dict()
+                    committee['link'] = link.get('href')
+                    committee['name'] = house + ' Committee On ' + link.string
+                    committee['house'] = 'Senate'
+                    committee['type'] = 'Other'
+                    committees.append(committee)
 
     elif house.lower() == 'assembly':
         for block in htmlSoup.find_all('div', 'block-views'):
@@ -861,65 +879,97 @@ def get_committees(house, dd):
                 for link in block.find(class_='content').find_all('a'):
                     print(link.get('href'))
                     comm_name = link.get('href')
+
                     if comm_name.split('.')[0][7:] == 'abgt':
-                        scrape_budget_committees(link.get('href'), house, dd)
+                        committees += scrape_budget_committees(link.get('href'), house, dd)
                     else:
-                        consultants = scrape_consultants(link.get('href'), house, dd)
-                        committee = house + ' Standing Committee on ' + link.string
-                        insert_consultants(consultants, house, committee, dd)
+                        committee = dict()
+                        committee['link'] = link.get('href')
+                        committee['name'] = house + ' Standing Committee on ' + link.string
+                        committee['house'] = 'Assembly'
+                        committee['type'] = 'Standing'
+                        committees.append(committee)
             if 'Joint' in block.find('h2').string:
                 for link in block.find(class_='content').find_all('a'):
                     print(link.get('href'))
-                    consultants = get_assembly_special_comms(link.get('href'), dd)
-                    committee = link.string
-                    if 'Audit' in committee:
-                        committee += ' Committee'
-                    insert_consultants(consultants, 'Joint', committee, dd)
+                    committee = dict()
+                    committee['link'] = link.get('href')
+                    committee['name'] = link.string
+                    if 'Audit' in committee['name']:
+                        committee['name'] += ' Committee'
+                    committee['house'] = 'Joint'
+                    committee['type'] = 'Joint'
             if 'Special' in block.find('h2').string:
                 for link in block.find(class_='content').find_all('a'):
                     print(link.get('href'))
-                    consultants = get_assembly_special_comms(link.get('href'), dd)
+                    committee = dict()
+                    committee['link'] = link.get('href')
                     if 'Ethics' in link.string:
-                        committee = 'Assembly Special Committee on ' + link.string
+                        committee['name'] = 'Assembly Special Committee on ' + link.string
                     else:
-                        committee = 'Assembly ' + link.string
-                    insert_consultants(consultants, house, committee, dd)
+                        committee['name'] = 'Assembly ' + link.string
+                    committee['house'] = 'Assembly'
+                    committee['type'] = 'Special'
+                    committees.append(committee)
+
+    return committees
 
 
-def insert_consultants(consultants, house, committee, dd):
+def insert_consultants(house, dd):
     global C_INSERT, C_UPDATE
 
-    if consultants is not None and len(consultants) > 0:
-        session_year = get_session_year(dd)
+    committees = get_committees(house, dd)
 
-        for consultant in consultants:
-            cid = get_committee_cid(house, committee, session_year, dd)
-            pid = get_consultant_pid(consultant, dd)
-            consultant['cid'] = str(cid)
-            consultant['pid'] = str(pid)
-            consultant['session_year'] = session_year
-            if is_consultant_in_db(consultant, house, dd) is False:
-                consultant['current_flag'] = '1'
-                consultant['start_date'] = dt.datetime.today().strftime("%Y-%m-%d")
-                try:
-                    dd.execute(INSERT_CONSULT_SERVESON, consultant)
-                    C_INSERT += dd.rowcount
-                except MySQLdb.Error:
-                    logger.warning("Insert statement failed", full_msg=traceback.format_exc(),
-                                   additional_fields=create_payload("ConsultantServesOn",
-                                                                    (INSERT_CONSULT_SERVESON % consultant)))
+    for committee in committees:
+        print(committee['name'])
+        try:
+            if house == 'Senate':
+                if committee['type'] == 'Joint':
+                    committee['staff'] = scrape_joint_committees(committee['link'])
+                else:
+                    committee['staff'] = scrape_consultants(committee['link'], house)
+            elif house == 'Assembly':
+                if committee['type'] == 'Standing':
+                    committee['staff'] = scrape_consultants(committee['link'], house)
+                elif committee['type'] == 'Special':
+                    committee['staff'] = scrape_assembly_special_comms(committee['link'])
+        except:
+            logger.warning("Web scraping failed for website " + str(committee['link']), full_msg=traceback.format_exc())
+            continue
 
-        update_consultants = get_past_consultants(consultants, house, committee, session_year, dd)
+        if committee['staff'] is not None and len(committee['staff']) > 0:
+            session_year = get_session_year(dd)
+            print(committee['staff'])
 
-        if len(update_consultants) > 0:
-            for consultant in update_consultants:
-                try:
-                    dd.execute(UPDATE_CONSULTANTS, consultant)
-                    C_UPDATE += dd.rowcount
-                except MySQLdb.Error:
-                    logger.warning("Update failed", full_msg=traceback.format_exc(),
-                                   additional_fields=create_payload("ConsultantServesOn",
-                                                                    (UPDATE_CONSULTANTS % consultant)))
+            for consultant in committee['staff']:
+                cid = get_committee_cid(committee['house'], committee['name'], session_year, dd)
+                pid = get_consultant_pid(consultant, dd)
+                consultant['cid'] = str(cid)
+                consultant['pid'] = str(pid)
+                consultant['session_year'] = session_year
+                if is_consultant_in_db(consultant, dd) is False:
+                    consultant['current_flag'] = '1'
+                    consultant['start_date'] = dt.datetime.today().strftime("%Y-%m-%d")
+                    try:
+                        dd.execute(INSERT_CONSULT_SERVESON, consultant)
+                        C_INSERT += dd.rowcount
+                    except MySQLdb.Error:
+                        logger.warning("Insert statement failed", full_msg=traceback.format_exc(),
+                                       additional_fields=create_payload("ConsultantServesOn",
+                                                                        (INSERT_CONSULT_SERVESON % consultant)))
+
+            update_consultants = get_past_consultants(committee['staff'], committee['house'],
+                                                      committee['name'], session_year, dd)
+
+            if len(update_consultants) > 0:
+                for consultant in update_consultants:
+                    try:
+                        dd.execute(UPDATE_CONSULTANTS, consultant)
+                        C_UPDATE += dd.rowcount
+                    except MySQLdb.Error:
+                        logger.warning("Update failed", full_msg=traceback.format_exc(),
+                                       additional_fields=create_payload("ConsultantServesOn",
+                                                                        (UPDATE_CONSULTANTS % consultant)))
 
 
 def main():
@@ -930,8 +980,10 @@ def main():
                          user=dbinfo['user'],
                          passwd=dbinfo['passwd'],
                          charset='utf8') as dd:
+
         for house in ['Assembly', 'Senate']:
-            get_committees(house, dd)
+            insert_consultants(house, dd)
+
         logger.info(__file__ + " terminated successfully.",
                     full_msg='Inserted ' + str(P_INSERT) + ' rows in Person, '
                              + str(PSA_INSERT) + ' rows in PersonStateAffiliation, '
