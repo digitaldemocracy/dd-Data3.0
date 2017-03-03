@@ -252,9 +252,7 @@ def main():
                              '_log_type':'Database'})
       LOG = {'tables': [{'state': 'CA', 'name': 'Bill', 'inserted':B_INSERT, 'updated': B_UPDATE, 'deleted': 0},
         {'state': 'CA', 'name': 'Bill', 'inserted':BV_INSERT, 'updated': 0, 'deleted': 0}]}
-      with open(__file__ + '.summary', 'w') as _file:
-        _file.write(json.dumps(LOG, indent=2))
-      print(LOG)
+      sys.stderr.write(json.dumps(LOG, indent=2))
 
 if __name__ == "__main__":
   with GrayLogger(API_URL) as _logger:                                          
