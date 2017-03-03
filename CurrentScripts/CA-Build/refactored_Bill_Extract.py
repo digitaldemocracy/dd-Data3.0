@@ -34,7 +34,8 @@ Populates:
 from Database_Connection import mysql_connection
 import traceback
 import MySQLdb
-from graylogger.graylogger import GrayLogger                                    
+from graylogger.graylogger import GrayLogger
+import json
 API_URL = 'http://dw.digitaldemocracy.org:12202/gelf'                  
 logger = None
 B_INSERT = 0
@@ -249,6 +250,11 @@ def main():
                              '_updated':'Bill:'+str(B_UPDATE),
                              '_state':'CA',
                              '_log_type':'Database'})
+      LOG = {'tables': [{'state': 'CA', 'name': 'Bill', 'inserted':B_INSERT, 'updated': B_UPDATE, 'deleted': 0},
+        {'state': 'CA', 'name': 'Bill', 'inserted':BV_INSERT, 'updated': 0, 'deleted': 0}]}
+      with open(__file__ + '.summary', 'w') as _file:
+        _file.write(json.dumps(LOG, indent=2))
+      print(LOG)
 
 if __name__ == "__main__":
   with GrayLogger(API_URL) as _logger:                                          
