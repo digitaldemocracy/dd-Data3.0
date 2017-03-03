@@ -39,14 +39,19 @@ I_CH = 0     #inserted CommitteeHearings
 U_HA = 0     #updated HearingAgenda
 
 #SELECT QUERIES
-S_HEARING = '''SELECT hid
-                FROM Hearing
-                WHERE date = %s
-                AND state = %s
-                AND session_year = %s'''
+S_HEARING = '''SELECT h.hid
+                FROM Hearing h
+                JOIN CommitteeHearings ch
+                ON h.hid = ch.hid
+                WHERE ch.cid = %s
+                AND h.date = %s'''
 S_HEARING_2 = '''SELECT hid
                  FROM Hearing
                  WHERE date < %s
+                 AND state = %s'''
+S_HEARING_3 = '''SELECT MAX(hid)
+                 FROM Hearing
+                 WHERE date = %s
                  AND state = %s'''
 S_SESSION = '''SELECT MAX(start_year)
                FROM Session
@@ -159,8 +164,8 @@ finds hearing id if it is in db, returns None if not in db
 |date|: date
 |year|: session year
 '''
-def get_hid(cursor, date, year):
-    cursor.execute(S_HEARING, (date, STATE, year))
+def get_hid(cursor, cid, date):
+    cursor.execute(S_HEARING, (cid, date))
     if cursor.rowcount > 0:
         result = cursor.fetchone()[0]
     else:
@@ -173,13 +178,15 @@ inserts hearing in db if it is not found
 |date|: date in yyyy-mm-dd format
 |year|: session year
 '''
-def insert_hearing(cursor, date, year):
+def insert_hearing(cursor, date, year, cid):
     global I_H
     #checks to see that hearing is not in db
-    if get_hid(cursor, date, year) == None:
+    if get_hid(cursor, cid, date) == None:
         try:
             cursor.execute(I_HEARING, (date, STATE, year))
             I_H += cursor.rowcount
+            newHid = cursor.lastrowid
+            return newHid
         except MySQLdb.Error:
             logger.warning('Insert Failed', full_msg=traceback.format_exc(),
                 additional_fields=create_payload('Hearing',(I_HEARING % (date, STATE, year))))
@@ -471,9 +478,8 @@ def main():
         #scrape assembly committee agendas
         assembly_comm_hearings = get_assembly_comm_hearings()
         for hearing in assembly_comm_hearings:
-            insert_hearing(dddb, hearing['date'], year)
-            hid = get_hid(dddb, hearing['date'], year)
             cid = get_cid(dddb, 'Assembly', hearing['name'], year)
+            hid = insert_hearing(dddb, hearing['date'], year, cid)
             
             if hid != None and cid != None:
                 insert_comm_hearing(dddb, cid, hid)
@@ -485,9 +491,9 @@ def main():
         #scrape senate committee agendas
         senate_comm_hearings = get_senate_comm_hearings()
         for hearing in senate_comm_hearings:
-            insert_hearing(dddb, hearing['date'], year)
-            hid = get_hid(dddb, hearing['date'], year)
             cid = get_cid(dddb, 'Senate', hearing['name'], year)
+            hid = insert_hearing(dddb, hearing['date'], year, cid)
+
             if hid != None and cid != None:
                 insert_comm_hearing(dddb, cid, hid)
             bills = scrape_senate_agenda(dddb, hearing['url'])
