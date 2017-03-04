@@ -12,6 +12,8 @@ Description:
 - Currently configured to test DB
 '''
 
+import json
+from datetime import datetime
 import sys
 from Database_Connection import mysql_connection
 import traceback
@@ -36,10 +38,16 @@ insert_legislator = '''INSERT INTO Legislator
                 (%(pid)s, %(state)s);'''
 
 insert_term = '''INSERT INTO Term
-                (pid, year, house, state, district, current_term)
+                (pid, year, house, state, district, current_term, start)
                 VALUES
-                (%(pid)s, %(year)s, %(house)s, %(state)s, %(district)s, %(current)s);'''
-                
+                (%(pid)s, %(year)s, %(house)s, %(state)s, %(district)s, %(current)s, %(start)s);'''
+QS_TERM_MEMBERS = '''
+SELECT pid
+FROM Term
+WHERE year = %s
+ AND current_term = 1
+ AND state = 'NY'
+'''
 select_legislator = '''SELECT p.pid 
                        FROM Person p, Legislator l
                        WHERE first = %(first)s 
@@ -59,11 +67,19 @@ QU_TERM = '''UPDATE Term
              WHERE pid = %(pid)s
               AND state = %(state)s
               AND year = %(year)s
-              AND house = %(house)s'''                        
+              AND house = %(house)s'''
+QU_TERM_END_DATE = '''
+UPDATE Term
+SET end = %s, current_term = 0
+WHERE pid = %s
+ AND year = %s
+ AND state = 'NY'
+ AND end IS NULL
+'''
                                            
 API_YEAR = 2017
 API_URL = "http://legislation.nysenate.gov/api/3/{0}/{1}{2}?full=true&"
-API_URL += "limit=1000&key=31kNDZZMhlEjCOV8zkBG1crgWAGxwDIS&offset={3}"
+API_URL += "limit=200&key=31kNDZZMhlEjCOV8zkBG1crgWAGxwDIS&offset={3}"
 
 def create_payload(table, sqlstmt):
   return {
@@ -228,9 +244,11 @@ def get_senators_api():
 #and adds to Term if it is not already filled
 def add_senator_db(senator, dddb):
     global P_INSERT, L_INSERT, T_INSERT
+    date = datetime.now().strftime('%Y-%m-%d')
     pid = is_leg_in_db(senator, dddb)
     ret = False
     senator['pid'] = pid
+    senator['start'] = date
     if pid == False:
       try:
         dddb.execute(insert_person, senator)
@@ -260,6 +278,31 @@ def add_senator_db(senator, dddb):
        
     return ret    
 
+# checks if the legislators are still in office
+# If member is no longer in api then fills in the end date.
+def check_legislator_members(senator, dddb):
+  #TODO
+  date = datetime.now().strftime('%Y-%m-%d')
+  temp = dict()
+  
+  dddb.execute(QS_TERM_MEMBERS, (senator[0]['year'],))
+  members = dddb.fetchall()
+
+  for member in senator:
+    temp[member['pid']] = member
+
+  for member in members:
+    if member[0] not in temp:
+      print(member[0])
+      try:
+        dddb.execute(QU_TERM_END_DATE, (date, member[0], senator['year']))
+        T_UPDATE += dddb.rowcount
+      except MySQLdb.Error:
+        logger.warning('Update Failed', full_msg=traceback.format_exc(),
+            additional_fields=create_payload('Term',
+              (QU_TERM_END_DATE % (date, member[0], senator['year']))))
+        
+
 #function to add legislators to DB. Calls API and calls add_senator_db on 
 #each legislator
 def add_senators_db(dddb):
@@ -268,7 +311,7 @@ def add_senators_db(dddb):
     for senator in senators:    
         if add_senator_db(senator, dddb):
             x += 1
-
+    #check_legislator_members(senators, dddb)
     #print "Added %d legislators" % x 
 
 def main():
@@ -292,6 +335,11 @@ def main():
                                          ', Term:'+str(T_INSERT),
                              '_updated':'Term:'+str(T_UPDATE),
                              '_state':'NY'})
+
+    LOG = {'tables': [{'state': 'NY', 'name': 'Person', 'inserted':P_INSERT, 'updated': 0, 'deleted': 0},
+      {'state': 'NY', 'name': 'Legislator', 'inserted':L_INSERT, 'updated': 0, 'deleted': 0},
+      {'state': 'NY', 'name': 'Term', 'inserted':T_INSERT, 'updated': T_UPDATE, 'deleted': 0}]}
+    sys.stderr.write(json.dumps(LOG))
 
 if __name__ == '__main__':
   with GrayLogger(GRAY_URL) as _logger:

@@ -579,6 +579,16 @@ def main():
                                          ', LobbyingContracts:'+str(LC_INSERT),
                              '_state':'NY'})
 
+  LOG = {'tables': [{'state': 'CA', 'name': 'LobbingFirm', 'inserted':LF_INSERT, 'updated': 0, 'deleted': 0},
+          {'state': 'CA', 'name': 'LobbyingFirmState', 'inserted':LFS_INSERT, 'updated': 0, 'deleted': 0},
+          {'state': 'CA', 'name': 'Lobbyist', 'inserted':L_INSERT, 'updated': 0, 'deleted': 0},
+          {'state': 'CA', 'name': 'Person', 'inserted':P_INSERT, 'updated': 0, 'deleted': 0},
+          {'state': 'CA', 'name': 'Organizations', 'inserted':O_INSERT, 'updated': 0, 'deleted': 0},
+          {'state': 'CA', 'name': 'LobbyistEmployer', 'inserted':LE_INSERT, 'updated': 0, 'deleted': 0},
+          {'state': 'CA', 'name': 'LobbyistDirectEmployment', 'inserted':LDE_INSERT, 'updated': 0, 'deleted': 0},
+          {'state': 'CA', 'name': 'LobbyingContracts', 'inserted':LC_INSERT, 'updated': 0, 'deleted': 0}]}
+  sys.stderr.write(json.dumps(LOG))
+
 if __name__ == '__main__':
   with GrayLogger(API_URL) as _logger:
     logger = _logger 

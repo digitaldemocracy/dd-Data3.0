@@ -20,6 +20,7 @@ Populates:
   - Term (party, district)
 '''
 
+import json
 import sys
 from Database_Connection import mysql_connection
 import traceback
@@ -295,6 +296,9 @@ def main():
                                       ', Term:'+str(T_UPDATE),
                            '_state':'NY'})
   
+    LOG = {'tables': [{'state': 'NY', 'name': 'Legislator', 'inserted':0, 'updated': L_UPDATE, 'deleted': 0},
+      {'state': 'NY', 'name': 'Term', 'inserted':0, 'updated': T_UPDATE, 'deleted': 0}]}
+    sys.stderr.write(json.dumps(LOG))
   #Close database connection
 # dddb_conn.close()
 

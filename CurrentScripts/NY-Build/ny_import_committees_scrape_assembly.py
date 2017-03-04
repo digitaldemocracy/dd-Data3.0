@@ -9,6 +9,7 @@ Description:
 - Currently configured to test DB
 '''
 
+import json
 import sys
 from Database_Connection import mysql_connection
 import traceback
@@ -381,6 +382,10 @@ def main():
                                        '_updated': 'servesOn:' + str(S_UPDATED),
                                        '_state': 'NY'})
 
+    LOG = {'tables': [{'state': 'NY', 'name': 'Committee', 'inserted':C_INSERTED, 'updated': 0, 'deleted': 0},
+      {'state': 'NY', 'name': 'servesOn:', 'inserted':S_INSERTED, 'updated': S_UPDATED, 'deleted': S_DELETE},
+      {'state': 'NY', 'name': 'CommitteeNames', 'inserted':CN_INSERTED, 'updated': 0, 'deleted': 0}]}
+    sys.stderr.write(json.dumps(LOG))
 
 if __name__ == '__main__':
     with GrayLogger(GRAY_URL) as _logger:
