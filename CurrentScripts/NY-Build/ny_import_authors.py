@@ -11,6 +11,7 @@ Description:
 - Currently configured to test DB
 '''
 
+import json
 import sys
 from Database_Connection import mysql_connection
 import traceback
@@ -318,6 +319,11 @@ def main():
                                        ', BillSponsors:'+str(BS_INSERTED),
                            '_updated':'authors:'+str(A_UPDATE),
                            '_state':'NY'})
+
+  LOG = {'tables': [{'state': 'NY', 'name': 'authors:', 'inserted':INSERTED, 'updated': A_UPDATE, 'deleted': 0},
+    {'state': 'NY', 'name': 'BillSponsors', 'inserted':BS_INSERTED, 'updated': 0, 'deleted': 0}]}
+  sys.stderr.write(json.dumps(LOG))
+        
 #   call = call_senate_api("bills", 2015, "", 1)
 #   bills = call[0]
 #   for bill in bills:

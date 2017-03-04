@@ -32,8 +32,10 @@ import sys
 import traceback
 import MySQLdb
 from graylogger.graylogger import GrayLogger
+import json
 API_URL = 'http://dw.digitaldemocracy.org:12202/gelf' 
 logger = None
+LOG = {'Action' : {'inserted': 0, 'updated': 0}}
 INSERTED = 0
 UPDATED = 0
 
@@ -97,7 +99,7 @@ Checks if the Action is in DDDB. If it isn't, insert it. Otherwise, skip.
   |text|: Text of action
 '''
 def insert_Action(dd_cursor, values):
-  global INSERTED, UPDATED
+  global INSERTED, UPDATED, LOG
   values[0] = '%s_%s' % (STATE, values[0])
 
   # Check if DDDB already has this action
@@ -108,6 +110,7 @@ def insert_Action(dd_cursor, values):
     try:
       dd_cursor.execute(QI_ACTION, values)
       INSERTED += dd_cursor.rowcount
+      LOG['Action']['inserted'] += dd_cursor.rowcount
     except MySQLdb.Error:
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
           additional_fields=create_payload('Action', (QI_ACTION % (values[0], values[1], values[2], values[3]))))
@@ -119,6 +122,7 @@ def insert_Action(dd_cursor, values):
       try:
         dd_cursor.execute(QU_ACTION_TEXT, (values[2], values[0], values[1], values[3]))
         UPDATED += dd_cursor.rowcount
+        LOG['Action']['updated'] += dd_cursor.rowcount
       except MySQLdb.Error:
         logger.warning('Update Failed', full_msg=traceback.format_exc(),
             additional_fields=create_payload('Action',
@@ -126,7 +130,7 @@ def insert_Action(dd_cursor, values):
 
   
 def update_Action(dd_cursor, values):
-  global UPDATED
+  global UPDATED, LOG
   values[0] = '%s_%s' % (STATE, values[0])
 
   # Check if DDDB already has this action
@@ -136,6 +140,7 @@ def update_Action(dd_cursor, values):
     dd_cursor.execute(QU_ACTION_SEQ, (values[3], values[0], values[1], values [2]))
 
     UPDATED += dd_cursor.rowcount
+    LOG['Action']['updated'] += dd_cursor.rowcount
 
 '''
 Loops through all Actions from capublic and adds them as necessary
@@ -164,6 +169,8 @@ def main():
                              '_updated':'Action:'+str(UPDATED),
                              '_state':'CA',
                              '_log_type':'Database'})
+      LOG = {'tables': [{'state': 'CA', 'name': 'Action', 'inserted': INSERTED, 'updated': UPDATED}]}
+      sys.stderr.write(json.dumps(LOG))
 
 if __name__ == "__main__":
   with GrayLogger(API_URL) as _logger:

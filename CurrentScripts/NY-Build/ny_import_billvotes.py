@@ -13,6 +13,7 @@ Description:
 - Currently configured to test DB
 '''
 
+import json
 from Database_Connection import mysql_connection
 import requests
 import MySQLdb
@@ -194,7 +195,7 @@ def get_comm_cid(dddb, comm):
     query = dddb.fetchone()
            
     if query is None: 
-        logger.warning('cid not found for ' + comm['name'], full_msg='cid not found for ' + comm['name'],
+        logger.warning('cid not found for ' + str(comm['name']), full_msg='cid not found for ' + str(comm['name']),
                additional_fields=create_payload('Committee', (select_committee%temp))) 
         #raise Exception('No CID found')
         return None
@@ -561,6 +562,10 @@ def main():
                                '_updated':'BillVoteSummary:'+str(VS_UPDATED)+
                                            ', BillVoteDetail:'+str(VD_UPDATED),
                                '_state':'NY'})
+  
+    LOG = {'tables': [{'state': 'NY', 'name': 'BillVoteSummary', 'inserted':VS_INSERTED, 'updated': VS_UPDATED, 'deleted': 0},
+      {'state': 'NY', 'name': 'BillVoteDetail', 'inserted':VD_INSERTED, 'updated': VD_UPDATED, 'deleted': 0}]}
+    sys.stderr.write(json.dumps(LOG))
 
 if __name__ == '__main__':
     with GrayLogger(GRAY_URL) as _logger:

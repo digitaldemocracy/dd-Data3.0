@@ -35,6 +35,7 @@ import unicodedata
 import MySQLdb
 import re
 from graylogger.graylogger import GrayLogger                                    
+import json
 API_URL = 'http://dw.digitaldemocracy.org:12202/gelf'                  
 logger = None
 UPDATE = 0
@@ -187,3 +188,5 @@ if __name__ == "__main__":
                                '_updated':'BillVersion:'+str(UPDATE),
                                '_state':'CA',
                                '_log_type':'Database'})
+  LOG = {'tables': [{'state': 'CA', 'name': 'BillVersion', 'inserted':0 , 'updated': UPDATE, 'deleted': 0}]}
+  sys.stderr.write(json.dumps(LOG))

@@ -899,6 +899,10 @@ def main():
     enddate_count = update_serveson(dd, current_pid)
     print 'Updated end_date for %d entries in servesOn'%enddate_count
     
+  LOG = {'tables': [{'state': 'CA', 'name': 'Committee', 'inserted':C_INSERT, 'updated': 0, 'deleted': 0},
+    {'state': 'CA', 'name': 'servesOn:', 'inserted':S_INSERT, 'updated': 0, 'deleted': S_DELETE},
+    {'state': 'CA', 'name': 'CommitteeNames', 'inserted':CN_INSERT, 'updated': 0, 'deleted': 0}]}
+  sys.stderr.write(json.dumps(LOG))
 if __name__ == '__main__':
   with GrayLogger(API_URL) as _logger:                                          
     logger = _logger
