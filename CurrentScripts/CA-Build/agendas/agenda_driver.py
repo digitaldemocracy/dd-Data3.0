@@ -15,6 +15,7 @@ Sources:
 '''
 
 #import pymysql.cursors
+import json
 import traceback
 from Database_Connection import mysql_connection
 import MySQLdb
@@ -24,10 +25,13 @@ import datetime
 from graylogger.graylogger import GrayLogger
 
 #Whenever you need to add a scraper just import the driver function
-from ca_agenda import ca_scraper 
-LOG = {'Hearing' : {'inserted' : 0},
-    'CommitteeHearings' : {'inserted' : 0},
-    'HearingAgenda' : {'inserted' : 0, 'updated' : 0}}
+from ca_agenda import ca_scraper
+H_INSERT = 0
+HA_INSERT = 0
+CH_INSERT = 0
+HA_UPDATE = 0
+H_UPDATE = 0
+
 GRAY_URL = 'http://dw.digitaldemocracy.org:12202/gelf'
 
 #and add the function to this list
@@ -172,7 +176,7 @@ Sets the flags of the HearingAgenda items to not current if they are old.
 |connection|: The mysql connection to DDDB
 '''
 def update_db(cursor):
-  global LOG
+  global HA_UPDATE
   cur_date = datetime.datetime.today()
   #Go into HearingAgenda table of database
   #with connection.cursor() as cursor:
@@ -180,7 +184,7 @@ def update_db(cursor):
     #set anything old to inactive 
     cursor.execute(update_agenda_date,
                    (cur_date.date(), '%CA%'))
-    LOG['HearingAgenda']['updated'] += cursor.rowcount
+    HA_UPDATE += cursor.rowcount
   except:
     exception = sys.exc_info()[0]
     error_msg = ('Error: ' +
@@ -202,7 +206,7 @@ of DDDB.
 |connection|: The mysql connection to DDDB
 '''
 def insert_hearing_agenda(agendas, cursor):
-  global LOG
+  global HA_INSERT
   #just take the agendas and throw them in the database
   cur_date = datetime.datetime.today()
   #with connection.cursor() as cursor:
@@ -213,7 +217,7 @@ def insert_hearing_agenda(agendas, cursor):
                        (agenda['hid'],
                         agenda['bid'], 
                         cur_date.date()))
-        LOG['HearingAgenda']['inserted'] += cursor.rowcount
+        HA_INSERT += cursor.rowcount
   except:
     exception = sys.exc_info()[0]
     error_msg = ('Error: ' +
@@ -340,7 +344,7 @@ with the new hid and cid.
 |cursor|: The DDDB connection cursor
 '''
 def ins_hearing(hearing, cursor):
-  global LOG
+  global H_INSERT, CH_INSERT
   cursor.execute(select_committee_hearing, (hearing['c_name'],))
   cid = cursor.fetchone()[0]
   cursor.execute(QS_HEARING_CHECK, (cid, hearing['date']))
@@ -350,7 +354,7 @@ def ins_hearing(hearing, cursor):
     try:
       cursor.execute(insert_hearing,
                      (hearing['date'],))
-      LOG['Hearing']['inserted'] += cursor.rowcount
+      H_INSERT += cursor.rowcount
       hearing['hid'] = cursor.lastrowid
     except:
       exception = sys.exc_info()[0]
@@ -363,7 +367,7 @@ def ins_hearing(hearing, cursor):
       cursor.execute(insert_committee_hearing,
                     (hearing['c_name'],
                      hearing['hid']))
-      LOG['CommitteeHearings']['inserted'] += cursor.rowcount
+      CH_INSERT += cursor.rowcount
     except:
       exception = sys.exc_info()[0]
       error_msg = ('Error: ' + 
@@ -399,7 +403,7 @@ then set the in_db flag to True.
 |connection|: The DDDB connection
 '''
 def check_agendas(agendas, cursor):
-  global LOG
+  global H_UPDATE
   #with connection.cursor() as cursor:
     #Fetch all active agendas
   try:
@@ -427,7 +431,7 @@ def check_agendas(agendas, cursor):
         cursor.execute(db_set_inactive, 
                        (agenda[0],
                         agenda[1]))
-        LOG['HearingAgenda']['updated'] += cursor.rowcount
+        H_UPDATE += cursor.rowcount
       except:
         exception = sys.exc_info()[0]
         error_msg = ('Error: ' + 
@@ -492,7 +496,10 @@ def main():
     #print(hearings)
     #insert agendas that aren't already in the database
     insert_hearing_agenda(hearings, connection)
-    print(LOG)
+    LOG = {'tables': [{'state': 'CA', 'name': 'Hearing', 'inserted': H_INSERT, 'updated': H_UPDATE, 'deleted': 0},
+              {'state': 'CA', 'name': 'HearingAgenda', 'inserted': HA_INSERT, 'updated': HA_UPDATE, 'deleted': 0},
+              {'state': 'CA', 'name': 'CommitteeHearings', 'inserted': CH_INSERT, 'updated': 0, 'deleted': 0}]}
+    sys.stderr.write(json.dumps(LOG))
 
 #  connection.commit()
 #  connection.close()
