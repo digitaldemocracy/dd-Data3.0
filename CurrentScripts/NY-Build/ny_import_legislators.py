@@ -79,6 +79,7 @@ WHERE pid = %s
                                            
 API_YEAR = 2017
 API_URL = "http://legislation.nysenate.gov/api/3/{0}/{1}{2}?full=true&"
+#API_URL += "limit=1000&key=31kNDZZMhlEjCOV8zkBG1crgWAGxwDIS&offset={3}"
 API_URL += "limit=200&key=31kNDZZMhlEjCOV8zkBG1crgWAGxwDIS&offset={3}"
 
 def create_payload(table, sqlstmt):
