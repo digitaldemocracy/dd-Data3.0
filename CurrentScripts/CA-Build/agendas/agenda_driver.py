@@ -96,7 +96,7 @@ update_agenda_date = '''
 UPDATE HearingAgenda
 SET current_flag=0
 WHERE date_created < date(%s)
- AND bill like %s
+ AND bid like %s
 '''
 
 

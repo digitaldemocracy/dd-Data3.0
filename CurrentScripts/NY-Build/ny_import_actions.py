@@ -10,6 +10,7 @@
         - Fills in the Action table with NY data
 '''
 
+import json
 import sys
 from Database_Connection import mysql_connection
 import requests
@@ -156,7 +157,10 @@ def main():
                 additional_fields={'_affected_rows':'Action:'+str(INSERTED),
                                    '_inserted':'Action:'+str(INSERTED),
                                    '_state':'NY'})
-    
+   
+  LOG = {'tables': [{'state': 'NY', 'name': 'Action', 'inserted':INSERTED, 'updated': 0, 'deleted': 0}]}
+  sys.stderr.write(json.dumps(LOG))
+
 if __name__ == '__main__':
     with GrayLogger(GRAY_URL) as _logger:
         logger = _logger

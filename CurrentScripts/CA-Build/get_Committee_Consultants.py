@@ -28,6 +28,7 @@ import sys
 import MySQLdb
 import urllib2
 import traceback
+import json
 import datetime as dt
 
 API_URL = 'http://dw.digitaldemocracy.org:12202/gelf'
@@ -1001,6 +1002,11 @@ def main():
                                        '_updated': 'ConsultantServesOn: ' + str(C_UPDATE),
                                        '_state': 'CA'})
 
+    LOG = {'tables': [{'state': 'CA', 'name': 'ConsultantServesOn', 'inserted':C_INSERT, 'updated': C_UPDATE, 'deleted': 0},
+      {'state': 'CA', 'name': 'Person', 'inserted':P_INSERT, 'updated': 0, 'deleted': 0},
+      {'state': 'CA', 'name': 'PersonStateAffiliation', 'inserted':PSA_INSERT, 'updated': 0, 'deleted': 0},
+      {'state': 'CA', 'name': 'LegislativeStaff', 'inserted':L_INSERT, 'updated': 0, 'deleted': 0}]}
+    sys.stderr.write(json.dumps(LOG))
 
 if __name__ == '__main__':
     with GrayLogger(API_URL) as _logger:

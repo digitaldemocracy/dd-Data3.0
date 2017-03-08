@@ -17,6 +17,7 @@ Tables affected:
 
 '''
 
+import json
 from Database_Connection import mysql_connection
 import requests
 import MySQLdb
@@ -527,6 +528,10 @@ def main():
         print "Inserted " + str(I_CH) + " rows into CommitteeHearings"
         print "Inserted " + str(I_HA) + " rows into HearingAgenda"
     
+    LOG = {'tables': [{'state': 'NY', 'name': 'Hearing', 'inserted':I_H, 'updated': 0, 'deleted': 0},
+      {'state': 'NY', 'name': 'CommitteeHearings', 'inserted':I_CH, 'updated': 0, 'deleted': 0},
+      {'state': 'NY', 'name': 'HearingAgenda', 'inserted':I_HA, 'updated': U_HA, 'deleted': 0}]}
+    sys.stderr.write(json.dumps(LOG))
 
 if __name__ == '__main__':
     with GrayLogger(GRAY_URL) as _logger:

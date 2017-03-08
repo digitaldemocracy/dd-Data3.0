@@ -34,9 +34,13 @@ from Database_Connection import mysql_connection
 import traceback
 import MySQLdb
 from graylogger.graylogger import GrayLogger
+import json
 API_URL = 'http://dw.digitaldemocracy.org:12202/gelf'
 logger = None
 logged_list = list()
+LOG = {'authors' : {'inserted' : 0},
+       'CommitteeAuthors' : {'inserted' : 0},
+       'BillSponsors' : {'inserted' : 0}}
 AU_INSERT = 0
 CA_INSERT = 0
 BS_INSERT = 0
@@ -134,13 +138,14 @@ If the committee author for this bill is not in DDDB, add. Otherwise, skip.
 |vid|: Bill Version id
 '''
 def add_committee_author(dd_cursor, cid, bid, vid):
-  global CA_INSERT
+  global CA_INSERT, LOG
   dd_cursor.execute(QS_COMMITTEEAUTHORS_CHECK, (cid, bid, vid, STATE))
 
   if dd_cursor.rowcount == 0:
     try:
       dd_cursor.execute(QI_COMMITTEEAUTHORS, (cid, bid, vid, STATE))
       CA_INSERT += dd_cursor.rowcount
+      LOG['CommitteeAuthors']['inserted'] += dd_cursor.rowcount
     except MySQLdb.Error:
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
           additional_fields=create_payload('CommitteeAuthors', 
@@ -289,13 +294,14 @@ If the author for this bill is not in DDDB, add author. Otherwise, skip.
 |contribution|: How the person contributed to the bill (ex: Lead Author)
 '''
 def add_author(dd_cursor, pid, bid, vid, contribution):
-  global AU_INSERT
+  global AU_INSERT, LOG
   dd_cursor.execute(QS_AUTHORS_CHECK, (bid, pid, vid))
 
   if dd_cursor.rowcount == 0:
     try:
       dd_cursor.execute(QI_AUTHORS, (pid, bid, vid, contribution))
       AU_INSERT += dd_cursor.rowcount
+      LOG['authors']['inserted'] += dd_cursor.rowcount
     except MySQLdb.Error:
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
           additional_fields=create_payload('Authors', 
@@ -311,7 +317,7 @@ If contribution is not in the DDDB then add.
 |contribution|: the person's contribution to the bill (ex: Lead Author)
 '''
 def add_sponsor(dd_cursor, pid, bid, vid, contribution):
-  global BS_INSERT
+  global BS_INSERT, LOG
   dd_cursor.execute(QS_BILLSPONSORROLL_CHECK, (contribution,))
 
   if dd_cursor.rowcount == 0:
@@ -329,6 +335,7 @@ def add_sponsor(dd_cursor, pid, bid, vid, contribution):
     try:
       dd_cursor.execute(QI_BILLSPONSORS, (pid, bid, vid, contribution))
       BS_INSERT += dd_cursor.rowcount
+      LOG['BillSponsors']['inserted'] += dd_cursor.rowcount
     except MySQLdb.Error as error:                                              
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
         additional_fields=create_payload('BillSponsors', 
@@ -396,7 +403,11 @@ def main():
                                          ', BillSponsors:'+str(BS_INSERT)+
                                          ', CommitteeAuthors:'+str(CA_INSERT),
                              '_state':'CA',
-                             '_log_type':'Database'})
+                             '_log_type':'Database'})  
+  LOG = {'tables': [{'state': 'CA', 'name': 'authors', 'inserted':AU_INSERT, 'updated': 0, 'deleted': 0},
+    {'state': 'CA', 'name': 'BillSponsors', 'inserted':BS_INSERT, 'updated': 0, 'deleted': 0},
+    {'state': 'CA', 'name': 'CommitteeAuthors', 'inserted':CA_INSERT, 'updated': 0, 'deleted': 0}]}
+  sys.stderr.write(json.dumps(LOG))
 
 if __name__ == '__main__':
   with GrayLogger(API_URL) as _logger:

@@ -36,6 +36,7 @@ from clean_name import clean_name
 import refactored_Lobbying_Firm_Name_Fix
 import refactored_Person_Name_Fix
 from graylogger.graylogger import GrayLogger                                    
+import json
 API_URL = 'http://dw.digitaldemocracy.org:12202/gelf'                  
 logger = None
 
@@ -737,6 +738,16 @@ def main():
                                        +', LobbyingContracts:'+str(LC_INSERT),
                            '_state':'CA',
                            '_log_type':'Database'})
+  LOG = {'tables': [{'state': 'CA', 'name': 'LobbingFirm', 'inserted':LF_INSERT, 'updated': 0, 'deleted': 0},
+          {'state': 'CA', 'name': 'LobbyingFirmState', 'inserted':FS_INSERT, 'updated': 0, 'deleted': 0},
+          {'state': 'CA', 'name': 'Lobbyist', 'inserted':L_INSERT, 'updated': 0, 'deleted': 0},
+          {'state': 'CA', 'name': 'Person', 'inserted':P_INSERT, 'updated': 0, 'deleted': 0},
+          {'state': 'CA', 'name': 'Organizations', 'inserted':O_INSERT, 'updated': 0, 'deleted': 0},
+          {'state': 'CA', 'name': 'LobbyistEmployer', 'inserted':ER_INSERT, 'updated': 0, 'deleted': 0},
+          {'state': 'CA', 'name': 'LobbyistEmployment', 'inserted':EM_INSERT, 'updated': 0, 'deleted': 0},
+          {'state': 'CA', 'name': 'LobbyistDirectEmployment', 'inserted':DE_INSERT, 'updated': 0, 'deleted': 0},
+          {'state': 'CA', 'name': 'LobbyingContracts', 'inserted':LC_INSERT, 'updated': 0, 'deleted': 0}]}
+  sys.stderr.write(json.dumps(LOG))
       
 if __name__ == '__main__':
   with GrayLogger(API_URL) as _logger:                                          

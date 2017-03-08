@@ -10,6 +10,7 @@ Description:
 - Currently configured to test DB
 '''
 
+import json
 import sys
 from Database_Connection import mysql_connection
 import traceback
@@ -139,6 +140,9 @@ def main():
         additional_fields={'_affected_rows':'CommitteeAuthors:'+str(INSERTED),
                            '_inserted':'CommitteeAuthors:'+str(INSERTED),
                            '_state':'NY'})
+
+  LOG = {'tables': [{'state': 'NY', 'name': 'CommitteeAuthors', 'inserted':INSERTED, 'updated': 0, 'deleted': 0}]}
+  sys.stderr.write(json.dumps(LOG))
 
 if __name__ == '__main__':
   with GrayLogger(API_URL) as _logger:                                          

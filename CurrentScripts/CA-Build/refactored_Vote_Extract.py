@@ -32,6 +32,7 @@ Populates:
 
 '''
 
+import json
 from Database_Connection import mysql_connection
 import traceback
 import MySQLdb
@@ -402,6 +403,10 @@ def main():
                                          ', BillVoteDetail:'+str(D_INSERT),
                              '_state':'CA',
                              '_log_type':'Database'})
+
+  LOG = {'tables': [{'state': 'CA', 'name': 'BillVoteSummary', 'inserted':S_INSERT, 'updated': 0, 'deleted': 0},
+    {'state': 'CA', 'name': 'BillVoteDetail', 'inserted':D_INSERT, 'updated': 0, 'deleted': 0}]}
+  sys.stderr.write(json.dumps(LOG))
 
 if __name__ == "__main__":
   with GrayLogger(API_URL) as _logger:

@@ -148,6 +148,9 @@ def main():
                            '_inserted':'District:'+str(INSERTED),
                            '_state':'NY'})
 
+  LOG = {'tables': [{'state': 'NY', 'name': 'District', 'inserted':INSERTED, 'updated': 0, 'deleted': 0}]}
+  sys.stderr.write(json.dumps(LOG))
+
 if __name__ == "__main__":
   with GrayLogger(GRAY_URL) as _logger:
     logger = _logger

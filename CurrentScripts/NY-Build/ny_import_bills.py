@@ -12,6 +12,7 @@ Description:
 - Currently configured to test DB
 '''
 
+import json
 from datetime import datetime
 import sys
 from Database_Connection import mysql_connection
@@ -266,7 +267,11 @@ def main():
                              '_updated':'Bill:'+str(UPDATED)+
                                         ', BillVersion:'+str(BV_UPDATED),
                              '_state':'NY'})
-    
+   
+    LOG = {'tables': [{'state': 'NY', 'name': 'Bill', 'inserted':INSERTED, 'updated': UPDATED, 'deleted': 0},
+      {'state': 'NY', 'name': 'BillVersion', 'inserted':BV_INSERTED, 'updated': BV_UPDATED, 'deleted': 0}]}
+    sys.stderr.write(json.dumps(LOG))
+
 if __name__ == '__main__':
   with GrayLogger(GRAY_URL) as _logger:
     logger = _logger

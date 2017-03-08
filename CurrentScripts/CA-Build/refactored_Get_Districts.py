@@ -145,6 +145,8 @@ def main():
                            '_state':'CA',
                            '_log_type':'Database'})
 
+  LOG = {'tables': [{'state': 'CA', 'name': 'District', 'inserted':INSERTED, 'updated': 0, 'deleted': 0}]}
+  sys.stderr.write(json.dumps(LOG))
 if __name__ == "__main__":
   with GrayLogger(API_URL) as _logger:                                          
     logger = _logger
