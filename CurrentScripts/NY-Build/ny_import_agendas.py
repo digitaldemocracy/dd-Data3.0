@@ -181,15 +181,20 @@ inserts hearing in db if it is not found
 def insert_hearing(cursor, date, year, cid):
     global I_H
     #checks to see that hearing is not in db
-    if get_hid(cursor, cid, date) == None:
+    result = get_hid(cursor, cid, date)
+    if result == None:
         try:
             cursor.execute(I_HEARING, (date, STATE, year))
             I_H += cursor.rowcount
             newHid = cursor.lastrowid
-            return newHid
+
         except MySQLdb.Error:
             logger.warning('Insert Failed', full_msg=traceback.format_exc(),
                 additional_fields=create_payload('Hearing',(I_HEARING % (date, STATE, year))))
+    else:
+        newHid = result
+
+    return newHid
 
 '''
 finds committee id if it is in db, returns None if it is not in db
@@ -479,27 +484,29 @@ def main():
         assembly_comm_hearings = get_assembly_comm_hearings()
         for hearing in assembly_comm_hearings:
             cid = get_cid(dddb, 'Assembly', hearing['name'], year)
-            hid = insert_hearing(dddb, hearing['date'], year, cid)
+            if cid != None:
+                hid = insert_hearing(dddb, hearing['date'], year, cid)
             
-            if hid != None and cid != None:
-                insert_comm_hearing(dddb, cid, hid)
-            bills = scrape_hearing_agenda(dddb, hearing['url'], 'Assembly')
-            if hid != None and len(bills) > 0:
-                for bid in bills:
-                    insert_hearing_agenda(dddb, hid, bid)
+                if hid != None and cid != None:
+                    insert_comm_hearing(dddb, cid, hid)
+                bills = scrape_hearing_agenda(dddb, hearing['url'], 'Assembly')
+                if hid != None and len(bills) > 0:
+                    for bid in bills:
+                        insert_hearing_agenda(dddb, hid, bid)
 
         #scrape senate committee agendas
         senate_comm_hearings = get_senate_comm_hearings()
         for hearing in senate_comm_hearings:
             cid = get_cid(dddb, 'Senate', hearing['name'], year)
-            hid = insert_hearing(dddb, hearing['date'], year, cid)
+            if cid != None:
+                hid = insert_hearing(dddb, hearing['date'], year, cid)
 
-            if hid != None and cid != None:
-                insert_comm_hearing(dddb, cid, hid)
-            bills = scrape_senate_agenda(dddb, hearing['url'])
-            if hid != None and len(bills) > 0:
-                for bid in bills:
-                    insert_hearing_agenda(dddb, hid, bid)
+                if hid != None and cid != None:
+                    insert_comm_hearing(dddb, cid, hid)
+                bills = scrape_senate_agenda(dddb, hearing['url'])
+                if hid != None and len(bills) > 0:
+                    for bid in bills:
+                        insert_hearing_agenda(dddb, hid, bid)
 
         
         logger.info(__file__ + ' terminated successfully.', 
