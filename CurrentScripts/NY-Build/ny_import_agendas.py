@@ -450,11 +450,12 @@ scrapes senate committee hearing agenda and gets the bills discussed
 |url|: url with agenda info
 '''
 def scrape_senate_agenda(cursor, url):
+    results = []
+
     page = requests.get(url)
     soup = BeautifulSoup(page.content, 'html.parser')
     house = "Senate"
 
-    results = []
     for s in soup.find_all("h4", class_="c-listing--bill-num"):
         text = s.get_text().strip()
         text = re.split('(\d.*)', text)
@@ -464,7 +465,43 @@ def scrape_senate_agenda(cursor, url):
         if bid != None:
             results.append(bid)
 
+    nextUrl = get_load_more_sen_url(url)
+    #loop to grab the urls under the load more button
+    while nextUrl != None:
+
+        page = requests.get(nextUrl)
+        soup = BeautifulSoup(page.content, 'html.parser')
+        for s in soup.find_all("h4", class_="c-listing--bill-num"):
+            text = s.get_text().strip()
+            text = re.split('(\d.*)', text)
+            bill_type = text[0]
+            bill_num = text[1]
+            bid = get_bid(cursor, bill_type, bill_num, house)
+            if bid != None:
+                results.append(bid)
+
+        nextUrl = get_load_more_sen_url(nextUrl)
+
     return results
+
+'''
+gets the url to next set of bills in meeting agenda
+under the load more button
+if there is no next url it will return None
+if there is a next url it will return the next url
+'''
+def get_load_more_sen_url(url):
+    page = requests.get(url)
+    soup = BeautifulSoup(page.content, 'html.parser')
+    result = None
+    for s in soup.find_all("div", class_="panel-pane pane-views pane-meeting-agenda-block"):
+        for d in s.find_all("div", class_="item-list"): 
+            if len(d.find_all("ul", class_="pager pager-load-more")) != 0:
+                for ul in d.find_all("ul", class_="pager pager-load-more"):
+                    for li in ul.find_all("li"):
+                        for a in li.find_all("a"):
+                           result = "https://www.nysenate.gov" + a['href']
+    return result
 
 def main():
     ddinfo = mysql_connection(sys.argv)
