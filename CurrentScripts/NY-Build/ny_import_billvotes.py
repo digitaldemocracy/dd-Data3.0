@@ -282,11 +282,12 @@ def get_vote_sums_senate(dddb, bill, vote_items):
         else:
             bv['result'] = '(FAIL)'
 
-        if bv['ayes'] == 0 and bv['naes'] == 0 and bv['abstain'] == 0:
-            print "senate", bv['bid']
-        
-        if bv['ayes'] > 0 or bv['naes'] > 0 or bv['abstain'] > 0:
-            ret_votes.append(bv)
+        #if bv['ayes'] == 0 and bv['naes'] == 0 and bv['abstain'] == 0:
+        #    print "senate", bv['bid']
+       
+        if bv['cid'] != None: 
+            if bv['ayes'] > 0 or bv['naes'] > 0 or bv['abstain'] > 0:
+                ret_votes.append(bv)
         
     return ret_votes
     
@@ -384,9 +385,10 @@ def get_vote_sums_assem(dddb, bid, bill):
             print "assem", bv['bid']
             print table
         '''
-        
-        if bv['ayes'] > 0 or bv['naes'] > 0 or bv['abstain'] > 0:
-            ret_arr.append(bv)
+
+        if bv['cid'] != None:
+            if bv['ayes'] > 0 or bv['naes'] > 0 or bv['abstain'] > 0:
+                ret_arr.append(bv)
         
     return ret_arr
                         
