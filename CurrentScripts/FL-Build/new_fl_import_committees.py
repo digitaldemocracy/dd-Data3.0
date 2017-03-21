@@ -99,7 +99,7 @@ def import_committees(dddb):
 
     for committee in comm_list:
         committee['session_year'] = get_session_year(dddb)
-        #committee['members'] = get_committee_membership(committee['comm_id'])
+        committee['members'] = get_committee_membership(committee['comm_id'])
 
         if is_comm_name_in_db(dddb, committee) is False:
             try:
@@ -122,7 +122,7 @@ def import_committees(dddb):
             committee['cid'] = get_comm_cid(dddb, committee)
 
         # Talk to Nick about his Person API helper/legid table
-        # if len(committee['members']) > 0:
+        if len(committee['members']) > 0:
 
 
 def main():
