@@ -62,7 +62,7 @@ STATE_ABBREVIATIONS = set(['al',
                           'wy'])
 
 
-CONN_INFO = {'host': 'dddb2016-mysql5-7-11.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+CONN_INFO = {'host': 'dddb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
              'port': 3306,
              'db': 'EricTest',
              'user': 'awsDB',
@@ -93,8 +93,12 @@ def norm_name(name):
 
     words = [word.replace("'", '') for word in name.split(' ') if word.strip() != '']
 
-    while re.sub('[,\.]', '', words[-1]) in ENDINGS:
-        words = words[:-1]
+    # This is bad
+    try:
+        while re.sub('[,\.]', '', words[-1]) in ENDINGS:
+            words = words[:-1]
+    except IndexError:
+        return ''
 
     words[-1] = re.sub('[,\.]', '', words[-1])
     if words[0] in STARTS:

@@ -123,6 +123,27 @@ CREATE TABLE IF NOT EXISTS Person (
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+
+/* Tracks person ids given to us by open states. Used exclusively by importation scripts at
+   the moment.
+
+   Sources: FL: fl_import_legislators.py
+            CA: No Data
+            NY: No Data
+*/
+CREATE TABLE IF NOT EXISTS AlternateId (
+  pid  INTEGER,  -- Person pid
+  alt_id  VARCHAR(15), -- eg "CAL000001" for OpenStates
+  source   VARCHAR(200), -- eg "OpenStates"
+  lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+  lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
+
+  PRIMARY KEY (alt_id),
+  FOREIGN KEY (pid) REFERENCES Person(pid)
+)
+  ENGINE = INNODB
+  CHARACTER SET utf8 COLLATE utf8_general_ci;
+
 /*
   Used to capture the affiliation between a person and a state.
 
@@ -311,12 +332,32 @@ CREATE TABLE IF NOT EXISTS Committee (
   -- redundant info in servesOn and I want to enforce a foreign key
   FOREIGN KEY (state) REFERENCES State(abbrev),
   FOREIGN KEY (house, state) REFERENCES House(name, state),
+  FOREIGN KEY (name, house, state) REFERENCES CommitteeNames(name, house, state),
 
   INDEX name_idx (name),
   INDEX stae_idx (state)
 )
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+/*The same committees can exist across multiple session years and they have their own pages,
+  so the site needs away to track committees over time. This table capture the many-to-one relationship
+  from Committee to CommitteeNames*/
+CREATE TABLE IF NOT EXISTS CommitteeNames (
+  cn_id INTEGER AUTO_INCREMENT,
+  name VARCHAR(200) NOT NULL,
+  house VARCHAR(200),
+  state VARCHAR(2),
+  lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+  lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
+
+  PRIMARY KEY (cn_id),
+  UNIQUE (name, house, state),
+  FOREIGN KEY (house, state) REFERENCES House(name, state),
+  FOREIGN KEY (state) REFERENCES State(abbrev)
+)
+ENGINE = INNODB
+CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 /* Relationship::servesOn(many-to-many) << [Committee, Term]
 
@@ -360,7 +401,7 @@ CREATE TABLE IF NOT EXISTS ConsultantServesOn (
   pid      INTEGER,                               -- Person id (ref. Person.pid)
   session_year     YEAR,                                  -- year served
   cid      INTEGER(3),                            -- Committee id (ref. Committee.cid)
-  position ENUM('Chief Consultant', 'Committee Secretary', 'Deputy Chief Consultant'),
+  position VARCHAR(255) NOT NULL,
   current_flag BOOL,
   start_date DATE,
   start_date_ts INT,
@@ -398,8 +439,7 @@ CREATE TABLE IF NOT EXISTS Bill (
   bid     VARCHAR(23),          -- Bill id (concat of state+years+session+type+number)
   type    VARCHAR(5) NOT NULL,  -- bill type abbreviation
   number  INTEGER NOT NULL,     -- bill number
-  billState   ENUM('Chaptered', 'Introduced', 'Amended Assembly', 'Amended Senate', 'Enrolled',
-                   'Proposed', 'Amended', 'Vetoed') NOT NULL,
+  billState   VARCHAR(255) NOT NULL,
   status  VARCHAR(60),          -- current bill status
   house   VARCHAR(100),
   session INTEGER(1),           -- 0: Normal session, 1: Special session
@@ -410,7 +450,7 @@ CREATE TABLE IF NOT EXISTS Bill (
   lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
   dr_id INTEGER UNIQUE AUTO_INCREMENT,
   dr_changed INT DEFAULT NOW() ON UPDATE NOW(),
-  dr_changed_ts INT AS (UNIX_TIMESTAMP(dr_changed))
+  dr_changed_ts INT AS (UNIX_TIMESTAMP(dr_changed)),
 
   PRIMARY KEY (bid),
   FOREIGN KEY (state) REFERENCES State(abbrev),
@@ -433,8 +473,7 @@ CREATE TABLE IF NOT EXISTS BillVersion (
   bid                 VARCHAR(23),
   date                DATE,
   date_ts  INT(11) AS (UNIX_TIMESTAMP(date_ts)), -- Used by Drupal
-  billState               ENUM('Chaptered', 'Introduced', 'Amended Assembly', 'Amended Senate',
-                               'Enrolled', 'Proposed', 'Amended', 'Vetoed') NOT NULL,
+  billState           VARCHAR(255) NOT NULL,
   subject             TEXT,
   appropriation       BOOLEAN,
   substantive_changes BOOLEAN,
@@ -468,7 +507,7 @@ CREATE TABLE IF NOT EXISTS Hearing (
   date   DATE,                        -- date of hearing
   date_ts INT(11) AS (UNIX_TIMESTAMP(date)), -- Used by Drupal
   type ENUM('Regular', 'Budget', 'Informational', 'Summary') DEFAULT 'Regular',
-  session_year YEAR,
+  session_year YEAR NOT NULL,
   state  VARCHAR(2),
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
   lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
@@ -618,7 +657,7 @@ CREATE TABLE IF NOT EXISTS Video_ttml (
 CREATE TABLE IF NOT EXISTS BillDiscussion (
   did         INTEGER AUTO_INCREMENT,
   bid         VARCHAR(23),
-  hid         INTEGER,
+  hid         INTEGER NOT NULL,
   startVideo  INTEGER,
   startTime   INTEGER,
   endVideo    INTEGER,
@@ -627,7 +666,7 @@ CREATE TABLE IF NOT EXISTS BillDiscussion (
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
   lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
   dr_changed INT DEFAULT NOW() ON UPDATE NOW(),
-  dr_changed_ts INT AS (UNIX_TIMESTAMP(dr_changed))
+  dr_changed_ts INT AS (UNIX_TIMESTAMP(dr_changed)),
 
   PRIMARY KEY (did),
   UNIQUE KEY (bid, startVideo, startTime),
@@ -896,13 +935,13 @@ CREATE TABLE IF NOT EXISTS Gift (
  */
 CREATE TABLE IF NOT EXISTS Contribution (
   id VARCHAR(20),
-  pid INTEGER,
+  pid INTEGER, -- The legislator
   year INTEGER,
   date DATETIME,
   date_ts INT(11) AS (UNIX_TIMESTAMP(date)), -- Used by Drupal
   sesssionYear YEAR,
   house VARCHAR(10),
-  donorName VARCHAR(255),
+  donorName VARCHAR(255), -- Uhh this should probs tie to Person at some point
   donorOrg VARCHAR(255),
   amount DOUBLE,
   oid INT, -- just matched from donorOrg
@@ -1680,11 +1719,7 @@ CHARACTER SET utf8 COLLATE utf8_general_ci;
   Used to track runs of your triggers for updating the Solr tables.
  */
 CREATE TABLE DrChangedLogs (
-  solr_tbl VARCHAR(50),
-  solr_tbl_col VARCHAR(50),
-  update_tbl VARCHAR(50),
-  update_tbl_col VARCHAR(50),
-  type ENUM('UPDATE', 'INSERT', 'DELETE'),
+  log TEXT,
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW()
 )
   ENGINE = INNODB
@@ -1849,3 +1884,4 @@ CREATE TABLE IF NOT EXISTS TT_HostingUrl (
 CREATE OR REPLACE VIEW TT_currentCuts
 AS SELECT * FROM TT_Cuts
 WHERE current = TRUE ORDER BY videoId DESC, cutId ASC;
+

@@ -16,6 +16,7 @@ import requests
 import MySQLdb
 import traceback
 from graylogger.graylogger import GrayLogger
+from datetime import datetime
 GRAY_URL = 'http://dw.digitaldemocracy.org:12202/gelf'
 logger = None
 INSERTED = 0
@@ -30,7 +31,7 @@ select_action = '''SELECT bid, text
                  WHERE bid = %(bid)s;'''
 
 
-API_YEAR = 2016
+API_YEAR = datetime.now().year if datetime.now().year % 2 == 1 else datetime.now().year - 1
 API_URL = "http://legislation.nysenate.gov/api/3/{0}/{1}{2}?full=true&" 
 API_URL += "limit=1000&key=31kNDZZMhlEjCOV8zkBG1crgWAGxwDIS&offset={3}&"
 STATE = 'NY'                 
