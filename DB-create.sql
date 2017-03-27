@@ -242,6 +242,7 @@ CREATE TABLE IF NOT EXISTS Legislator (
   description VARCHAR(1000),    -- description
   twitter_handle VARCHAR(100),  -- twitter handle (ex: @example)
   capitol_phone  VARCHAR(30),   -- phone number (format: (xxx) xxx-xxxx)
+  capitol_fax  VARCHAR(30),   -- fax number (format: (xxx) xxx-xxxx)
   website_url    VARCHAR(200),  -- url
   room_number    VARCHAR(10),       -- room number
   email VARCHAR(255),

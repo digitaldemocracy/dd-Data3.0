@@ -32,6 +32,7 @@ Populates:
 
 '''
 
+import json
 from Database_Connection import mysql_connection
 import traceback
 import MySQLdb
@@ -45,6 +46,7 @@ D_INSERT = 0
 
 # U.S. State
 STATE = 'CA'
+YEAR = 2017
 
 # Names pulled from CAPublic database that are missing comma before 'and'
 # (this is compared to the names that are scraped from the committee websites
@@ -139,7 +141,8 @@ QS_COMMITTEE = '''SELECT cid
                   FROM Committee 
                   WHERE name = %(name)s 
                    AND house = %(house)s
-                   AND state = %(state)s'''
+                   AND state = %(state)s
+                   AND session_year = %(session_year)s'''
 QI_SUMMARY = '''INSERT INTO BillVoteSummary
                  (bid, mid, cid, VoteDate, ayes, naes, abstain, result, VoteDateSeq)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)'''
@@ -159,9 +162,11 @@ def create_payload(table, sqlstmt):
 If committee is found, return cid. Otherwise, return None.
 '''
 def find_committee(cursor, name, house):
-  cursor.execute(QS_COMMITTEE, {'name':name, 'house':house, 'state':STATE})
+  cursor.execute(QS_COMMITTEE, {'name':name, 'house':house, 'state':STATE, 'session_year': YEAR })
   if(cursor.rowcount == 1):
     return cursor.fetchone()[0]
+  elif(cursor.rowcount > 1):
+    print("Multiple Committees found")
   sys.stderr.write("WARNING: Unable to find committee {0}\n".format(name))
   return None
 
@@ -173,6 +178,7 @@ def get_committee(ca_cursor, dd_cursor, location_code):
   ca_cursor.execute(QS_LOCATION_CODE, {'location_code':location_code})
   if(ca_cursor.rowcount > 0):
     loc_result = ca_cursor.fetchone()
+    print(loc_result);
     temp_name = loc_result[0]
     committee_name = loc_result[1]
 
@@ -190,10 +196,15 @@ def get_committee(ca_cursor, dd_cursor, location_code):
     elif 'Public Health and Developmental Services' in committee_name:
       name = '{0} 2nd Extraordinary Session on {1}'.format(house, committee_name)
     elif 'Finance' in committee_name and house == 'Assembly':
-      name = 'Assembly 1st Extraordinary Session on Finance'
+      if "Banking" in committee_name:
+        name = 'Assembly Standing Committee on Banking and Finance'
+      else:
+        name = 'Assembly 1st Extraordinary Session on Finance'
     else:
       name = '{0} Standing Committee on {1}'.format(house, committee_name)
-
+  else:
+    print("Cant find " + location_code) 
+  print(name + " " + house)
   return find_committee(dd_cursor, name, house)
     
 '''
@@ -392,6 +403,10 @@ def main():
                                          ', BillVoteDetail:'+str(D_INSERT),
                              '_state':'CA',
                              '_log_type':'Database'})
+
+  LOG = {'tables': [{'state': 'CA', 'name': 'BillVoteSummary', 'inserted':S_INSERT, 'updated': 0, 'deleted': 0},
+    {'state': 'CA', 'name': 'BillVoteDetail', 'inserted':D_INSERT, 'updated': 0, 'deleted': 0}]}
+  sys.stderr.write(json.dumps(LOG))
 
 if __name__ == "__main__":
   with GrayLogger(API_URL) as _logger:

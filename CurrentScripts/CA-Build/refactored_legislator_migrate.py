@@ -31,6 +31,7 @@ Populates:
   - Term (pid, year, district, house, party, state)
 '''
 
+import json
 from unidecode import unidecode
 from slugify import slugify, Slugify, slugify_unicode
 from Database_Connection import mysql_connection
@@ -73,7 +74,8 @@ QI_LEGISLATOR = '''INSERT INTO Legislator (pid, state)
                    VALUES (%s, %s)'''
 QI_TERM = '''INSERT INTO Term (pid, year, district, house, party, state, start) 
              VALUES (%s, %s, %s, %s, %s, %s, %s)'''
-
+QI_PERSON_STATE = '''INSERT INTO PersonStateAffiliation (pid, state)
+                     VALUES (%s, "CA")'''
 QU_TERM_END_DATE = '''UPDATE Term
                       SET end = %s, current_term = 0
                       WHERE pid = %s
@@ -238,6 +240,11 @@ def main():
                              '_updated':'Term:'+str(T_UPDATE),
                              '_state':'CA',
                              '_log_type':'Database'})
+
+  LOG = {'tables': [{'state': 'CA', 'name': 'Person', 'inserted':P_INSERT, 'updated': 0, 'deleted': 0},
+    {'state': 'CA', 'name': 'Legislator', 'inserted':L_INSERT, 'updated': 0, 'deleted': 0},
+    {'state': 'CA', 'name': 'Term', 'inserted':T_INSERT, 'updated': T_UPDATE, 'deleted': 0}]}
+  sys.stderr.write(json.dumps(LOG))
 
 if __name__ == "__main__":
   with GrayLogger('http://dw.digitaldemocracy.org:12202/gelf') as _logger:

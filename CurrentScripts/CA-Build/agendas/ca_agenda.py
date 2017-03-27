@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 '''
 File: ca_agenda.py
@@ -15,16 +15,18 @@ from bs4 import BeautifulSoup as bs
 import sys
 import requests
 import re
-import datetime
+from datetime import datetime
+from pytz import timezone
 import time
-import pymysql.cursors
+#import pymysql.cursors
+import MySQLdb
 
 #Select statement to get the proper information from the capublic database
 sql_select = '''SELECT DISTINCT(committee_hearing_tbl.bill_id), committee_type,
-                committee_name, hearing_date
-                FROM committee_hearing_tbl JOIN bill_analysis_tbl
-                ON committee_hearing_tbl.location_code=bill_analysis_tbl.committee_code
-                WHERE date(hearing_date) >= date(%s)'''
+                long_description, hearing_date
+                FROM committee_hearing_tbl JOIN location_code_tbl
+                ON committee_hearing_tbl.location_code=location_code_tbl.location_code
+                WHERE `hearing_date` >= %s'''
 
 
 '''
@@ -62,6 +64,9 @@ def change_committee_names(agendas):
 
   for item in agendas:
     item = list(item)
+    if item[2] == 'Water, Parks and Wildlife':
+      item[2] = 'Water, Parks, and Wildlife'
+
     item[2] = item[2].lower().title()
     new_agendas.append(item)
 
@@ -75,12 +80,12 @@ Take the date and find any agendas on or after that date in the database.
 |date|: Date passed in
 Returns: A list of tuples containing bill agendas
 '''
-def fetch_agendas(dd_cursor, date):
+def fetch_agendas(cursor, date):
   result = [] 
   
-  with dd_cursor as cursor:
-    cursor.execute(sql_select, (date.date()))
-    result = cursor.fetchall()
+  cursor.execute(sql_select, (date,))
+  result = cursor.fetchall()
+  print(cursor.rowcount)
   return result
 
 '''
@@ -90,29 +95,29 @@ Returns a list of dictionary objects
 def ca_scraper():
   keys = ['bid', 'house', 'c_name', 'date', 'state']  
 
-  connection = pymysql.connect(host='transcription.digitaldemocracy.org',
+  with MySQLdb.connect(host='transcription.digitaldemocracy.org',
                                user='monty',
-                               password='python',
+                               passwd='python',
                                db='capublic',
-                               charset='utf8mb4',
-                               cursorclass=pymysql.cursors.SSCursor)
+                               charset='utf8') as connection:
+    
+    cur_date = datetime.now(timezone('US/Pacific')).strftime('%Y-%m-%d')
+    print(cur_date)
+    agendas = change_committee_names(fetch_agendas(connection, cur_date))
 
-  cur_date = datetime.datetime.today()
-  agendas = change_committee_names(fetch_agendas(connection.cursor(), cur_date))
+    #format the bills to fit the standards set by the database
+    #add the state
+    for i in range(0, len(agendas)):
+      agendas[i][0] = 'CA_' + agendas[i][0]
+      agendas[i].append('California')
 
-  #format the bills to fit the standards set by the database
-  #add the state
-  for i in range(0, len(agendas)):
-    agendas[i][0] = 'CA_' + agendas[i][0]
-    agendas[i].append('California')
-
-  connection.close()
+#    connection.close()
   
-  #zip it to put it in dictionary format for the driver
-  ret = [dict(zip(keys, agenda)) for agenda in agendas]
-  #for some reason I get double everything so I remove duplicate elements
-  ret = [dict(t) for t in set([tuple(d.items()) for d in ret])]
-  return ret
+    #zip it to put it in dictionary format for the driver
+    ret = [dict(zip(keys, agenda)) for agenda in agendas]
+    #for some reason I get double everything so I remove duplicate elements
+    ret = [dict(t) for t in set([tuple(d.items()) for d in ret])]
+    return ret
 
 
 if __name__ == '__main__':

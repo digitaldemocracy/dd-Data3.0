@@ -31,6 +31,7 @@ Populates:
 
 '''
 
+import json
 import os
 import re
 import sys
@@ -38,6 +39,7 @@ import csv
 import requests
 import MySQLdb
 import openpyxl
+import traceback
 from pprint import pprint
 from datetime import datetime
 from Database_Connection import mysql_connection
@@ -330,6 +332,7 @@ def download_behests():
     file.close
 
 def main():
+  global logger
   # Current Official (as (name, pid) tuple)
   cur_official = (None, -1)
 
@@ -365,6 +368,9 @@ def main():
                              '_inserted': "Behests: " + str(B_INSERT),
                              '_state': 'CA',
                              '_log_type': 'Database'})
+
+  LOG = {'tables': [{'state': 'CA', 'name': 'Behests', 'inserted':B_INSERT, 'updated': 0, 'deleted': 0}]}
+  sys.stderr.write(json.dumps(LOG))
 
 if __name__ == "__main__":
   main()

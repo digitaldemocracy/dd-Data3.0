@@ -10,6 +10,7 @@ Description:
 - Currently configured to test DB
 '''
 
+import json
 import sys
 from datetime import datetime
 from Database_Connection import mysql_connection
@@ -23,6 +24,8 @@ logger = None
 C_INSERTED = 0
 S_INSERTED = 0
 C_UPDATED = 0
+S_UPDATED = 0
+CN_I = 0
 
 select_committee_last = '''SELECT cid FROM Committee
                            ORDER BY cid DESC
@@ -55,6 +58,13 @@ QS_SERVESON_MEMBERS = '''SELECT pid
                           AND cid = %s
                           AND state = %s
                           AND end_date IS NULL'''
+QS_COMMITTEENAME_CHECK = '''
+SELECT *
+FROM CommitteeNames
+WHERE name = %s
+ AND house = 'Senate'
+ AND state = 'NY'
+'''
 
 insert_committee = '''INSERT INTO Committee
                        (cid, house, name, state, room, session_year)
@@ -66,7 +76,12 @@ insert_serveson = '''INSERT INTO servesOn
                      VALUES
                       (%(pid)s, %(year)s, %(house)s, %(cid)s, %(state)s,
                       %(position)s, %(date)s);'''
-
+QI_COMMITTEENAME = '''
+INSERT INTO CommitteeNames
+ (name, house, state)
+VALUES
+ (%s, 'Senate', 'NY')
+'''
 update_committee_contact = '''UPDATE Committee
                               SET room = %(room)s
                               WHERE cid = %(cid)s
@@ -214,7 +229,7 @@ def get_committees_api():
     
     for comm in committees:    
         committee = dict()
-        committee['name'] = comm['name']        
+        committee['name'] = "Senate committee on {0}",format(comm['name'])
         committee['house'] = "Senate"
         committee['state'] = STATE
         committee['room'] = None
@@ -250,6 +265,14 @@ def get_committees_api():
     #print "Downloaded %d committees..." % len(ret_comms)
     return ret_comms
 
+def add_committee_name(cursor, name):
+  global CN_I
+  cursor.execute(QS_COMMITTEENAME_CHECK, (name,))
+
+  if cursor.rowcount == 0:
+    cursor.execute(QI_COMMITTEENAME, (name,))
+    CN_I += cursor.rowcount
+
 #function to add committees to DB. Calls API and then processes data
 #only adds committees if they do not exist and only adds to servesOn if member
 #is not already there.
@@ -262,7 +285,7 @@ def add_committees_db(cur):
     for committee in committees:
         cid = get_last_cid_db(cur) + 1      
         get_cid = is_comm_in_db(committee, cur)
-        
+        #add_committee_name(cur, committee['name'])
         if  get_cid == False:
             x += 1
             committee['cid'] = str(cid)
@@ -303,6 +326,7 @@ temp2 = set()
 # Checks if the member in database still exists.
 # If member is no longer in api then fills in end_date field.
 def check_committee_members(committee, cur):
+  global S_UPDATED
   date = datetime.now().strftime('%Y-%m-%d')
   temp = dict()
 
@@ -320,6 +344,7 @@ def check_committee_members(committee, cur):
       try:
         cur.execute(QU_SERVESON_END_DATE, (date, member[0], committee['cid'], 
           committee['year'], committee['house']))
+        S_UPDATED += cur.rowcount
       except MySQLdb.Error:
         logger.warning('Update Failed', full_msg=traceback.format_exc(),
             additional_fields=create_payload('servesOn', 
@@ -350,11 +375,17 @@ def main():
           full_msg='Inserted ' + str(C_INSERTED) + ' rows in Committee and inserted ' 
                     + str(S_INSERTED) + ' rows in servesOn',
           additional_fields={'_affected_rows':'Committee:'+str(C_INSERTED)+
-                                         ', servesOn:'+str(S_INSERTED),
+                                         ', servesOn:'+str(S_INSERTED + S_UPDATED),
                              '_inserted':'Committee:'+str(C_INSERTED)+
                                          ', servesOn:'+str(S_INSERTED),
-                             '_updated':'Committee:'+str(C_UPDATED),
+                             '_updated':'Committee:'+str(C_UPDATED)+
+                                        ', servesOn:'+str(S_UPDATED),
                              '_state':'NY'})
+
+    LOG = {'tables': [{'state': 'NY', 'name': 'Committee', 'inserted':C_INSERTED, 'updated': C_UPDATED, 'deleted': 0},
+      {'state': 'NY', 'name': 'servesOn:', 'inserted':S_INSERTED, 'updated': S_UPDATED, 'deleted': 0},
+      {'state': 'NY', 'name': 'CommitteeNames', 'inserted':CN_I, 'updated': 0, 'deleted': 0}]}
+    sys.stderr.write(json.dumps(LOG))
 
 if __name__ == '__main__':
   with GrayLogger(GRAY_URL) as _logger:

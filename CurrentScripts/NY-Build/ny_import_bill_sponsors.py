@@ -10,7 +10,7 @@ Description:
 - Needs Bill, BillVersion, Person tables to be filled first
 - Currently configured to test DB
 '''
-
+import json
 import sys
 from Database_Connection import mysql_connection
 import traceback
@@ -289,7 +289,7 @@ def main():
             charset='utf8') as dddb:
 #   dddb = dddb_conn.cursor()
 #   dddb_conn.autocommit(True)
-    add_authors_db(2015, dddb)
+    add_authors_db(2017, dddb)
     logger.info(__file__ + ' terminated', 
         full_msg='inserted ' + str(INSERTED) + ' in BillSponsors',
         additional_fields={'_table':'BillSponsors',
@@ -297,6 +297,10 @@ def main():
                            '_inserted':'BillSponsors:'+str(INSERTED),
                            '_state':'NY'})
     print counter
+
+  LOG = {'tables': [{'state': 'NY', 'name': 'BillSponsors', 'inserted':INSERTED, 'updated': 0, 'deleted': 0}]}
+  sys.stderr.write(json.dumps(LOG))
+
 '''
 #   call = call_senate_api("bills", 2015, "", 1)
 #   bills = call[0]

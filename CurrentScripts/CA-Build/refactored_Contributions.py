@@ -23,6 +23,7 @@ Sources:
 '''
 
 from Database_Connection import mysql_connection
+from datetime import datetime
 import urllib
 import zipfile
 import os
@@ -41,6 +42,7 @@ from urllib import urlopen
 from graylogger.graylogger import GrayLogger
 API_URL = 'http://dw.digitaldemocracy.org:12202/gelf'
 logger = None
+LOG = {'Contribution': {'inserted': 0}}
 C_INSERT = 0
 
 #queries used for insertion
@@ -75,14 +77,14 @@ QS_ORGANIZATION = '''SELECT oid
 QD_CONTRIBUTION = '''DELETE FROM Contribution
                      WHERE id = %s'''
 
-zipURL = '''http://data.maplight.org/CA/2015/records/cand.zip'''
+zipURL = '''http://data.maplight.org/CA/{0}/records/cand.zip'''
 zipName = '''cand.zip'''
 
 def dl_csv():
   remove_zip()
   try:
     url = urllib.urlretrieve(zipURL, zipName)
-    print url
+    print('url', zipURL)
   except:
     print zipURL, 'download failed'
 
@@ -146,6 +148,8 @@ def getPerson(cursor, first, last, floor):
       else:
         #print "could not find {0} {1}".format(first, last)
         pass
+  if pid == -1:
+    print(first, last, floor)
   return pid
 
 
@@ -162,17 +166,21 @@ def get_oid(cursor, donorOrg):
     oid = cursor.fetchone()[0]
     #print 'found oid: ', oid
     return oid
+  print('did nto find donorOrg',donorOrg)
   notfound_org.add(donorOrg)
   return None
 
 def insert_Contributor(cursor, id, pid, year, date, house, donorName, donorOrg, amount, oid):
-  global C_INSERT
+  global C_INSERT, LOG
   cursor.execute(QS_CONTRIBUTION_CHECK, (id,))
-
+  print(cursor.fetchall())
   if cursor.rowcount == 1:
     cursor.execute(QD_CONTRIBUTION, (id,))
+  #else:
+  #  print(id, pid, year, date, house, donorName, donorOrg, amount, oid)
   cursor.execute(QI_CONTRIBUTION, (id, pid, year, date, house, donorName, donorOrg, amount, oid))
   C_INSERT += cursor.rowcount
+  LOG['Contribution']['inserted'] += cursor.rowcount
 
 #db = mysql.connector.connect(user = 'root', db = 'DDDB2015Apr', password = '')
 #conn = db.cursor(buffered = True)
@@ -232,8 +240,8 @@ def getContributions(file, conn):
 
           if house != "null" and pid != -1:
             try:
+                print('gonna insert', id, oid)
                 insert_Contributor(conn, id, pid, year, date, house, donorName, donorOrg, amount, oid)
-                index = index + 1
             except:
                 print(traceback.format_exc())
                 raise
@@ -242,37 +250,31 @@ def getContributions(file, conn):
             #print 'did not go in successfully'
             #print "house: {0} pid: {1}".format(house, pid)
         except IndexError:
-          pass
           #print traceback.format_exc()
-          #print name
+          pass
+          #print row[9]
           #print row
         except:
           #If it says 'list index out of range', it's probably an empty name (row 9) and is ignored
-          print 'error!', sys.exc_info()[0], sys.exc_info()[1]
+          #print 'error!', sys.exc_info()[0], sys.exc_info()[1]
           print traceback.format_exc()
-          exit(0)
+          #exit(0)
       print 'no pid and house', val
-      print 'legislator', index
 
 def main():
-  #getContributions('cand_2001.csv')
-  #getContributions('cand_2003.csv')
-  #getContributions('cand_2005.csv')
-  #getContributions('cand_2007.csv')
-  #getContributions('cand_2009.csv')
-  #getContributions('cand_2011.csv')
-  #getContributions('cand_2013.csv')
-  #getContributions('../../../Contribution_Data/cand_2015_windows.csv')
-  #db.close()
+  global zipURL
   dbinfo = mysql_connection(sys.argv)
   with MySQLdb.connect(host=dbinfo['host'],
                          port=dbinfo['port'],
                          db=dbinfo['db'],
                          user=dbinfo['user'],
                          passwd=dbinfo['passwd']) as dd_cursor:
+    year = datetime.now().year
+    sessionyear = year + 1 if year % 2 == 0 else year
+    zipURL = zipURL.format(sessionyear)
     dl_csv()
-    getContributions('cand_2015.csv', dd_cursor)
-    print 'orgs not found', len(notfound_org)
+    getContributions('cand_{0}.csv'.format(sessionyear), dd_cursor)
+    #print 'orgs not found', len(notfound_org)
     logger.info(__file__ + ' terminated successfully.',
         full_msg='Inserted ' + str(C_INSERT) + ' rows in Contribution',
         additional_fields={'_affected_rows':'Contribution'+str(C_INSERT),
@@ -281,6 +283,8 @@ def main():
                            '_log_type':'Database'})
     #raise TypeError
 
+  LOG = {'tables': [{'state': 'CA', 'name': 'Contribution', 'inserted':C_INSERT, 'updated': 0, 'deleted': 0}]}
+  sys.stderr.write(json.dumps(LOG))
 if __name__ == "__main__":
   with GrayLogger(API_URL) as _logger:
     logger = _logger

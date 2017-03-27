@@ -5,7 +5,7 @@ File: Get_Committees_Web.py
 Author: Daniel Mangin
 Modified By: Mandy Chan, Freddy Hernandez, Matt Versaggi, Miguel Aguilar, James Ly
 Date: 06/11/2015
-Last Modified: 01/03/2017
+Last Modified: 01/30/2017
 
 Description:
 - Scrapes the Assembly and Senate websites to gather committees and memberships
@@ -48,6 +48,7 @@ logger = None
 
 # global counters
 C_INSERT = 0
+CN_INSERT = 0
 S_INSERT = 0
 S_DELETE = 0
 
@@ -62,6 +63,8 @@ STATE = 'CA'
 # INSERTS
 QI_COMMITTEE = '''INSERT INTO Committee (cid, house, name, type, state, room, phone, fax, session_year)
                       VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)'''
+QI_COMMITTEE_NAMES = '''INSERT INTO CommitteeNames (name, house, state)
+                           VALUES (%s, %s, %s)'''
 QI_SERVESON = '''INSERT INTO servesOn (pid, year, house, cid, position, state, start_date) 
                      VALUES (%s, %s, %s, %s, %s, %s, %s)'''
 
@@ -84,6 +87,11 @@ QS_COMMITTEE = '''SELECT cid
                    AND type = %s
                    AND state = %s
                    AND session_year = %s'''
+QS_COMMITTEE_NAMES = '''SELECT cn_id
+                        FROM CommitteeNames
+                        WHERE name = %s
+                        AND house = %s
+                        AND state = %s'''
 QS_COMMITTEE_MAX_CID = '''SELECT cid
                           FROM Committee
                           ORDER BY cid DESC
@@ -224,6 +232,22 @@ def clean_url(url, house, host):
       
   return url
 
+
+'''
+insert into CommitteeNames table
+'''
+def insert_committee_name(cursor, name, house):
+    global CN_INSERT
+    try:
+        cursor.execute(QS_COMMITTEE_NAMES, (name, house, STATE))
+        if cursor.rowcount == 0:
+            cursor.execute(QI_COMMITTEE_NAMES, (name, house, STATE))
+            CN_INSERT += cursor.rowcount
+
+    except MySQLdb.Error:
+        logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+        additional_fields=create_payload('Committee',(QI_COMMITTEE_NAMES%(name, house, STATE))))
+
 '''
 Inserts committee 
 
@@ -236,6 +260,8 @@ Returns the new cid.
 def insert_committee(cursor, house, name, commType, room, phone, fax, year):
   global C_INSERT
   try:
+    
+    insert_committee_name(cursor, name, house)
     # Get the next available cid
     cursor.execute(QS_COMMITTEE_MAX_CID)
     cid = cursor.fetchone()[0] + 1
@@ -580,6 +606,30 @@ def get_committee_url(url):
   return commUrl
 
 '''
+cleans room string
+'''
+def clean_room(room):
+  if 'X' in room:
+      room = ""
+  elif ':' in room:
+      ndx = room.find(':')
+      room = room[ndx + 1:]
+  return room
+
+'''
+cleans phone string to be in (XXX) XXX-XXXX format
+'''
+def clean_phone(phone):
+  if 'X' in phone:
+      phone = ""
+  if "fax" in phone:
+     phone = ""
+  elif '.' in phone:
+    temp = phone.split('.')
+    phone = "(" + temp[0] + ") " + temp[1] + "-" + temp[2]
+  return phone
+
+'''
 Given a committee url scrape the page for room, phone, and fax number
 returns room, phone, and fax number as strings. They will be empty if none.
 
@@ -661,7 +711,7 @@ def get_committee_contact(commUrl, commType):
           start = phone.lower().find("phone")
           phone = phone[start+7:]
         if "fax" in line.lower():
-          start = line.lower().find("fax")
+          start = line.lower().find("fax:")
           fax = line[start + 4:]
         # cause where no room number but suite address
         if "Suite" in line:
@@ -670,9 +720,12 @@ def get_committee_contact(commUrl, commType):
 
   room = room.strip(".,")
   room = room.strip()
+  room = clean_room(room)
   phone = phone.strip(".,")
   phone = phone.strip()
+  phone = clean_phone(phone)
   fax = fax.strip()
+  fax = clean_phone(fax)
   return room, phone, fax
 
 
@@ -804,7 +857,7 @@ def update_serveson(cursor, current_pid):
         try:
           today = time.strftime("%Y-%m-%d")
           cursor.execute(QU_SERVESON_ENDDATE, (today, pid))
-          count = count + 1
+          count += cursor.rowcount
         except MySQLdb.Error:
           logger.warning('Update Failed', full_msg=traceback.format_exc(),
           additional_fields=create_payload('servesOn',(QU_SERVESON_ENDDATE%(today, pid))))
@@ -830,19 +883,26 @@ def main():
         full_msg='Inserted ' + str(C_INSERT) + ' rows in Committee and inserted ' 
                   + str(S_INSERT) + ' and deleted ' + str(S_DELETE) + ' rows in servesOn',
         additional_fields={'_affected_rows':'Committee:'+str(C_INSERT)+
-                                       ', servesOn:'+str(S_INSERT),
+                                       ', servesOn:'+str(S_INSERT)+
+                                       ', CommitteeNames:'+str(CN_INSERT),
                            '_inserted':'Committee:'+str(C_INSERT)+
-                                       ', servesOn:'+str(S_INSERT),
+                                       ', servesOn:'+str(S_INSERT)+
+                                       ', CommitteeNames:'+str(CN_INSERT),
                            '_deleted':'servesOn:'+str(S_DELETE),
                            '_state':'CA',
                            '_log_type':'Database'})
-    print 'Inserted %d entries to Committee'%comm_count
-    print 'Inserted %d entries to servesOn'%serve_count
+    print 'Inserted %d entries to Committee'%C_INSERT
+    print 'Inserted %d entries to servesOn'%S_INSERT
+    print 'Inserted %d entries to CommitteeNames'%CN_INSERT
 
     # updates end dates for servesOn
     enddate_count = update_serveson(dd, current_pid)
     print 'Updated end_date for %d entries in servesOn'%enddate_count
     
+  LOG = {'tables': [{'state': 'CA', 'name': 'Committee', 'inserted':C_INSERT, 'updated': 0, 'deleted': 0},
+    {'state': 'CA', 'name': 'servesOn:', 'inserted':S_INSERT, 'updated': 0, 'deleted': S_DELETE},
+    {'state': 'CA', 'name': 'CommitteeNames', 'inserted':CN_INSERT, 'updated': 0, 'deleted': 0}]}
+  sys.stderr.write(json.dumps(LOG))
 if __name__ == '__main__':
   with GrayLogger(API_URL) as _logger:                                          
     logger = _logger

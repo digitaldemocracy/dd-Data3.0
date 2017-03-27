@@ -24,6 +24,7 @@ Sources:
   - bill_motion_tbl
 '''
 
+import json
 from Database_Connection import mysql_connection
 import traceback
 import MySQLdb
@@ -86,6 +87,9 @@ def get_motions():
                              '_inserted':'Motion:'+str(INSERTED),
                              '_state':'CA',
                              '_log_type':'Database'})
+
+  LOG = {'tables': [{'state': 'CA', 'name': 'Motion', 'inserted':INSERTED, 'updated': 0, 'deleted': 0}]}
+  sys.stderr.write(json.dumps(LOG))
 
 if __name__ == "__main__":
   with GrayLogger(API_URL) as _logger:

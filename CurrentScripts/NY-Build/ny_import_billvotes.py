@@ -13,6 +13,7 @@ Description:
 - Currently configured to test DB
 '''
 
+import json
 from Database_Connection import mysql_connection
 import requests
 import MySQLdb
@@ -23,8 +24,13 @@ from bs4 import BeautifulSoup
 from graylogger.graylogger import GrayLogger
 GRAY_URL = 'http://dw.digitaldemocracy.org:12202/gelf'
 logger = None
-VD_INSERTED = 0
+
+# global counters
+VD_INSERTED = 0 
+VD_UPDATED = 0
 VS_INSERTED = 0
+VS_UPDATED = 0
+
 
 insert_billvotedetail = '''INSERT INTO BillVoteDetail
                             (pid,voteId,result,state)
@@ -35,6 +41,21 @@ insert_billvotesummary = '''INSERT INTO BillVoteSummary
                              (bid,cid,VoteDate,VoteDateSeq,ayes,naes,abstain, result)
                             VALUES
                              (%(bid)s,%(cid)s,%(VoteDate)s,%(VoteDateSeq)s,%(ayes)s,%(naes)s,%(abstain)s, %(result)s);'''
+
+update_billvotedetail = '''UPDATE BillVoteDetail
+                           SET result = %(result)s
+                           WHERE pid = %(pid)s
+                           AND voteId = %(voteId)s'''
+
+update_billvotesummary = '''UPDATE BillVoteSummary
+                            SET cid = %(cid)s,
+                                VoteDate = %(VoteDate)s,
+                                VoteDateSeq = %(VoteDateSeq)s,
+                                ayes = %(ayes)s,
+                                naes = %(naes)s,
+                                abstain = %(abstain)s,
+                                result = %(result)s
+                            WHERE voteId = %(voteId)s'''
                                                 
 select_person = '''SELECT * 
                    FROM Person p, Legislator l, Term t
@@ -48,13 +69,15 @@ select_committee = '''SELECT cid
                       FROM Committee
                       WHERE house = %(house)s 
                        AND name = %(name)s 
-                       AND state = %(state)s'''
+                       AND state = %(state)s
+                       AND session_year = %(session_year)s'''
 
 select_committee_2 = '''SELECT name 
                       FROM Committee
                       WHERE house = %s  
                        AND state = %s
-                       AND name like %s'''        
+                       AND name like %s
+                       AND session_year = %s'''        
 
 select_billvotesummary = '''SELECT voteId 
                             FROM BillVoteSummary
@@ -70,7 +93,7 @@ select_billvotedetail = '''SELECT voteId
                            WHERE voteId = %(voteId)s 
                             AND pid = %(pid)s'''                        
                                                                 
-API_YEAR = 2017
+API_YEAR = datetime.now().year
 API_URL = "http://legislation.nysenate.gov/api/3/{0}/{1}{2}?full=true&"
 API_URL += "limit=1000&key=31kNDZZMhlEjCOV8zkBG1crgWAGxwDIS&offset={3}"
 ASSEMBLY_URL = 'http://assembly.state.ny.us/leg/?default_fld=&leg_video=&bn={0}&term={1}&Committee%26nbspVotes=Y&Floor%26nbspVotes=Y'
@@ -88,6 +111,7 @@ def create_payload(table, sqlstmt):
 
 
 def call_senate_api(restCall, house, offset):
+    global API_YEAR
     if house != "":
         house = "/" + house
     url = API_URL.format(restCall, API_YEAR, house, offset)
@@ -160,16 +184,21 @@ def clean_name(name):
     return (first, last)
     
 def get_comm_cid(dddb, comm):
+    global API_YEAR
     try:
-      dddb.execute(select_committee, {'house':comm['house'], 'name':comm['name'], 'state':comm['state']})
+        temp = {'house':comm['house'], 'name':comm['name'], 'state':comm['state'], 'session_year':API_YEAR}
+        dddb.execute(select_committee, temp)
     except MySQLdb.Error:
         logger.warning('Select Failed', full_msg=traceback.format_exc(),
-        additional_fields=create_payload('Committee',(select_committee%comm)))
+        additional_fields=create_payload('Committee',(select_committee%temp)))
 
     query = dddb.fetchone()
            
-    if query is None:              
-        raise Exception('No CID found')   
+    if query is None: 
+        logger.warning('cid not found for ' + str(comm['name']), full_msg='cid not found for ' + str(comm['name']),
+               additional_fields=create_payload('Committee', (select_committee%temp))) 
+        #raise Exception('No CID found')
+        return None
     
     return query[0]
     
@@ -245,15 +274,20 @@ def get_vote_sums_senate(dddb, bill, vote_items):
             bv['abstain'] = billvote['memberVotes']['items']['EXC']['size']
         except:
             bv['abstain'] = 0
-      
+
         bv['cid'] = get_comm_cid(dddb, bv)
           
         if int(bv['naes']) < int(bv['ayes']):
             bv['result'] = '(PASS)'
         else:
             bv['result'] = '(FAIL)'
-        
-        ret_votes.append(bv)
+
+        #if bv['ayes'] == 0 and bv['naes'] == 0 and bv['abstain'] == 0:
+        #    print "senate", bv['bid']
+       
+        if bv['cid'] != None: 
+            if bv['ayes'] > 0 or bv['naes'] > 0 or bv['abstain'] > 0:
+                ret_votes.append(bv)
         
     return ret_votes
     
@@ -277,19 +311,24 @@ def get_vote_details_sen(dddb, vote_items, bv):
            
 
 def get_db_name(dddb, name):
+    global API_YEAR
     comm = {'name':name, 'state':'NY', 'house':'Assembly'}
-    dddb.execute(select_committee_2, ('Assembly', 'NY', '%'+'%'.join(name.split())+'%'))
+    dddb.execute(select_committee_2, ('Assembly', 'NY', '%'+'%'.join(name.split())+'%', API_YEAR))
     query = dddb.fetchone()
 
-    if query is None:              
-        raise Exception('No Name found')
+    if query is None:
+        logger.warning('Committee not found ' + name, full_msg='Committee not found for ' + name,
+               additional_fields=create_payload('Committee', 
+                   select_committee_2 % ('Assembly', 'NY', '%'+'%'.join(name.split())+'%', API_YEAR)))
+        #raise Exception('No Name found')
+        return None
 
     return query[0]
 
 def get_vote_sums_assem(dddb, bid, bill):
+    global API_YEAR
     ret_arr = list()
-    api_year = 2017
-    url = ASSEMBLY_URL.format(bill, api_year)
+    url = ASSEMBLY_URL.format(bill, API_YEAR)
     page = requests.get(url)
 
     soup = BeautifulSoup(page.content, 'html.parser')
@@ -335,13 +374,21 @@ def get_vote_sums_assem(dddb, bid, bill):
         bv['naes'] = vote_details[2]
         bv['abstain'] = vote_details[3]
         bv['cid'] = get_comm_cid(dddb, bv)
-        
+
         if int(bv['naes']) < int(bv['ayes']):            
             bv['result'] = '(PASS)'
         else:
             bv['result'] = '(FAIL)'
-        
-        ret_arr.append(bv)
+
+        '''
+        if bv['ayes'] == 0 and bv['naes'] == 0 and bv['abstain'] == 0:
+            print "assem", bv['bid']
+            print table
+        '''
+
+        if bv['cid'] != None:
+            if bv['ayes'] > 0 or bv['naes'] > 0 or bv['abstain'] > 0:
+                ret_arr.append(bv)
         
     return ret_arr
                         
@@ -421,6 +468,16 @@ def is_bvd_in_db(dddb, bvd):
         additional_fields=create_payload('BillVoteDetail',(select_billvotedetail%bvd)))
         return False
 
+def update_bvd(dddb, bvd):
+    global VD_UPDATED
+    try:
+        temp = {'result':bvd['result'], 'pid':bvd['pid'], 'voteId':bvd['voteId']}
+        dddb.execute(update_billvotedetail, temp)
+        VD_UPDATED += dddb.rowcount
+    except MySQLdb.Error:
+        logger.warning('Update Failed', full_msg=traceback.format_exc(),
+        additional_fields=create_payload('BillVoteDetail',(update_billvotedetail%temp)))
+
 def insert_bvd_db(dddb, votes, voteId, none_count):
     global VD_INSERTED
     for bvd in votes:
@@ -433,11 +490,27 @@ def insert_bvd_db(dddb, votes, voteId, none_count):
                     VD_INSERTED += dddb.rowcount
                 except MySQLdb.Error:
                     logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-                    additional_fields=create_payload('BillVoteDetail',(insert_billvotedetail%bvd)))
+                    additional_fields=create_payload('BillVoteDetail',(insert_billvotedetail%temp)))
+
+            '''
+            if is_bvd_in_db(dddb, bvd) and bvd['pid'] is not None:
+                #update_bvd(dddb, bvd)
+                print "bvd:", "pid", bvd['pid'], "voteID", bvd['voteId']
+            '''
 
             if bvd['pid'] is None:
                 none_count = none_count + 1
     return none_count
+
+def update_billvotesums(dddb, bv, voteId):
+    global VS_UPDATED
+    try:
+        temp = {'cid':bv['cid'], 'VoteDate':bv['VoteDate'], 'VoteDateSeq':bv['VoteDateSeq'], 'ayes':bv['ayes'], 'naes':bv['naes'], 'abstain':bv['abstain'], 'result':bv['result'], 'voteId':voteId} 
+        dddb.execute(update_billvotesummary, temp)
+        VS_UPDATED += dddb.rowcount
+    except MySQLdb.Error:
+        logger.warning('Update Failed', full_msg=traceback.format_exc(),
+        additional_fields=create_payload('BillVoteSummary',(update_billvotesummary%temp)))
 
 def insert_billvotesums_db(dddb, bills):
     global VS_INSERTED
@@ -460,6 +533,10 @@ def insert_billvotesums_db(dddb, bills):
 
                 voteId = dddb.lastrowid
                 none_count = insert_bvd_db(dddb, bv['votes'], voteId, none_count)
+            '''
+            if voteId:
+                update_billvotesums(dddb, bv, voteId)
+            '''
 
     #print('Number of invalid inserts: ', none_count)
     print "Number of billvote summary and details inserted: %d" % sum_count
@@ -467,6 +544,7 @@ def insert_billvotesums_db(dddb, bills):
 
 speaker = get_speaker_name()
 def main():
+    global API_YEAR
     API_YEAR = datetime.now().year
     ddinfo = mysql_connection(sys.argv)
     with MySQLdb.connect(host=ddinfo['host'],
@@ -479,11 +557,17 @@ def main():
         logger.info(__file__ + ' terminated successfully.', 
             full_msg='Inserted ' + str(VS_INSERTED) + ' rows in BillVoteSummary and inserted ' 
                       + str(VD_INSERTED) + ' rows in BillVoteDetail',
-            additional_fields={'_affected_rows':'BillVoteSummary:'+str(VS_INSERTED)+
-                                           ', BillVoteDetail:'+str(VD_INSERTED),
+            additional_fields={'_affected_rows':'BillVoteSummary:'+str(VS_INSERTED + VS_UPDATED)+
+                                           ', BillVoteDetail:'+str(VD_INSERTED + VD_UPDATED),
                                '_inserted':'BillVoteSummary:'+str(VS_INSERTED)+
                                            ', BillVoteDetail:'+str(VD_INSERTED),
+                               '_updated':'BillVoteSummary:'+str(VS_UPDATED)+
+                                           ', BillVoteDetail:'+str(VD_UPDATED),
                                '_state':'NY'})
+  
+    LOG = {'tables': [{'state': 'NY', 'name': 'BillVoteSummary', 'inserted':VS_INSERTED, 'updated': VS_UPDATED, 'deleted': 0},
+      {'state': 'NY', 'name': 'BillVoteDetail', 'inserted':VD_INSERTED, 'updated': VD_UPDATED, 'deleted': 0}]}
+    sys.stderr.write(json.dumps(LOG))
 
 if __name__ == '__main__':
     with GrayLogger(GRAY_URL) as _logger:

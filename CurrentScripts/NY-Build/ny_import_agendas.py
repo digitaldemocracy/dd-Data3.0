@@ -17,6 +17,7 @@ Tables affected:
 
 '''
 
+import json
 from Database_Connection import mysql_connection
 import requests
 import MySQLdb
@@ -39,23 +40,27 @@ I_CH = 0     #inserted CommitteeHearings
 U_HA = 0     #updated HearingAgenda
 
 #SELECT QUERIES
-S_HEARING = '''SELECT hid
-                FROM Hearing
-                WHERE date = %s
-                AND state = %s
-                AND session_year = %s'''
+S_HEARING = '''SELECT h.hid
+                FROM Hearing h
+                JOIN CommitteeHearings ch
+                ON h.hid = ch.hid
+                WHERE ch.cid = %s
+                AND h.date = %s'''
 S_HEARING_2 = '''SELECT hid
                  FROM Hearing
                  WHERE date < %s
+                 AND state = %s'''
+S_HEARING_3 = '''SELECT MAX(hid)
+                 FROM Hearing
+                 WHERE date = %s
                  AND state = %s'''
 S_SESSION = '''SELECT MAX(start_year)
                FROM Session
                WHERE start_year <= %s'''
 S_COMMITTEE = '''SELECT cid
                  FROM Committee
-                 WHERE short_name IS NOT NULL 
-                 AND house = %s
-                 AND name = %s
+                 WHERE house = %s
+                 AND short_name = %s
                  AND state = %s
                  AND session_year = %s'''
 S_COMMITTEE_HEARINGS = '''SELECT cid, hid
@@ -66,11 +71,19 @@ S_BILL = '''SELECT bid
             FROM Bill
             WHERE type = %s
             AND number = %s
-            AND house = %s'''
+            AND house = %s
+            AND state = %s
+            AND sessionYear = %s'''
 S_HEARING_AGENDA = '''SELECT hid, bid, date_created
                       FROM HearingAgenda
                       WHERE hid = %s
-                      AND bid = %s'''
+                      AND bid = %s
+                      AND date_created = %s'''
+S_HEARING_AGENDA_2 = '''SELECT hid, bid, date_created
+                        FROM HearingAgenda
+                        WHERE date_created < %s
+                        AND bid LIKE %s
+                        AND current_flag = 1'''
 
 #INSERT QUERIES
 I_HEARING = '''INSERT INTO Hearing (date, state, session_year)
@@ -84,7 +97,9 @@ I_HEARING_AGENDA = '''INSERT INTO HearingAgenda (hid, bid, date_created, current
 #UPDATE QUERIES
 U_HEARING_AGENDA = '''UPDATE HearingAgenda
                       SET current_flag = 0
-                      WHERE hid = %s'''
+                      WHERE hid = %s
+                      AND bid = %s
+                      AND date_created = %s'''
 
 def create_payload(table, sqlstmt):
     return {
@@ -150,8 +165,8 @@ finds hearing id if it is in db, returns None if not in db
 |date|: date
 |year|: session year
 '''
-def get_hid(cursor, date, year):
-    cursor.execute(S_HEARING, (date, STATE, year))
+def get_hid(cursor, cid, date):
+    cursor.execute(S_HEARING, (cid, date))
     if cursor.rowcount > 0:
         result = cursor.fetchone()[0]
     else:
@@ -164,16 +179,23 @@ inserts hearing in db if it is not found
 |date|: date in yyyy-mm-dd format
 |year|: session year
 '''
-def insert_hearing(cursor, date, year):
+def insert_hearing(cursor, date, year, cid):
     global I_H
     #checks to see that hearing is not in db
-    if get_hid(cursor, date, year) == None:
+    result = get_hid(cursor, cid, date)
+    if result == None:
         try:
             cursor.execute(I_HEARING, (date, STATE, year))
             I_H += cursor.rowcount
+            newHid = cursor.lastrowid
+
         except MySQLdb.Error:
             logger.warning('Insert Failed', full_msg=traceback.format_exc(),
                 additional_fields=create_payload('Hearing',(I_HEARING % (date, STATE, year))))
+    else:
+        newHid = result
+
+    return newHid
 
 '''
 finds committee id if it is in db, returns None if it is not in db
@@ -234,7 +256,9 @@ returns a bid if found in db, else returns None
 |house|: house the bill belongs to
 '''
 def get_bid(cursor, b_type, b_number, house):
-    cursor.execute(S_BILL, (b_type, b_number, house))
+    state = "NY"
+    year = time.strftime("%Y")
+    cursor.execute(S_BILL, (b_type, b_number, house, state, year))
     if cursor.rowcount > 0:
         result = cursor.fetchone()[0]
     else:
@@ -271,8 +295,8 @@ else returns None
 |hid|: hearing id
 |bid|: bill id
 '''
-def get_hearing_agenda(cursor, hid, bid):
-    cursor.execute(S_HEARING_AGENDA, (hid, bid))
+def get_hearing_agenda(cursor, hid, bid, date):
+    cursor.execute(S_HEARING_AGENDA, (hid, bid, date))
     r_hid = None
     r_bid = None
     r_date = None
@@ -295,7 +319,7 @@ inserts hearing agenda if it is not in db
 def insert_hearing_agenda(cursor, hid, bid):
     global I_HA
     date = time.strftime("%Y-%m-%d")
-    r_hid, r_bid, r_date = get_hearing_agenda(cursor, hid, bid)
+    r_hid, r_bid, r_date = get_hearing_agenda(cursor, hid, bid, date)
     if r_hid == None:
         try:
             cursor.execute(I_HEARING_AGENDA, (hid, bid, date))
@@ -305,16 +329,17 @@ def insert_hearing_agenda(cursor, hid, bid):
                 additional_fields=create_payload('HearingAgenda',(I_HEARING_AGENDA % (hid, bid, date))))
 
 '''
-returns a list of current hid from Hearing with dates prior to today
+returns a list of current hid,bid,date_created from HearingAgenda with date_created prior to today
 |cursor|: dddb connection
 '''
 def get_curr_hearing_agenda(cursor):
     date = time.strftime("%Y-%m-%d")
-    cursor.execute(S_HEARING_2, (date, STATE))
+    bid = "NY%"
+    cursor.execute(S_HEARING_AGENDA_2, (date, bid))
     result = []
     if cursor.rowcount > 0:
         for ha in cursor.fetchall():           
-            result.append(ha[0])
+            result.append(ha)
     return result
 
 '''
@@ -322,13 +347,16 @@ executes update query to set current_flag in HearingAgenda to 0
 |cursor|: dddb connection
 |hid|: hearing id
 '''
-def set_inactive(cursor, hid):
+def set_inactive(cursor, ha):
     global U_HA
-    cursor.execute(U_HEARING_AGENDA, (hid,))
+    hid = ha[0]
+    bid = ha[1]
+    dateCreated = ha[2]
+    cursor.execute(U_HEARING_AGENDA, (hid, bid, dateCreated))
     U_HA += cursor.rowcount
 
 '''
-finds all current hearing agendas and sets the ones prior to today to inactive
+finds all current hearing agendas and sets the ones with date_created prior to today to inactive
 |cursor|: dddb connection
 '''
 def update_hearing_agenda(cursor):
@@ -368,28 +396,51 @@ returns a list of dictionaries {url: url to senate committee agenda,
                                 name: name of committee}
 '''
 def get_senate_comm_hearings():
-    page = requests.get("https://www.nysenate.gov/search/legislation?sort=desc&searched=true&type=f_agenda&agenda_year=2017&page=1")
+    year = time.strftime("%Y")
+    mainUrl = "https://www.nysenate.gov/search/legislation?sort=desc&searched=true&type=f_agenda&agenda_year=" + year + "&page=1"
+    page = requests.get(mainUrl)
     soup = BeautifulSoup(page.content, 'html.parser')
+
+    #find number of pages
+    agendaPages = soup.find_all(class_="pagination pager")
+    for ap in agendaPages:
+        p = ap.find_all("li")
     
+    numPages = len(p)
+
+    mainUrl = "https://www.nysenate.gov/search/legislation?sort=desc&searched=true&type=f_agenda&agenda_year=" + year + "&page="
     results = []
-    for s in soup.find_all("div", class_="c-block c-list-item c-block-legislation"):
-        h3 = s.find("h3")
-        a = h3.find("a", href=True)
-        url = "https://www.nysenate.gov/" + a['href']
-        name = s.get_text().strip()
-        if "Committee" in name:
-            name = name.split("Committee")
-            name = name[0].strip()
-        date = s.find("h4").get_text().strip()
-        if "Meeting" in date:
-            date = date.split("Meeting")
-            date = date[1].strip()
-            date = convert_senate_date(date)
-        d = dict()
-        d['url'] = url
-        d['date'] = date
-        d['name'] = name
-        results.append(d)
+
+    # for each page
+    for i in range(1, numPages):
+        newUrl = mainUrl + str(i)
+        page = requests.get(newUrl)
+        soup = BeautifulSoup(page.content, 'html.parser')
+
+        #look for meetings and grab the committee names and dates
+        for s in soup.find_all("div", class_="c-block c-list-item c-block-legislation"):
+            h3 = s.find("h3")
+            a = h3.find("a", href=True)
+            url = "https://www.nysenate.gov/" + a['href']
+            name = s.get_text().strip()
+            if "Committee" in name:
+                name = name.split("Committee")
+                name = name[0].strip()
+            if "Meeting" in name:
+                name = name.split("Meeting")
+                name = name[0].strip()
+            date = s.find("h4").get_text().strip()
+            if "Meeting" in date:
+                date = date.split("Meeting")
+                date = date[1].strip()
+                date = convert_senate_date(date)
+            d = dict()
+            d['url'] = url
+            d['date'] = date
+            d['name'] = name
+            results.append(d)
+
+    
     return results
 
 
@@ -399,11 +450,12 @@ scrapes senate committee hearing agenda and gets the bills discussed
 |url|: url with agenda info
 '''
 def scrape_senate_agenda(cursor, url):
+    results = []
+
     page = requests.get(url)
     soup = BeautifulSoup(page.content, 'html.parser')
     house = "Senate"
 
-    results = []
     for s in soup.find_all("h4", class_="c-listing--bill-num"):
         text = s.get_text().strip()
         text = re.split('(\d.*)', text)
@@ -413,7 +465,43 @@ def scrape_senate_agenda(cursor, url):
         if bid != None:
             results.append(bid)
 
+    nextUrl = get_load_more_sen_url(url)
+    #loop to grab the urls under the load more button
+    while nextUrl != None:
+
+        page = requests.get(nextUrl)
+        soup = BeautifulSoup(page.content, 'html.parser')
+        for s in soup.find_all("h4", class_="c-listing--bill-num"):
+            text = s.get_text().strip()
+            text = re.split('(\d.*)', text)
+            bill_type = text[0]
+            bill_num = text[1]
+            bid = get_bid(cursor, bill_type, bill_num, house)
+            if bid != None:
+                results.append(bid)
+
+        nextUrl = get_load_more_sen_url(nextUrl)
+
     return results
+
+'''
+gets the url to next set of bills in meeting agenda
+under the load more button
+if there is no next url it will return None
+if there is a next url it will return the next url
+'''
+def get_load_more_sen_url(url):
+    page = requests.get(url)
+    soup = BeautifulSoup(page.content, 'html.parser')
+    result = None
+    for s in soup.find_all("div", class_="panel-pane pane-views pane-meeting-agenda-block"):
+        for d in s.find_all("div", class_="item-list"): 
+            if len(d.find_all("ul", class_="pager pager-load-more")) != 0:
+                for ul in d.find_all("ul", class_="pager pager-load-more"):
+                    for li in ul.find_all("li"):
+                        for a in li.find_all("a"):
+                           result = "https://www.nysenate.gov" + a['href']
+    return result
 
 def main():
     ddinfo = mysql_connection(sys.argv)
@@ -433,28 +521,30 @@ def main():
         #scrape assembly committee agendas
         assembly_comm_hearings = get_assembly_comm_hearings()
         for hearing in assembly_comm_hearings:
-            insert_hearing(dddb, hearing['date'], year)
-            hid = get_hid(dddb, hearing['date'], year)
             cid = get_cid(dddb, 'Assembly', hearing['name'], year)
-            if hid != None and cid != None:
-                insert_comm_hearing(dddb, cid, hid)
-            bills = scrape_hearing_agenda(dddb, hearing['url'], 'Assembly')
-            if hid != None and len(bills) > 0:
-                for bid in bills:
-                    insert_hearing_agenda(dddb, hid, bid)
+            if cid != None:
+                hid = insert_hearing(dddb, hearing['date'], year, cid)
+            
+                if hid != None and cid != None:
+                    insert_comm_hearing(dddb, cid, hid)
+                bills = scrape_hearing_agenda(dddb, hearing['url'], 'Assembly')
+                if hid != None and len(bills) > 0:
+                    for bid in bills:
+                        insert_hearing_agenda(dddb, hid, bid)
 
         #scrape senate committee agendas
         senate_comm_hearings = get_senate_comm_hearings()
         for hearing in senate_comm_hearings:
-            insert_hearing(dddb, hearing['date'], year)
-            hid = get_hid(dddb, hearing['date'], year)
             cid = get_cid(dddb, 'Senate', hearing['name'], year)
-            if hid != None and cid != None:
-                insert_comm_hearing(dddb, cid, hid)
-            bills = scrape_senate_agenda(dddb, hearing['url'])
-            if hid != None and len(bills) > 0:
-                for bid in bills:
-                    insert_hearing_agenda(dddb, hid, bid)
+            if cid != None:
+                hid = insert_hearing(dddb, hearing['date'], year, cid)
+
+                if hid != None and cid != None:
+                    insert_comm_hearing(dddb, cid, hid)
+                bills = scrape_senate_agenda(dddb, hearing['url'])
+                if hid != None and len(bills) > 0:
+                    for bid in bills:
+                        insert_hearing_agenda(dddb, hid, bid)
 
         
         logger.info(__file__ + ' terminated successfully.', 
@@ -475,6 +565,10 @@ def main():
         print "Inserted " + str(I_CH) + " rows into CommitteeHearings"
         print "Inserted " + str(I_HA) + " rows into HearingAgenda"
     
+    LOG = {'tables': [{'state': 'NY', 'name': 'Hearing', 'inserted':I_H, 'updated': 0, 'deleted': 0},
+      {'state': 'NY', 'name': 'CommitteeHearings', 'inserted':I_CH, 'updated': 0, 'deleted': 0},
+      {'state': 'NY', 'name': 'HearingAgenda', 'inserted':I_HA, 'updated': U_HA, 'deleted': 0}]}
+    sys.stderr.write(json.dumps(LOG))
 
 if __name__ == '__main__':
     with GrayLogger(GRAY_URL) as _logger:
