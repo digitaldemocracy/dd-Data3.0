@@ -25,20 +25,21 @@
     <option name="SORT_POSITIONED" value="false" />
     <option name="SHOW_TABLE_DETAILS" value="true" />
     <option name="SHOW_EMPTY_GROUPS" value="false" />
+    <option name="AUTO_SCROLL_FROM_SOURCE" value="false" />
   </component>
   <component name="ExecutionTargetManager" SELECTED_TARGET="default_target" />
   <component name="FavoritesManager">
     <favorites_list name="AlignmentMeterStuff" />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.6218796">
+    <splitter split-orientation="horizontal" split-proportion="0.46750525">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
           <file leaf-file-name="DB-create.sql" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/../DB-create.sql">
               <provider selected="true" editor-type-id="text-editor">
                 <state relative-caret-position="5236">
-                  <caret line="308" column="36" selection-start-line="308" selection-start-column="27" selection-end-line="308" selection-end-column="36" />
+                  <caret line="308" column="36" lean-forward="false" selection-start-line="308" selection-start-column="27" selection-end-line="308" selection-end-column="36" />
                   <folding />
                 </state>
               </provider>
@@ -47,24 +48,26 @@
           <file leaf-file-name="AlignmentMeter.py" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/AlignmentMeter.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="374">
-                  <caret line="546" column="53" selection-start-line="546" selection-start-column="53" selection-end-line="546" selection-end-column="53" />
+                <state relative-caret-position="487">
+                  <caret line="544" column="0" lean-forward="false" selection-start-line="544" selection-start-column="0" selection-end-line="544" selection-end-column="0" />
                   <folding>
                     <element signature="e#0#19#0" expanded="true" />
-                    <marker date="1480647716969" expanded="true" signature="473:723" ph="SELECT oa.oi... OrgAlignments" />
-                    <marker date="1480647716969" expanded="true" signature="2500:3223" ph="CREATE OR RE... DoPassVotes" />
-                    <marker date="1480647716969" expanded="true" signature="2570:3223" ph="SELECT bid, BillVoteSummary" />
-                    <marker date="1480647716969" expanded="true" signature="3267:4014" ph="CREATE OR RE... FloorVotes" />
-                    <marker date="1480647716969" expanded="true" signature="3336:4014" ph="SELECT b.bid... BillVoteSummary" />
-                    <marker date="1480647716969" expanded="true" signature="4058:4249" ph="CREATE OR RE... PassingVotes" />
-                    <marker date="1480647716969" expanded="true" signature="4129:4170" ph="SELECT * FRO... DoPassVotes" />
-                    <marker date="1480647716969" expanded="true" signature="4209:4249" ph="SELECT * FRO... FloorVotes" />
-                    <marker date="1480647716969" expanded="true" signature="4295:5121" ph="SELECT DISTI... PassingVotes" />
-                    <marker date="1480647716969" expanded="true" signature="5494:5515" ph="DROP VIEW Do... " />
-                    <marker date="1480647716969" expanded="true" signature="5538:5558" ph="DROP VIEW Fl... " />
-                    <marker date="1480647716969" expanded="true" signature="5581:5603" ph="DROP VIEW Pa... " />
-                    <marker date="1480647716969" expanded="true" signature="16621:16771" ph="SELECT oc.oi... OrgConcept" />
-                    <marker date="1480647716969" expanded="true" signature="18076:18182" ph="UPDATE Align... " />
+                    <marker date="1489694863237" expanded="true" signature="474:724" ph="SELECT oa.oi... OrgAlignments" />
+                    <marker date="1489694863237" expanded="true" signature="1653:2376" ph="CREATE OR RE... DoPassVotes" />
+                    <marker date="1489694863237" expanded="true" signature="1723:2376" ph="SELECT bid, BillVoteSummary" />
+                    <marker date="1489694863237" expanded="true" signature="2420:3167" ph="CREATE OR RE... FloorVotes" />
+                    <marker date="1489694863237" expanded="true" signature="2420:3215" ph="CREATE OR RE... FloorVotes" />
+                    <marker date="1489694863237" expanded="true" signature="2489:3167" ph="SELECT b.bid... BillVoteSummary" />
+                    <marker date="1489694863237" expanded="true" signature="3259:3898" ph="CREATE OR RE... PassingVotes" />
+                    <marker date="1489694863237" expanded="true" signature="3330:3590" ph="SELECT *, na... DoPassVotes" />
+                    <marker date="1489694863237" expanded="true" signature="3633:3898" ph="SELECT *, na... FloorVotes" />
+                    <marker date="1489694863237" expanded="true" signature="3866:3898" ph="SELECT * FRO... FloorVotes" />
+                    <marker date="1489694863237" expanded="true" signature="3944:4801" ph="SELECT DISTI... PassingVotes" />
+                    <marker date="1489694863237" expanded="true" signature="5238:5259" ph="DROP VIEW Do... " />
+                    <marker date="1489694863237" expanded="true" signature="5282:5302" ph="DROP VIEW Fl... " />
+                    <marker date="1489694863237" expanded="true" signature="5325:5347" ph="DROP VIEW Pa... " />
+                    <marker date="1489694863237" expanded="true" signature="17390:17540" ph="SELECT oc.oi... OrgConcept" />
+                    <marker date="1489694863237" expanded="true" signature="18845:18951" ph="UPDATE Align... " />
                   </folding>
                 </state>
               </provider>
@@ -73,40 +76,64 @@
         </leaf>
       </split-first>
       <split-second>
-        <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file leaf-file-name="AlignmentMeter.py" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/AlignmentMeter.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="9214">
-                  <caret line="542" column="30" selection-start-line="542" selection-start-column="30" selection-end-line="542" selection-end-column="30" />
-                  <folding>
-                    <element signature="e#0#19#0" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="ProjectNotes.txt" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/ProjectNotes.txt">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="544">
-                  <caret line="32" column="52" selection-start-line="32" selection-start-column="52" selection-end-line="32" selection-end-column="52" />
-                  <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="CalcAlignmentScoreMiguel.sql" pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/../CalcAlignmentScoreMiguel.sql">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="408">
-                  <caret line="64" column="34" selection-start-line="64" selection-start-column="34" selection-end-line="64" selection-end-column="34" />
-                  <folding />
-                </state>
-              </provider>
-            </entry>
-          </file>
-        </leaf>
+        <splitter split-orientation="vertical" split-proportion="0.5">
+          <split-first>
+            <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+              <file leaf-file-name="AlignmentMeter.py" pinned="false" current-in-tab="true">
+                <entry file="file://$PROJECT_DIR$/AlignmentMeter.py">
+                  <provider selected="true" editor-type-id="text-editor">
+                    <state relative-caret-position="153">
+                      <caret line="111" column="27" lean-forward="false" selection-start-line="111" selection-start-column="27" selection-end-line="111" selection-end-column="27" />
+                      <folding>
+                        <element signature="e#0#19#0" expanded="true" />
+                        <marker date="1489694863237" expanded="true" signature="474:724" ph="SELECT oa.oi... OrgAlignments" />
+                        <marker date="1489694863237" expanded="true" signature="1653:2376" ph="CREATE OR RE... DoPassVotes" />
+                        <marker date="1489694863237" expanded="true" signature="1723:2376" ph="SELECT bid, BillVoteSummary" />
+                        <marker date="1489694863237" expanded="true" signature="2420:3167" ph="CREATE OR RE... FloorVotes" />
+                        <marker date="1489694863237" expanded="true" signature="2420:3215" ph="CREATE OR RE... FloorVotes" />
+                        <marker date="1489694863237" expanded="true" signature="2489:3167" ph="SELECT b.bid... BillVoteSummary" />
+                        <marker date="1489694863237" expanded="true" signature="3259:3898" ph="CREATE OR RE... PassingVotes" />
+                        <marker date="1489694863237" expanded="true" signature="3330:3590" ph="SELECT *, na... DoPassVotes" />
+                        <marker date="1489694863237" expanded="true" signature="3633:3898" ph="SELECT *, na... FloorVotes" />
+                        <marker date="1489694863237" expanded="true" signature="3866:3898" ph="SELECT * FRO... FloorVotes" />
+                        <marker date="1489694863237" expanded="true" signature="3944:4801" ph="SELECT DISTI... PassingVotes" />
+                        <marker date="1489694863237" expanded="true" signature="5238:5259" ph="DROP VIEW Do... " />
+                        <marker date="1489694863237" expanded="true" signature="5282:5302" ph="DROP VIEW Fl... " />
+                        <marker date="1489694863237" expanded="true" signature="5325:5347" ph="DROP VIEW Pa... " />
+                        <marker date="1489694863237" expanded="true" signature="17390:17540" ph="SELECT oc.oi... OrgConcept" />
+                        <marker date="1489694863237" expanded="true" signature="18845:18951" ph="UPDATE Align... " />
+                      </folding>
+                    </state>
+                  </provider>
+                </entry>
+              </file>
+            </leaf>
+          </split-first>
+          <split-second>
+            <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+              <file leaf-file-name="ProjectNotes.txt" pinned="false" current-in-tab="false">
+                <entry file="file://$PROJECT_DIR$/ProjectNotes.txt">
+                  <provider selected="true" editor-type-id="text-editor">
+                    <state relative-caret-position="187">
+                      <caret line="11" column="0" lean-forward="false" selection-start-line="11" selection-start-column="0" selection-end-line="11" selection-end-column="0" />
+                      <folding />
+                    </state>
+                  </provider>
+                </entry>
+              </file>
+              <file leaf-file-name="console.sql" pinned="false" current-in-tab="true">
+                <entry file="file://$APPLICATION_CONFIG_DIR$/consoles/db/d2027695-872c-4ffa-aa78-abc81fdcdff3/console.sql">
+                  <provider selected="true" editor-type-id="text-editor">
+                    <state relative-caret-position="155">
+                      <caret line="75" column="17" lean-forward="false" selection-start-line="75" selection-start-column="17" selection-end-line="75" selection-end-column="17" />
+                      <folding />
+                    </state>
+                  </provider>
+                </entry>
+              </file>
+            </leaf>
+          </split-second>
+        </splitter>
       </split-second>
     </splitter>
   </component>
@@ -118,6 +145,14 @@
       </list>
     </option>
   </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>fetch_org_alignments</find>
+      <find>get_position_info</find>
+      <find>fetch_leg_votes</find>
+      <find>CONN_INFO</find>
+    </findStrings>
+  </component>
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
@@ -126,12 +161,13 @@
         <option value="$PROJECT_DIR$/sql2csv.py" />
         <option value="$APPLICATION_CONFIG_DIR$/consoles/db/92e90ec9-e326-4553-b257-947493a2ac06/console.sql" />
         <option value="$PROJECT_DIR$/AlignmentMeterLVA.py" />
-        <option value="$PROJECT_DIR$/ProjectNotes.txt" />
         <option value="$PROJECT_DIR$/../DB-create.sql" />
-        <option value="$APPLICATION_CONFIG_DIR$/consoles/db/5ab65591-6da1-4f38-9116-1722a6ec5f2e/console.sql" />
         <option value="$PROJECT_DIR$/../GetBrandonData.sql" />
-        <option value="$PROJECT_DIR$/AlignmentMeter.py" />
         <option value="$PROJECT_DIR$/../CalcAlignmentScoreMiguel.sql" />
+        <option value="$APPLICATION_CONFIG_DIR$/consoles/db/5ab65591-6da1-4f38-9116-1722a6ec5f2e/console.sql" />
+        <option value="$PROJECT_DIR$/AlignmentMeter.py" />
+        <option value="$PROJECT_DIR$/ProjectNotes.txt" />
+        <option value="$APPLICATION_CONFIG_DIR$/consoles/db/d2027695-872c-4ffa-aa78-abc81fdcdff3/console.sql" />
       </list>
     </option>
   </component>
@@ -142,10 +178,9 @@
     <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="-8" />
-    <option name="y" value="-8" />
-    <option name="width" value="1936" />
-    <option name="height" value="1056" />
+    <option name="x" value="-7" />
+    <option name="width" value="1924" />
+    <option name="height" value="1047" />
   </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">
     <entry key="Project Default">
@@ -163,18 +198,8 @@
       </profile-state>
     </entry>
   </component>
-  <component name="ProjectLevelVcsManager" settingsEditedManually="false">
-    <OptionsSetting value="true" id="Add" />
-    <OptionsSetting value="true" id="Remove" />
-    <OptionsSetting value="true" id="Checkout" />
-    <OptionsSetting value="true" id="Update" />
-    <OptionsSetting value="true" id="Status" />
-    <OptionsSetting value="true" id="Edit" />
-    <ConfirmationsSetting value="0" id="Add" />
-    <ConfirmationsSetting value="0" id="Remove" />
-  </component>
   <component name="ProjectView">
-    <navigator proportions="" version="1">
+    <navigator currentView="ProjectPane" proportions="" version="1">
       <flattenPackages />
       <showMembers />
       <showModules />
@@ -187,20 +212,37 @@
       <manualOrder />
       <foldersAlwaysOnTop value="true" />
     </navigator>
-    <panes />
+    <panes>
+      <pane id="Scope" />
+      <pane id="Scratches" />
+      <pane id="ProjectPane">
+        <subPane>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="AlignmentMeter" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="AlignmentMeter" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+        </subPane>
+      </pane>
+    </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="true" />
     <property name="com.intellij.database.dataSource.DataSourceTemplate" value="MySQL" />
-    <property name="last_opened_file_path" value="$USER_HOME$/OneDrive/DigitalDemocracy/Small Queries/Christine Stats" />
-    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
-    <property name="settings.editor.splitter.proportion" value="0.2" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="settings.editor.selected.configurable" value="com.maddyhome.idea.vim.ui.VimEmulationConfigurable" />
     <property name="WebServerToolWindowPanel.toolwindow.show.size" value="false" />
     <property name="WebServerToolWindowPanel.toolwindow.show.date" value="false" />
     <property name="WebServerToolWindowPanel.toolwindow.show.permissions" value="false" />
     <property name="WebServerToolWindowPanel.toolwindow.highlight.symlinks" value="true" />
     <property name="WebServerToolWindowPanel.toolwindow.highlight.mappings" value="true" />
     <property name="js-jscs-nodeInterpreter" value="C:\Program Files (x86)\nodejs\node.exe" />
+    <property name="js.eslint.eslintPackage" value="" />
   </component>
   <component name="RunManager" selected="Python.AlignmentMeter">
     <configuration default="false" name="AlignmentMeter" type="PythonConfigurationType" factoryName="Python" temporary="true">
@@ -257,6 +299,12 @@
       <option name="CUSTOM_SETTINGS" value="false" />
       <option name="USE_OPTIONS" value="false" />
       <option name="OPTIONS" value="" />
+      <method />
+    </configuration>
+    <configuration default="true" type="JavaScriptTestRunnerProtractor" factoryName="Protractor">
+      <config-file value="" />
+      <node-interpreter value="project" />
+      <envs />
       <method />
     </configuration>
     <configuration default="true" type="JavascriptDebugType" factoryName="JavaScript Debug">
@@ -331,7 +379,7 @@
       <method />
     </configuration>
     <configuration default="true" type="js.build_tools.npm" factoryName="npm">
-      <command value="run-script" />
+      <command value="run" />
       <scripts />
       <node-interpreter value="project" />
       <envs />
@@ -475,27 +523,27 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
-    <editor active="false" />
+    <frame x="-7" y="0" width="1924" height="1047" extended-state="0" />
+    <editor active="true" />
     <layout>
+      <window_info id="Remote Host" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3267254" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.14150943" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="true" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
-      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32939914" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32914045" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.29175475" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" x="624" y="455" width="882" height="118" />
-      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32875264" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" x="184" y="205" width="958" height="488" />
-      <window_info id="Remote Host" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3267254" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Database Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="WINDOWED" visible="false" show_stripe_button="true" weight="1.0" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" x="1921" y="31" width="996" height="1008" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.14170338" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3292553" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
+      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32939914" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.065104164" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32875264" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" x="184" y="205" width="958" height="488" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="WINDOWED" visible="false" show_stripe_button="true" weight="1.0" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" x="1921" y="31" width="653" height="1008" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
-      <window_info id="File Transfer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.336" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
+      <window_info id="File Transfer" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33511207" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
+      <window_info id="Database Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="WINDOWED" visible="true" show_stripe_button="true" weight="1.0" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" x="1" y="31" width="958" height="1008" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -523,6 +571,9 @@
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
     </layout-to-restore>
   </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="processedProjectFiles" value="true" />
+  </component>
   <component name="Vcs.Log.UiProperties">
     <option name="RECENTLY_FILTERED_USER_GROUPS">
       <collection />
@@ -541,38 +592,25 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/pydevd.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="25415">
-          <caret line="1530" column="0" selection-start-line="1530" selection-start-column="0" selection-end-line="1530" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/AlignmentMeter.sql">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="187">
-          <caret line="11" column="26" selection-start-line="11" selection-start-column="26" selection-end-line="11" selection-end-column="26" />
+          <caret line="11" column="26" lean-forward="false" selection-start-line="11" selection-start-column="26" selection-end-line="11" selection-end-column="26" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/sql2csv.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1054">
-          <caret line="65" column="0" selection-start-line="65" selection-start-column="0" selection-end-line="65" selection-end-column="0" />
+          <caret line="65" column="0" lean-forward="false" selection-start-line="65" selection-start-column="0" selection-end-line="65" selection-end-column="0" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/pymysql/connections.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="15878">
-          <caret line="955" column="0" selection-start-line="955" selection-start-column="0" selection-end-line="955" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/pymysql/connections.py" />
     <entry file="file://$PROJECT_DIR$/../DB-create.sql">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="9384">
-          <caret line="552" column="39" selection-start-line="552" selection-start-column="27" selection-end-line="552" selection-end-column="39" />
+          <caret line="552" column="39" lean-forward="false" selection-start-line="552" selection-start-column="27" selection-end-line="552" selection-end-column="39" />
           <folding />
         </state>
       </provider>
@@ -580,8 +618,7 @@
     <entry file="file://$PROJECT_DIR$/OrgVoteMatch.sql">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2771">
-          <caret line="163" column="0" selection-start-line="163" selection-start-column="0" selection-end-line="163" selection-end-column="0" />
-          <folding />
+          <caret line="163" column="0" lean-forward="false" selection-start-line="163" selection-start-column="0" selection-end-line="163" selection-end-column="0" />
         </state>
       </provider>
     </entry>
@@ -589,7 +626,7 @@
     <entry file="file://$PROJECT_DIR$/ProjectNotes.txt">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="255">
-          <caret line="15" column="0" selection-start-line="15" selection-start-column="0" selection-end-line="15" selection-end-column="0" />
+          <caret line="15" column="0" lean-forward="false" selection-start-line="15" selection-start-column="0" selection-end-line="15" selection-end-column="0" />
           <folding />
         </state>
       </provider>
@@ -597,59 +634,55 @@
     <entry file="file://$PROJECT_DIR$/AlignmentMeter.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="3910">
-          <caret line="230" column="58" selection-start-line="230" selection-start-column="58" selection-end-line="230" selection-end-column="58" />
+          <caret line="230" column="58" lean-forward="false" selection-start-line="230" selection-start-column="58" selection-end-line="230" selection-end-column="58" />
           <folding>
             <element signature="e#0#19#0" expanded="true" />
-            <marker date="1480647716969" expanded="true" signature="473:723" ph="SELECT oa.oi... OrgAlignments" />
-            <marker date="1480647716969" expanded="true" signature="2500:3223" ph="CREATE OR RE... DoPassVotes" />
-            <marker date="1480647716969" expanded="true" signature="2570:3223" ph="SELECT bid, BillVoteSummary" />
-            <marker date="1480647716969" expanded="true" signature="3267:4014" ph="CREATE OR RE... FloorVotes" />
-            <marker date="1480647716969" expanded="true" signature="3336:4014" ph="SELECT b.bid... BillVoteSummary" />
-            <marker date="1480647716969" expanded="true" signature="4058:4249" ph="CREATE OR RE... PassingVotes" />
-            <marker date="1480647716969" expanded="true" signature="4129:4170" ph="SELECT * FRO... DoPassVotes" />
-            <marker date="1480647716969" expanded="true" signature="4209:4249" ph="SELECT * FRO... FloorVotes" />
-            <marker date="1480647716969" expanded="true" signature="4295:5121" ph="SELECT DISTI... PassingVotes" />
-            <marker date="1480647716969" expanded="true" signature="5494:5515" ph="DROP VIEW Do... " />
-            <marker date="1480647716969" expanded="true" signature="5538:5558" ph="DROP VIEW Fl... " />
-            <marker date="1480647716969" expanded="true" signature="5581:5603" ph="DROP VIEW Pa... " />
-            <marker date="1480647716969" expanded="true" signature="16621:16771" ph="SELECT oc.oi... OrgConcept" />
-            <marker date="1480647716969" expanded="true" signature="18076:18182" ph="UPDATE Align... " />
+            <marker date="1489694863237" expanded="true" signature="474:724" ph="SELECT oa.oi... OrgAlignments" />
+            <marker date="1489694863237" expanded="true" signature="1653:2376" ph="CREATE OR RE... DoPassVotes" />
+            <marker date="1489694863237" expanded="true" signature="1723:2376" ph="SELECT bid, BillVoteSummary" />
+            <marker date="1489694863237" expanded="true" signature="2420:3167" ph="CREATE OR RE... FloorVotes" />
+            <marker date="1489694863237" expanded="true" signature="2420:3215" ph="CREATE OR RE... FloorVotes" />
+            <marker date="1489694863237" expanded="true" signature="2489:3167" ph="SELECT b.bid... BillVoteSummary" />
+            <marker date="1489694863237" expanded="true" signature="3259:3898" ph="CREATE OR RE... PassingVotes" />
+            <marker date="1489694863237" expanded="true" signature="3330:3590" ph="SELECT *, na... DoPassVotes" />
+            <marker date="1489694863237" expanded="true" signature="3633:3898" ph="SELECT *, na... FloorVotes" />
+            <marker date="1489694863237" expanded="true" signature="3866:3898" ph="SELECT * FRO... FloorVotes" />
+            <marker date="1489694863237" expanded="true" signature="3944:4801" ph="SELECT DISTI... PassingVotes" />
+            <marker date="1489694863237" expanded="true" signature="5238:5259" ph="DROP VIEW Do... " />
+            <marker date="1489694863237" expanded="true" signature="5282:5302" ph="DROP VIEW Fl... " />
+            <marker date="1489694863237" expanded="true" signature="5325:5347" ph="DROP VIEW Pa... " />
+            <marker date="1489694863237" expanded="true" signature="17390:17540" ph="SELECT oc.oi... OrgConcept" />
+            <marker date="1489694863237" expanded="true" signature="18845:18951" ph="UPDATE Align... " />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/pandas/core/indexing.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2176">
-          <caret line="139" column="0" selection-start-line="139" selection-start-column="0" selection-end-line="139" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/pandas/core/indexing.py" />
     <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/pydevd.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="25415">
-          <caret line="1530" column="0" selection-start-line="1530" selection-start-column="0" selection-end-line="1530" selection-end-column="0" />
+          <caret line="1530" column="0" lean-forward="false" selection-start-line="1530" selection-start-column="0" selection-end-line="1530" selection-end-column="0" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/AlignmentMeter.sql">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="187">
-          <caret line="11" column="26" selection-start-line="11" selection-start-column="26" selection-end-line="11" selection-end-column="26" />
+          <caret line="11" column="26" lean-forward="false" selection-start-line="11" selection-start-column="26" selection-end-line="11" selection-end-column="26" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/sql2csv.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="425">
-          <caret line="28" column="26" selection-start-line="28" selection-start-column="26" selection-end-line="28" selection-end-column="26" />
+          <caret line="28" column="26" lean-forward="false" selection-start-line="28" selection-start-column="26" selection-end-line="28" selection-end-column="26" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/../DB-create.sql">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="19210">
-          <caret line="1130" column="16" selection-start-line="1130" selection-start-column="16" selection-end-line="1130" selection-end-column="16" />
+          <caret line="1130" column="16" lean-forward="false" selection-start-line="1130" selection-start-column="16" selection-end-line="1130" selection-end-column="16" />
           <folding />
         </state>
       </provider>
@@ -657,8 +690,7 @@
     <entry file="file://$PROJECT_DIR$/OrgVoteMatch.sql">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="357">
-          <caret line="21" column="0" selection-start-line="21" selection-start-column="0" selection-end-line="21" selection-end-column="0" />
-          <folding />
+          <caret line="21" column="0" lean-forward="false" selection-start-line="21" selection-start-column="0" selection-end-line="21" selection-end-column="0" />
         </state>
       </provider>
     </entry>
@@ -666,22 +698,21 @@
     <entry file="file://$PROJECT_DIR$/AlignmentMeter.sql">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="510">
-          <caret line="30" column="38" selection-start-line="30" selection-start-column="38" selection-end-line="30" selection-end-column="38" />
+          <caret line="30" column="38" lean-forward="false" selection-start-line="30" selection-start-column="38" selection-end-line="30" selection-end-column="38" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/OrgVoteMatch.sql">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="204">
-          <caret line="12" column="18" selection-start-line="12" selection-start-column="18" selection-end-line="12" selection-end-column="18" />
-          <folding />
+          <caret line="12" column="18" lean-forward="false" selection-start-line="12" selection-start-column="18" selection-end-line="12" selection-end-column="18" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/sql2csv.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="425">
-          <caret line="28" column="26" selection-start-line="28" selection-start-column="26" selection-end-line="28" selection-end-column="26" />
+          <caret line="28" column="26" lean-forward="false" selection-start-line="28" selection-start-column="26" selection-end-line="28" selection-end-column="26" />
         </state>
       </provider>
     </entry>
@@ -689,7 +720,7 @@
     <entry file="file://$PROJECT_DIR$/AlignmentMeter.sql">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="221">
-          <caret line="13" column="19" selection-start-line="13" selection-start-column="19" selection-end-line="13" selection-end-column="19" />
+          <caret line="13" column="19" lean-forward="false" selection-start-line="13" selection-start-column="19" selection-end-line="13" selection-end-column="19" />
         </state>
       </provider>
     </entry>
@@ -700,46 +731,16 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/pandas/core/generic.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="418">
-          <caret line="2681" column="43" selection-start-line="2681" selection-start-column="43" selection-end-line="2681" selection-end-column="43" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/pymysql/err.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="508">
-          <caret line="111" column="0" selection-start-line="111" selection-start-column="0" selection-end-line="111" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/numpy/lib/function_base.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="474">
-          <caret line="4149" column="0" selection-start-line="4149" selection-start-column="0" selection-end-line="4149" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/pandas/core/generic.py" />
+    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/pymysql/err.py" />
+    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/numpy/lib/function_base.py" />
     <entry file="file://$APPLICATION_CONFIG_DIR$/consoles/db/92e90ec9-e326-4553-b257-947493a2ac06/console.sql" />
-    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/pymysql/connections.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="884">
-          <caret line="955" column="0" selection-start-line="955" selection-start-column="0" selection-end-line="955" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/pandas/core/indexing.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="884">
-          <caret line="139" column="0" selection-start-line="139" selection-start-column="0" selection-end-line="139" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/pymysql/connections.py" />
+    <entry file="file://$USER_HOME$/Anaconda3/Lib/site-packages/pandas/core/indexing.py" />
     <entry file="file://$PROJECT_DIR$/AlignmentMeter.sql">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="187">
-          <caret line="11" column="26" selection-start-line="11" selection-start-column="26" selection-end-line="11" selection-end-column="26" />
+          <caret line="11" column="26" lean-forward="false" selection-start-line="11" selection-start-column="26" selection-end-line="11" selection-end-column="26" />
         </state>
       </provider>
     </entry>
@@ -747,14 +748,14 @@
     <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/_pydev_imps/_pydev_execfile.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="170">
-          <caret line="10" column="0" selection-start-line="10" selection-start-column="0" selection-end-line="10" selection-end-column="0" />
+          <caret line="10" column="0" lean-forward="false" selection-start-line="10" selection-start-column="0" selection-end-line="10" selection-end-column="0" />
         </state>
       </provider>
     </entry>
     <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/pydevd.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="306">
-          <caret line="963" column="0" selection-start-line="963" selection-start-column="0" selection-end-line="963" selection-end-column="0" />
+          <caret line="963" column="0" lean-forward="false" selection-start-line="963" selection-start-column="0" selection-end-line="963" selection-end-column="0" />
         </state>
       </provider>
     </entry>
@@ -762,7 +763,7 @@
     <entry file="file://$PROJECT_DIR$/sql2csv.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="884">
-          <caret line="65" column="0" selection-start-line="65" selection-start-column="0" selection-end-line="65" selection-end-column="0" />
+          <caret line="65" column="0" lean-forward="false" selection-start-line="65" selection-start-column="0" selection-end-line="65" selection-end-column="0" />
         </state>
       </provider>
     </entry>
@@ -777,88 +778,82 @@
     <entry file="file://$PROJECT_DIR$/AlignmentMeterLVA.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="691">
-          <caret line="307" column="43" selection-start-line="307" selection-start-column="43" selection-end-line="307" selection-end-column="43" />
-          <folding>
-            <element signature="e#0#19#0" expanded="false" />
-          </folding>
+          <caret line="307" column="43" lean-forward="false" selection-start-line="307" selection-start-column="43" selection-end-line="307" selection-end-column="43" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/OrgVoteMatch.sql">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="416">
-          <caret line="124" column="41" selection-start-line="124" selection-start-column="41" selection-end-line="124" selection-end-column="41" />
-          <folding />
+          <caret line="124" column="41" lean-forward="false" selection-start-line="124" selection-start-column="41" selection-end-line="124" selection-end-column="41" />
         </state>
       </provider>
     </entry>
     <entry file="file://$USER_HOME$/OneDrive/DigitalDemocracy/CodeBookStuff/CodeBookVoteInfo.sql">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="563">
-          <caret line="43" column="14" selection-start-line="43" selection-start-column="14" selection-end-line="43" selection-end-column="14" />
-          <folding />
+          <caret line="43" column="14" lean-forward="false" selection-start-line="43" selection-start-column="14" selection-end-line="43" selection-end-column="14" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../GetBrandonData.sql" />
+    <entry file="file://$PROJECT_DIR$/../CalcAlignmentScoreMiguel.sql" />
+    <entry file="file://$APPLICATION_CONFIG_DIR$/consoles/db/5ab65591-6da1-4f38-9116-1722a6ec5f2e/console.sql">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="17">
+          <caret line="1" column="0" lean-forward="false" selection-start-line="1" selection-start-column="0" selection-end-line="1" selection-end-column="0" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/../DB-create.sql">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="5236">
-          <caret line="308" column="36" selection-start-line="308" selection-start-column="27" selection-end-line="308" selection-end-column="36" />
+          <caret line="308" column="36" lean-forward="false" selection-start-line="308" selection-start-column="27" selection-end-line="308" selection-end-column="36" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/ProjectNotes.txt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="544">
-          <caret line="32" column="52" selection-start-line="32" selection-start-column="52" selection-end-line="32" selection-end-column="52" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$APPLICATION_CONFIG_DIR$/consoles/db/5ab65591-6da1-4f38-9116-1722a6ec5f2e/console.sql" />
-    <entry file="file://$PROJECT_DIR$/../GetBrandonData.sql">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="884">
-          <caret line="166" column="3" selection-start-line="166" selection-start-column="3" selection-end-line="166" selection-end-column="3" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../CalcAlignmentScoreMiguel.sql">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="408">
-          <caret line="64" column="34" selection-start-line="64" selection-start-column="34" selection-end-line="64" selection-end-column="34" />
+        <state relative-caret-position="187">
+          <caret line="11" column="0" lean-forward="false" selection-start-line="11" selection-start-column="0" selection-end-line="11" selection-end-column="0" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/AlignmentMeter.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="374">
-          <caret line="546" column="53" selection-start-line="546" selection-start-column="53" selection-end-line="546" selection-end-column="53" />
+        <state relative-caret-position="487">
+          <caret line="544" column="0" lean-forward="false" selection-start-line="544" selection-start-column="0" selection-end-line="544" selection-end-column="0" />
           <folding>
             <element signature="e#0#19#0" expanded="true" />
-            <marker date="1480647716969" expanded="true" signature="473:723" ph="SELECT oa.oi... OrgAlignments" />
-            <marker date="1480647716969" expanded="true" signature="2500:3223" ph="CREATE OR RE... DoPassVotes" />
-            <marker date="1480647716969" expanded="true" signature="2570:3223" ph="SELECT bid, BillVoteSummary" />
-            <marker date="1480647716969" expanded="true" signature="3267:4014" ph="CREATE OR RE... FloorVotes" />
-            <marker date="1480647716969" expanded="true" signature="3336:4014" ph="SELECT b.bid... BillVoteSummary" />
-            <marker date="1480647716969" expanded="true" signature="4058:4249" ph="CREATE OR RE... PassingVotes" />
-            <marker date="1480647716969" expanded="true" signature="4129:4170" ph="SELECT * FRO... DoPassVotes" />
-            <marker date="1480647716969" expanded="true" signature="4209:4249" ph="SELECT * FRO... FloorVotes" />
-            <marker date="1480647716969" expanded="true" signature="4295:5121" ph="SELECT DISTI... PassingVotes" />
-            <marker date="1480647716969" expanded="true" signature="5494:5515" ph="DROP VIEW Do... " />
-            <marker date="1480647716969" expanded="true" signature="5538:5558" ph="DROP VIEW Fl... " />
-            <marker date="1480647716969" expanded="true" signature="5581:5603" ph="DROP VIEW Pa... " />
-            <marker date="1480647716969" expanded="true" signature="16621:16771" ph="SELECT oc.oi... OrgConcept" />
-            <marker date="1480647716969" expanded="true" signature="18076:18182" ph="UPDATE Align... " />
+            <marker date="1489694863237" expanded="true" signature="474:724" ph="SELECT oa.oi... OrgAlignments" />
+            <marker date="1489694863237" expanded="true" signature="1653:2376" ph="CREATE OR RE... DoPassVotes" />
+            <marker date="1489694863237" expanded="true" signature="1723:2376" ph="SELECT bid, BillVoteSummary" />
+            <marker date="1489694863237" expanded="true" signature="2420:3167" ph="CREATE OR RE... FloorVotes" />
+            <marker date="1489694863237" expanded="true" signature="2420:3215" ph="CREATE OR RE... FloorVotes" />
+            <marker date="1489694863237" expanded="true" signature="2489:3167" ph="SELECT b.bid... BillVoteSummary" />
+            <marker date="1489694863237" expanded="true" signature="3259:3898" ph="CREATE OR RE... PassingVotes" />
+            <marker date="1489694863237" expanded="true" signature="3330:3590" ph="SELECT *, na... DoPassVotes" />
+            <marker date="1489694863237" expanded="true" signature="3633:3898" ph="SELECT *, na... FloorVotes" />
+            <marker date="1489694863237" expanded="true" signature="3866:3898" ph="SELECT * FRO... FloorVotes" />
+            <marker date="1489694863237" expanded="true" signature="3944:4801" ph="SELECT DISTI... PassingVotes" />
+            <marker date="1489694863237" expanded="true" signature="5238:5259" ph="DROP VIEW Do... " />
+            <marker date="1489694863237" expanded="true" signature="5282:5302" ph="DROP VIEW Fl... " />
+            <marker date="1489694863237" expanded="true" signature="5325:5347" ph="DROP VIEW Pa... " />
+            <marker date="1489694863237" expanded="true" signature="17390:17540" ph="SELECT oc.oi... OrgConcept" />
+            <marker date="1489694863237" expanded="true" signature="18845:18951" ph="UPDATE Align... " />
           </folding>
         </state>
       </provider>
     </entry>
-  </component>
-  <component name="webServersAuthStorage">
-    <data>AAAAcM4mtjKH3aZk0G2FyaDJS/CGU5hQCIAdupkO2Ef8RGEDXLWDBAQaFSQdMn2RKPG7383rrxHoVG24fyy3Qy+dPi+GknhAcmsLxvAFZZhPT83HDwiMh+UTA9ENfTFNMmWXToahEE4q3HD0oOua8QMNb+Wz3X52ky0lsynamlBatVQ/</data>
+    <entry file="file://$APPLICATION_CONFIG_DIR$/consoles/db/d2027695-872c-4ffa-aa78-abc81fdcdff3/console.sql">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="155">
+          <caret line="75" column="17" lean-forward="false" selection-start-line="75" selection-start-column="17" selection-end-line="75" selection-end-column="17" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
   </component>
 </project>
