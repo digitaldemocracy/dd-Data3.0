@@ -30,6 +30,7 @@ CREATE TABLE SpeakerParticipation (
   WordCountHearingAvg FLOAT, -- Average words per Hearing
   TimeTotal INT, -- Total time based on length of utterances
   TimeHearingAvg FLOAT, -- Average time per Hearing
+  BillDiscussionCount INT, -- Number of unique bill discussions they've been at this sessoin
   dr_id INT,
 
   -- fk constraints not enforced, here for convenience
@@ -169,6 +170,7 @@ CREATE TABLE GiftCombined (
   speechOrPanel tinyint(1) DEFAULT NULL,
   sessionYear YEAR,
   state varchar(2) DEFAULT NULL,
+  source VARCHAR(55), -- the table this came from
   lastTouched timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (RecordId),
   KEY giftDate_ts (giftDate_ts),

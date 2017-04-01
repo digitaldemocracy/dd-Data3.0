@@ -32,7 +32,8 @@ DO
         SUM(WordCount) AS WordCountTotal,
         SUM(WordCount) / COUNT(DISTINCT h.hid) AS WordCountHearingAvg,
         SUM(Time) AS TimeTotal,
-        SUM(Time) / COUNT(DISTINCT h.hid) AS TimeHearingAvg
+        SUM(Time) / COUNT(DISTINCT h.hid) AS TimeHearingAvg,
+        COUNT(DISTINCT did) AS BillDiscussionCount
       FROM UtterInfo u
         JOIN Hearing h
           ON u.hid = h.hid
@@ -40,7 +41,7 @@ DO
           ON u.pid = p.pid
              AND h.session_year = p.session_year
       GROUP BY p.pid, h.session_year, u.state
-      ORDER BY WordCountTotal;
+      ORDER BY BillDiscussionCount DESC;
 
     DROP TABLE IF EXISTS UtterInfo;
 

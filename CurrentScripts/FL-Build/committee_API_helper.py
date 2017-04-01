@@ -20,6 +20,8 @@ import json
 COMMITTEE_SEARCH_URL = 'https://openstates.org/api/v1/committees/?state={0}'
 COMMITTEE_DETAIL_URL = 'https://openstates.org/api/v1/committees/{0}'
 
+STATE_METADATA_URL = "https://openstates.org/api/v1/metadata/{0}"
+
 
 '''
 This function builds and returns a list containing a dictionary for each committee in the given state.
@@ -34,8 +36,10 @@ Each dictionary includes these fields:
 '''
 def get_committee_list(state):
     api_url = COMMITTEE_SEARCH_URL.format(state.lower())
+    metadata_url = STATE_METADATA_URL.format(state.lower())
 
     committee_json = requests.get(api_url).json()
+    metadata = requests.get(metadata_url).json()
 
     comm_list = list()
     for entry in committee_json:
@@ -43,18 +47,25 @@ def get_committee_list(state):
 
         committee['comm_id'] = entry['id']
         committee['state'] = state.upper()
-        committee['short_name'] = entry['committee']
+        committee['short_name'] = entry['committee'].replace('Committee', '', 1).strip()
 
-        if entry['chamber'] == 'upper':
+        # if entry['chamber'] == 'joint':
+        #     committee['house'] = 'Joint'
+        # else:
+        #     committee['house'] = metadata['chambers'][entry['chamber']]['name']
+
+        if entry['chamber'] == 'joint':
+            committee['house'] = 'Joint'
+        elif entry['chamber'] == 'upper':
             committee['house'] = 'Senate'
         elif entry['chamber'] == 'lower':
             committee['house'] = 'Assembly'
-        elif entry['chamber'] == 'joint':
-            committee['house'] = 'Joint'
+
+        committee['updated'] = entry['updated_at']
 
         if entry['subcommittee'] is not None:
             committee['type'] = 'Subcommittee'
-            committee['name'] = committee['house'] + ' ' + entry['committee'].replace('Committee', '', 1)
+            committee['name'] = committee['house'] + ' ' + entry['committee']
             if 'Subcommittee on' in entry['subcommittee']:
                 committee['name'] = committee['name'].strip() + ' ' + entry['subcommittee']
             else:
