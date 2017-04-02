@@ -24,7 +24,9 @@ import sys
 import traceback
 import datetime as dt
 from time import strftime
+from time import strptime
 from committee_API_helper import *
+from Database_Commtection.py import mysql_connection
 
 # Global counters
 CN_INSERTED = 0
@@ -95,7 +97,7 @@ def is_comm_name_in_db(dddb, committee):
         else:
             return True
 
-    except:
+    except MySQLdb.Error:
         print("Select query failed: " + (SELECT_COMMITTEE_NAME % comm_name))
 
 
@@ -153,6 +155,17 @@ def get_pid(dddb, member):
         print("Select query failed: " + SELECT_PID)
 
 
+def is_committee_current(updated):
+    update_date = dt.datetime.strptime(updated, '%Y-%m-%d %H:%M:%S')
+
+    diff = dt.datetime.now() - update_date
+
+    if diff.days > 7:
+        return False
+    else:
+        return True
+
+
 def get_past_members(dddb, committee):
     update_members = list()
 
@@ -192,93 +205,82 @@ def import_committees(dddb):
     global C_INSERTED, CN_INSERTED, SO_INSERTED, SO_UPDATED
 
     comm_list = get_committee_list('fl')
-    print "Got committee list"
 
     for committee in comm_list:
-        # committee['session_year'] = get_session_year(dddb)
-        committee['session_year'] = committee['updated'][:4]
-        committee['members'] = get_committee_membership(committee['comm_id'])
-        print "Got " + committee['name'] + " members"
+        # Committees that have not been updated in the past week are not current
+        if is_committee_current(committee['updated']):
+            committee['session_year'] = committee['updated'][:4]
+            committee['members'] = get_committee_membership(committee['comm_id'])
 
-        if is_comm_name_in_db(dddb, committee) is False:
-            try:
-                comm_name = {'name': committee['name'], 'house': committee['house'], 'state': committee['state']}
-                dddb.execute(INSERT_COMMITTEE_NAME, comm_name)
-                CN_INSERTED += dddb.rowcount
+            if is_comm_name_in_db(dddb, committee) is False:
+                try:
+                    comm_name = {'name': committee['name'], 'house': committee['house'], 'state': committee['state']}
+                    dddb.execute(INSERT_COMMITTEE_NAME, comm_name)
+                    CN_INSERTED += dddb.rowcount
 
-            except MySQLdb.Error:
-                print("Insert statement failed: " + (INSERT_COMMITTEE_NAME % committee))
+                except MySQLdb.Error:
+                    print("Insert statement failed: " + (INSERT_COMMITTEE_NAME % committee))
 
-        print "Inserted committee name"
-        committee['cid'] = get_comm_cid(dddb, committee)
+            committee['cid'] = get_comm_cid(dddb, committee)
 
-        if committee['cid'] is None:
-            try:
-                comm = {'name': committee['name'], 'short_name': committee['short_name'],
-                        'type': committee['type'], 'state': committee['state'],
-                        'house': committee['house'], 'session_year': committee['session_year']}
+            if committee['cid'] is None:
+                try:
+                    comm = {'name': committee['name'], 'short_name': committee['short_name'],
+                            'type': committee['type'], 'state': committee['state'],
+                            'house': committee['house'], 'session_year': committee['session_year']}
 
-                dddb.execute(INSERT_COMMITTEE, comm)
-                committee['cid'] = int(dddb.lastrowid)
-                C_INSERTED += dddb.rowcount
+                    dddb.execute(INSERT_COMMITTEE, comm)
+                    committee['cid'] = int(dddb.lastrowid)
+                    C_INSERTED += dddb.rowcount
 
-            except MySQLdb.Error:
-                print("Insert statement failed: " + (INSERT_COMMITTEE % comm))
+                except MySQLdb.Error:
+                    print("Insert statement failed: " + (INSERT_COMMITTEE % comm))
 
-        print "Inserted committee"
-            # committee['cid'] = get_comm_cid(dddb, committee)
+            if len(committee['members']) > 0:
+                for member in committee['members']:
+                    member['cid'] = committee['cid']
+                    member['pid'] = get_pid(dddb, member)
+                    member['state'] = committee['state']
+                    member['house'] = committee['house']
+                    member['session_year'] = committee['session_year']
+                    member['start_date'] = dt.datetime.today().strftime("%Y-%m-%d")
 
-        print committee['members']
-        if len(committee['members']) > 0:
-            for member in committee['members']:
-                member['cid'] = committee['cid']
-                member['pid'] = get_pid(dddb, member)
-                member['state'] = committee['state']
-                member['house'] = committee['house']
-                member['session_year'] = committee['session_year']
-                member['start_date'] = dt.datetime.today().strftime("%Y-%m-%d")
+                    if 'vice' in member['position'].lower():
+                        member['position'] = 'Vice-Chair'
+                    elif 'chair' in member['position'].lower():
+                        member['position'] = 'Chair'
+                    else:
+                        member['position'] = 'Member'
 
-                if 'vice' in member['position'].lower():
-                    member['position'] = 'Vice-Chair'
-                elif 'chair' in member['position'].lower():
-                    member['position'] = 'Chair'
-                else:
-                    member['position'] = 'Member'
+                    if member['pid'] is not None:
+                        if not is_servesOn_in_db(dddb, member):
+                            try:
+                                dddb.execute(INSERT_SERVES_ON, member)
+                                SO_INSERTED += dddb.rowcount
+                            except MySQLdb.Error:
+                                print("Insert statement failed: " + (INSERT_SERVES_ON % member))
 
-                if member['pid'] is not None:
-                    if not is_servesOn_in_db(dddb, member):
+                update_mems = get_past_members(dddb, committee)
+
+                if len(update_mems) > 0:
+                    for member in update_mems:
                         try:
-                            dddb.execute(INSERT_SERVES_ON, member)
-                            SO_INSERTED += dddb.rowcount
+                            dddb.execute(UPDATE_SERVESON, member)
+                            SO_UPDATED += dddb.rowcount
                         except MySQLdb.Error:
-                            print("Insert statement failed: " + (INSERT_SERVES_ON % member))
-
-            print "Inserted committee members"
-
-            update_mems = get_past_members(dddb, committee)
-
-            if len(update_mems) > 0:
-                for member in update_mems:
-                    try:
-                        dddb.execute(UPDATE_SERVESON, member)
-                        SO_UPDATED += dddb.rowcount
-                    except MySQLdb.Error:
-                        print("Update statement failed: " + (UPDATE_SERVESON % member))
+                            print("Update statement failed: " + (UPDATE_SERVESON % member))
 
 
 def main():
-    with MySQLdb.connect(host='dev.digitaldemocracy.org',
-                         user='parose',
-                         db='parose_dddb',
-                         port=3306,
-                         passwd='parose221',
+    import sys
+    dbinfo = mysql_connection(sys.argv)
+    # MUST SPECIFY charset='utf8' OR BAD THINGS WILL HAPPEN.
+    with MySQLdb.connect(host=dbinfo['host'],
+                         port=dbinfo['port'],
+                         db=dbinfo['db'],
+                         user=dbinfo['user'],
+                         passwd=dbinfo['passwd'],
                          charset='utf8') as dddb:
-    # with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-    #                     user='awsDB',
-    #                     db='DDDB2015Dec',
-    #                     port=3306,
-    #                     passwd='digitaldemocracy789',
-    #                     charset='utf8') as dddb:
         import_committees(dddb)
         print("Inserted " + str(CN_INSERTED) + " names in CommitteeNames")
         print("Inserted " + str(C_INSERTED) + " rows in Committee")
