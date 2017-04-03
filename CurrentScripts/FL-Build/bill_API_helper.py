@@ -139,7 +139,7 @@ Each dictionary contains:
 def get_bill_actions(os_bid):
     api_url = BILL_DETAIL_URL.format(os_bid)
 
-    action_json = requests.get(api_url).json()
+    action_json = requests.get(api_url).json()['actions']
 
     action_list = list()
 
@@ -165,7 +165,7 @@ Each dictionary contains:
 def get_bill_versions(os_bid):
     api_url = BILL_DETAIL_URL.format(os_bid)
 
-    version_json = requests.get(api_url).json()
+    version_json = requests.get(api_url).json()['versions']
 
     version_list = list()
 
