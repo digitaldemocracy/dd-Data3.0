@@ -232,10 +232,8 @@ def get_last_mid(dddb):
         print("Select query failed: " + SELECT_LAST_MID)
 
 
-def import_votes(bid, os_bid, dddb):
+def import_votes(bid, vote_list, dddb):
     global M_INSERTED, BVS_INSERTED, BVD_INSERTED
-
-    vote_list = get_bill_votes(os_bid, "FL")
 
     old_vote_date = None
 
@@ -346,10 +344,8 @@ def import_votes(bid, os_bid, dddb):
                     print(traceback.format_exc())
 
 
-def import_actions(bid, os_bid, dddb):
+def import_actions(bid, actions, dddb):
     global A_INSERTED
-
-    actions = get_bill_actions(os_bid)
 
     old_action_date = None
 
@@ -383,10 +379,8 @@ def import_actions(bid, os_bid, dddb):
                 print(traceback.format_exc())
 
 
-def import_versions(bill, dddb):
+def import_versions(bill, versions, dddb):
     global V_INSERTED
-
-    versions = get_bill_versions(bill['os_bid'])
 
     for version in versions:
         version['bid'] = bill['bid']
@@ -419,7 +413,7 @@ def import_bills(dddb):
 
     for bill in bill_list:
         bill["bid"] = "FL_" + bill["session_year"] + str(bill["session"]) + bill["type"] + bill["number"]
-
+        print(bill['bid'])
         # Placeholder for billState until we get data - not needed for transcription
         bill['billState'] = 'TBD'
         #print(bill)
@@ -433,31 +427,21 @@ def import_bills(dddb):
                 print("Insert statement failed: " + INSERT_BILL % bill)
                 print(traceback.format_exc())
 
-        import_votes(bill['bid'], bill["os_bid"], dddb)
-        import_actions(bill['bid'], bill['os_bid'], dddb)
-        import_versions(bill, dddb)
+        bill_details = get_bill_details(bill['os_bid'], 'FL')
+
+        import_votes(bill['bid'], bill_details['votes'], dddb)
+        import_actions(bill['bid'], bill_details['actions'], dddb)
+        import_versions(bill, bill_details['versions'], dddb)
 
 
 def main():
-    with MySQLdb.connect(host='dev.digitaldemocracy.org',
-                         user='parose',
-                         db='parose_dddb',
-                         port=3306,
-                         passwd='parose221',
+    dbinfo = mysql_connection(sys.argv)
+    with MySQLdb.connect(host=dbinfo['host'],
+                         port=dbinfo['port'],
+                         db=dbinfo['db'],
+                         user=dbinfo['user'],
+                         passwd=dbinfo['passwd'],
                          charset='utf8') as dddb:
-    # with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-    #                      user='awsDB',
-    #                      db='DDDB2015Dec',
-    #                      port=3306,
-    #                      passwd='digitaldemocracy789',
-    #                      charset='utf8') as dddb:
-    # dbinfo = mysql_connection(sys.argv)
-    # with MySQLdb.connect(host=dbinfo['host'],
-    #                      port=dbinfo['port'],
-    #                      db=dbinfo['db'],
-    #                      user=dbinfo['user'],
-    #                      passwd=dbinfo['passwd'],
-    #                      charset='utf8') as dddb:
         import_bills(dddb)
         print "Inserted " + str(B_INSERTED) + " rows in Bill"
         print "Inserted " + str(M_INSERTED) + " rows in Motion"
