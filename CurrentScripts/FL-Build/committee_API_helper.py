@@ -49,17 +49,17 @@ def get_committee_list(state):
         committee['state'] = state.upper()
         committee['short_name'] = entry['committee'].replace('Committee', '', 1).strip()
 
-        # if entry['chamber'] == 'joint':
-        #     committee['house'] = 'Joint'
-        # else:
-        #     committee['house'] = metadata['chambers'][entry['chamber']]['name']
-
         if entry['chamber'] == 'joint':
             committee['house'] = 'Joint'
-        elif entry['chamber'] == 'upper':
-            committee['house'] = 'Senate'
-        elif entry['chamber'] == 'lower':
-            committee['house'] = 'Assembly'
+        else:
+            committee['house'] = metadata['chambers'][entry['chamber']]['name']
+
+        # if entry['chamber'] == 'joint':
+        #     committee['house'] = 'Joint'
+        # elif entry['chamber'] == 'upper':
+        #     committee['house'] = 'Senate'
+        # elif entry['chamber'] == 'lower':
+        #     committee['house'] = 'Assembly'
 
         committee['updated'] = entry['updated_at']
 

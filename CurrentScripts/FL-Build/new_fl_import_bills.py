@@ -23,8 +23,12 @@ import sys
 import datetime as dt
 from time import strftime
 from time import strptime
+from graylogger.graylogger import GrayLogger
 from Database_Connection import mysql_connection
 from bill_API_helper import *
+
+API_URL = 'http://dw.digitaldemocracy.org:12202/gelf'
+logger = None
 
 # Global Counters
 B_INSERTED = 0
@@ -104,6 +108,15 @@ INSERT_VERSION = '''INSERT INTO BillVersion
                     (%(vid)s, %(bid)s, %(name)s, %(subject)s, %(doc)s, %(state)s)'''
 
 
+def create_payload(table, sqlstmt):
+    return {
+        '_table': table,
+        '_sqlstmt': sqlstmt,
+        '_state': 'CA',
+        '_log_type': 'Database'
+    }
+
+
 def is_bill_in_db(dddb, bill):
     try:
         dddb.execute(SELECT_BILL, bill)
@@ -113,7 +126,8 @@ def is_bill_in_db(dddb, bill):
         else:
             return True
     except MySQLdb.Error:
-        print("Select statement failed: " + SELECT_BILL % bill)
+        logger.warning("Bill selection failed", full_msg= traceback.format_exc(),
+                       additional_fields=create_payload("Bill", (SELECT_BILL % bill)))
 
 
 def is_bvd_in_db(bvd, dddb):
@@ -126,7 +140,8 @@ def is_bvd_in_db(bvd, dddb):
             return True
 
     except MySQLdb.Error:
-        print("Select statement failed: " + SELECT_BVD % bvd)
+        logger.warning("BillVoteDetail selection failed", full_msg=traceback.format_exc(),
+                       additional_fields=create_payload("BillVoteDetail", (SELECT_BVD % bvd)))
 
 
 def is_action_in_db(action, dddb):
@@ -139,7 +154,8 @@ def is_action_in_db(action, dddb):
             return True
 
     except MySQLdb.Error:
-        print("Select statement failed: " + SELECT_ACTION % action)
+        logger.warning("Action selection failed", full_msg=traceback.format_exc(),
+                       additional_fields=create_payload("Action", (SELECT_ACTION % action)))
 
 
 def is_version_in_db(version, dddb):
@@ -152,7 +168,8 @@ def is_version_in_db(version, dddb):
             return True
 
     except MySQLdb.Error:
-        print("Select statement failed: " + SELECT_VERSION % version)
+        logger.warning("BillVersion selection failed", full_msg=traceback.format_exc(),
+                       additional_fields=create_payload("BillVersion", (SELECT_VERSION % version)))
 
 
 def get_motion_id(motion, passed, dddb):
@@ -166,7 +183,8 @@ def get_motion_id(motion, passed, dddb):
         else:
             return dddb.fetchone()[0]
     except MySQLdb.Error:
-        print("Select statement failed: " + (SELECT_MOTION % mot))
+        logger.warning("Motion selection failed", full_msg=traceback.format_exc(),
+                       additional_fields=create_payload("Motion", (SELECT_MOTION % mot)))
 
 
 def get_vote_id(vote, dddb):
@@ -181,7 +199,8 @@ def get_vote_id(vote, dddb):
             return dddb.fetchone()[0]
 
     except MySQLdb.Error:
-        print("Select statement failed: " (SELECT_VOTE % vote_info))
+        logger.warning("BillVoteSummary selection failed", full_msg=traceback.format_exc(),
+                       additional_fields=create_payload("BillVoteSummary", (SELECT_VOTE % vote_info)))
 
 
 # This doesn't work - need to figure out if possible with our committee structure
@@ -196,7 +215,7 @@ def get_vote_cid(vote, dddb):
 
     try:
         comm_info = {'name': committee, 'house': vote['house'], 'state': 'FL', 'session': vote['session']}
-        dddb.execute(SELECT_COMMITTEE, )
+        dddb.execute(SELECT_COMMITTEE, comm_info)
 
         if dddb.rowcount == 0:
             print("Error: Committee selection failed")
@@ -204,7 +223,8 @@ def get_vote_cid(vote, dddb):
         else:
             return dddb.fetchone()[0]
     except MySQLdb.Error:
-        print("Select statement failed: " + (SELECT_COMMITTEE % comm_info))
+        logger.warning("Committee selection failed", full_msg=traceback.format_exc(),
+                       additional_fields=create_payload("Committee", (SELECT_COMMITTEE % comm_info)))
 
 
 def get_pid(vote, dddb):
@@ -220,7 +240,8 @@ def get_pid(vote, dddb):
             return dddb.fetchone()[0]
 
     except MySQLdb.Error:
-        print("Select query failed: " + SELECT_PID)
+        logger.warning("PID selection failed", full_msg=traceback.format_exc(),
+                       additional_fields=create_payload("AltId", (SELECT_PID % alt_id)))
 
 
 def get_last_mid(dddb):
@@ -229,7 +250,8 @@ def get_last_mid(dddb):
 
         return dddb.fetchone()[0]
     except MySQLdb.Error:
-        print("Select query failed: " + SELECT_LAST_MID)
+        logger.warning("Motion selection failed", full_msg=traceback.format_exc(),
+                       additional_fields=create_payload("Motion", (SELECT_LAST_MID)))
 
 
 def import_votes(bid, vote_list, dddb):
@@ -277,8 +299,8 @@ def import_votes(bid, vote_list, dddb):
 
                 vote['mid'] = mid
             except MySQLdb.Error:
-                print("Insert statement failed: " + INSERT_MOTION % motion)
-                print(traceback.format_exc())
+                logger.warning("Motion insert failed", full_msg=traceback.format_exc(),
+                               additional_fields=create_payload("Motion", (INSERT_MOTION % motion)))
 
         vote['vid'] = get_vote_id(vote, dddb)
         if vote['vid'] is None:
@@ -292,8 +314,8 @@ def import_votes(bid, vote_list, dddb):
 
                 vote['vid'] = dddb.lastrowid
             except MySQLdb.Error:
-                print('Insert statement failed: ' + INSERT_BVS % vote_info)
-                print(traceback.format_exc())
+                logger.warning("BillVoteSummary insertion failed", full_msg=traceback.format_exc(),
+                               additional_fields=create_payload("BillVoteSummary", (INSERT_BVS % vote_info)))
 
         #print(vote)
 
@@ -310,8 +332,8 @@ def import_votes(bid, vote_list, dddb):
                     dddb.execute(INSERT_BVD, aye_vote)
                     BVD_INSERTED += dddb.rowcount
                 except MySQLdb.Error:
-                    print("Insert statement failed: " + (INSERT_BVD % aye_vote))
-                    print(traceback.format_exc())
+                    logger.warning("BillVoteDetail insertion failed", full_msg=traceback.format_exc(),
+                                   additional_fields=create_payload("BillVoteDetail", (INSERT_BVD % aye_vote)))
 
         for nae_vote in vote['nae_votes']:
             nae_vote['voteRes'] = 'NOE'
@@ -325,8 +347,8 @@ def import_votes(bid, vote_list, dddb):
                     dddb.execute(INSERT_BVD, nae_vote)
                     BVD_INSERTED += dddb.rowcount
                 except MySQLdb.Error:
-                    print("Insert statement failed: " + (INSERT_BVD % nae_vote))
-                    print(traceback.format_exc())
+                    logger.warning("BillVoteDetail insertion failed", full_msg=traceback.format_exc(),
+                                   additional_fields=create_payload("BillVoteDetail", (INSERT_BVD % nae_vote)))
 
         for other_vote in vote['other_votes']:
             other_vote['voteRes'] = 'ABS'
@@ -340,8 +362,8 @@ def import_votes(bid, vote_list, dddb):
                     dddb.execute(INSERT_BVD, other_vote)
                     BVD_INSERTED += dddb.rowcount
                 except MySQLdb.Error:
-                    print("Insert statement failed: " + (INSERT_BVD % other_vote))
-                    print(traceback.format_exc())
+                    logger.warning("BillVoteDetail insertion failed", full_msg=traceback.format_exc(),
+                                   additional_fields=create_payload("BillVoteDetail", (INSERT_BVD % other_vote)))
 
 
 def import_actions(bid, actions, dddb):
@@ -375,8 +397,8 @@ def import_actions(bid, actions, dddb):
                 dddb.execute(INSERT_ACTION, action)
                 A_INSERTED += dddb.rowcount
             except MySQLdb.Error:
-                print("Insert statement failed: ", (INSERT_ACTION % action))
-                print(traceback.format_exc())
+                logger.warning("Action insertion failed", full_msg=traceback.format_exc(),
+                               additional_fields=create_payload("Action", (INSERT_ACTION % action)))
 
 
 def import_versions(bill, versions, dddb):
@@ -396,8 +418,8 @@ def import_versions(bill, versions, dddb):
                 dddb.execute(INSERT_VERSION, version)
                 V_INSERTED += dddb.rowcount
             except MySQLdb.Error:
-                print("Insert statement failed: " + (INSERT_VERSION % version))
-                print(traceback.format_exc())
+                logger.warning("BillVersion insertion failed", full_msg=traceback.format_exc(),
+                               additional_fields=create_payload("BillVersion", (INSERT_VERSION % version)))
 
 
 '''
@@ -424,8 +446,8 @@ def import_bills(dddb):
                 B_INSERTED += dddb.rowcount
 
             except MySQLdb.Error:
-                print("Insert statement failed: " + INSERT_BILL % bill)
-                print(traceback.format_exc())
+                logger.warning("Bill insertion failed", full_msg=traceback.format_exc(),
+                               additional_fields=create_payload("Bill", (INSERT_BILL % bill)))
 
         bill_details = get_bill_details(bill['os_bid'], 'FL')
 
@@ -443,13 +465,30 @@ def main():
                          passwd=dbinfo['passwd'],
                          charset='utf8') as dddb:
         import_bills(dddb)
-        print "Inserted " + str(B_INSERTED) + " rows in Bill"
-        print "Inserted " + str(M_INSERTED) + " rows in Motion"
-        print "Inserted " + str(BVS_INSERTED) + " rows in BillVoteSummary"
-        print "Inserted " + str(BVD_INSERTED) + " rows in BillVoteDetail"
-        print "Inserted " + str(A_INSERTED) + " rows in Action"
-        print "Inserted " + str(V_INSERTED) + " rows in BillVersion"
+
+        logger.info(__file__ + " terminated successfully",
+                    full_msg="Inserted " + str(B_INSERTED) + " rows in Bill, "
+                                + str(M_INSERTED) + " rows in Motion, "
+                                + str(BVS_INSERTED) + " rows in BillVoteSummary, "
+                                + str(BVD_INSERTED) + " rows in BillVoteDetail, "
+                                + str(A_INSERTED) + " rows in Action, and "
+                                + str(V_INSERTED) + " rows in BillVersion.",
+                    additional_fields={'_affected_rows': 'Bill: ' + str(B_INSERTED)
+                                                         + ', Motion: ' + str(M_INSERTED)
+                                                         + ', BillVoteSummary: ' + str(BVS_INSERTED)
+                                                         + ', BillVoteDetail: ' + str(BVD_INSERTED)
+                                                         + ', Action: ' + str(A_INSERTED)
+                                                         + ', BillVersion: ' + str(V_INSERTED),
+                                       '_inserted': 'Bill: ' + str(B_INSERTED)
+                                                    + ', Motion: ' + str(M_INSERTED)
+                                                    + ', BillVoteSummary: ' + str(BVS_INSERTED)
+                                                    + ', BillVoteDetail: ' + str(BVD_INSERTED)
+                                                    + ', Action: ' + str(A_INSERTED)
+                                                    + ', BillVersion: ' + str(V_INSERTED),
+                                       '_state': 'FL'})
 
 
 if __name__ == "__main__":
-    main()
+    with GrayLogger(API_URL) as _logger:
+        logger = _logger
+        main()
