@@ -47,7 +47,8 @@ def get_committee_list(state):
 
         committee['comm_id'] = entry['id']
         committee['state'] = state.upper()
-        committee['short_name'] = entry['committee'].replace('Committee', '', 1).strip()
+
+        #committee['short_name'] = entry['committee'].replace('Committee', '', 1).strip()
 
         if entry['chamber'] == 'joint':
             committee['house'] = 'Joint'
@@ -68,15 +69,20 @@ def get_committee_list(state):
             committee['name'] = committee['house'] + ' ' + entry['committee']
             if 'Subcommittee on' in entry['subcommittee']:
                 committee['name'] = committee['name'].strip() + ' ' + entry['subcommittee']
+                committee['short_name'] = entry['subcommittee'].replace('Subcommittee on', '').strip()
             else:
-                committee['name'] = committee['name'].strip() + ' Subcommittee on ' + entry['subcommittee'].replace('Subcommittee', '')
+                committee['name'] = committee['name'].strip() + ' Subcommittee on ' + entry['subcommittee'].replace('Subcommittee', '').strip()
+                committee['short_name'] = entry['subcommittee'].replace('Subcommittee', '').strip()
         elif 'Joint' in entry['committee']:
+            committee['short_name'] = entry['committee'].replace('Committee', '', 1).strip()
             committee['type'] = 'Joint'
             committee['name'] = entry['committee']
         elif 'Select' in entry['committee']:
+            committee['short_name'] = entry['committee'].replace('Select Committee on', '', 1).strip()
             committee['type'] = 'Select'
             committee['name'] = committee['house'] + ' ' + entry['committee']
         else:
+            committee['short_name'] = entry['committee'].replace('Committee', '', 1).strip()
             committee['type'] = 'Standing'
             committee['name'] = committee['house'] + ' ' + committee['type'] + ' Committee on ' + committee['short_name']
 
