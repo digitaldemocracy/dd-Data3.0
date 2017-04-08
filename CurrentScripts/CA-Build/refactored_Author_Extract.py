@@ -70,12 +70,14 @@ QS_COMMITTEE_GET = '''SELECT cid
                       FROM Committee
                       WHERE name = %s
                        AND house = %s
-                       AND state = %s'''
+                       AND state = %s
+                       AND current_flag = 1'''
 QS_COMMITTEE_SHORT_GET = '''SELECT cid
                             FROM Committee
                             WHERE short_name = %s
                              AND house = %s
-                             AND state = "CA"
+                             AND state = %s
+                             AND current_flag = 1
                             '''
 
 QS_BILLVERSION_BID = '''SELECT bid
@@ -175,7 +177,7 @@ def clean_committee_name(name):
   # Removes the 'Committee on' string inside the capublic name
   if 'Committee on' in name:
     return ' '.join((name.split(' '))[2:])
-
+  return name
 '''
 Attempts to get the committee.
 
@@ -188,13 +190,13 @@ Returns the cid of the committee if found. Otherwise, return None.
 def get_committee(dd_cursor, name, house):
   house = house.title()                   # Titlecased for DDDB enum
   name = clean_committee_name(name)       # Clean name for checking
-
+  
   dd_cursor.execute(QS_COMMITTEE_GET, (name, house, STATE))
 
   if dd_cursor.rowcount == 1:
     return dd_cursor.fetchone()[0]
-
-  dd_cursor.execute(QS_COMMITTEE_SHORT_GET, (name, house))
+  
+  dd_cursor.execute(QS_COMMITTEE_SHORT_GET, (name, house, STATE))
   if dd_cursor.rowcount == 1:
     return dd_cursor.fetchone()[0]
 
