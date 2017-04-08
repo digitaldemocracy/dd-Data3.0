@@ -1,8 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python27
 '''
 File: Author_Extract.py
 Author: Daniel Mangin
-Modified By: Mitch Lane, Mandy Chan, Steven Thon, Eric Roh
+Modified By: Mitch Lane, Mandy Chan, Steven Thon, Eric Roh, Nick Russo
 Date: 6/11/2015
 Last Modified: 6/20/2016
 
@@ -47,6 +47,7 @@ BS_INSERT = 0
 
 # U.S. State
 STATE = 'CA'
+YEAR = 2017
 
 # INSERTS
 QI_AUTHORS = '''INSERT INTO authors (pid, bid, vid, contribution)
@@ -98,27 +99,39 @@ QS_BILLSPONSORROLL_CHECK = '''SELECT *
 QS_BILL_VERSION_AUTHORS_TBL = '''SELECT DISTINCT bill_version_id, type, house, name,
                                   contribution, primary_author_flg
                                  FROM bill_version_authors_tbl'''
-QS_LEGISLATOR_FL = '''SELECT Person.pid, last, first
-               FROM Person, Legislator 
-               WHERE Legislator.pid = Person.pid 
-                AND last = %s 
-                AND first = %s
-               ORDER BY Person.pid''' 
-QS_LEGISLATOR_L = '''SELECT Person.pid, last, first 
-                     FROM Person, Legislator 
-                     WHERE Legislator.pid = Person.pid 
-                      AND last = %s 
-                     ORDER BY Person.pid'''
+QS_LEGISLATOR_FL = '''SELECT p.pid, p.last, p.first
+                      FROM Person p, Legislator l, Term t
+                      WHERE p.pid = l.pid 
+                      AND p.pid = t.pid 
+                      AND p.last = %s
+                      AND p.first = %s 
+                      AND t.year = %s 
+                      AND t.state = %s
+                      AND t.house = %s
+                      ORDER BY p.pid'''
+
+
+QS_LEGISLATOR_L = '''SELECT p.pid, p.last, p.first
+                     FROM Person p, Legislator l, Term t
+                     WHERE p.pid = l.pid 
+                     AND p.pid = t.pid 
+                     AND p.last = %s 
+                     AND t.year = %s 
+                     AND t.state = %s
+                     AND t.house = %s
+                     ORDER BY p.pid'''
 QS_TERM = '''SELECT pid, house 
              FROM Term 
              WHERE pid = %s 
               AND house = %s
               AND state = %s 
+              AND year = %s
              ORDER BY Term.pid'''
 QS_LEGISLATOR_LIKE_L = '''SELECT Person.pid, last, first
                           FROM Person, Legislator
                           WHERE Legislator.pid = Person.pid
                            AND last LIKE %s
+                           AND state = %s
                           ORDER BY Person.pid'''
 
 def create_payload(table, sqlstmt):
@@ -201,19 +214,23 @@ Clean the name of the person and remove/replace weird characters.
 Returns the cleaned name.
 '''
 def clean_name(name):
-  # For de Leon
-  temp = name.split('\xc3\xb3')
-  if(len(temp) > 1):
-    name = temp[0] + 'o' + temp[1]
-
-  # For Travis Allen
+  # Replaces all accented o's and a's
+  if "\xc3\xb3" in name:
+      name = name.replace("\xc3\xb3", "o")
+  if "\xc3\xa1" in name:
+      name = name.replace("\xc3\xa1", "a")
+  
   if(name == 'Allen Travis'):
     name = 'Travis Allen'
 
   # For O'Donnell
   if 'Donnell' in name:
     name = "O'Donnell"
-
+  
+  # Removes positions and random unicode ? on Mark Stone's name
+  name = name.replace("Vice Chair", "")
+  name = name.replace("Chair", "")
+  name = name.replace(chr(194), "")
   return name
 
 '''
@@ -226,41 +243,29 @@ Find the Person using a combined name
 def get_person(dd_cursor, filer_naml, house):
   pid = None
   filer_naml = clean_name(filer_naml)
-  temp = filer_naml.split(' ')
-  filer_namf = ''
   house = house.title()
+  error_message = "Multiple matches for the same person: " 
+  # First try last name.
+  dd_cursor.execute(QS_LEGISLATOR_L, (filer_naml, YEAR, STATE, house))
 
-  # Checks if there is a first and last name or just a first
-  if(len(temp) > 1):
-    filer_naml = temp[len(temp)-1]
-    filer_namf = temp[0]
-    dd_cursor.execute(QS_LEGISLATOR_FL, (filer_naml, filer_namf))
-  else:
-    dd_cursor.execute(QS_LEGISLATOR_L, (filer_naml,))
-
-  # If it finds a match of the exact name, use that
   if dd_cursor.rowcount == 1:
     pid = dd_cursor.fetchone()[0]
-  # If there is more than one, have to use the house
-  elif dd_cursor.rowcount > 1:
-    a = [t[0] for t in dd_cursor.fetchall()]
-    end = dd_cursor.rowcount
-    # Find which person it is using their term
-    for j in range(0, end):
-      dd_cursor.execute(QS_TERM, (a[j], house, STATE))
-      if(dd_cursor.rowcount == 1):
-        pid = dd_cursor.fetchone()[0]
-
-  # If none were found, loosen the search up a bit and just look for last name
+  elif dd_cursor.rowcount == 0:
+    parts = filer_naml.split(' ')
+    if len(parts) > 1:
+        dd_cursor.execute(QS_LEGISLATOR_FL, (parts[1:], parts[0], YEAR, STATE, house))
+        if dd_cursor.rowcount == 1:
+            pid = dd_cursor.fetchone()[0]
+    else:
+        filer_naml = '%' + filer_naml + '%'
+        dd_cursor.execute(QS_LEGISLATOR_LIKE_L, (filer_naml, STATE))
+        if(dd_cursor.rowcount == 1):
+            pid = dd_cursor.fetchone()[0]
   else:
-    filer_naml = '%' + filer_naml + '%'
-    dd_cursor.execute(QS_LEGISLATOR_LIKE_L, (filer_naml,))
-    if(dd_cursor.rowcount == 1):
-      pid = dd_cursor.fetchone()[0]
-  
-  if pid is None and temp not in logged_list:
-    logged_list.append(temp)
-    logger.warning('Person not found ' + ' '.join(temp),
+       error_message = "Person not found "
+  if pid is None and filer_naml not in logged_list:
+    logged_list.append(filer_naml)
+    logger.warning(error_message + filer_naml,
         additional_fields={'_state':'CA'})
   return pid
 
@@ -276,7 +281,7 @@ def get_bid(dd_cursor, vid):
   dd_cursor.execute(QS_BILLVERSION_BID, (vid, STATE))
 
   if dd_cursor.rowcount > 0:
-	  return dd_cursor.fetchone()[0]
+    return dd_cursor.fetchone()[0]
   if vid not in logged_list:
     logged_list.append(vid)
     logger.warning('BillVersion not found '+vid, 
@@ -331,7 +336,6 @@ def add_sponsor(dd_cursor, pid, bid, vid, contribution):
   dd_cursor.execute(QS_BILLSPONSORS_CHECK, (bid, pid, vid, contribution))
 
   if dd_cursor.rowcount == 0:
-#    print pid, vid, contribution
     try:
       dd_cursor.execute(QI_BILLSPONSORS, (pid, bid, vid, contribution))
       BS_INSERT += dd_cursor.rowcount

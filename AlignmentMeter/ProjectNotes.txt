@@ -1,10 +1,15 @@
 Project Notes:
 
-You need to import all your extra alignments from, after correcting your alignment scraping script
+- Code written for most things, just need to debug
 
-Go over with Hans, whether the passing votes you selected actually are passing votes
+- Handling of session year issues will be done with SQL at the end by using bid
 
-current spot:
+
+
+
+
+Christine Q's:
+
 
 
 AlignmentMeter.py:

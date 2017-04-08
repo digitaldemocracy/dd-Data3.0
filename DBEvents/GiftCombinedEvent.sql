@@ -34,6 +34,7 @@ DO
     speechFlag tinyint(1) DEFAULT '0',
     speechOrPanel tinyint(1) DEFAULT NULL,
     sessionYear YEAR,
+    source VARCHAR(55),
     state varchar(2) DEFAULT NULL,
     lastTouched timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     PRIMARY KEY (RecordId),
@@ -53,22 +54,22 @@ DO
                             activity, sourceCity, sourceState, giftValue,
                             giftDate, reimbursed, giftIncomeFlag, speechFlag,
                             description, sessionYear, state, lastTouched, oid,
-                            giftDate_ts)
+                            giftDate_ts, source)
     SELECT YEAR(giftDate), RecordId, pid, schedule, sourceName,
       activity, city, cityState, value,
       giftDate, reimbursed, giftIncomeFlag, speechFlag,
-      description, sessionYear, state, lastTouched, oid, giftDate_ts
+      description, sessionYear, state, lastTouched, oid, giftDate_ts, 'Gift' as source
     from Gift;
   INSERT INTO GiftCombined (year, agencyName, recipientPid, legislatorPid,
                             position, districtNumber, jurisdiction, sourceName,
                             sourceCity, sourceState, sourceBusiness, giftDate,
                             giftValue, reimbursed, description, speechOrPanel,
-                            imageUrl, lastTouched, schedule, sessionYear, giftDate_ts, state)
+                            imageUrl, lastTouched, schedule, sessionYear, giftDate_ts, state, source)
     select year, agency_name, staff_member, legislator,
       position, district_number, jurisdiction, source_name,
       source_city, source_state, source_business, date_given,
       gift_value, reimbursed, gift_description, speech_or_panel,
-      image_url, lastTouched, schedule, session_year, date_given_ts, state
+      image_url, lastTouched, schedule, session_year, date_given_ts, state, 'LegStaffGifts' as source
     from LegStaffGifts;
 
   END |

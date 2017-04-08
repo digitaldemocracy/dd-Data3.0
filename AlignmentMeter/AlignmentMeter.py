@@ -1,12 +1,13 @@
 import pandas as pd
+import numpy as np
 import pymysql
 import pickle
-import numpy as np
+import itertools
 
-CONN_INFO = {'host': 'dddb2016-mysql5-7-11.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+CONN_INFO = {'host': 'dddb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
              'port': 3306,
-             # 'db': 'AndrewTest',
-             'db': 'DDDB2016Aug',
+             'db': 'AndrewTest',
+             # 'db': 'DDDB2016Aug',
              'user': 'awsDB',
              'passwd': 'digitaldemocracy789'}
 
@@ -45,34 +46,6 @@ def fetch_org_alignments(cnxn):
 def fetch_leg_votes(cnxn):
 
     cursor = cnxn.cursor()
-
-    # stmt = """CREATE OR REPLACE VIEW LastDate
-    #           AS
-    #          SELECT bid,
-    #              c.house,
-    #              MAX(b.VoteId) AS VoteId
-    #          FROM BillVoteSummary b
-    #              JOIN Committee c
-    #              on b.cid = c.cid
-    #          GROUP BY bid, c.house"""
-    #
-    # cursor.execute(stmt)
-    #
-    # stmt = """CREATE OR REPLACE VIEW LastVote
-    #           AS
-    #           SELECT bvs.bid,
-    #             bvs.voteId,
-    #             c.house,
-    #             c.type
-    #           FROM BillVoteSummary bvs
-    #             JOIN Committee c
-    #             ON bvs.cid = c.cid
-    #             JOIN LastDate ld
-    #             ON ld.bid = bvs.bid
-    #               AND bvs.VoteId = ld.VoteId
-    #               AND ld.house = c.house"""
-    #
-    # cursor.execute(stmt)
 
     stmt = """CREATE OR REPLACE VIEW DoPassVotes
                 AS
@@ -121,19 +94,26 @@ def fetch_leg_votes(cnxn):
                     ON b.cid = c.cid
                     JOIN Motion m
                     on b.mid = m.mid
-                WHERE m.text like '%reading%'"""
+                WHERE m.text like '%reading%'
+                  and m.text not like '%amend%'"""
     cursor.execute(stmt)
 
     stmt = """CREATE OR REPLACE VIEW PassingVotes
                 AS
-                SELECT *
+                SELECT *,
+                  naes = 0 or ayes = 0 as unanimous,
+                  bid like '%ACR%' or bid like '%SCR%' or bid like '%HR%' or bid like '%SR%' or bid like '%AJR%'
+                  or bid like '%SJR%' as resolution
                 FROM DoPassVotes
-                UNION
-                SELECT *
+                UNION ALL
+                SELECT *,
+                    naes = 0 or ayes = 0 as unanimous,
+                    bid like '%ACR%' or bid like '%SCR%' or bid like '%HR%' or bid like '%SR%' or bid like '%AJR%'
+                    or bid like '%SJR%' as resolution
                 FROM FloorVotes;"""
     cursor.execute(stmt)
 
-    query = """SELECT DISTINCT bvd.*, bvs.bid, date(bvs.VoteDate) as VoteDate,
+    query = """SELECT DISTINCT bvd.*, bvs.bid, date(bvs.VoteDate) as VoteDate, bvs.unanimous, bvs.resolution,
                     h.hid, p.first, p.middle, p.last
                FROM PassingVotes bvs
                    JOIN Motion m
@@ -158,6 +138,7 @@ def fetch_leg_votes(cnxn):
 
     leg_votes_df.loc[leg_votes_df.result == 'AYE', 'result'] = 'For'
     leg_votes_df.loc[leg_votes_df.result == 'NOE', 'result'] = 'Against'
+    leg_votes_df['abstain_vote'] = leg_votes_df.result == 'ABS'
     leg_votes_df.loc[leg_votes_df.result == 'ABS', 'result'] = 'Against'
 
     # cursor.execute('DROP VIEW LastDate')
@@ -391,6 +372,29 @@ def handle_multi_alignment(oid_alignments_df, leg_votes_df):
 
     return scores_df
 
+
+# Given different voting dataframes, calculates the scores for each legislator.
+# Returns: Dataframe of leg, org pair scores
+def calc_scores(leg_votes_df, org_alignments_df):
+    scores_df_lst = []
+    for ((oid, bid), oid_alignments_df) in org_alignments_df.groupby(['oid', 'bid']):
+        if len(oid_alignments_df['alignment'].unique()) > 1:
+            scores_df = handle_multi_alignment(oid_alignments_df, leg_votes_df)
+            if len(scores_df.index):
+                assert type(scores_df) == pd.DataFrame
+                scores_df_lst.append(scores_df)
+        else:
+            scores_df = handle_single_alignment(oid_alignments_df, leg_votes_df)
+            if len(scores_df.index):
+                assert type(scores_df) == pd.DataFrame
+                scores_df_lst.append(scores_df)
+                # pickle.dump(scores_df_lst, open('scores_df_lst.p', 'wb'))
+
+    print('blah')
+    pickle.dump(scores_df_lst, open('scores_df_lst_final.p', 'wb'))
+
+    return pd.concat(scores_df_lst)
+
 # Given a list of oids, groups the organizations together and creates a new entry in your dataframe
 # for this org
 # Returns modified org_alignments_df with the new oid, new oid you added
@@ -412,19 +416,19 @@ def group_orgs(org_alignments_df, group, group_name):
 
 
 # Shouldn't be a permanent fixture
-def tmp_create_org_concepts(org_alignments_df):
-
-    cta_oids = set([3723, 6344, 10163, 20030, 24545, 25467, 28301, 9085, 27716])
-    chevron_oids = set([9301, 9955])
-    sierra_club_oids = set([1333, 27797, 28333])
-    ca_chamber_oids = set([89, 5629, 20024, 20119, 20257])
-
-    org_alignments_df = group_orgs(org_alignments_df, cta_oids, 'CTA_Merged')
-    org_alignments_df = group_orgs(org_alignments_df, chevron_oids, 'Chevron_Merged')
-    org_alignments_df = group_orgs(org_alignments_df, sierra_club_oids, 'Sierra_Club_Merged')
-    org_alignments_df = group_orgs(org_alignments_df, ca_chamber_oids, 'CA_Chamber_Of_Commerce_Merged')
-
-    return org_alignments_df
+# def tmp_create_org_concepts(org_alignments_df):
+#
+#     cta_oids = set([3723, 6344, 10163, 20030, 24545, 25467, 28301, 9085, 27716])
+#     chevron_oids = set([9301, 9955])
+#     sierra_club_oids = set([1333, 27797, 28333])
+#     ca_chamber_oids = set([89, 5629, 20024, 20119, 20257])
+#
+#     org_alignments_df = group_orgs(org_alignments_df, cta_oids, 'CTA_Merged')
+#     org_alignments_df = group_orgs(org_alignments_df, chevron_oids, 'Chevron_Merged')
+#     org_alignments_df = group_orgs(org_alignments_df, sierra_club_oids, 'Sierra_Club_Merged')
+#     org_alignments_df = group_orgs(org_alignments_df, ca_chamber_oids, 'CA_Chamber_Of_Commerce_Merged')
+#
+#     return org_alignments_df
 
 
 # Returns org_alignments_df w/ only the alignments for the organizations we're concerned w/
@@ -511,23 +515,23 @@ def get_position_info(full_df, org_alignments_df, leg_votes_df):
 def main():
     # cnxn = pymysql.connect(**CONN_INFO)
 
-    # load_data = True
-    load_data = False
+    load_data = True
+    # load_data = False
 
     if load_data:
 
         cnxn = pymysql.connect(**CONN_INFO)
         org_alignments_df = fetch_org_alignments(cnxn)
         concept_alignments_df = make_concept_alignments(org_alignments_df, cnxn)
-        leg_votes_df = fetch_leg_votes(cnxn)
+        leg_votes_all_df = fetch_leg_votes(cnxn)
         pickle.dump(org_alignments_df, open('org_alignments_df.p', 'wb'))
         pickle.dump(concept_alignments_df, open('concept_alignments_df.p', 'wb'))
-        pickle.dump(leg_votes_df, open('leg_votes_df.p', 'wb'))
+        pickle.dump(leg_votes_all_df, open('leg_votes_all_df.p', 'wb'))
         cnxn.close()
 
     # org_alignments_df = pickle.load(open('org_alignments_df.p', 'rb'))
     org_alignments_df = pickle.load(open('concept_alignments_df.p', 'rb'))
-    leg_votes_df = pickle.load(open('leg_votes_df.p', 'rb'))
+    leg_votes_all_df = pickle.load(open('leg_votes_df.p', 'rb'))
 
 
     # org_alignments_df = tmp_create_org_concepts(org_alignments_df)
@@ -537,32 +541,36 @@ def main():
 
     org_alignments_df = org_alignments_df.drop_duplicates(['oid', 'bid', 'hid'])
 
-    # leg_votes_df = pickle.load(open('leg_votes_df_sample.p', 'rb'))
+    filters = ['unanimous', 'abstain_vote', 'resolution']
 
-    scores_df_lst = []
-    for ((oid, bid), oid_alignments_df) in org_alignments_df.groupby(['oid', 'bid']):
-        if len(oid_alignments_df['alignment'].unique()) > 1:
-            scores_df = handle_multi_alignment(oid_alignments_df, leg_votes_df)
-            if len(scores_df.index):
-                assert type(scores_df) == pd.DataFrame
-                scores_df_lst.append(scores_df)
-        else:
-            scores_df = handle_single_alignment(oid_alignments_df, leg_votes_df)
-            if len(scores_df.index):
-                assert type(scores_df) == pd.DataFrame
-                scores_df_lst.append(scores_df)
-        # pickle.dump(scores_df_lst, open('scores_df_lst.p', 'wb'))
+    combinations = []
+    for i in range(len(filters) + 1):
+        combinations += (list(itertools.combinations(filters, i)))
 
-    print('blah')
+    leg_votes_df_lst = []
+    for combo in combinations:
+        leg_votes_df = leg_votes_all_df.copy()
+        for flt in combo:
+            leg_votes_df = leg_votes_df[leg_votes_df[flt] == 1]
+        leg_votes_df_lst.append(leg_votes_df)
 
-    pickle.dump(scores_df_lst, open('scores_df_lst_final.p', 'wb'))
-    df = pd.concat(scores_df_lst)
+    final_df_lst = []
+    for leg_votes_df, combo in zip(leg_votes_df_lst, combinations):
+        df = calc_scores(leg_votes_df, org_alignments_df)
+        df = get_position_info(df, org_alignments_df, leg_votes_df)
+        for flt in filters:
+            flag = 1 if flt in combo else 0
+            df[flt] = flag
 
-    df = get_position_info(df, org_alignments_df, leg_votes_df)
+        final_df_lst.append(df)
+
+    df = pd.conat(final_df_lst)
+
+    pickle.dump(df, open('final_df.p', 'wb'))
 
     cnxn = pymysql.connect(**CONN_INFO)
 
-    data_df = make_data_table(org_alignments_df, leg_votes_df)
+    data_df = make_data_table(org_alignments_df, leg_votes_all_df)
     data_df.to_sql('AlignmentScoresData', cnxn, flavor='mysql', if_exists='replace', index=False)
     df.to_sql('BillAlignmentScoresAndrew', cnxn, flavor='mysql', if_exists='replace', index=False)
 

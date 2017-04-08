@@ -2,11 +2,11 @@
   This table is how the site keeps track of the classifications for every person.
  */
 
-DROP EVENT IF EXISTS PersonClassificationsEvent_event;
+DROP EVENT IF EXISTS PersonClassifications_event;
 
 DELIMITER |
 
-CREATE EVENT PersonClassificationsEvent_event
+CREATE EVENT PersonClassifications_event
   ON SCHEDULE
     EVERY 1 DAY STARTS '2017-1-1 07:00:00'
 DO
@@ -442,7 +442,7 @@ DO
         and tmp.PersonType = og.PersonType
         and tmp.specific_year = og.specific_year
         and tmp.session_year = og.session_year
-    where og.pid is null;
+    where og.pid is null and tmp.state is not null;
 
     delete pc
     from PersonClassifications pc
@@ -450,6 +450,13 @@ DO
       on pc.pid = tmp.pid and pc.PersonType = tmp.PersonType
         and pc.specific_year = tmp.specific_year and tmp.session_year = pc.session_year
     where tmp.pid is null;
+
+    delete pc1 from PersonClassifications pc1
+      join PersonClassifications pc2
+        on pc1.pid = pc2.pid
+           and pc1.session_year = pc2.session_year
+           and pc1.PersonType != pc2.PersonType
+    where pc2.PersonType = 'Legislator';
 
 
     drop table if exists LatestClass;
@@ -512,6 +519,24 @@ DO
            and p.session_year = c.session_year
     set is_current = False
     where p.PersonType != 'Legislator' and c.pid is null;
+
+    create view FormerLegs
+      as
+    select pid, state, sum(is_current)
+    from PersonClassifications
+    where PersonType = 'Legislator'
+    group by pid, state
+    having sum(is_current) = 0;
+
+    insert into PersonClassifications
+    (pid, PersonType, specific_year, session_year, is_current, state)
+    select pid,
+      'Former Legislator' as PersonType,
+      year(curdate()) as specific_year,
+      if(year(curdate()) % 2 = 0, year(curdate()) - 1, year(curdate())) as session_year,
+      1 as is_current,
+      state
+    from FormerLegs;
 
     drop table if EXISTS NumRange;
     drop table if EXISTS CurrentClassUtter;
