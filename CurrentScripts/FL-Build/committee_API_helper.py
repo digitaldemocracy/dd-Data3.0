@@ -67,7 +67,11 @@ def get_committee_list(state):
         if entry['subcommittee'] is not None:
             committee['type'] = 'Subcommittee'
             committee['name'] = committee['house'] + ' ' + entry['committee']
-            if 'Subcommittee on' in entry['subcommittee']:
+
+            if 'Subcommittee on the' in entry['subcommittee']:
+                committee['name'] = committee['name'].strip() + ' ' + entry['subcommittee']
+                committee['short_name'] = entry['subcommittee'].replace('Subcommittee on the', '').strip()
+            elif 'Subcommittee on' in entry['subcommittee']:
                 committee['name'] = committee['name'].strip() + ' ' + entry['subcommittee']
                 committee['short_name'] = entry['subcommittee'].replace('Subcommittee on', '').strip()
             else:
