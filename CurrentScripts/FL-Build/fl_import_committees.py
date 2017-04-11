@@ -1,401 +1,298 @@
-#!/usr/bin/env python2.6
+#!/usr/bin/env python2.7
 # -*- coding: utf8 -*-
 
-'''
-File: fl_import_committees.py
-Author: Miguel Aguilar
-Maintained: Miguel Aguilar
-Date: 04/26/2016
-Last Updated: 08/12/2016
+"""
+File: new_fl_import_committee.py
+Author: Andrew Rose
+Date: 3/14/2017
+Last Updated: 3/14/2017
 
 Description:
-  - This script populates the database with the Florida state committees
-  and its members.
+    -This file gets OpenStates committee data using the API Helper and inserts it into the database
 
 Source:
-  - Open States API
+    -OpenStates API
 
 Populates:
-  - Committee (cid, house, name, type, state)
-  - servesOn (pid, year, house, cid, state, position)
-'''
+    -CommitteeNames (name, house, state)
+    -Committee (name, short_name, type, state, house, session_year)
+    -ServesOn
+"""
 
-import re
-import datetime
-import requests
 import MySQLdb
 import sys
 import traceback
-from graylogger.graylogger import GrayLogger
-GRAY_URL = 'http://development.digitaldemocracy.org:12202/gelf'
-logger = None
+import datetime as dt
+from time import strftime
+from committee_API_helper import *
+from Database_Connection import mysql_connection
+# Global counters
+CN_INSERTED = 0
+C_INSERTED = 0
+SO_INSERTED = 0
+SO_UPDATED = 0
 
-#Globals
-C_INSERT = 0
-S_INSERT = 0
-S_DELETE = 0
+# SQL Selects
+SELECT_SESSION_YEAR = '''SELECT max(start_year) FROM Session
+                         WHERE state = 'FL'
+                         '''
 
-#Selects
-QS_FLOOR = '''SELECT p.pid
-              FROM Legislator l, Person p, Term t
-              WHERE l.state=%(state)s
-              AND t.house=%(house)s
-              AND l.pid=p.pid
-              AND t.pid=p.pid'''
+SELECT_COMMITTEE_NAME = '''SELECT * FROM CommitteeNames
+                           WHERE name = %(name)s
+                           AND house = %(house)s
+                           AND state = %(state)s
+                           '''
 
-QS_COMMITTEE_MAX = '''SELECT cid FROM Committee
-                      ORDER BY cid DESC
-                      LIMIT 1'''
+SELECT_COMMITTEE = '''SELECT cid FROM Committee
+                      WHERE state = %(state)s
+                      AND name = %(name)s
+                      AND house = %(house)s
+                      AND session_year = %(session_year)s
+                      '''
 
-QS_PERSON = '''SELECT p.pid
-              FROM Person p, Legislator l
-              WHERE first = %(first)s AND last = %(last)s
-              AND state = %(state)s AND p.pid = l.pid'''
+SELECT_PID = '''SELECT pid FROM AlternateId
+                WHERE alt_id = %(alt_id)s'''
 
-QS_COMMITTEE = '''SELECT cid
-                  FROM Committee
-                  WHERE house = %(house)s
-                  AND (name = %(name)s OR short_name = %(short_name)s)
-                  AND state = %(state)s'''
+SELECT_SERVES_ON = '''SELECT * FROM servesOn
+                      WHERE pid = %(pid)s
+                      AND year = %(session_year)s
+                      AND house = %(house)s
+                      AND cid = %(cid)s
+                      AND state = %(state)s'''
 
-QS_SERVESON = '''SELECT pid 
-                FROM servesOn
-                WHERE pid = %(pid)s 
-                AND year = %(year)s 
-                AND house = %(house)s 
-                AND cid = %(cid)s 
-                AND state = %(state)s'''
+SELECT_COMMITTEE_MEMBERS = '''SELECT pid FROM servesOn
+                            WHERE house = %(house)s
+                            AND cid = %(cid)s
+                            AND state = %(state)s
+                            AND current_flag = true
+                            AND year = %(year)s'''
 
-#Inserts
-QI_COMMITTEE = '''INSERT INTO Committee 
-                  (cid, house, name, type, state, short_name)
-                  VALUES 
-                  (%(cid)s, %(house)s, %(name)s, %(type)s, %(state)s, %(short_name)s)'''
+# SQL Inserts
+INSERT_COMMITTEE_NAME = '''INSERT INTO CommitteeNames
+                           (name, house, state)
+                           VALUES
+                           (%(name)s, %(house)s, %(state)s)'''
 
-QI_SERVESON = '''INSERT INTO servesOn 
-                  (pid, year, house, cid, state, position)
-                  VALUES 
-                  (%(pid)s, %(year)s, %(house)s, %(cid)s, %(state)s, %(position)s)'''
+INSERT_COMMITTEE = '''INSERT INTO Committee
+                      (name, short_name, type, state, house, session_year)
+                      VALUES
+                      (%(name)s, %(short_name)s, %(type)s, %(state)s, %(house)s, %(session_year)s)'''
 
-#Deletes
-QD_SERVESON = '''DELETE FROM servesOn
-                WHERE cid = %s
-                AND house = %s
-                AND year <= %s
-                AND state = %s'''
-
-
-API_URL = 'http://openstates.org/api/v1/committees/?state=fl&apikey={0}'
-API_URL2 = 'http://openstates.org/api/v1/committees/{0}/?apikey={1}'
-API_KEY = '92645427ddcc46db90a8fb5b79bc9439'
-API_YEAR = 2015
-STATE = 'FL'
-YEAR = datetime.datetime.now().year
+INSERT_SERVES_ON = '''INSERT INTO servesOn
+                      (pid, year, house, cid, state, current_flag, start_date, position)
+                      VALUES
+                      (%(pid)s, %(session_year)s, %(house)s, %(cid)s, %(state)s, 1, %(start_date)s, %(position)s)'''
 
 
-def create_payload(table, sqlstmt):                                             
-  return {
-    '_table': table,
-    '_sqlstmt': sqlstmt,
-    '_state': 'FL'
-  }
+def is_comm_name_in_db(dddb, committee):
+    comm_name = {'name': committee['name'], 'house': committee['house'], 'state': committee['state']}
 
-'''
-This function cleans the name of the legislators
-into a common format.
-'''
-def clean_name(name):
-  problem_names = {
-    "Miguel Diaz de la Portilla":("Miguel", "Diaz de la Portilla"),
-    "Charles Van Zant":("Charles", "Van Zant"), 
-    "Mike La Rosa":("Mike", "La Rosa"),
-    "Charlie Dean, Sr.":("Charles", "Dean, Sr."), 
-    "Mike Hill":("Walter Bryan", "Hill"), 
-    "Bob Cortes":("Robert","Cortes"), 
-    "Danny Burgess, Jr.":("Daniel Wright","Burgess, Jr."),
-    "Coach P Plasencia":("Rene","Plasencia"),
-    }
-    
-  #IF THERE IS ONE OR TWO COMMAS THEN FLIP THE NAME
-  if name.count(',') == 1:
-    name_flip = name.split(',')
-    if ' Jr.' not in name_flip and ' Sr.' not in name_flip:
-      name_flip.reverse()
-    name = ', '.join(name_flip)
-  elif name.count(',') > 1:
-    name_flip = name.split(',')
-    if name_flip[2] == ' Jr.' or name_flip[2] == ' Sr.':
-      name_flip[1], name_flip[0] = name_flip[0], name_flip[1]
-    elif name_flip[1] == ' Jr.' or name_flip[1] == ' Sr.':
-      name_flip[2], name_flip[0] = name_flip[0], name_flip[2]
-    name = ', '.join(name_flip)
+    try:
+        dddb.execute(SELECT_COMMITTEE_NAME, comm_name)
 
-  ending = {'Jr':', Jr.','Sr':', Sr.','II':' II','III':' III', 'IV':' IV'}
-  name = name.replace(',', ' ')
-  name = name.replace('.', ' ')
-  name = name.replace('  ', ' ')
-  name_arr = name.split()      
-  suffix = "";         
+        if dddb.rowcount == 0:
+            return False
+        else:
+            return True
 
-  if len(name_arr) == 1 and name_arr[0] in problem_names.keys():
-    name_arr = list(problem_names[name_arr[0]])
+    except:
+        print("Select query failed: " + (SELECT_COMMITTEE_NAME % comm_name))
 
-        
-  for word in name_arr:
-    if word != name_arr[0] and (len(word) <= 1 or word in ending.keys()):
-      name_arr.remove(word)
-      if word in ending.keys():
-        suffix = ending[word]            
-          
-  first = name_arr.pop(0)
-  
-  while len(name_arr) > 1:
-    first = first + ' ' + name_arr.pop(0)     
-             
-  last = name_arr[0]
-  last = last.replace(' ' ,'') + suffix
-  
-  if (first + ' ' + last) in problem_names.keys():             
-    return problem_names[(first + ' ' + last)]
 
-  return (first, last)
+def is_servesOn_in_db(dddb, member):
+    try:
+        dddb.execute(SELECT_SERVES_ON, member)
 
-'''
-This function gets the legislative member ID (pid).
-Includes handling of problem names. 
-'''
-def get_member_pid_db(dddb, name):
-  prob_names = ['Darryl Ervin','Victor Manuel', 'W Travis', 'Jared Evan', 'Ray Wesley', 'Maria Lorts']
-  per = {}
+        if dddb.rowcount == 0:
+            return False
+        else:
+            return True
 
-  if 'Representative' in name or 'Senator' in name:
-    name = ' '.join(name.split()[1:])
+    except MySQLdb.Error:
+        print("Select query failed: " + (SELECT_SERVES_ON % member))
 
-  per['first'], per['last'] = clean_name(name)
-  per['state'] = STATE
 
-  if '"' in per['first']:
-    per['first'] = re.sub(' "(.*?)"', '', per['first'])
-  if len(per['first']) > 1 and per['first'] in prob_names:
-    per['first'] = per['first'].split()[0]
-  if 'Javier' in per['first']:
-    per['first'] = 'José'
-  if per['last'] == 'Moraitis':
-    per['first'] = 'George'
-    per['last'] = per['last'] + ', Jr.'
-  if per['last'] == 'Braynon':
-    per['first'] = 'Oscar'
-    per['last'] = per['last'] + ' II'
-  if per['last'] == 'Brandes':
-    per['first'] = 'Jeffrey'
+def get_comm_cid(dddb, committee):
+    comm = {'state': committee['state'], 'name': committee['name'],
+            'house': committee['house'], 'session_year': committee['session_year']}
 
-  dddb.execute(QS_PERSON, per)
-  if dddb.rowcount == 0:
-    print 'Name not found'
-    pid = None
-  else:
-    pid = dddb.fetchone()[0]
+    try:
+        dddb.execute(SELECT_COMMITTEE, comm)
 
-  return pid
+        if dddb.rowcount == 0:
+            return None
+        else:
+            return dddb.fetchone()[0]
 
-'''
-This function gets all the committee members given a 
-committee id and a house through OpenStates API.
-'''
-def get_comm_members_api(dddb, comm_id, house):
-  url = API_URL2.format(comm_id, API_KEY)
-  comm_json = requests.get(url).json()
+    except MySQLdb.Error:
+        print("Select query failed: " + (SELECT_COMMITTEE % comm))
 
-  member_list = []
-  for mem in comm_json['members']:
-    member = {}
-    member['name'] = mem['name']
-    member['position'] = mem['role'].capitalize()
-    #NOT SURE if alternating chair is the same as co-chair
-    if mem['role'] == 'Alternating Chair':
-      member['position'] = 'Co-Chair'
-    elif 'Members' in mem['role']:
-      member['position'] = 'Member' 
-    if member['position'] not in ['Chair', 'Vice-Chair', 'Co-Chair', 'Member']:
-      print 'START TRUNCATED'
-      print mem['role']
-      print 'END TRUNCATED'
-    member['year'] = YEAR
-    member['state'] = STATE
-    member['house'] = house
-    member['pid'] = get_member_pid_db(dddb, mem['name'])
 
-    if member['pid'] is None:
-      print 'Member Not Found'
-    else:
-      member_list.append(member)
+def get_session_year(dddb):
+    try:
+        dddb.execute(SELECT_SESSION_YEAR)
 
-  return member_list
+        return dddb.fetchone()[0]
+    except MySQLdb.Error:
+        print("Select query failed:" + SELECT_SESSION_YEAR)
 
-'''
-This gets the list of Florida committees from OpenStates API.
-Every committee is cleaned-up and formated into a dictionary.
-Returns a list of dictionaries.
-'''
-def get_committees_api(dddb):
-  url = API_URL.format(API_KEY)
-  comm_json = requests.get(url).json()
 
-  comm_list = []
-  for entry in comm_json:
-    comm = {}
-    if entry['subcommittee'] is None:
-      comm['type'] = 'Standing'
-      comm['name'] = entry['committee']
-      comm['short_name'] = entry['committee']
-    else:
-      comm['type'] = 'Subcommittee'
-      if entry['committee'] in entry['subcommittee']:
-        comm['name'] = entry['subcommittee'] + 'Subcommittee'
-        comm['short_name'] = ' '.join(entry['subcommittee'].split()[:-1])
-      else:
-        comm['name'] = ' '.join([entry['subcommittee'], entry['committee'], 'Subcommittee']) 
-        comm['short_name'] = entry['subcommittee']
+def get_pid(dddb, member):
+    alt_id = {'alt_id': member['leg_id']}
 
-    if 'Joint' in entry['committee']:
-      comm['type'] = 'Joint'
-    elif 'Select' in entry['committee']:
-      comm['type'] = 'Select'
+    try:
+        dddb.execute(SELECT_PID, alt_id)
 
-    if entry['chamber'] == 'upper':
-      comm['house'] = 'Senate'
-    elif entry['chamber'] == 'lower':
-      comm['house'] = 'Assembly'
-    else:
-      comm['house'] = 'Joint'
+        if dddb.rowcount == 0:
+            print "Error: Person not found"
+            return None
+        else:
+            return dddb.fetchone()[0]
 
-    comm['state'] = 'FL'
-    comm['members'] = get_comm_members_api(dddb, entry['id'], comm['house'])
+    except MySQLdb.Error:
+        print("Select query failed: " + SELECT_PID)
 
-    comm_list.append(comm)
 
-  return comm_list 
+def get_past_members(dddb, committee):
+    update_members = list()
 
-'''
-This function clears the current people in the servesOn table
-given a committee id (cid) and house
-'''
-def clear_servesOn_db(dddb, cid, house):
-  global S_DELETE
+    try:
+        comm = {'cid': committee['cid'], 'house': committee['house'],
+                'state': committee['state'], 'year': committee['session_year']}
+        dddb.execute(SELECT_COMMITTEE_MEMBERS, comm)
 
-  try:
-    # Delete previous entries in order to insert the latest ones
-    dddb.execute(QD_SERVESON, (cid, house, YEAR, STATE))
-    S_DELETE += dddb.rowcount
-  except MySQLdb.Error:
-    logger.warning('Delete Failed', full_msg=traceback.format_exc(),
-      additional_fields=create_payload('servesOn',(QD_SERVESON%(cid, house, YEAR, STATE))))
+        query = dddb.fetchall()
 
-'''
-This function inserts an entry into the servesOn table.
-'''
-def insert_servesOn_db(dddb, mem_list, cid):
-  global S_INSERT
+        for member in query:
+            isCurrent = False
 
-  for mem in mem_list:
-    mem['cid'] = cid
-    dddb.execute(QS_SERVESON, mem)
-    if dddb.rowcount == 0:
-      try:
-        dddb.execute(QI_SERVESON, mem)
-        S_INSERT += dddb.rowcount
-      except MySQLdb.Error:
-        logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-            additional_fields=create_payload('servesOn', (QI_SERVESON%mem)))
+            for commMember in committee['members']:
+                if member[0] == commMember['pid']:
+                    isCurrent = True
+                    break
 
-'''
-This function inserts the rest of the committees into the Committee table
-excludes the floors.
-'''
-def insert_committees_db(dddb, comm_list):
-  global C_INSERT
+            if isCurrent is False:
+                mem = dict()
+                mem['current_flag'] = 0
+                mem['end_date'] = dt.datetime.today().strftime("%Y-%m-%d")
+                mem['pid'] = member[0]
+                mem['cid'] = committee['cid']
+                mem['house'] = committee['house']
+                mem['year'] = committee['session_year']
+                mem['state'] = committee['state']
+                update_members.append(mem)
 
-  for comm in comm_list:
-    dddb.execute(QS_COMMITTEE, comm)
-    if dddb.rowcount == 0:
-      dddb.execute(QS_COMMITTEE_MAX)
-      comm['cid'] = dddb.fetchone()[0] + 1
-      try:
-        dddb.execute(QI_COMMITTEE, comm)
-        C_INSERT += dddb.rowcount
-      except MySQLdb.Error:
-        logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-            additional_fields=create_payload('Committee', (QI_COMMITTEE%comm)))
-    else:
-      comm['cid'] = dddb.fetchone()[0]
+    except MySQLdb.Error:
+        print("Select statement failed: " + (SELECT_COMMITTEE_MEMBERS % comm))
 
-    clear_servesOn_db(dddb, comm['cid'], comm['house'])
-    insert_servesOn_db(dddb, comm['members'], comm['cid'])
+    return update_members
 
-'''
-This function inserts the floor committees into the Committee table
-and it also inserts the legislators that serve on them into the
-servesOn table.
-'''
-def insert_floor_committees_db(dddb):
-  global C_INSERT
-  comm_list = [{'cid':'', 'house':'Assembly', 'name':'Assembly Floor', 'type':'Floor', 'state':'FL', 'short_name':'Assembly Floor'},
-              {'cid':'', 'house':'Senate', 'name':'Senate Floor', 'type':'Floor', 'state':'FL', 'short_name':'Senate Floor'}]
 
-  #Insert the floor committees into Committee table
-  for comm in comm_list:
-    dddb.execute(QS_COMMITTEE, comm)
-    if dddb.rowcount == 0:
-      dddb.execute(QS_COMMITTEE_MAX)
-      comm['cid'] = dddb.fetchone()[0] + 1
-      try:
-        dddb.execute(QI_COMMITTEE, comm)
-        C_INSERT += dddb.rowcount
-      except MySQLdb.Error:
-        logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-            additional_fields=create_payload('Committee', (QI_COMMITTEE%comm)))
-    else:
-      comm['cid'] = dddb.fetchone()[0]
+def import_committees(dddb):
+    global C_INSERTED, CN_INSERTED, SO_INSERTED, SO_UPDATED
 
-    dddb.execute(QS_FLOOR, comm)
-    query = dddb.fetchall()
-    pid_list = [int(x[0]) for x in query]
+    comm_list = get_committee_list('fl')
+    print "Got committee list"
 
-    #Insert legislative members into the servesOn table
-    mem_list = []
-    for pid in pid_list:
-      mem = {}
-      mem['pid'] = pid
-      mem['position'] = 'Member'
-      mem['year'] = YEAR
-      mem['house'] = comm['house']
-      mem['state'] = comm['state']
-      mem_list.append(mem)
-    clear_servesOn_db(dddb, comm['cid'], comm['house'])
-    insert_servesOn_db(dddb, mem_list, comm['cid'])
+    for committee in comm_list:
+        # committee['session_year'] = get_session_year(dddb)
+        committee['session_year'] = committee['updated'][:4]
+        committee['members'] = get_committee_membership(committee['comm_id'])
+        print "Got " + committee['name'] + " members"
+
+        if is_comm_name_in_db(dddb, committee) is False:
+            try:
+                comm_name = {'name': committee['name'], 'house': committee['house'], 'state': committee['state']}
+                dddb.execute(INSERT_COMMITTEE_NAME, comm_name)
+                CN_INSERTED += dddb.rowcount
+
+            except MySQLdb.Error:
+                print("Insert statement failed: " + (INSERT_COMMITTEE_NAME % committee))
+
+        print "Inserted committee name"
+        committee['cid'] = get_comm_cid(dddb, committee)
+
+        if committee['cid'] is None:
+            try:
+                comm = {'name': committee['name'], 'short_name': committee['short_name'],
+                        'type': committee['type'], 'state': committee['state'],
+                        'house': committee['house'], 'session_year': committee['session_year']}
+
+                dddb.execute(INSERT_COMMITTEE, comm)
+                committee['cid'] = int(dddb.lastrowid)
+                C_INSERTED += dddb.rowcount
+
+            except MySQLdb.Error:
+                print("Insert statement failed: " + (INSERT_COMMITTEE % comm))
+
+        print "Inserted committee"
+            # committee['cid'] = get_comm_cid(dddb, committee)
+
+        print committee['members']
+        if len(committee['members']) > 0:
+            for member in committee['members']:
+                member['cid'] = committee['cid']
+                member['pid'] = get_pid(dddb, member)
+                member['state'] = committee['state']
+                member['house'] = committee['house']
+                member['session_year'] = committee['session_year']
+                member['start_date'] = dt.datetime.today().strftime("%Y-%m-%d")
+
+                if 'vice' in member['position'].lower():
+                    member['position'] = 'Vice-Chair'
+                elif 'chair' in member['position'].lower():
+                    member['position'] = 'Chair'
+                else:
+                    member['position'] = 'Member'
+
+                if member['pid'] is not None:
+                    if not is_servesOn_in_db(dddb, member):
+                        try:
+                            dddb.execute(INSERT_SERVES_ON, member)
+                            SO_INSERTED += dddb.rowcount
+                        except MySQLdb.Error:
+                            print("Insert statement failed: " + (INSERT_SERVES_ON % member))
+
+            print "Inserted committee members"
+
+            update_mems = get_past_members(dddb, committee)
+
+            if len(update_mems) > 0:
+                for member in update_mems:
+                    try:
+                        dddb.execute(UPDATE_SERVESON, member)
+                        SO_UPDATED += dddb.rowcount
+                    except MySQLdb.Error:
+                        print("Update statement failed: " + (UPDATE_SERVESON % member))
+
 
 
 def main():
-  with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-                        user='awsDB',
-                        db='DDDB2015Dec',
-                        port=3306,
-                        passwd='digitaldemocracy789',
-                        charset='utf8') as dddb:
-    #Add the FL committees
-    insert_floor_committees_db(dddb)
-    insert_committees_db(dddb, get_committees_api(dddb))
-
-    logger.info(__file__ + ' terminated successfully.', 
-          full_msg='Inserted ' + str(C_INSERT) + ' rows in Committee and inserted ' 
-                    + str(S_INSERT) + ' rows in servesOn',
-          additional_fields={'_affected_rows':'Committee:'+str(C_INSERT)+
-                                         ', servesOn:'+str(S_INSERT),
-                             '_inserted':'Committee:'+str(C_INSERT)+
-                                         ', servesOn:'+str(S_INSERT),
-                             '_state':'FL'})
+    dbinfo = mysql_connection(sys.argv)
+    # MUST SPECIFY charset='utf8' OR BAD THINGS WILL HAPPEN.
+    with MySQLdb.connect(host=dbinfo['host'],
+                         port=dbinfo['port'],
+                         db=dbinfo['db'],
+                         user=dbinfo['user'],
+                         passwd=dbinfo['passwd'],
+                         charset='utf8') as dddb:
+                         #host='dev.digitaldemocracy.org',
+                         #user='parose',
+                         #db='parose_dddb',
+                         #port=3306,
+                         #passwd='parose221',
+                         #charset='utf8') as dddb:
+    # with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+    #                     user='awsDB',
+    #                     db='DDDB2015Dec',
+    #                     port=3306,
+    #                     passwd='digitaldemocracy789',
+    #                     charset='utf8') as dddb:
+        import_committees(dddb)
+        print("Inserted " + str(CN_INSERTED) + " names in CommitteeNames")
+        print("Inserted " + str(C_INSERTED) + " rows in Committee")
+        print("Inserted " + str(SO_INSERTED) + " rows in servesOn")
+        print("Updated " + str(SO_UPDATED) + " rows in servesOn")
 
 if __name__ == '__main__':
-  with GrayLogger(GRAY_URL) as _logger:
-    logger = _logger
     main()

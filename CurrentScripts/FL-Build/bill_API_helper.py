@@ -94,16 +94,13 @@ The dictionary includes these fields:
     other_votes: A list containing identifying information on the legislators who made some other vote
     passed: Contains true if the motion passed, false otherwise
 '''
-def get_bill_votes(os_bid, state):
-    api_url = BILL_DETAIL_URL.format(os_bid)
+def get_bill_votes(bill_votes, state):
     metadata_url = STATE_METADATA_URL.format(state.lower())
-
-    vote_json = requests.get(api_url).json()["votes"]
     metadata = requests.get(metadata_url).json()
 
     vote_list = list()
 
-    for entry in vote_json:
+    for entry in bill_votes:
         vote = dict()
 
         vote["os_vid"] = entry["id"]
@@ -136,14 +133,10 @@ Each dictionary contains:
     date: The date the action was taken
     text: A description of the action
 '''
-def get_bill_actions(os_bid):
-    api_url = BILL_DETAIL_URL.format(os_bid)
-
-    action_json = requests.get(api_url).json()
-
+def get_bill_actions(bill_actions):
     action_list = list()
 
-    for entry in action_json:
+    for entry in bill_actions:
         action = dict()
 
         action["date"] = entry["date"]
@@ -162,14 +155,10 @@ Each dictionary contains:
     name: The name of the document containing the version text
     doc: A URL of the document that contains the version text
 '''
-def get_bill_versions(os_bid):
-    api_url = BILL_DETAIL_URL.format(os_bid)
-
-    version_json = requests.get(api_url).json()
-
+def get_bill_versions(bill_versions):
     version_list = list()
 
-    for entry in version_json:
+    for entry in bill_versions:
         version = dict()
 
         version["name"] = entry["name"]
@@ -178,3 +167,23 @@ def get_bill_versions(os_bid):
         version_list.append(version)
 
     return version_list
+
+
+'''
+Takes a bill's OpenStates ID number and returns a dictionary containing information
+on that bill's votes, actions, and versions.
+
+This function exists to reduce the number of API calls per bill
+'''
+def get_bill_details(os_bid, state):
+    api_url = BILL_DETAIL_URL.format(os_bid)
+
+    detail_json = requests.get(api_url).json()
+
+    details = dict()
+
+    details['votes'] = get_bill_votes(detail_json['votes'], state)
+    details['actions'] = get_bill_actions(detail_json['actions'])
+    details['versions'] = get_bill_versions(detail_json['versions'])
+
+    return details
