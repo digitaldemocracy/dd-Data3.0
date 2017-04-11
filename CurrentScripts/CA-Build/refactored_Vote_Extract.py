@@ -106,34 +106,6 @@ QS_VOTE_ID = '''SELECT voteId
                  AND mid = %(mid)s
                  AND VoteDate = %(date)s
                  AND VoteDateSeq = %(seq)s'''
-QS_PERSON_FL = '''SELECT DISTINCT p.pid, p.last, p.first
-                  FROM Person p JOIN Legislator l
-                  ON p.pid = l.pid
-                  WHERE p.last = %(filer_naml)s
-                   AND p.first = %(filer_namf)s
-                   AND l.state = 'CA'
-                  ORDER BY p.pid'''
-QS_PERSON_L = '''SELECT DISTINCT p.pid, p.last, p.first
-                  FROM Person p JOIN Legislator l
-                  ON p.pid = l.pid
-                  WHERE p.last = %(filer_naml)s
-                   AND l.state = 'CA'
-                  ORDER BY p.pid'''
-QS_PERSON_LIKE_L = '''SELECT DISTINCT p.pid, p.last, p.first
-                      FROM Person p JOIN Legislator l
-                      ON p.pid = l.pid
-                      JOIN Term t
-                      ON p.pid = t.pid
-                      WHERE p.last LIKE %(filer_naml)s
-                       AND t.house = %(house)s
-                       AND l.state = 'CA'
-                      ORDER BY p.pid'''    
-QS_TERM = '''SELECT pid, house
-             FROM Term
-             WHERE pid = %(pid)s
-              AND house = %(house)s
-              AND state = %(state)s
-              AND year BETWEEN %(start)s AND %(end)s'''
 QS_LOCATION_CODE = '''SELECT description, long_description 
                       FROM location_code_tbl 
                       WHERE location_code = %(location_code)s'''
@@ -149,6 +121,35 @@ QI_SUMMARY = '''INSERT INTO BillVoteSummary
 
 QI_DETAIL =  '''INSERT INTO BillVoteDetail (pid, voteId, result, state) 
                 VALUES (%s, %s, %s, %s)'''
+
+QS_LEGISLATOR_FL = '''SELECT p.pid, p.last, p.first
+                       FROM Person p, Legislator l, Term t
+                       WHERE p.pid = l.pid 
+                       AND p.pid = t.pid 
+                       AND p.last = %s
+                       AND p.first = %s 
+                       AND t.year = %s 
+                       AND t.state = %s
+                       AND t.house = %s
+                       ORDER BY p.pid'''
+
+
+QS_LEGISLATOR_L = '''SELECT p.pid, p.last, p.first
+                       FROM Person p, Legislator l, Term t
+                       WHERE p.pid = l.pid 
+                       AND p.pid = t.pid 
+                       AND p.last = %s 
+                       AND t.year = %s 
+                       AND t.state = %s
+                       AND t.house = %s
+                       ORDER BY p.pid'''
+QS_LEGISLATOR_LIKE_L = '''SELECT Person.pid, last, first
+                            FROM Person, Legislator
+                            WHERE Legislator.pid = Person.pid
+                             AND last LIKE %s
+                             AND state = %s
+                            ORDER BY Person.pid'''
+
 
 def create_payload(table, sqlstmt):
   return {
@@ -178,7 +179,7 @@ def get_committee(ca_cursor, dd_cursor, location_code):
   ca_cursor.execute(QS_LOCATION_CODE, {'location_code':location_code})
   if(ca_cursor.rowcount > 0):
     loc_result = ca_cursor.fetchone()
-    print(loc_result);
+    #print(loc_result);
     temp_name = loc_result[0]
     committee_name = loc_result[1]
 
@@ -204,7 +205,6 @@ def get_committee(ca_cursor, dd_cursor, location_code):
       name = '{0} Standing Committee on {1}'.format(house, committee_name)
   else:
     print("Cant find " + location_code) 
-  print(name + " " + house)
   return find_committee(dd_cursor, name, house)
     
 '''
@@ -212,69 +212,59 @@ Handles all instances of reformatting and cleaning specific legislator and
 committee names.
 '''
 def clean_name(name):
-  # For de Leon
-  temp = name.split('\xc3\xb3')
-  if (len(temp) > 1):
-    name = temp[0] + 'o' + temp[1];
-
-  # For Travis Allen
-  if (name == 'Allen Travis'):
+  # Replaces all accented o's and a's
+  if "\xc3\xb3" in name:
+    name = name.replace("\xc3\xb3", "o")
+  if "\xc3\xa1" in name:
+    name = name.replace("\xc3\xa1", "a")
+  if(name == 'Allen Travis'):
     name = 'Travis Allen'
-
-  if (name == 'Aging and Long Term Care'):
-    name = 'Aging and Long-Term Care'
-
-  # For any names missing a final comma before 'and' (see top of script)
-  if (name in NAMES_MISSING_COMMA):
-    name_pieces = name.split(' and ')
-    name = '{0}, and {1}'.format(name_pieces[0], name_pieces[1])
-
+  # For O'Donnell
+  if 'Donnell' in name:
+    name = "O'Donnell"
+  # Removes positions and random unicode ? on Mark Stone's name
+  name = name.replace("Vice Chair", "")
+  name = name.replace("Chair", "")
+  name = name.replace(chr(194), "")
   return name
-
+  
 '''
+Find the Person using a combined name
+|dd_cursor|: DDDB database cursor
+|filer_naml|: Name of person
+|house|: House (Senate/Assembly)
 '''
-def get_person(cursor, filer_naml, floor, state, voteDate):
-  pid = None 
-  filer_naml = clean_name(filer_naml)
-  temp = filer_naml.split(' ')
-  year = voteDate.year
-
-  if(floor == 'AFLOOR'):
-    floor = "Assembly"
-  else:
-    floor = "Senate"
-  filer_namf = ''
-  if(len(temp) > 1):
-    filer_naml = temp[len(temp)-1]
-    filer_namf = temp[0]
-#    print 'They had a first name!!!'
-    cursor.execute(QS_PERSON_FL, {'filer_naml':filer_naml, 'filer_namf':filer_namf, 'house':floor})
-  else:
-    #print 'Only a last name...'
-    #print 'last:', filer_naml
-    cursor.execute(QS_PERSON_L, {'filer_naml':filer_naml, 'house':floor})
-  if cursor.rowcount == 1:
-    pid = cursor.fetchone()[0]
-    #print pid
-  elif cursor.rowcount > 1:
-    a = []
-    for j in range(0, cursor.rowcount):
-      temp = cursor.fetchone()
-      a.append(temp[0])
-    for j in range(0, cursor.rowcount):
-      cursor.execute(QS_TERM, 
-          {'pid':a[j],'house':floor,'state':state, 'start':(year-1), 'end':(year+1)})
-      if(cursor.rowcount == 1):
-        pid = cursor.fetchone()[0]
-  else:
-    filer_naml = '%' + filer_naml + '%'
-    cursor.execute(QS_PERSON_LIKE_L, {'filer_naml':filer_naml, 'filer_namf':filer_namf, 'house':floor})
-    if(cursor.rowcount > 0):
-      pid = cursor.fetchone()[0]
+def get_person(dd_cursor, filer_naml, loc_code):
+    pid = None
+    filer_naml = clean_name(filer_naml)
+    error_message = "Multiple matches for the same person: "
+    # First try last name.
+    house = "Senate"
+    if "CX" == loc_code[:2] or "AF" == loc_code[:2]:
+        house = "Assembly"
+    dd_cursor.execute(QS_LEGISLATOR_L, (filer_naml, YEAR, STATE, house))
+    
+    if dd_cursor.rowcount == 1:
+        pid = dd_cursor.fetchone()[0]
+    elif dd_cursor.rowcount == 0:
+        parts = filer_naml.split(' ')
+        if len(parts) > 1:
+            dd_cursor.execute(QS_LEGISLATOR_FL, (parts[1:], parts[0], YEAR, STATE, house))
+            if dd_cursor.rowcount == 1:
+                pid = dd_cursor.fetchone()[0]
+        else:
+            filer_naml = '%' + filer_naml + '%'
+            dd_cursor.execute(QS_LEGISLATOR_LIKE_L, (filer_naml, STATE))
+            if(dd_cursor.rowcount == 1):
+                pid = dd_cursor.fetchone()[0]
     else:
-      print filer_naml, filer_namf, floor
-      sys.stderr.write("WARNING: Unable to find person {0}\n".format(filer_naml))
-  return pid
+         print("Person not found: " + filer_naml) 
+         error_message = "Person not found "
+    if pid is None and filer_naml not in logged_list:
+        logged_list.append(filer_naml)
+        logger.warning(error_message + filer_naml,
+                        additional_fields={'_state':'CA'})
+    return pid 
 
 '''
 If Bill Vote Summary is found, return vote id. Otherwise, return None.
@@ -333,12 +323,12 @@ def get_summary_votes(ca_cursor, dd_cursor):
   rows = ca_cursor.fetchall()
   for bid, loc_code, mid, ayes, noes, abstain, result, vote_date, seq in rows:
     cid = get_committee(ca_cursor, dd_cursor, loc_code)
+    if "201720180AB149" == bid:
+        print("FOUND 201720180AB149")
     bid = '%s_%s' % (STATE, bid)
 
     if cid is not None:
-#      print str(cid) + ' ' + str(bid)
-      insert_bill_vote_summary(
-          dd_cursor, bid, mid, cid, vote_date, ayes, noes, abstain, result, seq)
+      insert_bill_vote_summary(dd_cursor, bid, mid, cid, vote_date, ayes, noes, abstain, result, seq)
     elif cid is None and loc_code not in logged_list:
       logged_list.append(loc_code)
       logger.warning('Committee not found ' + str(loc_code), 
@@ -358,7 +348,7 @@ def get_detail_votes(ca_cursor, dd_cursor):
   for bid, loc_code, legislator, vote_code, mid, trans_update, seq in rows:
     bid = '%s_%s' % (STATE, bid)
     date = trans_update.strftime('%Y-%m-%d')
-    pid = get_person(dd_cursor, legislator, loc_code, STATE, trans_update)
+    pid = get_person(dd_cursor, legislator, loc_code)
     vote_id = get_vote_id(dd_cursor, bid, mid, trans_update, seq)
     result = vote_code
 
@@ -386,7 +376,12 @@ def main():
   with MySQLdb.connect(host='transcription.digitaldemocracy.org',
                        db='capublic',
                        user='monty',
-                       passwd='python') as ca_cursor:
+                       passwd='python'
+                       #host='localhost',
+                       #db='historic_capublic',
+                       #user='root',
+                       #passwd=''
+                        ) as ca_cursor:
     with MySQLdb.connect(host=dbinfo['host'],
                            port=dbinfo['port'],
                            db=dbinfo['db'],

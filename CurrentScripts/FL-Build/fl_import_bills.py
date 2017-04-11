@@ -1,68 +1,103 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.7
 # -*- coding: utf8 -*-
-'''
-File: fl_import_bills.py
-Author: Eric Roh
-Date: 
+"""
+File: new_fl_import_bills.py
+Author: Andrew Rose
+Date: 3/16/2017
+Last Updated: 3/16/2017
+
 Description:
-- Imports FL bills using sunlight API
-- Fills Bill and BillVersion
-- Currently configured to test DB
-'''
+    - This file gets OpenStates bill data using the API Helper and inserts it into the database
 
-import requests
+Source:
+    - OpenStates API
+
+Populates:
+    - Bill
+
+"""
+
 import MySQLdb
-import pprint
+import traceback
+from openstates/bill_API_helper import *
 
-# URL
-API_URL = '''http://openstates.org/api/v1/bills/?state=fl&chamber=upper&apikey=92645427ddcc46db90a8fb5b79bc9439'''
-BILL_DETAIL_URL = 'http://openstates.org/api/v1/bills/fl/%(session)s/%(bill_id)s/?apikey=92645427ddcc46db90a8fb5b79bc9439'
+# Global Counters
+B_INSERTED = 0
 
-# INSERTS
-QI_BILL = '''INSERT INTO Bill
-       (bid, type, number, billState, status, house, session, state, sessionYear)
-       VALUES
-       (%(bid)s, %(type)s, %(number)s, %(billState)s, %(status)s, 
-       %(house)s, %(session)s, 'FL', %(sessionYear)s)'''
-QI_BILLVERSION = '''INSERT INTO BillVersion
-          (vid, bid, date, billState, subject, subject, appropriation, 
-          substantive_changes, title, digest, text, state)
-          VALUES
-          (%(vid)s, %(bid)s, %(date)s, %(billState)s, %(subject)s, 
-          %(subject)s, %(appropriation)s, %(substantive_changes)s, 
-          %(title)s, %(digest)s, %(text)s, 'FL')'''
+# SQL Selects
+SELECT_BILL = '''SELECT * FROM Bill
+                 WHERE bid = %(bid)s'''
+
+SELECT_MOTION = ''''''
+
+# SQL Inserts
+INSERT_BILL = '''INSERT INTO Bill
+                 (bid, type, number, billState, status, house, session, session_year, state)
+                 VALUES
+                 (%(bid)s, %(type)s, %(number)s, %(billState)s, %(status)s, %(house)s, %(session)s,
+                 %(session_year)s, %(state)s)'''
 
 
-def call_api():
-  r = requests.get(API_URL)
-  print API_URL
-  out = r.json()
-  return out
+def is_bill_in_db(dddb, bill):
+    try:
+        dddb.execute(SELECT_BILL, bill)
 
-def get_bill_info(session, bill_id):
-  bid = bill_id.replace(' ', '%20')
-  r = requests.get(BILL_DETAIL_URL % {'session':session, 'bill_id':bid})
-  print BILL_DETAIL_URL % {'session':session, 'bill_id':bid}
-  out = r.json()
-  return out
+        if dddb.rowcount == 0:
+            return False
+        else:
+            return True
+    except MySQLdb.Error:
+        print("Select statement failed: " + SELECT_BILL % bill)
 
-def insert_bills(bills):
-  print len(bills)
-  total = 0
-  for bill in bills:
-    info = get_bill_info(bill['session'], bill['bill_id'])
-    total += len(info['versions'])
-  print total
+
+def import_motion(motion, passed):
+    try:
+
+
+
+def import_votes(bid, os_bid):
+    vote_list = get_bill_votes(os_bid, "FL")
+
+    for vote in vote_list:
+        insert_motion(vote["motion"], vote["passed"])
+
+        vote["bid"] = bid
+
+
+
+def import_bills():
+    global B_INSERTED
+
+    bill_list = get_bills('FL')
+
+    for bill in bill_list:
+        bill["bid"] = "FL_" + bill["session_year"] + str(bill["session"]) + bill["type"] + bill["number"]
+
+        # if not is_bill_in_db(dddb, bill):
+        #     try:
+        #         dddb.execute(INSERT_BILL, bill)
+        #         B_INSERTED += dddb.rowcount
+        #     except MySQLdb.Error:
+        #         print("Insert statement failed: " + INSERT_BILL % bill)
+
+        import_votes(bill["os_bid"])
+
 
 def main():
-  result = call_api()
-  #print len(result), type(result)
-  #print type(result[0]), result[0]
-  info = get_bill_info(result[2]['session'], result[2]['bill_id'])
-  print len(info['versions'])
-  pp = pprint.PrettyPrinter(indent=2)
-  pp.pprint(info['versions'])
-  insert_bills(result)
+    # with MySQLdb.connect(host='dev.digitaldemocracy.org',
+    #                      user='parose',
+    #                      db='parose_dddb',
+    #                      port=3306,
+    #                      passwd='parose221',
+    #                      charset='utf8') as dddb:
+    # with MySQLdb.connect(host='digitaldemocracydb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+    #                      user='awsDB',
+    #                      db='DDDB2015Dec',
+    #                      port=3306,
+    #                      passwd='digitaldemocracy789',
+    #                      charset='utf8') as dddb:
+    import_bills()
 
 
-main()
+if __name__ == "__main__":
+    main()

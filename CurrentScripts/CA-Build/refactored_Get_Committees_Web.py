@@ -61,8 +61,8 @@ STATE = 'CA'
 
 # Database Queries
 # INSERTS
-QI_COMMITTEE = '''INSERT INTO Committee (cid, house, name, type, state, room, phone, fax, session_year)
-                      VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)'''
+QI_COMMITTEE = '''INSERT INTO Committee (cid, house, name, type, state, room, phone, fax, session_year, short_name)
+                      VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'''
 QI_COMMITTEE_NAMES = '''INSERT INTO CommitteeNames (name, house, state)
                            VALUES (%s, %s, %s)'''
 QI_SERVESON = '''INSERT INTO servesOn (pid, year, house, cid, position, state, start_date) 
@@ -248,6 +248,25 @@ def insert_committee_name(cursor, name, house):
         logger.warning('Insert Failed', full_msg=traceback.format_exc(),
         additional_fields=create_payload('Committee',(QI_COMMITTEE_NAMES%(name, house, STATE))))
 
+
+'''
+'''
+def create_short_name(longName):
+    if "Committee on" in longName:
+        temp = longName.split("Committee on ")
+        shortName = temp[1]
+    elif "Subcommittee on" in longName:
+        temp = longName.split("Subcommittee on ")
+        shortName = temp[1]
+    elif "Subcommittee No. " in longName:
+        temp = longName.split(" on ")
+        shortName = temp[1]
+    else:
+        shortName = longName
+
+    return shortName.strip()
+
+
 '''
 Inserts committee 
 
@@ -260,18 +279,18 @@ Returns the new cid.
 def insert_committee(cursor, house, name, commType, room, phone, fax, year):
   global C_INSERT
   try:
-    
+    shortName = create_short_name(name) 
     insert_committee_name(cursor, name, house)
     # Get the next available cid
     cursor.execute(QS_COMMITTEE_MAX_CID)
     cid = cursor.fetchone()[0] + 1
-    cursor.execute(QI_COMMITTEE, (cid, house, name, commType, STATE, room, phone, fax, year))
+    cursor.execute(QI_COMMITTEE, (cid, house, name, commType, STATE, room, phone, fax, year, shortName))
     C_INSERT += cursor.rowcount
     return cid
   except MySQLdb.Error:
     logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-      additional_fields=create_payload('Committee',(QI_COMMITTEE%(cid, house, name, commType, STATE, room, phone, fax, year))))
-    print "cid:", cid, "house:", house, "name:", name, "commT:", commType, "state:", STATE, "room", room, "phone", phone, "fax", fax, "year", year
+      additional_fields=create_payload('Committee',(QI_COMMITTEE%(cid, house, name, commType, STATE, room, phone, fax, year, shortName))))
+    print "cid:", cid, "house:", house, "name:", name, "commT:", commType, "state:", STATE, "room", room, "phone", phone, "fax", fax, "year", year, "short_name:", shortName
     return -1
 
 '''
