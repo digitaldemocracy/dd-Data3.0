@@ -514,9 +514,9 @@ def get_position_info(full_df, org_alignments_df, leg_votes_df):
 
 def main():
     # cnxn = pymysql.connect(**CONN_INFO)
-
-    load_data = True
-    # load_data = False
+    #
+    # load_data = True
+    load_data = False
 
     if load_data:
 
@@ -531,7 +531,7 @@ def main():
 
     # org_alignments_df = pickle.load(open('org_alignments_df.p', 'rb'))
     org_alignments_df = pickle.load(open('concept_alignments_df.p', 'rb'))
-    leg_votes_all_df = pickle.load(open('leg_votes_df.p', 'rb'))
+    leg_votes_all_df = pickle.load(open('leg_votes_all_df.p', 'rb'))
 
 
     # org_alignments_df = tmp_create_org_concepts(org_alignments_df)
@@ -564,7 +564,7 @@ def main():
 
         final_df_lst.append(df)
 
-    df = pd.conat(final_df_lst)
+    df = pd.concat(final_df_lst)
 
     pickle.dump(df, open('final_df.p', 'wb'))
 

@@ -8,13 +8,7 @@ Project Notes:
 
 
 
-Christine Q's:
-
-
-
 AlignmentMeter.py:
-
-Why is it there is a larger number of aligned_votes than total_votes
 
 
 Sometimes the same oid has different alignments in the same freakin' hid. Somebody will need to go through and correct
@@ -24,6 +18,7 @@ Currently generating all your data is an almagamation of crap between python, sq
 you condense this all to one python file
 
 
+for examining in notebooks:
 
 pickle.dump(oid_alignments_df, open('oid_alignments_df.p', 'wb'))
 pickle.dump(org_alignments_df, open('org_alignments_df.p', 'wb'))
