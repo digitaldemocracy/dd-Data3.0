@@ -920,8 +920,8 @@ CREATE TABLE IF NOT EXISTS Utterance (
   Whenever an organization gives something to a legislator, that must be recorded. This table
   keeps track of all those "gifts".
 
-  Sources: CA: TODO ??
-           NY: TODO ??
+  Sources: CA: Hans provides this data
+           NY: None
  */
 CREATE TABLE IF NOT EXISTS Gift (
   RecordId INTEGER AUTO_INCREMENT,
