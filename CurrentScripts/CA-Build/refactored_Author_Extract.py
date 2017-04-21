@@ -208,6 +208,13 @@ def get_committee(dd_cursor, name, house):
                            '_log_type':'Database'})
   return None
 
+def force_decode(string, codecs=['utf8', 'latin1', 'windows-1252']):
+    for i in codecs:
+        try:
+            return string.decode(i)
+        except UnicodeDecodeError:
+            pass
+
 '''
 Clean the name of the person and remove/replace weird characters.
 
@@ -217,11 +224,14 @@ Returns the cleaned name.
 '''
 def clean_name(name):
   # Replaces all accented o's and a's
-  if "\xc3\xb3" in name:
-      name = name.replace("\xc3\xb3", "o")
-  if "\xc3\xa1" in name:
-      name = name.replace("\xc3\xa1", "a")
+  if "\xc3\x83\xb3" in name:
+      name = name.replace("\xc3\x83\xb3", "o")
+  if "\xc3\x83\xc2\xb3" in name:
+      name = name.replace("\xc3\x83\xc2\xb3", "o")
+  if "\xc3\x83\xc2\xa1" in name:
+      name = name.replace("\xc3\x83\xc2\xa1", "a")
   
+    
   if(name == 'Allen Travis'):
     name = 'Travis Allen'
 
@@ -233,6 +243,9 @@ def clean_name(name):
   name = name.replace("Vice Chair", "")
   name = name.replace("Chair", "")
   name = name.replace(chr(194), "")
+  name = name.replace("\xc3\x82", "")
+  name = name.replace("\xc3\xb3", "o")
+  name = name.replace("\xc3\xa1", "a")
   return name
 
 '''
@@ -396,7 +409,12 @@ def main():
     with MySQLdb.connect(host='transcription.digitaldemocracy.org',
                        user='monty',
                        db='capublic',
-                       passwd='python') as ca_cursor:
+                       passwd='python'
+                       #host='localhost',
+                       #user='root',
+                       #db='historic_capublic',
+                       #passwd=''
+                       ) as ca_cursor:
       get_authors(ca_cursor, dd_cursor)
       logger.info(__file__ + ' terminated successfully.', 
           full_msg='Inserted ' + str(AU_INSERT) + ' rows in authors, ' 

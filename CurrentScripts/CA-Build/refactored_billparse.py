@@ -137,10 +137,7 @@ def billparse(ca_cursor, dd_cursor):
     try:
       xml = unicodedata.normalize('NFKD', xml).encode('ascii', 'ignore')
       root = etree.fromstring(xml)
-      print('passed'+vid)
     except:
-      print('failed'+vid)
-      print(xml)
       raise
 
     def extract_caml(tag):
@@ -159,7 +156,6 @@ def billparse(ca_cursor, dd_cursor):
       dd_cursor.execute(QU_BILL_VERSION, (title, digest, body, STATE, vid))
       UPDATE += dd_cursor.rowcount
     except MySQLdb.Error:
-      print 'failed'
       logger.warning('Insert Failed', full_msg=traceback.format_exc(),
           additional_fields=create_payload('BillVersion', 
             (QU_BILL_VERSION % (title, digest, body, STATE, vid))))
@@ -178,6 +174,10 @@ if __name__ == "__main__":
                          user='monty',
                          db='capublic',
                          passwd='python',
+                         #host='localhost',
+                         #user='root',
+                         #db='historic_capublic',
+                         #passwd='',
                          charset='utf8') as ca_cursor:
       with GrayLogger(API_URL) as _logger:                                          
         logger = _logger 

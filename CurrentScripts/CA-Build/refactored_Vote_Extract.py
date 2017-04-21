@@ -163,11 +163,18 @@ def create_payload(table, sqlstmt):
 If committee is found, return cid. Otherwise, return None.
 '''
 def find_committee(cursor, name, house):
+  if "Assembly Standing Committee on Water, Parks and Wildlife" == name or \
+        "Assembly Standing Committee on Public Employees, Retirement and Social Security" == name:
+    name = name.replace(" and", ", and")
+  elif "Assembly Standing Committee on Aging and Long Term Care" == name:
+    name = name.replace("Long Term", "Long-Term")
+
   cursor.execute(QS_COMMITTEE, {'name':name, 'house':house, 'state':STATE, 'session_year': YEAR })
   if(cursor.rowcount == 1):
     return cursor.fetchone()[0]
   elif(cursor.rowcount > 1):
     print("Multiple Committees found")
+  print(QS_COMMITTEE % {'name':name, 'house':house, 'state':STATE, 'session_year': YEAR})
   sys.stderr.write("WARNING: Unable to find committee {0}\n".format(name))
   return None
 
@@ -179,7 +186,6 @@ def get_committee(ca_cursor, dd_cursor, location_code):
   ca_cursor.execute(QS_LOCATION_CODE, {'location_code':location_code})
   if(ca_cursor.rowcount > 0):
     loc_result = ca_cursor.fetchone()
-    #print(loc_result);
     temp_name = loc_result[0]
     committee_name = loc_result[1]
 
@@ -323,8 +329,6 @@ def get_summary_votes(ca_cursor, dd_cursor):
   rows = ca_cursor.fetchall()
   for bid, loc_code, mid, ayes, noes, abstain, result, vote_date, seq in rows:
     cid = get_committee(ca_cursor, dd_cursor, loc_code)
-    if "201720180AB149" == bid:
-        print("FOUND 201720180AB149")
     bid = '%s_%s' % (STATE, bid)
 
     if cid is not None:
@@ -340,7 +344,6 @@ Get Bill Vote Details. If bill vote detail isn't found in DDDB, add.
 Otherwise, skip.
 '''
 def get_detail_votes(ca_cursor, dd_cursor):
-  print('Getting Details')
   ca_cursor.execute(QS_BILL_DETAIL)
   rows = ca_cursor.fetchall()
   counter = 0
@@ -352,9 +355,6 @@ def get_detail_votes(ca_cursor, dd_cursor):
     vote_id = get_vote_id(dd_cursor, bid, mid, trans_update, seq)
     result = vote_code
 
-#    if bid == '201520160AB350':
-#      print('vote_id: %s, pid: %s' % (vote_id, pid))
-#      raise Exception()
     if vote_id is not None and pid is not None:
       insert_bill_vote_detail(dd_cursor, pid, vote_id, result)
     elif vote_id is None and (bid, mid) not in logged_list:
@@ -369,7 +369,6 @@ def get_detail_votes(ca_cursor, dd_cursor):
       logger.warning('Person not found ' + legislator, 
           additional_fields={'_state':'CA',
                              '_log_type':'Database'})
-  print counter
 
 def main():
   dbinfo = mysql_connection(sys.argv) 

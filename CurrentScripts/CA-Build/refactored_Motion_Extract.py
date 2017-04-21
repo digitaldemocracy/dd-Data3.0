@@ -67,10 +67,15 @@ def insert_motion(cursor, mid, date, text):
 
 def get_motions():
   dbinfo = mysql_connection(sys.argv) 
-  with MySQLdb.connect(host='transcription.digitaldemocracy.org',
-                       db='capublic',
-                       user='monty',
-                       passwd='python') as ca_cursor:
+  with MySQLdb.connect(#host='transcription.digitaldemocracy.org',
+                       #db='capublic',
+                       #user='monty',
+                       #passwd='python'
+                        host='localhost',
+                        db='historic_capublic',
+                        user='root',
+                        passwd=''
+                    ) as ca_cursor:
     with MySQLdb.connect(host=dbinfo['host'],
                            port=dbinfo['port'],
                            db=dbinfo['db'],
