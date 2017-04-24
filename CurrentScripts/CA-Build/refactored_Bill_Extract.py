@@ -199,6 +199,14 @@ def get_bills(ca_cursor, dd_cursor):
        (bid, type_, number, state, status, house, session, US_STATE,
        session_yr))
 
+def force_decode(string, codecs=['utf8', 'windows-1252']):
+    for i in codecs:
+        try:
+            return string.decode(i)
+        except UnicodeDecodeError:
+            pass
+
+
 '''
 Gets all of the BillVersions, then adds them as necessary.
 
@@ -215,8 +223,7 @@ def get_bill_versions(ca_cursor, dd_cursor):
     record[0] = '%s_%s' % (US_STATE, record[0])
     record[1] = '%s_%s' % (US_STATE, record[1])
     if record[4] is not None:
-      #record[4] = record[4].decode('windows-1252').replace(u'`', u"'").encode('ascii')
-      record[4] = record[4].decode('windows-1252').encode('utf-8').replace("\xe2\x80\x99", "'")
+      record[4] = force_decode(record[4]).encode('utf-8')
     # Appropriation is 'Yes' or 'No' in capublic, but an int in DDDB.
     if record[5] is not None: 
       record[5] = 0 if record[5] == 'No' else 1
@@ -233,11 +240,17 @@ def main():
                          port=ddinfo['port'],
                          db=ddinfo['db'],
                          user=ddinfo['user'],
-                         passwd=ddinfo['passwd']) as dd_cursor:
+                         passwd=ddinfo['passwd'],
+                         ) as dd_cursor:
     with MySQLdb.connect(host='transcription.digitaldemocracy.org',
                          user='monty',
                          db='capublic',
-                         passwd='python') as ca_cursor:
+                         passwd='python'
+                         #host='localhost',
+                         #user='root',
+                         #db='historic_capublic',
+                         #passwd=''
+            ) as ca_cursor:
       get_bills(ca_cursor, dd_cursor)
       get_bill_versions(ca_cursor, dd_cursor)
       logger.info(__file__ + ' terminated successfully.', 

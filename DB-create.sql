@@ -230,6 +230,33 @@ CREATE TABLE IF NOT EXISTS OrganizationStateAffiliation (
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+
+/*
+  Holds information on governors and lieutenant-governors.
+
+  Sources: All filled by hand
+ */
+CREATE TABLE IF NOT EXISTS Governor (
+  pid INTEGER,
+  office ENUM('Governor', 'Lieutenant Governor'),
+  mailing_address VARCHAR(255),
+  city VARCHAR(255),
+  zip VARCHAR(20),
+  phone VARCHAR(20),
+  fax VARCHAR(20),
+  email VARCHAR(255),
+  state  VARCHAR(2),
+  lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+  lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
+
+  PRIMARY KEY (pid),
+  FOREIGN KEY (pid) REFERENCES Person(pid),
+  FOREIGN KEY (state) REFERENCES State(abbrev)
+)
+  ENGINE = INNODB
+  CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+
 /* Entity::Legislator
 
    A legislator has a description and bio and several contact information.
@@ -893,8 +920,8 @@ CREATE TABLE IF NOT EXISTS Utterance (
   Whenever an organization gives something to a legislator, that must be recorded. This table
   keeps track of all those "gifts".
 
-  Sources: CA: TODO ??
-           NY: TODO ??
+  Sources: CA: Hans provides this data
+           NY: None
  */
 CREATE TABLE IF NOT EXISTS Gift (
   RecordId INTEGER AUTO_INCREMENT,
@@ -973,13 +1000,14 @@ CREATE TABLE IF NOT EXISTS Lobbyist (
   pid INTEGER,   -- added
   -- FILER_NAML VARCHAR(50),               modified, needs to be same as Person.last
   -- FILER_NAMF VARCHAR(50),               modified, needs to be same as Person.first
-  filer_id VARCHAR(200) UNIQUE,         -- modified, start with state prefix
+  filer_id VARCHAR(200),         -- modified, start with state prefix
   state VARCHAR(2),
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
   lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
   dr_id INTEGER UNIQUE AUTO_INCREMENT,
 
   PRIMARY KEY (pid, state),                    -- added
+  UNIQUE (filer_id, state),
   FOREIGN KEY (pid) REFERENCES Person(pid),
   FOREIGN KEY (state) REFERENCES State(abbrev),
 

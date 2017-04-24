@@ -42,12 +42,14 @@ CREATE TABLE SpeakerParticipation (
   INDEX state_idx (state)
 );
 
+/* Built from MySQL event, used for alignment meter and other aspects of the site */
 CREATE TABLE OrgAlignments (
   oa_id INT AUTO_INCREMENT,
   oid int(11) DEFAULT NULL,
   bid varchar(23) CHARACTER SET utf8 DEFAULT NULL,
   hid int(11) DEFAULT NULL,
   alignment char(20) CHARACTER SET utf8 DEFAULT NULL,
+  alignment_date DATE, -- the date the alignment was actually registered.
   analysis_flag BOOL,
   state VARCHAR(2),
 
@@ -58,6 +60,7 @@ CREATE TABLE OrgAlignments (
   INDEX state_idx (state)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+/* Used for displaying legislator participation on the site */
 CREATE TABLE LegParticipation
 (
   hid INT(11),
@@ -80,6 +83,7 @@ CREATE TABLE LegParticipation
   HearingWordCount DECIMAL(54) DEFAULT '0' NOT NULL
 );
 
+/* See above */
 CREATE TABLE LegAvgPercentParticipation
 (
   pid INT(11),
@@ -116,17 +120,30 @@ CREATE TABLE IF NOT EXISTS `PersonAffiliations` (
 
 -- Used by Kristian for Drupal. Rebuilt by a mysql event every night
 -- WRONG COLUMNS
-CREATE TABLE IF NOT EXISTS `PersonClassifications` (
-  `pid` int(11) DEFAULT NULL,
-  `classification` varchar(255) DEFAULT NULL,
-  `state` varchar(2) DEFAULT NULL,
+CREATE TABLE `PersonClassifications` (
+  `pid` int(11) NOT NULL,
+  `first` varchar(255) DEFAULT NULL,
+  `middle` varchar(255) DEFAULT NULL,
+  `last` varchar(255) DEFAULT NULL,
+  `PersonType` varchar(255) NOT NULL,
+  `specific_year` year(4) NOT NULL,
+  `session_year` year(4) DEFAULT NULL,
+  `state` varchar(2) NOT NULL,
+  `is_current` tinyint(1) DEFAULT '0',
+  `lastTouched` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `lastTouched_ts` int(11) GENERATED ALWAYS AS ((to_seconds(`lastTouched`) - to_seconds('1970-01-01'))) VIRTUAL,
   `dr_id` int(11) NOT NULL AUTO_INCREMENT,
-  PRIMARY KEY (`dr_id`),
-  KEY `pid` (`pid`),
-  KEY `pid_state` (`pid`,`state`),
-  KEY `state` (`state`),
-  KEY `classification` (`classification`)
-) ENGINE=INNODB DEFAULT CHARSET=latin1;
+  PRIMARY KEY (`pid`,`PersonType`,`specific_year`,`state`),
+  UNIQUE KEY `dr_id` (`dr_id`),
+  KEY `session_year_idx` (`session_year`),
+  KEY `specific_year_idx` (`specific_year`),
+  KEY `pid_idx` (`pid`),
+  KEY `person_type_idx` (`PersonType`),
+  KEY `state_idx` (`state`),
+  KEY `is_current_idx` (`is_current`),
+  CONSTRAINT `PersonClassifications_ibfk_1` FOREIGN KEY (`pid`) REFERENCES `Person` (`pid`),
+  CONSTRAINT `PersonClassifications_ibfk_2` FOREIGN KEY (`state`) REFERENCES `State` (`abbrev`)
+) ENGINE=InnoDB AUTO_INCREMENT=212344 DEFAULT CHARSET=utf8;
 
 -- Used by Kristian to determine the first utterance spoken by a speaker at given
 -- BillDiscussion
@@ -214,7 +231,7 @@ CREATE TABLE IF NOT EXISTS BillVersionCurrent (
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
 
-
+/* Used by site on lobbyist pages */
 CREATE TABLE CombinedRepresentations (
   pid INT,
   hid INT,
@@ -225,6 +242,7 @@ CREATE TABLE CombinedRepresentations (
   INDEX state_idx (state)
 );
 
+/* Used by site on lobbyist pages */
 CREATE TABLE CombinedLobbyistEmployers (
   pid INT,
   assoc_name VARCHAR(255),
@@ -237,6 +255,7 @@ CREATE TABLE CombinedLobbyistEmployers (
   INDEX rpt_date_ts_idx (rpt_date_ts)
 );
 
+/* Used by site on lobbyist pages */
 CREATE TABLE KnownClients (
   pid INT,
   assoc_name VARCHAR(255),
@@ -245,6 +264,8 @@ CREATE TABLE KnownClients (
 
   INDEX state_idx (state)
 );
+
+/* The following tables are used by the AlignmentMeter */
 
 CREATE TABLE BillAlignmentScoresMiguel (
   aligned_votes int,
@@ -369,9 +390,6 @@ alter table CombinedAlignmentScores
   add INDEX state_idx (state),
   add INDEX pid_house_party_idx (pid, house, party);
 
-select *
-from CombinedAlignmentScores
-where pid is null and oid = -21;
 
 -- Note this is a one time run to add this data
 insert into CombinedAlignmentScores

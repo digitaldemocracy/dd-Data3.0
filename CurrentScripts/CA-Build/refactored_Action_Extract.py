@@ -155,7 +155,12 @@ def main():
     with MySQLdb.connect(host='transcription.digitaldemocracy.org',
                          user='monty',
                          db='capublic',
-                         passwd='python') as ca_cursor:
+                         passwd='python'
+                         #host='localhost',
+                         #user='root',
+                         #db='historic_capublic',
+                         #passwd=''
+                         ) as ca_cursor:
       # Get all of the Actions from capublic
       ca_cursor.execute(QS_BILL_HISTORY_TBL)
 
