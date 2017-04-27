@@ -28,7 +28,7 @@ validation_list = {"offices", "photo_url", "party", "email", "district"}
 emails = {"tx_house": "@house.texas.gov", "tx_senate": "@senate.texas.gov", "fl_house" : "@myfloridahouse.gov", "fl_senate" : "@flsenate.gov"}
 
 def set_office_info(entry, legislator):
-    if entry["offices"] == "N/A":
+    if entry["offices"] == None:
         legislator["capitol_phone"] = "N/A"
         legislator["capitol_fax"] = "N//A"
         legislator['room_number'] = "N/A"
@@ -43,9 +43,9 @@ def set_office_info(entry, legislator):
          
         
 def set_house(person):
-    if "chamber" not in person:
-        person["house"] = "N/A";
-    elif str(person["chamber"]) == "upper":
+    #if "chamber" not in person:
+    #    person["house"] = "Senate"
+    if "chamber" not in person or str(person["chamber"]) == "upper":
         person["house"] = "Senate"
     else:
         person["house"] = "House"
@@ -68,9 +68,10 @@ def validate_person(person, state):
         if field not in person or not person[field]:
             if field == "email":
                 person = construct_email(person, state)
-            #if field == "offices":  
+            elif field == "district":
+                person["district"] = 0
             else:
-                person[field] = "N/A"
+                person[field] = None
     return person
 
 

@@ -186,6 +186,7 @@ def add_legislators_db(dddb, leg_list):
     #Finally insert into Term table
     test = is_term_in_db(dddb, leg)
     print(test)
+    print("here")
     if test  == False:
       try:
         dddb.execute(QI_TERM, leg)
@@ -195,25 +196,4 @@ def add_legislators_db(dddb, leg_list):
         print((QI_TERM%leg))
         logger.warning('Insert Failed', full_msg=traceback.format_exc(),
             additional_fields=create_payload('Term', (QI_TERM%leg)))
-if __name__ == "__main__":
-    dbinfo = mysql_connection(sys.argv)
-    # MUST SPECIFY charset='utf8' OR BAD THINGS WILL HAPPEN.
-    with MySQLdb.connect(host=dbinfo['host'],
-                                      port=dbinfo['port'],
-                                      db=dbinfo['db'],
-                                      user=dbinfo['user'],
-                                      passwd=dbinfo['passwd'],
-                                      charset='utf8') as dddb:
-        pi_count = ti_count = 0
-        with GrayLogger(API_URL) as _logger:
-            logger = _logger
-            add_legislators_db(dddb, get_legislators_list("fl"))
-            logger.info(__file__ + ' terminated successfully.',
-            full_msg='Updated ' + str(T_UPDATE) + ' rows in Legislator',
-            additional_fields={'_affected_rows':'Legislator'+str(T_UPDATE),
-                '_updated':'BillVersion:'+str(T_UPDATE),
-                '_state':'FL',
-                '_log_type':'Database'})
-    LOG = {'tables': [{'state': 'FL', 'name': 'Florida Legislator', 'Legislators inserted':L_INSERT , 'Term inserted':T_INSERT, 'deleted': 0}]}
-    sys.stderr.write(json.dumps(LOG))
 
