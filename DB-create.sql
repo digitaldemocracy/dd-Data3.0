@@ -1912,6 +1912,40 @@ CREATE TABLE IF NOT EXISTS TT_HostingUrl (
 )
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
+  
+  CREATE TABLE IF NOT EXISTS County (
+   county_id INTEGER AUTO_INCREMENT PRIMARY KEY,
+   state VARCHAR(2) NOT NULL,
+   name VARCHAR(40) NOT NULL,
+   FOREIGN KEY (state) REFERENCES State(abbrev)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+CREATE TABLE IF NOT EXISTS City (
+   city_id INTEGER AUTO_INCREMENT PRIMARY KEY,
+   name VARCHAR(40) NOT NULL,
+   county_id INTEGER NOT NULL,
+   state VARCHAR(2) NOT NULL,
+   FOREIGN KEY (county_id) REFERENCES County(county_id),
+   FOREIGN KEY (state) REFERENCES State(abbrev)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS Newspaper (
+   news_id INTEGER AUTO_INCREMENT PRIMARY KEY,
+   name VARCHAR(40) NOT NULL,
+   state VARCHAR(2) NOT NULL DEFAULT '',
+   city_id INTEGER NOT NULL,
+   FOREIGN KEY (city_id) REFERENCES City(city_id),
+   FOREIGN KEY (state) REFERENCES State(abbrev)
+)  ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS NewspaperToDistrict (
+   news_id INTEGER NOT NULL,
+   district_id INTEGER NOT NULL,
+   PRIMARY KEY (news_id,district_id),
+   FOREIGN KEY (news_id) REFERENCES Newspaper(news_id),
+   FOREIGN KEY (district_id) REFERENCES District(dr_id)
+)  ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE OR REPLACE VIEW TT_currentCuts
 AS SELECT * FROM TT_Cuts
