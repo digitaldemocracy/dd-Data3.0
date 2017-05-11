@@ -70,7 +70,8 @@ def get_motions():
   with MySQLdb.connect(host='transcription.digitaldemocracy.org',
                        db='capublic',
                        user='monty',
-                       passwd='python') as ca_cursor:
+                       passwd='python'
+                    ) as ca_cursor:
     with MySQLdb.connect(host=dbinfo['host'],
                            port=dbinfo['port'],
                            db=dbinfo['db'],

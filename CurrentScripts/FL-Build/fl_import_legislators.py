@@ -19,6 +19,7 @@ Populates:
   - Legislator (description, twitter_handle, capitol_phone, website_url, room_number, email_form_link, OfficialBio, state)
   - Term (year, district, house, party, start, end, state, caucus)
   - AltId (pid, altId)
+  - PersonStateAffiliation (pid, state)
 '''
 
 import datetime
@@ -71,16 +72,22 @@ QI_PERSON = '''
             VALUES
               (%(first)s,%(middle)s,%(last)s,%(source)s,%(image)s)
             '''
+QI_PERSONSTATE = '''
+                INSERT INTO PersonStateAffiliation
+                    (pid, state)
+                VALUES
+                    (%(pid)s,%(state)s)
+                 '''
 QI_ALTID = '''
-           INSERT INTO AlternateId (pid, alt_id)
-            VALUES (%(pid)s,%(alt_id)s)
+           INSERT INTO AlternateId (pid, alt_id, source)
+            VALUES (%(pid)s, %(alt_id)s, %(source)s)
             '''
 
 QI_TERM = '''
           INSERT INTO Term
-            (pid,year,house,state,district,party)
+            (pid,year,house,state,district,party,current_term, start)
           VALUES
-            (%(pid)s,%(year)s,%(house)s,%(state)s,%(district)s,%(party)s)
+            (%(pid)s,%(year)s,%(house)s,%(state)s,%(district)s,%(party)s,%(current_term)s,%(start)s)
           '''
 
 QU_TERM = '''
@@ -112,7 +119,7 @@ def is_term_in_db(dddb, leg):
 
   if query is None:
     return False
-
+  print(leg['district'])
   if query[0] != leg['district']:
     try:
       dddb.execute(QU_TERM, leg)
@@ -133,7 +140,6 @@ def is_leg_in_db(dddb, leg):
   try:
     dddb.execute(QS_LEGISLATOR, leg)
     query = dddb.fetchone()
-
     if query is None:
       return False
   except:
@@ -161,6 +167,7 @@ def add_legislators_db(dddb, leg_list):
         dddb.execute(QI_PERSON, leg)
         pid = dddb.lastrowid
         leg['pid'] = pid
+        dddb.execute(QI_PERSONSTATE, leg)
         dddb.execute(QI_ALTID, leg)
         P_INSERT += dddb.rowcount
       except MySQLdb.Error:
@@ -169,6 +176,7 @@ def add_legislators_db(dddb, leg_list):
 
       #Insert into Legislator table next
       try:
+        print(leg)
         dddb.execute(QI_LEGISLATOR, leg)
         L_INSERT += dddb.rowcount
       except MySQLdb.Error:
@@ -176,15 +184,17 @@ def add_legislators_db(dddb, leg_list):
             additional_fields=create_payload('Legislator', (QI_LEGISLATOR%leg)))
 
     #Finally insert into Term table
-    if is_term_in_db(dddb, leg) == False:
+    test = is_term_in_db(dddb, leg)
+    print(test)
+    if test  == False:
       try:
         dddb.execute(QI_TERM, leg)
         T_INSERT += dddb.rowcount
       except MySQLdb.Error:
+        print(traceback.format_exc())
+        print((QI_TERM%leg))
         logger.warning('Insert Failed', full_msg=traceback.format_exc(),
             additional_fields=create_payload('Term', (QI_TERM%leg)))
-
-
 if __name__ == "__main__":
     dbinfo = mysql_connection(sys.argv)
     # MUST SPECIFY charset='utf8' OR BAD THINGS WILL HAPPEN.
