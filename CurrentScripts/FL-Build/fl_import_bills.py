@@ -1,10 +1,10 @@
 #!/usr/bin/env python2.7
 # -*- coding: utf8 -*-
 """
-File: new_fl_import_bills.py
+File: fl_import_bills.py
 Author: Andrew Rose
 Date: 3/16/2017
-Last Updated: 4/24/2017
+Last Updated: 5/4/2017
 
 Description:
     - This file gets OpenStates bill data using the API Helper and inserts it into the database
@@ -14,17 +14,18 @@ Source:
 
 Populates:
     - Bill
-
+    - Motion
+    - BillVoteSummary
+    - BillVoteDetail
+    - Action
+    - BillVersion
 """
 
 import MySQLdb
 import traceback
 import sys
-import datetime as dt
 import urllib2
 from bs4 import BeautifulSoup
-from time import strftime
-from time import strptime
 from graylogger.graylogger import GrayLogger
 from Database_Connection import mysql_connection
 from bill_API_helper import *
@@ -90,9 +91,9 @@ INSERT_MOTION = '''INSERT INTO Motion
                    (%(mid)s, %(text)s, %(pass)s)'''
 
 INSERT_BVS = '''INSERT INTO BillVoteSummary
-                (bid, mid, VoteDate, ayes, naes, abstain, result, VoteDateSeq)
+                (bid, mid, cid, VoteDate, ayes, naes, abstain, result, VoteDateSeq)
                 VALUES
-                (%(bid)s, %(mid)s, %(date)s, %(ayes)s, %(naes)s, %(other)s, %(result)s, %(vote_seq)s)'''
+                (%(bid)s, %(mid)s, %(cid)s, %(date)s, %(ayes)s, %(naes)s, %(other)s, %(result)s, %(vote_seq)s)'''
 
 INSERT_BVD = '''INSERT INTO BillVoteDetail
                 (pid, voteId, result, state)
@@ -114,7 +115,7 @@ def create_payload(table, sqlstmt):
     return {
         '_table': table,
         '_sqlstmt': sqlstmt,
-        '_state': 'CA',
+        '_state': 'FL',
         '_log_type': 'Database'
     }
 
@@ -190,7 +191,8 @@ def get_motion_id(motion, passed, dddb):
 
 
 def get_vote_id(vote, dddb):
-    vote_info = {'bid': vote['bid'], 'mid': vote['mid'], 'date': vote['date'], 'vote_seq': vote['vote_seq']}
+    vote_info = {'bid': vote['bid'], 'mid': vote['mid'],
+                 'date': vote['date'], 'vote_seq': vote['vote_seq']}
 
     try:
         dddb.execute(SELECT_VOTE, vote_info)
@@ -210,6 +212,7 @@ def get_vote_cid(vote, dddb):
 
     comm_info['house'] = vote['house']
     comm_info['session'] = vote['session']
+    comm_info['state'] = 'FL'
 
     committee = vote['motion'].split('(')
 
@@ -250,7 +253,7 @@ def get_pid(vote, dddb):
         dddb.execute(SELECT_PID, alt_id)
 
         if dddb.rowcount == 0:
-            print "Error: Person not found"
+            print("Error: Person with alt ID " + str(alt_id) + " not found")
             return None
         else:
             return dddb.fetchone()[0]
@@ -296,39 +299,14 @@ def scrape_version_date(url):
     return dates
 
 
-def import_votes(bid, vote_list, dddb):
+def import_votes(vote_list, dddb):
     global M_INSERTED, BVS_INSERTED, BVD_INSERTED
 
-    old_vote_date = None
-
     for vote in vote_list:
-        vote['date'] = dt.datetime.strptime(vote['date'], '%Y-%m-%d %H:%M:%S').date()
-
-        if old_vote_date is None:
-            vote_seq = 1
-            old_vote_date = vote['date']
-        else:
-            new_vote_date = vote['date']
-
-            if new_vote_date == old_vote_date:
-                vote_seq += 1
-            elif new_vote_date != old_vote_date:
-                vote_seq = 1
-                old_vote_date = new_vote_date
-
-        vote['bid'] = bid
-        vote['vote_seq'] = vote_seq
-        vote['date'] = str(vote['date'])
-
-        # Currently not sure how to reliably get cid
-        #vote['cid'] = get_vote_cid(vote, dddb)
-
-        if vote['passed'] == 1:
-            vote['result'] = '(PASS)'
-        else:
-            vote['result'] = '(FAIL)'
+        vote['cid'] = get_vote_cid(vote, dddb)
 
         vote['mid'] = get_motion_id(vote['motion'], vote['passed'], dddb)
+
         if vote['mid'] is None:
             try:
                 mid = get_last_mid(dddb)
@@ -346,7 +324,7 @@ def import_votes(bid, vote_list, dddb):
 
         vote['vid'] = get_vote_id(vote, dddb)
         if vote['vid'] is None:
-            vote_info = {'bid': vote['bid'], 'mid': vote['mid'], 'date': vote['date'],
+            vote_info = {'bid': vote['bid'], 'mid': vote['mid'], 'cid': vote['cid'], 'date': vote['date'],
                          'ayes': vote['ayes'], 'naes': vote['naes'], 'other': vote['other'], 'result': vote['result'],
                          'vote_seq': vote['vote_seq']}
 
@@ -359,17 +337,14 @@ def import_votes(bid, vote_list, dddb):
                 logger.warning("BillVoteSummary insertion failed", full_msg=traceback.format_exc(),
                                additional_fields=create_payload("BillVoteSummary", (INSERT_BVS % vote_info)))
 
-        #print(vote)
 
-        # Need to check if BVD is in database
         for aye_vote in vote['aye_votes']:
             aye_vote['voteRes'] = 'AYE'
             aye_vote['voteId'] = vote['vid']
             aye_vote['pid'] = get_pid(aye_vote, dddb)
             aye_vote['state'] = 'FL'
 
-            #print(aye_vote)
-            if not is_bvd_in_db(aye_vote, dddb):
+            if pid is not None and not is_bvd_in_db(aye_vote, dddb):
                 try:
                     dddb.execute(INSERT_BVD, aye_vote)
                     BVD_INSERTED += dddb.rowcount
@@ -383,7 +358,6 @@ def import_votes(bid, vote_list, dddb):
             nae_vote['pid'] = get_pid(nae_vote, dddb)
             nae_vote['state'] = 'FL'
 
-            #print(nae_vote)
             if not is_bvd_in_db(nae_vote, dddb):
                 try:
                     dddb.execute(INSERT_BVD, nae_vote)
@@ -398,7 +372,6 @@ def import_votes(bid, vote_list, dddb):
             other_vote['pid'] = get_pid(other_vote, dddb)
             other_vote['state'] = 'FL'
 
-            #print(other_vote)
             if not is_bvd_in_db(other_vote, dddb):
                 try:
                     dddb.execute(INSERT_BVD, other_vote)
@@ -408,30 +381,10 @@ def import_votes(bid, vote_list, dddb):
                                    additional_fields=create_payload("BillVoteDetail", (INSERT_BVD % other_vote)))
 
 
-def import_actions(bid, actions, dddb):
+def import_actions(actions, dddb):
     global A_INSERTED
 
-    old_action_date = None
-
     for action in actions:
-        action['date'] = dt.datetime.strptime(action['date'], '%Y-%m-%d %H:%M:%S').date()
-
-        if old_action_date is None:
-            action_seq = 1
-            old_action_date = action['date']
-        else:
-            new_action_date = action['date']
-
-            if new_action_date == old_action_date:
-                action_seq += 1
-            elif new_action_date != old_action_date:
-                action_seq = 1
-                old_action_date = new_action_date
-
-        action['bid'] = bid
-        action['seq_num'] = action_seq
-        action['date'] = str(action['date'])
-
         if not is_action_in_db(action, dddb):
             try:
                 dddb.execute(INSERT_ACTION, action)
@@ -441,17 +394,13 @@ def import_actions(bid, actions, dddb):
                                additional_fields=create_payload("Action", (INSERT_ACTION % action)))
 
 
-def import_versions(bill, versions, dddb):
+def import_versions(bill_title, versions, dddb):
     global V_INSERTED
 
     ver_dates = scrape_version_date(versions[0]['doc'])
 
     for version in versions:
-        version['bid'] = bill['bid']
-        version['vid'] = version['bid'] + version['name'].split(' ')[-1]
-
-        version['subject'] = bill['title']
-        version['state'] = 'FL'
+        version['subject'] = bill_title
 
         try:
             version['date'] = ver_dates[version['name']]
@@ -479,10 +428,7 @@ def import_bills(dddb):
     bill_list = get_bills('FL')
 
     for bill in bill_list:
-        bill["bid"] = "FL_" + bill["session_year"] + str(bill["session"]) + bill["type"] + bill["number"]
         print(bill['bid'])
-        # Placeholder for billState until we get data - not needed for transcription
-        bill['billState'] = 'TBD'
 
         if not is_bill_in_db(dddb, bill):
             try:
@@ -493,11 +439,11 @@ def import_bills(dddb):
                 logger.warning("Bill insertion failed", full_msg=traceback.format_exc(),
                                additional_fields=create_payload("Bill", (INSERT_BILL % bill)))
 
-        bill_details = get_bill_details(bill['os_bid'], 'FL')
+        bill_details = get_bill_details(bill['os_bid'], bill['bid'], 'FL')
 
-        import_votes(bill['bid'], bill_details['votes'], dddb)
-        import_actions(bill['bid'], bill_details['actions'], dddb)
-        import_versions(bill, bill_details['versions'], dddb)
+        import_votes(bill_details['votes'], dddb)
+        import_actions(bill_details['actions'], dddb)
+        import_versions(bill['title'], bill_details['versions'], dddb)
 
 
 def main():
@@ -508,6 +454,7 @@ def main():
                          user=dbinfo['user'],
                          passwd=dbinfo['passwd'],
                          charset='utf8') as dddb:
+
         import_bills(dddb)
 
         logger.info(__file__ + " terminated successfully",

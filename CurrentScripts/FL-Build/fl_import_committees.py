@@ -5,7 +5,7 @@
 File: new_fl_import_committee.py
 Author: Andrew Rose
 Date: 3/14/2017
-Last Updated: 4/24/2017
+Last Updated: 4/28/2017
 
 Description:
     -This file gets OpenStates committee data using the API Helper and inserts it into the database
@@ -103,7 +103,7 @@ def create_payload(table, sqlstmt):
     return {
         '_table': table,
         '_sqlstmt': sqlstmt,
-        '_state': 'CA',
+        '_state': 'FL',
         '_log_type': 'Database'
     }
 
@@ -172,7 +172,7 @@ def get_pid(dddb, member):
         dddb.execute(SELECT_PID, alt_id)
 
         if dddb.rowcount == 0:
-            print "Error: Person not found"
+            print("Error: Person not found with Alt ID " + str(alt_id['alt_id']))
             return None
         else:
             return dddb.fetchone()[0]
@@ -240,9 +240,6 @@ def import_committees(dddb):
             committee['session_year'] = committee['updated'][:4]
             committee['members'] = get_committee_membership(committee['comm_id'])
 
-            for member in committee['members']:
-                print committee['comm_id'] + ': ' + str(member['leg_id'])
-
             if is_comm_name_in_db(dddb, committee) is False:
                 try:
                     comm_name = {'name': committee['name'], 'house': committee['house'], 'state': committee['state']}
@@ -278,13 +275,6 @@ def import_committees(dddb):
                     member['house'] = committee['house']
                     member['session_year'] = committee['session_year']
                     member['start_date'] = dt.datetime.today().strftime("%Y-%m-%d")
-
-                    if 'vice' in member['position'].lower():
-                        member['position'] = 'Vice-Chair'
-                    elif 'chair' in member['position'].lower():
-                        member['position'] = 'Chair'
-                    else:
-                        member['position'] = 'Member'
 
                     if member['pid'] is not None:
                         if not is_servesOn_in_db(dddb, member):

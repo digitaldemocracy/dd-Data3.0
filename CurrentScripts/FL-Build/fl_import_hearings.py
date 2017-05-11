@@ -114,7 +114,7 @@ def create_payload(table, sqlstmt):
     return {
         '_table': table,
         '_sqlstmt': sqlstmt,
-        '_state': 'CA',
+        '_state': 'FL',
         '_log_type': 'Database'
     }
 
