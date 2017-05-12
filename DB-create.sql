@@ -1926,13 +1926,15 @@ CREATE TABLE IF NOT EXISTS City (
    name VARCHAR(40) NOT NULL,
    county_id INTEGER NOT NULL,
    state VARCHAR(2) NOT NULL,
+   lat  decimal(10,8),
+   lon  decimal(11,8),
    FOREIGN KEY (county_id) REFERENCES County(county_id),
    FOREIGN KEY (state) REFERENCES State(abbrev)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE IF NOT EXISTS Newspaper (
    news_id INTEGER AUTO_INCREMENT PRIMARY KEY,
-   name VARCHAR(40) NOT NULL,
+   name VARCHAR(255) NOT NULL,
    state VARCHAR(2) NOT NULL DEFAULT '',
    city_id INTEGER NOT NULL,
    FOREIGN KEY (city_id) REFERENCES City(city_id),
