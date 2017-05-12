@@ -51,10 +51,11 @@ CREATE TABLE OrgAlignments (
   alignment char(20) CHARACTER SET utf8 DEFAULT NULL,
   alignment_date DATE, -- the date the alignment was actually registered.
   analysis_flag BOOL,
+  session_year YEAR,
   state VARCHAR(2),
 
   PRIMARY KEY(oa_id),
-  UNIQUE (oid, bid, hid, alignment, analysis_flag),
+  UNIQUE (oid, bid, hid, alignment, analysis_flag, alignment_date),
   FOREIGN KEY (state) REFERENCES State(abbrev),
 
   INDEX state_idx (state)
@@ -279,27 +280,107 @@ CREATE TABLE BillAlignmentScoresMiguel (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 
-CREATE TABLE BillAlignmentScoresAndrew (
+CREATE TABLE BillAlignmentScores (
   bid varchar(63),
   oid int,
   pid int,
+  no_unanimous bool,
+  no_resolutions bool,
+  abstain_votes bool,
   aligned_votes int,
   alignment_percentage double,
   total_votes int,
   positions int,
   affirmations int,
+  session_year year
 
-  PRIMARY KEY (bid, oid, pid)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
-CREATE TABLE AlignmentScores (
+CREATE TABLE LegAlignmentScores (
   pid int,
   oid int,
-  MiguelScore double,
-  AndrewScore double,
+  house VARCHAR(100),
+  party ENUM('Republican', 'Democrat', 'Other'),
+  score double,
+  positions_registered int,
+  votes_in_agreement int,
+  votes_in_disagreement int,
+  affirmations int,
+  num_bills int,
+  abstain_votes bool,
+  no_resolutions bool,
+  no_unanimous bool,
+  session_year enum('2015', '2017', 'All'),
 
-  PRIMARY KEY (pid, oid)
+  PRIMARY KEY (pid, oid, session_year, abstain_votes, no_resolutions, no_unanimous)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
+CREATE TABLE ChamberAlignmentScores (
+  oid INT,
+  house VARCHAR(100),
+  party ENUM('Republican', 'Democrat', 'Other'),
+  no_resolutions bool,
+  no_unanimous bool,
+  abstain_votes bool,
+  state VARCHAR(2),
+  score DOUBLE,
+  positions_registered INT,
+  votes_in_agreement INT,
+  votes_in_disagreement INT,
+  total_votes int,
+  affirmations INT,
+  num_bills INT,
+
+  PRIMARY KEY (oid, house, party, state),
+  FOREIGN KEY (oid) REFERENCES OrgConcept(oid),
+  FOREIGN KEY (house, state) REFERENCES House(name, state)
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE OrgAlignmentScores (
+  oid int,
+  score double,
+  positions_registered int,
+  votes_in_agreement int,
+  votes_in_disagreement int,
+  affirmations int,
+  num_bills int,
+  abstain_votes bool,
+  no_resolutions bool,
+  no_unanimous bool,
+  session_year enum('2015', '2017', 'All'),
+
+  PRIMARY KEY (pid, oid, session_year, abstain_votes, no_resolutions, no_unanimous)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+
+-- A union of ChamberAlignmentScores and LegAlignmentScores
+CREATE TABLE CombinedAlignmentScores(
+  pid int,
+  oid int,
+  house VARCHAR(100),
+  party ENUM('Republican', 'Democrat', 'Other'),
+  score double,
+  positions_registered int,
+  votes_in_agreement int,
+  votes_in_disagreement int,
+  affirmations int,
+  num_bills int,
+  abstain_votes bool,
+  no_resolutions bool,
+  no_unanimous bool,
+  session_year enum('2015', '2017', 'All'),
+  pid_house_party VARCHAR(255),
+  dr_id int unique,
+
+  PRIMARY KEY (pid, oid, session_year, abstain_votes, no_resolutions, no_unanimous),
+  index pid_idx (pid),
+  index oid_idx (oid),
+  index state_idx (state),
+  index pid_house_party_idx (pid, house, party)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
 
 CREATE TABLE AlignmentScoresData (
   bill VARCHAR(30),
@@ -318,94 +399,4 @@ CREATE TABLE AlignmentScoresData (
   FOREIGN KEY (oid) REFERENCES OrgConcept(oid)
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-CREATE TABLE AlignmentScoresExtraInfo (
-  oid INT,
-  pid INT,
-  positions_registered INT,
-  votes_in_agreement INT,
-  votes_in_disagreement INT,
-  affirmations INT,
-  bills INT,
-
-  PRIMARY KEY (oid, pid),
-  FOREIGN KEY (oid) REFERENCES OrgConcept(oid),
-  FOREIGN KEY (pid) REFERENCES Person(pid)
-
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-CREATE TABLE AlignmentScoresAggregated (
-  oid INT,
-  house VARCHAR(100),
-  party ENUM('Republican', 'Democrat', 'Other'),
-  state VARCHAR(2),
-  score DOUBLE,
-  positions_registered INT,
-  votes_in_agreement INT,
-  votes_in_disagreement INT,
-  affirmations INT,
-  bills INT,
-
-  PRIMARY KEY (oid, house, party, state),
-  FOREIGN KEY (oid) REFERENCES OrgConcept(oid),
-  FOREIGN KEY (house, state) REFERENCES House(name, state)
-
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-drop table CombinedAlignmentScores;
-CREATE TABLE CombinedAlignmentScores
-AS
-  SELECT a.pid,
-    a.oid,
-    null as house,
-    null as party,
-    'CA' as 'state',
-    a.AndrewScore as score,
-    asei.positions_registered,
-    asei.votes_in_agreement,
-    asei.votes_in_disagreement,
-    a.pid as pid_house_party
-  FROM AlignmentScores a
-    INNER JOIN AlignmentScoresExtraInfo asei
-      ON asei.oid = a.oid AND asei.pid = a.pid
-  UNION
-  SELECT null as pid,
-    asa.oid,
-    asa.house,
-    asa.party,
-    asa.state,
-    asa.score,
-    asa.positions_registered,
-    asa.votes_in_agreement,
-    asa.votes_in_disagreement,
-    CONCAT_WS('',null,house,IF(LENGTH(house) > 0," (", ""),party, IF(LENGTH(house) > 0,")", "")) as pid_house_party
-  FROM AlignmentScoresAggregated asa;
-
-alter table CombinedAlignmentScores
-    add dr_id int unique AUTO_INCREMENT;
-
-alter table CombinedAlignmentScores
-  add INDEX pid_idx (pid),
-  add INDEX oid_idx (oid),
-  add INDEX state_idx (state),
-  add INDEX pid_house_party_idx (pid, house, party);
-
-
--- Note this is a one time run to add this data
-insert into CombinedAlignmentScores
-(pid, oid, house, party, state, score, positions_registered, votes_in_agreement, votes_in_disagreement, pid_house_party)
-select null as pid,
-  oid,
-  null as house,
-  null as party,
-  'CA' as state,
-  avg(score) as score,
-  sum(positions_registered) as positions_registered,
-  sum(votes_in_agreement) as votes_in_agreement,
-  sum(votes_in_disagreement) as votes_in_disagreement,
-  null as pid_house_party
-from CombinedAlignmentScores
-where pid is null
-group by oid;
-
 

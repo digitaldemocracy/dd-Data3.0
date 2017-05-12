@@ -5,7 +5,7 @@
 File: committee_API_helper.py
 Author: Andrew Rose
 Date: 3/9/2017
-Last Updated: 3/9/2017
+Last Updated: 4/28/2017
 
 Description:
   -This file offers helper methods for scripts that take committee data from OpenStates.
@@ -48,19 +48,10 @@ def get_committee_list(state):
         committee['comm_id'] = entry['id']
         committee['state'] = state.upper()
 
-        #committee['short_name'] = entry['committee'].replace('Committee', '', 1).strip()
-
         if entry['chamber'] == 'joint':
             committee['house'] = 'Joint'
         else:
             committee['house'] = metadata['chambers'][entry['chamber']]['name']
-
-        # if entry['chamber'] == 'joint':
-        #     committee['house'] = 'Joint'
-        # elif entry['chamber'] == 'upper':
-        #     committee['house'] = 'Senate'
-        # elif entry['chamber'] == 'lower':
-        #     committee['house'] = 'Assembly'
 
         committee['updated'] = entry['updated_at']
 
@@ -111,7 +102,13 @@ def get_committee_membership(comm_id):
         member = dict()
 
         member['leg_id'] = entry['leg_id']
-        member['position'] = entry['role']
+
+        if 'vice' in entry['role'].lower():
+            member['position'] = 'Vice-Chair'
+        elif 'chair' in entry['role'].lower():
+            member['position'] = 'Chair'
+        else:
+            member['position'] = 'Member'
 
         member_list.append(member)
 

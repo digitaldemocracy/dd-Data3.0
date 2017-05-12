@@ -2,7 +2,7 @@
 # -*- coding: utf8 -*-
 
 """
-File: new_fl_import_committee.py
+File: new_tx_import_committee.py
 Author: Andrew Rose
 Date: 3/14/2017
 Last Updated: 4/28/2017
@@ -40,7 +40,7 @@ SO_UPDATED = 0
 
 # SQL Selects
 SELECT_SESSION_YEAR = '''SELECT max(start_year) FROM Session
-                         WHERE state = 'FL'
+                         WHERE state = 'TX'
                          '''
 
 SELECT_COMMITTEE_NAME = '''SELECT * FROM CommitteeNames
@@ -103,7 +103,7 @@ def create_payload(table, sqlstmt):
     return {
         '_table': table,
         '_sqlstmt': sqlstmt,
-        '_state': 'FL',
+        '_state': 'TX',
         '_log_type': 'Database'
     }
 
@@ -232,7 +232,7 @@ def get_past_members(dddb, committee):
 def import_committees(dddb):
     global C_INSERTED, CN_INSERTED, SO_INSERTED, SO_UPDATED
 
-    comm_list = get_committee_list('fl')
+    comm_list = get_committee_list('TX')
 
     for committee in comm_list:
         # Committees that have not been updated in the past week are not current
@@ -324,7 +324,7 @@ def main():
                                                     + ', Committee: ' + str(C_INSERTED)
                                                     + ', servesOn: ' + str(SO_INSERTED),
                                        '_updated': 'servesOn: ' + str(SO_UPDATED),
-                                       '_state': 'FL'})
+                                       '_state': 'TX'})
 
 
 if __name__ == '__main__':

@@ -1,7 +1,7 @@
 #!/usr/bin/env python2.7
 # -*- coding: utf8 -*-
 """
-File: fl_import_bills.py
+File: tx_import_bills.py
 Author: Andrew Rose
 Date: 3/16/2017
 Last Updated: 5/4/2017
@@ -91,9 +91,9 @@ INSERT_MOTION = '''INSERT INTO Motion
                    (%(mid)s, %(text)s, %(pass)s)'''
 
 INSERT_BVS = '''INSERT INTO BillVoteSummary
-                (bid, mid, cid, VoteDate, ayes, naes, abstain, result, VoteDateSeq)
+                (bid, mid, VoteDate, ayes, naes, abstain, result, VoteDateSeq)
                 VALUES
-                (%(bid)s, %(mid)s, %(cid)s, %(date)s, %(ayes)s, %(naes)s, %(other)s, %(result)s, %(vote_seq)s)'''
+                (%(bid)s, %(mid)s, %(date)s, %(ayes)s, %(naes)s, %(other)s, %(result)s, %(vote_seq)s)'''
 
 INSERT_BVD = '''INSERT INTO BillVoteDetail
                 (pid, voteId, result, state)
@@ -108,14 +108,14 @@ INSERT_ACTION = '''INSERT INTO Action
 INSERT_VERSION = '''INSERT INTO BillVersion
                     (vid, bid, date, billState, subject, text, state)
                     VALUES
-                    (%(vid)s, %(bid)s, %(date)s, %(name)s, %(subject)s, %(doc)s, %(state)s)'''
+                    (%(vid)s, %(bid)s, %(date)s, %(name)s, %(subject)s, %(text)s, %(state)s)'''
 
 
 def create_payload(table, sqlstmt):
     return {
         '_table': table,
         '_sqlstmt': sqlstmt,
-        '_state': 'FL',
+        '_state': 'TX',
         '_log_type': 'Database'
     }
 
@@ -191,8 +191,7 @@ def get_motion_id(motion, passed, dddb):
 
 
 def get_vote_id(vote, dddb):
-    vote_info = {'bid': vote['bid'], 'mid': vote['mid'],
-                 'date': vote['date'], 'vote_seq': vote['vote_seq']}
+    vote_info = {'bid': vote['bid'], 'mid': vote['mid'], 'date': vote['date'], 'vote_seq': vote['vote_seq']}
 
     try:
         dddb.execute(SELECT_VOTE, vote_info)
@@ -207,47 +206,11 @@ def get_vote_id(vote, dddb):
                        additional_fields=create_payload("BillVoteSummary", (SELECT_VOTE % vote_info)))
 
 
-def get_vote_cid(vote, dddb):
-    comm_info = dict()
-
-    comm_info['house'] = vote['house']
-    comm_info['session'] = vote['session']
-    comm_info['state'] = 'FL'
-
-    committee = vote['motion'].split('(')
-
-    if len(committee) < 2:
-        return None
-
-    committee = committee[1].strip(')')
-
-    if "Subcommittee" in committee:
-        comm_info['type'] = "Subcommittee"
-        committee = committee.replace("Subcommittee", "", 1).strip()
-    elif "Select" in committee:
-        comm_info['type'] = "Select"
-        committee = committee.replace("Committee", "", 1).strip()
-    else:
-        comm_info['type'] = "Standing"
-        committee = committee.replace("Committee", "", 1).strip()
-
-    comm_info['name'] = committee
-
-    try:
-        dddb.execute(SELECT_COMMITTEE, comm_info)
-
-        if dddb.rowcount == 0:
-            print("Error - Committee selection failed: " + comm_info['name'])
-            return None
-        else:
-            return dddb.fetchone()[0]
-    except MySQLdb.Error:
-        logger.warning("Committee selection failed", full_msg=traceback.format_exc(),
-                       additional_fields=create_payload("Committee", (SELECT_COMMITTEE % comm_info)))
-
-
 def get_pid(vote, dddb):
     alt_id = {'alt_id': vote['leg_id']}
+
+    if vote['leg_id'] is None:
+        return None
 
     try:
         dddb.execute(SELECT_PID, alt_id)
@@ -273,38 +236,10 @@ def get_last_mid(dddb):
                        additional_fields=create_payload("Motion", SELECT_LAST_MID))
 
 
-def scrape_version_date(url):
-    dates = dict()
-
-    url = url.split('/')
-    url = '/'.join(url[:7])
-
-    try:
-        html_soup = BeautifulSoup(urllib2.urlopen(url), 'lxml')
-    except:
-        print("Error connecting to " + url)
-        return dates
-
-    table = html_soup.find('div', id='tabBodyBillText').find('table', class_='tbl')
-
-    for row in table.find_all('td', class_='lefttext'):
-        billstate = row.contents[0]
-
-        date_col = row.find_next_sibling('td', class_='centertext').contents[0]
-        date_col = date_col.split(' ')[0].split('/')
-        date = date_col[2] + '/' + date_col[0] + '/' + date_col[1]
-
-        dates[billstate] = date
-
-    return dates
-
-
 def import_votes(vote_list, dddb):
     global M_INSERTED, BVS_INSERTED, BVD_INSERTED
 
     for vote in vote_list:
-        vote['cid'] = get_vote_cid(vote, dddb)
-
         vote['mid'] = get_motion_id(vote['motion'], vote['passed'], dddb)
 
         if vote['mid'] is None:
@@ -324,7 +259,7 @@ def import_votes(vote_list, dddb):
 
         vote['vid'] = get_vote_id(vote, dddb)
         if vote['vid'] is None:
-            vote_info = {'bid': vote['bid'], 'mid': vote['mid'], 'cid': vote['cid'], 'date': vote['date'],
+            vote_info = {'bid': vote['bid'], 'mid': vote['mid'], 'date': vote['date'],
                          'ayes': vote['ayes'], 'naes': vote['naes'], 'other': vote['other'], 'result': vote['result'],
                          'vote_seq': vote['vote_seq']}
 
@@ -342,9 +277,9 @@ def import_votes(vote_list, dddb):
             aye_vote['voteRes'] = 'AYE'
             aye_vote['voteId'] = vote['vid']
             aye_vote['pid'] = get_pid(aye_vote, dddb)
-            aye_vote['state'] = 'FL'
+            aye_vote['state'] = 'TX'
 
-            if pid is not None and not is_bvd_in_db(aye_vote, dddb):
+            if aye_vote['pid'] is not None and not is_bvd_in_db(aye_vote, dddb):
                 try:
                     dddb.execute(INSERT_BVD, aye_vote)
                     BVD_INSERTED += dddb.rowcount
@@ -356,9 +291,9 @@ def import_votes(vote_list, dddb):
             nae_vote['voteRes'] = 'NOE'
             nae_vote['voteId'] = vote['vid']
             nae_vote['pid'] = get_pid(nae_vote, dddb)
-            nae_vote['state'] = 'FL'
+            nae_vote['state'] = 'TX'
 
-            if not is_bvd_in_db(nae_vote, dddb):
+            if nae_vote['pid'] is not None and not is_bvd_in_db(nae_vote, dddb):
                 try:
                     dddb.execute(INSERT_BVD, nae_vote)
                     BVD_INSERTED += dddb.rowcount
@@ -370,9 +305,9 @@ def import_votes(vote_list, dddb):
             other_vote['voteRes'] = 'ABS'
             other_vote['voteId'] = vote['vid']
             other_vote['pid'] = get_pid(other_vote, dddb)
-            other_vote['state'] = 'FL'
+            other_vote['state'] = 'TX'
 
-            if not is_bvd_in_db(other_vote, dddb):
+            if other_vote['pid'] is not None and not is_bvd_in_db(other_vote, dddb):
                 try:
                     dddb.execute(INSERT_BVD, other_vote)
                     BVD_INSERTED += dddb.rowcount
@@ -397,35 +332,25 @@ def import_actions(actions, dddb):
 def import_versions(bill_title, versions, dddb):
     global V_INSERTED
 
-    ver_dates = scrape_version_date(versions[0]['doc'])
-
     for version in versions:
         version['subject'] = bill_title
 
-        try:
-            version['date'] = ver_dates[version['name']]
-        except:
-            print("Error getting version date for bill " + version['bid'])
-
-        if not is_version_in_db(version, dddb):
-            try:
-                dddb.execute(INSERT_VERSION, version)
-                V_INSERTED += dddb.rowcount
-            except MySQLdb.Error:
-                logger.warning("BillVersion insertion failed", full_msg=traceback.format_exc(),
-                               additional_fields=create_payload("BillVersion", (INSERT_VERSION % version)))
+        if version['text'] is None:
+            logger.warning("Bill text download failed", full_msg = "URL error with bill version " + version['vid'])
+        else:
+            if not is_version_in_db(version, dddb):
+                try:
+                    dddb.execute(INSERT_VERSION, version)
+                    V_INSERTED += dddb.rowcount
+                except MySQLdb.Error:
+                    logger.warning("BillVersion insertion failed", full_msg=traceback.format_exc(),
+                                   additional_fields=create_payload("BillVersion", (INSERT_VERSION % version)))
 
 
-'''
-IMPORTANT NOTE:
-     - OS bill title is the subject field for the BillVersion table
-     - BillText is stored as a PDF for Florida, just include a link
-     - BillState and Status aren't in OS, just leave blank for now
-'''
 def import_bills(dddb):
     global B_INSERTED
 
-    bill_list = get_bills('FL')
+    bill_list = get_bills('TX')
 
     for bill in bill_list:
         print(bill['bid'])
@@ -439,7 +364,7 @@ def import_bills(dddb):
                 logger.warning("Bill insertion failed", full_msg=traceback.format_exc(),
                                additional_fields=create_payload("Bill", (INSERT_BILL % bill)))
 
-        bill_details = get_bill_details(bill['os_bid'], bill['bid'], 'FL')
+        bill_details = get_bill_details(bill['os_bid'], bill['bid'], 'TX')
 
         import_votes(bill_details['votes'], dddb)
         import_actions(bill_details['actions'], dddb)
@@ -476,7 +401,7 @@ def main():
                                                     + ', BillVoteDetail: ' + str(BVD_INSERTED)
                                                     + ', Action: ' + str(A_INSERTED)
                                                     + ', BillVersion: ' + str(V_INSERTED),
-                                       '_state': 'FL'})
+                                       '_state': 'TX'})
 
 
 if __name__ == "__main__":

@@ -5,7 +5,7 @@
 File: committee_API_helper.py
 Author: Andrew Rose
 Date: 3/9/2017
-Last Updated: 3/9/2017
+Last Updated: 4/28/2017
 
 Description:
   -This file offers helper methods for scripts that take committee data from OpenStates.
@@ -16,6 +16,7 @@ Source:
 
 import requests
 import json
+import re
 
 COMMITTEE_SEARCH_URL = 'https://openstates.org/api/v1/committees/?state={0}'
 COMMITTEE_DETAIL_URL = 'https://openstates.org/api/v1/committees/{0}'
@@ -48,51 +49,43 @@ def get_committee_list(state):
         committee['comm_id'] = entry['id']
         committee['state'] = state.upper()
 
-        #committee['short_name'] = entry['committee'].replace('Committee', '', 1).strip()
-
         if entry['chamber'] == 'joint':
             committee['house'] = 'Joint'
         else:
             committee['house'] = metadata['chambers'][entry['chamber']]['name']
 
-        # if entry['chamber'] == 'joint':
-        #     committee['house'] = 'Joint'
-        # elif entry['chamber'] == 'upper':
-        #     committee['house'] = 'Senate'
-        # elif entry['chamber'] == 'lower':
-        #     committee['house'] = 'Assembly'
-
         committee['updated'] = entry['updated_at']
 
-        if entry['subcommittee'] is not None:
-            committee['type'] = 'Subcommittee'
-            committee['name'] = committee['house'] + ' ' + entry['committee']
-
-            if 'Subcommittee on the' in entry['subcommittee']:
-                committee['name'] = committee['name'].strip() + ' ' + entry['subcommittee']
-                committee['short_name'] = entry['subcommittee'].replace('Subcommittee on the', '').strip()
-            elif 'Subcommittee on' in entry['subcommittee']:
-                committee['name'] = committee['name'].strip() + ' ' + entry['subcommittee']
-                committee['short_name'] = entry['subcommittee'].replace('Subcommittee on', '').strip()
-            else:
-                committee['name'] = committee['name'].strip() + ' Subcommittee on ' + entry['subcommittee'].replace('Subcommittee', '').strip()
-                committee['short_name'] = entry['subcommittee'].replace('Subcommittee', '').strip()
-        elif 'Joint' in entry['committee']:
-            committee['short_name'] = entry['committee'].replace('Committee', '', 1).strip()
-            committee['type'] = 'Joint'
-            committee['name'] = entry['committee']
-        elif 'Select' in entry['committee']:
-            committee['short_name'] = entry['committee'].replace('Select Committee on', '', 1).strip()
+        if 'select' in entry['committee'].lower():
             committee['type'] = 'Select'
-            committee['name'] = committee['house'] + ' ' + entry['committee']
-        else:
-            committee['short_name'] = entry['committee'].replace('Committee', '', 1).strip()
-            committee['type'] = 'Standing'
+            committee['short_name'] = ','.join(entry['committee'].split(',')[:-1])
             committee['name'] = committee['house'] + ' ' + committee['type'] + ' Committee on ' + committee['short_name']
+
+        elif 's/c' in entry['committee'].lower():
+            committee['type'] = 'Subcommittee'
+            committee_name = re.match(r'^(.*?)-.*?S/C (.*)$', entry['committee'])
+
+            if committee_name:
+                if committee_name.group(2)[:2] == 'on':
+                    committee['short_name'] = committee_name.group(2).replace('on', '', 1).strip()
+                else:
+                    committee['short_name'] = committee_name.group(2).strip()
+
+                committee['name'] = committee['house'] + ' ' + committee['type'] + ' on ' + committee['short_name']
+
+            else:
+                print("Error matching RE for: " + entry['committee'])
+
+        else:
+            committee['type'] = 'Standing'
+            committee['short_name'] = entry['committee']
+            committee['name'] = committee['house'] + ' ' + committee['type'] + ' Committee on ' + committee['short_name']
+
 
         comm_list.append(committee)
 
     return comm_list
+
 
 '''
 This function returns a list of dictionaries for each committe member on the specified committee.
@@ -111,7 +104,13 @@ def get_committee_membership(comm_id):
         member = dict()
 
         member['leg_id'] = entry['leg_id']
-        member['position'] = entry['role']
+
+        if 'vice' in entry['role'].lower():
+            member['position'] = 'Vice-Chair'
+        elif 'chair' in entry['role'].lower():
+            member['position'] = 'Chair'
+        else:
+            member['position'] = 'Member'
 
         member_list.append(member)
 
