@@ -307,7 +307,7 @@ CREATE TABLE LegAlignmentScores (
   votes_in_disagreement int,
   affirmations int,
   num_bills int,
-  abstain_votes bool,
+  no_abstain_votes bool,
   no_resolutions bool,
   no_unanimous bool,
   session_year enum('2015', '2017', 'All'),
