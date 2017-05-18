@@ -1,11 +1,11 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python
 # -*- coding: utf8 -*-
 
 """
 File: new_fl_import_committee.py
 Author: Andrew Rose
 Date: 3/14/2017
-Last Updated: 4/28/2017
+Last Updated: 5/16/2017
 
 Description:
     -This file gets OpenStates committee data using the API Helper and inserts it into the database
@@ -59,6 +59,14 @@ SELECT_COMMITTEE = '''SELECT cid FROM Committee
 SELECT_PID = '''SELECT pid FROM AlternateId
                 WHERE alt_id = %(alt_id)s'''
 
+SELECT_LEG_PID = '''SELECT * FROM Person p
+                    JOIN Term t ON p.pid = t.pid
+                    WHERE t.state = 'FL'
+                    AND t.current_term = 1
+                    AND p.first LIKE %(first)s
+                    AND p.last LIKE %(last)s
+                    '''
+
 SELECT_SERVES_ON = '''SELECT * FROM servesOn
                       WHERE pid = %(pid)s
                       AND year = %(session_year)s
@@ -72,6 +80,7 @@ SELECT_COMMITTEE_MEMBERS = '''SELECT pid FROM servesOn
                             AND state = %(state)s
                             AND current_flag = true
                             AND year = %(year)s'''
+
 
 # SQL Inserts
 INSERT_COMMITTEE_NAME = '''INSERT INTO CommitteeNames
@@ -165,21 +174,43 @@ def get_session_year(dddb):
                        additional_fields=create_payload("Session", SELECT_SESSION_YEAR))
 
 
-def get_pid(dddb, member):
-    alt_id = {'alt_id': member['leg_id']}
+def get_pid_name(dddb, member):
+    mem_name = member['name'].split(' ')
+    legislator = {'first': "%" + mem_name[0] + "%", 'last': "%" + mem_name[-1] + "%"}
 
     try:
-        dddb.execute(SELECT_PID, alt_id)
+        dddb.execute(SELECT_LEG_PID, legislator)
 
-        if dddb.rowcount == 0:
-            print("Error: Person not found with Alt ID " + str(alt_id['alt_id']))
+        if dddb.rowcount != 1:
+            print("Error: PID for " + member['name'] + " not found")
             return None
         else:
             return dddb.fetchone()[0]
 
     except MySQLdb.Error:
         logger.warning("PID selection failed", full_msg=traceback.format_exc(),
-                       additional_fields=create_payload("AltId", (SELECT_PID % alt_id)))
+                       additional_fields=create_payload("Person", (SELECT_LEG_PID % legislator)))
+
+
+def get_pid(dddb, member):
+    if member['leg_id'] is None:
+        return get_pid_name(dddb, member)
+
+    else:
+        alt_id = {'alt_id': member['leg_id']}
+
+        try:
+            dddb.execute(SELECT_PID, alt_id)
+
+            if dddb.rowcount == 0:
+                print("Error: Person not found with Alt ID " + str(alt_id['alt_id']) + ", checking member name")
+                return get_pid_name(dddb, member)
+            else:
+                return dddb.fetchone()[0]
+
+        except MySQLdb.Error:
+            logger.warning("PID selection failed", full_msg=traceback.format_exc(),
+                           additional_fields=create_payload("AltId", (SELECT_PID % alt_id)))
 
 
 def is_committee_current(updated):
@@ -237,6 +268,7 @@ def import_committees(dddb):
     for committee in comm_list:
         # Committees that have not been updated in the past week are not current
         if is_committee_current(committee['updated']):
+
             committee['session_year'] = committee['updated'][:4]
             committee['members'] = get_committee_membership(committee['comm_id'])
 

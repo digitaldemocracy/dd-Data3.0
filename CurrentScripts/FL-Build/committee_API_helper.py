@@ -5,7 +5,7 @@
 File: committee_API_helper.py
 Author: Andrew Rose
 Date: 3/9/2017
-Last Updated: 4/28/2017
+Last Updated: 5/16/2017
 
 Description:
   -This file offers helper methods for scripts that take committee data from OpenStates.
@@ -109,6 +109,8 @@ def get_committee_membership(comm_id):
             member['position'] = 'Chair'
         else:
             member['position'] = 'Member'
+
+        member['name'] = entry['name']
 
         member_list.append(member)
 

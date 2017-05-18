@@ -153,6 +153,7 @@ def main():
                          user=dbinfo['user'],
                          passwd=dbinfo['passwd'],
                          charset='utf8') as dd_cursor:
+
         get_districts(dd_cursor)
         logger.info(__file__ + ' terminated successfully.',
                     full_msg='Inserted ' + str(INSERTED) + ' rows in District',
