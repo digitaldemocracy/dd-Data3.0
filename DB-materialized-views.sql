@@ -286,7 +286,7 @@ CREATE TABLE BillAlignmentScores (
   pid int,
   no_unanimous bool,
   no_resolutions bool,
-  abstain_votes bool,
+  no_abstain_votes bool,
   aligned_votes int,
   alignment_percentage double,
   total_votes int,
@@ -307,12 +307,12 @@ CREATE TABLE LegAlignmentScores (
   votes_in_disagreement int,
   affirmations int,
   num_bills int,
-  abstain_votes bool,
+  no_abstain_votes bool,
   no_resolutions bool,
   no_unanimous bool,
   session_year enum('2015', '2017', 'All'),
 
-  PRIMARY KEY (pid, oid, session_year, abstain_votes, no_resolutions, no_unanimous)
+  PRIMARY KEY (pid, oid, session_year, no_abstain_votes, no_resolutions, no_unanimous)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 
@@ -322,7 +322,7 @@ CREATE TABLE ChamberAlignmentScores (
   party ENUM('Republican', 'Democrat', 'Other'),
   no_resolutions bool,
   no_unanimous bool,
-  abstain_votes bool,
+  no_abstain_votes bool,
   state VARCHAR(2),
   score DOUBLE,
   positions_registered INT,
@@ -346,12 +346,12 @@ CREATE TABLE OrgAlignmentScores (
   votes_in_disagreement int,
   affirmations int,
   num_bills int,
-  abstain_votes bool,
+  no_abstain_votes bool,
   no_resolutions bool,
   no_unanimous bool,
   session_year enum('2015', '2017', 'All'),
 
-  PRIMARY KEY (pid, oid, session_year, abstain_votes, no_resolutions, no_unanimous)
+  PRIMARY KEY (pid, oid, session_year, no_abstain_votes, no_resolutions, no_unanimous)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 
@@ -367,14 +367,14 @@ CREATE TABLE CombinedAlignmentScores(
   votes_in_disagreement int,
   affirmations int,
   num_bills int,
-  abstain_votes bool,
+  no_abstain_votes bool,
   no_resolutions bool,
   no_unanimous bool,
   session_year enum('2015', '2017', 'All'),
   pid_house_party VARCHAR(255),
   dr_id int unique,
 
-  PRIMARY KEY (pid, oid, session_year, abstain_votes, no_resolutions, no_unanimous),
+  PRIMARY KEY (pid, oid, session_year, no_abstain_votes, no_resolutions, no_unanimous),
   index pid_idx (pid),
   index oid_idx (oid),
   index state_idx (state),
