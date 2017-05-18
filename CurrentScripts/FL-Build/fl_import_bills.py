@@ -70,6 +70,13 @@ SELECT_COMMITTEE = '''SELECT cid FROM Committee
 SELECT_PID = '''SELECT pid FROM AlternateId
                 WHERE alt_id = %(alt_id)s'''
 
+SELECT_LEG_PID = '''SELECT * FROM Person p
+                    JOIN Term t ON p.pid = t.pid
+                    WHERE t.state = 'FL'
+                    AND t.current_term = 1
+                    AND p.last LIKE %(last)s
+                    '''
+
 SELECT_ACTION = '''SELECT * FROM Action
                    WHERE bid = %(bid)s
                    AND date = %(date)s
@@ -246,21 +253,60 @@ def get_vote_cid(vote, dddb):
                        additional_fields=create_payload("Committee", (SELECT_COMMITTEE % comm_info)))
 
 
-def get_pid(vote, dddb):
-    alt_id = {'alt_id': vote['leg_id']}
+def get_pid_name(vote, dddb):
+    mem_name = vote['name'].split(',')
+    legislator = {'last': '%' + mem_name[0] + '%'}
 
     try:
-        dddb.execute(SELECT_PID, alt_id)
+        dddb.execute(SELECT_LEG_PID, legislator)
 
-        if dddb.rowcount == 0:
-            print("Error: Person with alt ID " + str(alt_id) + " not found")
+        if dddb.rowcount != 1:
+            print("Error: PID for " + vote['name'] + " not found")
             return None
         else:
             return dddb.fetchone()[0]
 
     except MySQLdb.Error:
         logger.warning("PID selection failed", full_msg=traceback.format_exc(),
-                       additional_fields=create_payload("AltId", (SELECT_PID % alt_id)))
+                       additional_fields=create_payload("Person", (SELECT_LEG_PID % legislator)))
+
+
+def get_pid(vote, dddb):
+    if vote['leg_id'] is None:
+        return get_pid_name(vote, dddb)
+
+    else:
+        alt_id = {'alt_id': vote['leg_id']}
+
+        try:
+            dddb.execute(SELECT_PID, alt_id)
+
+            if dddb.rowcount == 0:
+                print("Error: Person not found with Alt ID " + str(alt_id['alt_id']) + ", checking member name")
+                return get_pid_name(vote, dddb)
+            else:
+                return dddb.fetchone()[0]
+
+        except MySQLdb.Error:
+            logger.warning("PID selection failed", full_msg=traceback.format_exc(),
+                           additional_fields=create_payload("AltId", (SELECT_PID % alt_id)))
+
+
+# def get_pid(vote, dddb):
+#     alt_id = {'alt_id': vote['leg_id']}
+#
+#     try:
+#         dddb.execute(SELECT_PID, alt_id)
+#
+#         if dddb.rowcount == 0:
+#             print("Error: Person with alt ID " + str(alt_id) + " not found")
+#             return None
+#         else:
+#             return dddb.fetchone()[0]
+#
+#     except MySQLdb.Error:
+#         logger.warning("PID selection failed", full_msg=traceback.format_exc(),
+#                        additional_fields=create_payload("AltId", (SELECT_PID % alt_id)))
 
 
 def get_last_mid(dddb):
@@ -344,7 +390,7 @@ def import_votes(vote_list, dddb):
             aye_vote['pid'] = get_pid(aye_vote, dddb)
             aye_vote['state'] = 'FL'
 
-            if pid is not None and not is_bvd_in_db(aye_vote, dddb):
+            if aye_vote['pid'] is not None and not is_bvd_in_db(aye_vote, dddb):
                 try:
                     dddb.execute(INSERT_BVD, aye_vote)
                     BVD_INSERTED += dddb.rowcount
@@ -358,7 +404,7 @@ def import_votes(vote_list, dddb):
             nae_vote['pid'] = get_pid(nae_vote, dddb)
             nae_vote['state'] = 'FL'
 
-            if not is_bvd_in_db(nae_vote, dddb):
+            if nae_vote['pid'] is not None and not is_bvd_in_db(nae_vote, dddb):
                 try:
                     dddb.execute(INSERT_BVD, nae_vote)
                     BVD_INSERTED += dddb.rowcount
@@ -372,7 +418,7 @@ def import_votes(vote_list, dddb):
             other_vote['pid'] = get_pid(other_vote, dddb)
             other_vote['state'] = 'FL'
 
-            if not is_bvd_in_db(other_vote, dddb):
+            if other_vote['pid'] is not None and not is_bvd_in_db(other_vote, dddb):
                 try:
                     dddb.execute(INSERT_BVD, other_vote)
                     BVD_INSERTED += dddb.rowcount
@@ -427,7 +473,7 @@ def import_bills(dddb):
 
     bill_list = get_bills('FL')
 
-    for bill in bill_list:
+    for bill in bill_list[:5]:
         print(bill['bid'])
 
         if not is_bill_in_db(dddb, bill):
