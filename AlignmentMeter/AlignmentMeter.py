@@ -3,11 +3,12 @@ import numpy as np
 import pymysql
 import pickle
 import itertools
+import datetime
 
 CONN_INFO = {'host': 'dddb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
              'port': 3306,
-             'db': 'AndrewTest',
-             # 'db': 'DDDB2016Aug',
+             # 'db': 'AndrewTest',
+             'db': 'DDDB2016Aug',
              'user': 'awsDB',
              'passwd': 'digitaldemocracy789'}
 
@@ -582,6 +583,8 @@ def create_all_scores(leg_votes_all_df, org_alignments_df, filters):
 
     final_df_lst = []
     for leg_votes_df, combo in zip(leg_votes_df_lst, combinations):
+        print('Combo', combo)
+        print(datetime.datetime.now())
         df = calc_scores(leg_votes_df, org_alignments_df)
         df = get_position_info(df, org_alignments_df)
         for flt in filters:
@@ -649,25 +652,18 @@ def write_to_db(df, org_alignments_df, leg_votes_all_df, cnxn):
     add_table_indices(cnxn)
 
 
-
+# TODO drop the print statements
 def main():
     cnxn = pymysql.connect(**CONN_INFO)
-    #
-    load_data = True
-    # load_data = False
 
-    if load_data:
+    print('Connection successful')
 
-        org_alignments_df = fetch_org_alignments(cnxn)
-        concept_alignments_df = make_concept_alignments(org_alignments_df, cnxn)
-        leg_votes_all_df = fetch_leg_votes(cnxn)
-        pickle.dump(concept_alignments_df, open(PCKL_DIR + 'org_alignments_df.p', 'wb'))
-        pickle.dump(leg_votes_all_df, open(PCKL_DIR + 'leg_votes_all_df.p', 'wb'))
-
-    org_alignments_df = pickle.load(open(PCKL_DIR + 'org_alignments_df.p', 'rb'))
-    leg_votes_all_df = pickle.load(open(PCKL_DIR + 'leg_votes_all_df.p', 'rb'))
-
+    org_alignments_df = fetch_org_alignments(cnxn)
+    org_alignments_df = make_concept_alignments(org_alignments_df, cnxn)
+    leg_votes_all_df = fetch_leg_votes(cnxn)
     term_df = fetch_term_info(cnxn)
+
+    print('Read in data')
 
     # To avoid conflicting alignments. Data should really be cleaner
     org_alignments_df = org_alignments_df.drop_duplicates(['oid', 'bid', 'date'])
