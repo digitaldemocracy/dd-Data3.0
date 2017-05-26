@@ -119,6 +119,9 @@ def create_payload(table, sqlstmt):
     }
 
 
+'''
+Formats the dates found in the agenda PDFs
+'''
 def clean_date(line):
     line = line.split(',')
     line = ''.join(line[1:]).strip()
@@ -130,6 +133,10 @@ def clean_date(line):
     return date
 
 
+'''
+Takes the committee names listed in the agenda files
+and converts them to the format that commmittee names take in our database
+'''
 def format_committee(comm, house, date):
     comm_name = dict()
 
@@ -206,6 +213,9 @@ def is_comm_hearing_in_db(cid, hid, dddb):
                        additional_fields=create_payload("CommitteeHearing", (SELECT_COMMITTEE_HEARING % comm_hearing)))
 
 
+'''
+Gets a specific Hearing's HID from the database
+'''
 def get_hearing_hid(date, house, dddb):
     session_year = date[:4]
 
@@ -224,6 +234,9 @@ def get_hearing_hid(date, house, dddb):
                        additional_fields=create_payload("Hearing", (SELECT_CHAMBER_HEARING % hearing)))
 
 
+'''
+Gets CID from our database using the committee names listed in the agendas
+'''
 def get_comm_cid(comm, house, date, dddb):
     comm_name = format_committee(comm, house, date)
 
@@ -242,6 +255,9 @@ def get_comm_cid(comm, house, date, dddb):
                        additional_fields=create_payload("Committee", (SELECT_COMMITTEE % comm_name)))
 
 
+'''
+Gets BID using a bill's type and number
+'''
 def get_bill_bid(bill, date, dddb):
     session_year = date[:4]
 
@@ -279,6 +295,12 @@ def update_hearing_agendas(hid, bid, dddb):
                        additional_fields=create_payload("HearingAgenda", (UPDATE_HEARING_AGENDA % ha)))
 
 
+'''
+Check if a HearingAgenda is current
+If multiple agenda files list a certain HearingAgenda,
+the most recent one is marked as current, and the others
+are marked as not current.
+'''
 def check_current_agenda(hid, bid, date, dddb):
     ha = {'hid': hid, 'bid': bid}
 
@@ -306,6 +328,9 @@ def check_current_agenda(hid, bid, date, dddb):
                        additional_fields=create_payload("HearingAgenda", (SELECT_CURRENT_AGENDA % ha)))
 
 
+'''
+Inserts Hearings into the DB
+'''
 def insert_hearing(date, dddb):
     global H_INS
 
@@ -330,6 +355,9 @@ def insert_hearing(date, dddb):
                        additional_fields=create_payload("Hearing", (INSERT_HEARING % hearing)))
 
 
+'''
+Inserts CommitteeHearings into the DB
+'''
 def insert_committee_hearing(cid, hid, dddb):
     global CH_INS
 
@@ -345,6 +373,9 @@ def insert_committee_hearing(cid, hid, dddb):
                        additional_fields=create_payload("CommitteeHearings", (INSERT_COMMITTEE_HEARING % comm_hearing)))
 
 
+'''
+Inserts HearingAgendas into the DB
+'''
 def insert_hearing_agenda(hid, bid, date, dddb):
     global HA_INS
     current_flag = check_current_agenda(hid, bid, date, dddb)
@@ -362,6 +393,9 @@ def insert_hearing_agenda(hid, bid, date, dddb):
                            additional_fields=create_payload("HearingAgenda", (INSERT_HEARING_AGENDA % agenda)))
 
 
+'''
+Scrapes agenda information on House hearings from the converted text
+'''
 def import_house_agendas(f, dddb):
     h_flag = 0
 
@@ -413,6 +447,9 @@ def import_house_agendas(f, dddb):
             continue
 
 
+'''
+Scrapes agenda information on Senate hearings from the converted text
+'''
 def import_senate_agendas(f, dddb):
     h_flag = 0
 
@@ -463,6 +500,9 @@ def import_senate_agendas(f, dddb):
             continue
 
 
+'''
+Uses XPDF's pdftotext utility to convert the agenda PDFs to text
+'''
 def get_agenda_text(link):
     response = requests.get(link)
     f = open("calendar.pdf", "wb")
@@ -472,6 +512,9 @@ def get_agenda_text(link):
     subprocess.call("pdftotext calendar.pdf")
 
 
+'''
+Gets all House agenda PDFs listed on the Florida website
+'''
 def get_house_agenda(dddb):
     html_soup = BeautifulSoup(urllib2.urlopen(HOUSE_SOURCE).read())
 
@@ -484,6 +527,9 @@ def get_house_agenda(dddb):
             import_house_agendas(f, dddb)
 
 
+'''
+Gets all Senate agenda PDFs listed on the Florida website
+'''
 def get_senate_agenda(dddb):
     html_soup = BeautifulSoup(urllib2.urlopen(SENATE_SOURCE).read())
 
@@ -521,6 +567,11 @@ def main():
                                                     + ', HearingAgenda: ' + str(HA_INS),
                                        '_updated': 'HearingAgenda: ' + str(HA_UPD),
                                        '_state': 'FL'})
+
+        LOG = {'tables': [{'state': 'FL', 'name': 'Hearing', 'inserted': H_INS, 'updated': 0, 'deleted': 0},
+                          {'state': 'FL', 'name': 'CommitteeHearing', 'inserted': CH_INS, 'updated': 0, 'deleted': 0},
+                          {'state': 'FL', 'name': 'HearingAgenda', 'inserted': HA_INS, 'updated': HA_UPD, 'deleted': 0}]}
+        sys.stderr.write(json.dumps(LOG))
 
 
 if __name__ == '__main__':

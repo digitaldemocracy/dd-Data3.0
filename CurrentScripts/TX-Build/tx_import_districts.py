@@ -162,8 +162,8 @@ def main():
                                        '_state': 'TX',
                                        '_log_type': 'Database'})
 
-    #LOG = {'tables': [{'state': 'TX', 'name': 'District', 'inserted': INSERTED, 'updated': 0, 'deleted': 0}]}
-    #sys.stderr.write(json.dumps(LOG))
+        LOG = {'tables': [{'state': 'TX', 'name': 'District', 'inserted': INSERTED, 'updated': 0, 'deleted': 0}]}
+        sys.stderr.write(json.dumps(LOG))
 
 
 if __name__ == "__main__":

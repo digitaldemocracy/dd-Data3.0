@@ -182,6 +182,10 @@ def is_version_in_db(version, dddb):
                        additional_fields=create_payload("BillVersion", (SELECT_VERSION % version)))
 
 
+'''
+Each vote is associated with a motion.
+If a motion already exists in the DB, use that motion's ID
+'''
 def get_motion_id(motion, passed, dddb):
     mot = {'motion': motion, 'doPass': passed}
 
@@ -214,6 +218,10 @@ def get_vote_id(vote, dddb):
                        additional_fields=create_payload("BillVoteSummary", (SELECT_VOTE % vote_info)))
 
 
+'''
+Votes can be associated with committees.
+If a vote is made in a committee, this function gets the CID
+'''
 def get_vote_cid(vote, dddb):
     comm_info = dict()
 
@@ -253,6 +261,11 @@ def get_vote_cid(vote, dddb):
                        additional_fields=create_payload("Committee", (SELECT_COMMITTEE % comm_info)))
 
 
+'''
+OpenStates has incorrect ID numbers for some legislators.
+If a legislator has an incorrect/missing ID, this function
+gets their PID by matching their name
+'''
 def get_pid_name(vote, dddb):
     mem_name = vote['name'].split(',')
     legislator = {'last': '%' + mem_name[0] + '%'}
@@ -271,6 +284,9 @@ def get_pid_name(vote, dddb):
                        additional_fields=create_payload("Person", (SELECT_LEG_PID % legislator)))
 
 
+'''
+Get a legislator's PID using their OpenStates LegID and the AlternateID table
+'''
 def get_pid(vote, dddb):
     if vote['leg_id'] is None:
         return get_pid_name(vote, dddb)
@@ -292,23 +308,10 @@ def get_pid(vote, dddb):
                            additional_fields=create_payload("AltId", (SELECT_PID % alt_id)))
 
 
-# def get_pid(vote, dddb):
-#     alt_id = {'alt_id': vote['leg_id']}
-#
-#     try:
-#         dddb.execute(SELECT_PID, alt_id)
-#
-#         if dddb.rowcount == 0:
-#             print("Error: Person with alt ID " + str(alt_id) + " not found")
-#             return None
-#         else:
-#             return dddb.fetchone()[0]
-#
-#     except MySQLdb.Error:
-#         logger.warning("PID selection failed", full_msg=traceback.format_exc(),
-#                        additional_fields=create_payload("AltId", (SELECT_PID % alt_id)))
-
-
+'''
+Motion IDs don't auto-increment for some reason,
+so this function grabs the highest MID from the Motion table
+'''
 def get_last_mid(dddb):
     try:
         dddb.execute(SELECT_LAST_MID)
@@ -319,6 +322,10 @@ def get_last_mid(dddb):
                        additional_fields=create_payload("Motion", SELECT_LAST_MID))
 
 
+'''
+OpenStates doesn't have information on BillVersions, which are needed for transcription.
+This function scrapes the dates from Florida's website
+'''
 def scrape_version_date(url):
     dates = dict()
 
@@ -345,6 +352,9 @@ def scrape_version_date(url):
     return dates
 
 
+'''
+Inserts vote data into the BillVoteSummary and BillVoteDetail tables
+'''
 def import_votes(vote_list, dddb):
     global M_INSERTED, BVS_INSERTED, BVD_INSERTED
 
@@ -384,6 +394,7 @@ def import_votes(vote_list, dddb):
                                additional_fields=create_payload("BillVoteSummary", (INSERT_BVS % vote_info)))
 
 
+        # This part of the function inserts votes to the BillVoteDetail table
         for aye_vote in vote['aye_votes']:
             aye_vote['voteRes'] = 'AYE'
             aye_vote['voteId'] = vote['vid']
@@ -427,6 +438,9 @@ def import_votes(vote_list, dddb):
                                    additional_fields=create_payload("BillVoteDetail", (INSERT_BVD % other_vote)))
 
 
+'''
+Inserts into the Action table
+'''
 def import_actions(actions, dddb):
     global A_INSERTED
 
@@ -440,6 +454,9 @@ def import_actions(actions, dddb):
                                additional_fields=create_payload("Action", (INSERT_ACTION % action)))
 
 
+'''
+Inserts into the BillVersion table
+'''
 def import_versions(bill_title, versions, dddb):
     global V_INSERTED
 
@@ -523,6 +540,14 @@ def main():
                                                     + ', Action: ' + str(A_INSERTED)
                                                     + ', BillVersion: ' + str(V_INSERTED),
                                        '_state': 'FL'})
+
+        LOG = {'tables': [{'state': 'FL', 'name': 'Bill', 'inserted': B_INSERTED, 'updated': 0, 'deleted': 0},
+                          {'state': 'FL', 'name': 'Motion', 'inserted': M_INSERTED, 'updated': 0, 'deleted': 0},
+                          {'state': 'FL', 'name': 'BillVoteSummary', 'inserted': BVS_INSERTED, 'updated': 0, 'deleted': 0},
+                          {'state': 'FL', 'name': 'BillVoteDetail', 'inserted': BVD_INSERTED, 'updated': 0, 'deleted': 0},
+                          {'state': 'FL', 'name': 'Action', 'inserted': A_INSERTED, 'updated': 0, 'deleted': 0},
+                          {'state': 'FL', 'name': 'BillVersion', 'inserted': V_INSERTED, 'updated': 0, 'deleted': 0}]}
+        sys.stderr.write(json.dumps(LOG))
 
 
 if __name__ == "__main__":

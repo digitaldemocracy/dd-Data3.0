@@ -180,6 +180,10 @@ def is_version_in_db(version, dddb):
                        additional_fields=create_payload("BillVersion", (SELECT_VERSION % version)))
 
 
+'''
+Each vote is associated with a motion.
+If a motion already exists in the DB, use that motion's ID
+'''
 def get_motion_id(motion, passed, dddb):
     mot = {'motion': motion, 'doPass': passed}
 
@@ -211,6 +215,11 @@ def get_vote_id(vote, dddb):
                        additional_fields=create_payload("BillVoteSummary", (SELECT_VOTE % vote_info)))
 
 
+'''
+Get a legislator's PID from the database
+Because of how OpenStates formats votes, have to select PID by matching
+legislator names
+'''
 def get_pid(vote_name, dddb):
     mem_name = vote_name.strip()
     legislator = {'last': '%' + mem_name + '%'}
@@ -229,26 +238,10 @@ def get_pid(vote_name, dddb):
                        additional_fields=create_payload("Person", (SELECT_LEG_PID % legislator)))
 
 
-# def get_pid(vote, dddb):
-#     alt_id = {'alt_id': vote['leg_id']}
-#
-#     if vote['leg_id'] is None:
-#         return None
-#
-#     try:
-#         dddb.execute(SELECT_PID, alt_id)
-#
-#         if dddb.rowcount == 0:
-#             print("Error: Person with alt ID " + str(alt_id) + " not found")
-#             return None
-#         else:
-#             return dddb.fetchone()[0]
-#
-#     except MySQLdb.Error:
-#         logger.warning("PID selection failed", full_msg=traceback.format_exc(),
-#                        additional_fields=create_payload("AltId", (SELECT_PID % alt_id)))
-
-
+'''
+Motion IDs don't auto-increment for some reason,
+so this function grabs the highest MID from the Motion table
+'''
 def get_last_mid(dddb):
     try:
         dddb.execute(SELECT_LAST_MID)
@@ -259,6 +252,9 @@ def get_last_mid(dddb):
                        additional_fields=create_payload("Motion", SELECT_LAST_MID))
 
 
+'''
+Inserts vote data into the BillVoteSummary and BillVoteDetail tables
+'''
 def import_votes(vote_list, dddb):
     global M_INSERTED, BVS_INSERTED, BVD_INSERTED
 
@@ -295,7 +291,7 @@ def import_votes(vote_list, dddb):
                 logger.warning("BillVoteSummary insertion failed", full_msg=traceback.format_exc(),
                                additional_fields=create_payload("BillVoteSummary", (INSERT_BVS % vote_info)))
 
-
+        # This part of the function inserts votes to the BillVoteDetail table
         for aye_vote in vote['aye_votes']:
             aye_voters = aye_vote['name'].split(',')
             for voter_name in aye_voters:
@@ -348,6 +344,9 @@ def import_votes(vote_list, dddb):
                                        additional_fields=create_payload("BillVoteDetail", (INSERT_BVD % voter)))
 
 
+'''
+Inserts into the Action table
+'''
 def import_actions(actions, dddb):
     global A_INSERTED
 
@@ -361,6 +360,9 @@ def import_actions(actions, dddb):
                                additional_fields=create_payload("Action", (INSERT_ACTION % action)))
 
 
+'''
+Inserts into the BillVersion table
+'''
 def import_versions(bill_title, versions, dddb):
     global V_INSERTED
 
@@ -434,6 +436,14 @@ def main():
                                                     + ', Action: ' + str(A_INSERTED)
                                                     + ', BillVersion: ' + str(V_INSERTED),
                                        '_state': 'TX'})
+        
+        LOG = {'tables': [{'state': 'TX', 'name': 'Bill', 'inserted': B_INSERTED, 'updated': 0, 'deleted': 0},
+                          {'state': 'TX', 'name': 'Motion', 'inserted': M_INSERTED, 'updated': 0, 'deleted': 0},
+                          {'state': 'TX', 'name': 'BillVoteSummary', 'inserted': BVS_INSERTED, 'updated': 0, 'deleted': 0},
+                          {'state': 'TX', 'name': 'BillVoteDetail', 'inserted': BVD_INSERTED, 'updated': 0, 'deleted': 0},
+                          {'state': 'TX', 'name': 'Action', 'inserted': A_INSERTED, 'updated': 0, 'deleted': 0},
+                          {'state': 'TX', 'name': 'BillVersion', 'inserted': V_INSERTED, 'updated': 0, 'deleted': 0}]}
+        sys.stderr.write(json.dumps(LOG))
 
 
 if __name__ == "__main__":

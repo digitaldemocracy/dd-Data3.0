@@ -174,6 +174,11 @@ def get_session_year(dddb):
                        additional_fields=create_payload("Session", SELECT_SESSION_YEAR))
 
 
+'''
+OpenStates has incorrect ID numbers for some legislators.
+If a legislator has an incorrect/missing ID, this function
+gets their PID by matching their name
+'''
 def get_pid_name(dddb, member):
     mem_name = member['name'].split(' ')
     legislator = {'first': "%" + mem_name[0] + "%", 'last': "%" + mem_name[-1] + "%"}
@@ -192,6 +197,9 @@ def get_pid_name(dddb, member):
                        additional_fields=create_payload("Person", (SELECT_LEG_PID % legislator)))
 
 
+'''
+Get a legislator's PID using their OpenStates LegID and the AlternateID table
+'''
 def get_pid(dddb, member):
     if member['leg_id'] is None:
         return get_pid_name(dddb, member)
@@ -213,6 +221,10 @@ def get_pid(dddb, member):
                            additional_fields=create_payload("AltId", (SELECT_PID % alt_id)))
 
 
+'''
+Committees that OpenStates has updated in the past week
+are defined as current in the database
+'''
 def is_committee_current(updated):
     update_date = dt.datetime.strptime(updated, '%Y-%m-%d %H:%M:%S')
 
@@ -224,6 +236,12 @@ def is_committee_current(updated):
         return True
 
 
+'''
+If there is a committee member listed in our database
+but not on OpenStates, that committee member is no longer current
+and their end date is set to the first date where we noticed they
+were gone from OpenStates
+'''
 def get_past_members(dddb, committee):
     update_members = list()
 
@@ -357,6 +375,11 @@ def main():
                                                     + ', servesOn: ' + str(SO_INSERTED),
                                        '_updated': 'servesOn: ' + str(SO_UPDATED),
                                        '_state': 'FL'})
+
+        LOG = {'tables': [{'state': 'FL', 'name': 'CommitteeNames', 'inserted': CN_INSERTED, 'updated': 0, 'deleted': 0},
+                          {'state': 'FL', 'name': 'Committee', 'inserted': C_INSERTED, 'updated': 0, 'deleted': 0},
+                          {'state': 'FL', 'name': 'servesOn', 'inserted': SO_INSERTED, 'updated': SO_UPDATED, 'deleted': 0}]}
+        sys.stderr.write(json.dumps(LOG))
 
 
 if __name__ == '__main__':

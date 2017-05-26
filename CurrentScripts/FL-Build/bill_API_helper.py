@@ -19,10 +19,13 @@ import json
 import datetime as dt
 
 BILL_SEARCH_URL = "https://openstates.org/api/v1/bills/?state={0}&search_window=session"
+BILL_SEARCH_URL += "&apikey=c12c4c7e02c04976865f3f9e95c3275b"
+
 BILL_DETAIL_URL = "https://openstates.org/api/v1/bills/{0}"
+BILL_DETAIL_URL += "&apikey=c12c4c7e02c04976865f3f9e95c3275b"
 
 STATE_METADATA_URL = "https://openstates.org/api/v1/metadata/{0}"
-
+STATE_METADATA_URL += "&apikey=c12c4c7e02c04976865f3f9e95c3275b"
 
 '''
 This function builds and returns a list of dictionaries, each containing information on a single bill.
@@ -118,6 +121,7 @@ def get_bill_votes(bill_votes, bid, state):
 
         vote['date'] = dt.datetime.strptime(entry['date'], '%Y-%m-%d %H:%M:%S').date()
 
+        # If there are multiple votes on a bill in one day, vote_seq is incremented
         if old_vote_date is None:
             vote_seq = 1
             old_vote_date = vote['date']
@@ -178,6 +182,7 @@ def get_bill_actions(bill_actions, bid):
 
         action['date'] = dt.datetime.strptime(entry['date'], '%Y-%m-%d %H:%M:%S').date()
 
+        # seq_num is incremented if multiple actions happen on one day
         if old_action_date is None:
             action_seq = 1
             old_action_date = action['date']
