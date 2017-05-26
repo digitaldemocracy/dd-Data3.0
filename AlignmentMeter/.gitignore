@@ -1,0 +1,5 @@
+*.lob
+*.csv
+*.dat
+*idea*
+*.ipynb_checkpoints*
