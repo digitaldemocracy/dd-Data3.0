@@ -81,6 +81,13 @@ SELECT_COMMITTEE_MEMBERS = '''SELECT pid FROM servesOn
                             AND current_flag = true
                             AND year = %(year)s'''
 
+SELECT_HOUSE_MEMBERS = '''SELECT p.pid FROM Person p
+                          JOIN Legislator l ON p.pid = l.pid
+                          JOIN Term t ON l.pid = t.pid
+                          WHERE l.state = 'TX'
+                          AND t.year = %(year)s
+                          AND t.house = %(house)s'''
+
 # SQL Inserts
 INSERT_COMMITTEE_NAME = '''INSERT INTO CommitteeNames
                            (name, house, state)
@@ -221,6 +228,95 @@ def get_pid(dddb, member):
 
 
 '''
+Gets all members of a state legislative house
+Used when inserting floor committee membership information
+'''
+def get_house_members(dddb, house_info):
+    try:
+        dddb.execute(SELECT_HOUSE_MEMBERS, house_info)
+
+        if dddb.rowcount != 0:
+            return dddb.fetchall()
+
+    except MySQLdb.Error:
+        logger.warning("PID selection failed", full_msg=traceback.format_exc(),
+                       additional_fields=create_payload("Person", (SELECT_HOUSE_MEMBERS % house_info)))
+
+
+'''
+Inserts to the CommitteeNames table
+Names in the Committee table refer to the CommitteeNames table, so this must be done
+before adding new committees
+'''
+def insert_comm_name(dddb, committee):
+    global  CN_INSERTED
+
+    try:
+        comm_name = {'name': committee['name'], 'house': committee['house'], 'state': committee['state']}
+        dddb.execute(INSERT_COMMITTEE_NAME, comm_name)
+        CN_INSERTED += dddb.rowcount
+
+    except MySQLdb.Error:
+        logger.warning("CommitteeName insertion failed", full_msg=traceback.format_exc(),
+                       additional_fields=create_payload("CommitteeNames", (INSERT_COMMITTEE_NAME % comm_name)))
+
+
+'''
+Inserts to the Committee table
+Returns the newly inserted committee's CID for inserting its members to servesOn
+'''
+def insert_committee(dddb, committee):
+    global C_INSERTED
+
+    cid = None
+
+    try:
+        comm = {'name': committee['name'], 'short_name': committee['short_name'],
+                'type': committee['type'], 'state': committee['state'],
+                'house': committee['house'], 'session_year': committee['session_year']}
+
+        dddb.execute(INSERT_COMMITTEE, comm)
+        cid = int(dddb.lastrowid)
+        C_INSERTED += dddb.rowcount
+
+    except MySQLdb.Error:
+        logger.warning("Committee insertion failed", full_msg=traceback.format_exc(),
+                       additional_fields=create_payload("Committee", (INSERT_COMMITTEE % comm)))
+
+    return cid
+
+
+'''
+Inserts to the servesOn
+'''
+def insert_serves_on(dddb, member):
+    global SO_INSERTED
+
+    try:
+        dddb.execute(INSERT_SERVES_ON, member)
+        SO_INSERTED += dddb.rowcount
+
+    except MySQLdb.Error:
+        logger.warning("servesOn insertion failed", full_msg=traceback.format_exc(),
+                       additional_fields=create_payload("servesOn", (INSERT_SERVES_ON % member)))
+
+
+'''
+Updates rows in servesOn when a member is no longer part of a committee
+'''
+def update_serves_on(dddb, member):
+    global SO_UPDATED
+
+    try:
+        dddb.execute(UPDATE_SERVESON, member)
+        SO_UPDATED += dddb.rowcount
+
+    except MySQLdb.Error:
+        logger.warning("servesOn update failed", full_msg=traceback.format_exc(),
+                       additional_fields=create_payload("servesOn", (UPDATE_SERVESON % member)))
+
+
+'''
 Committees that OpenStates has updated in the past week
 are defined as current in the database
 '''
@@ -277,43 +373,28 @@ def get_past_members(dddb, committee):
     return update_members
 
 
+'''
+Takes data from the OpenStates API helper and inserts to the DB
+'''
 def import_committees(dddb):
     global C_INSERTED, CN_INSERTED, SO_INSERTED, SO_UPDATED
 
-    comm_list = get_committee_list('TX')
+    comm_list = get_committee_list('tx')
 
     for committee in comm_list:
         # Committees that have not been updated in the past week are not current
         if is_committee_current(committee['updated']):
+
             committee['session_year'] = committee['updated'][:4]
             committee['members'] = get_committee_membership(committee['comm_id'])
 
             if is_comm_name_in_db(dddb, committee) is False:
-                try:
-                    comm_name = {'name': committee['name'], 'house': committee['house'], 'state': committee['state']}
-                    dddb.execute(INSERT_COMMITTEE_NAME, comm_name)
-                    CN_INSERTED += dddb.rowcount
-
-                except MySQLdb.Error:
-                    logger.warning("CommitteeName insertion failed", full_msg=traceback.format_exc(),
-                                   additional_fields=create_payload("CommitteeNames",
-                                                                    (INSERT_COMMITTEE_NAME % comm_name)))
+                insert_comm_name(dddb, committee)
 
             committee['cid'] = get_comm_cid(dddb, committee)
 
             if committee['cid'] is None:
-                try:
-                    comm = {'name': committee['name'], 'short_name': committee['short_name'],
-                            'type': committee['type'], 'state': committee['state'],
-                            'house': committee['house'], 'session_year': committee['session_year']}
-
-                    dddb.execute(INSERT_COMMITTEE, comm)
-                    committee['cid'] = int(dddb.lastrowid)
-                    C_INSERTED += dddb.rowcount
-
-                except MySQLdb.Error:
-                    logger.warning("Committee insertion failed", full_msg=traceback.format_exc(),
-                                   additional_fields=create_payload("Committee", (INSERT_COMMITTEE % comm)))
+                committee['cid'] = insert_committee(dddb, committee)
 
             if len(committee['members']) > 0:
                 for member in committee['members']:
@@ -326,26 +407,48 @@ def import_committees(dddb):
 
                     if member['pid'] is not None:
                         if not is_servesOn_in_db(dddb, member):
-                            try:
-                                dddb.execute(INSERT_SERVES_ON, member)
-                                SO_INSERTED += dddb.rowcount
-
-                            except MySQLdb.Error:
-                                logger.warning("servesOn insertion failed", full_msg=traceback.format_exc(),
-                                               additional_fields=create_payload("servesOn",
-                                                                                (INSERT_SERVES_ON % member)))
+                            insert_serves_on(dddb, member)
 
                 update_mems = get_past_members(dddb, committee)
 
                 if len(update_mems) > 0:
                     for member in update_mems:
-                        try:
-                            dddb.execute(UPDATE_SERVESON, member)
-                            SO_UPDATED += dddb.rowcount
+                        update_serves_on(dddb, member)
 
-                        except MySQLdb.Error:
-                            logger.warning("servesOn update failed", full_msg=traceback.format_exc(),
-                                           additional_fields=create_payload("servesOn", (UPDATE_SERVESON % member)))
+
+'''
+Both House and Senate have special floor committees
+Each member of a legislative house belongs to their respective floor committee
+'''
+def insert_floor_committees(dddb):
+    session_year = get_session_year(dddb)
+    senate_floor = {'state': 'TX', 'session_year': session_year, 'type': 'Floor', 'current_flag': 1,
+                    'house': 'Senate', 'name': 'Senate Floor', 'short_name': 'Senate Floor'}
+    house_floor = {'state': 'TX', 'session_year': session_year, 'type': 'Floor', 'current_flag': 1,
+                    'house': 'House', 'name': 'House Floor', 'short_name': 'House Floor'}
+
+    for floor in [senate_floor, house_floor]:
+        if is_comm_name_in_db(dddb, floor) is False:
+            insert_comm_name(dddb, floor)
+
+        if get_comm_cid(dddb, floor) is None:
+            cid = insert_committee(dddb, floor)
+
+        house_members = get_house_members(dddb, {'year': session_year, 'house': floor['house']})
+
+        if house_members is not None:
+            for house_member in house_members:
+                member = dict()
+                member['cid'] = cid
+                member['pid'] = house_member
+                member['position'] = 'Member'
+                member['state'] = 'TX'
+                member['house'] = floor['house']
+                member['session_year'] = session_year
+                member['start_date'] = dt.datetime.today().strftime("%Y-%m-%d")
+
+                if not is_servesOn_in_db(dddb, member):
+                    insert_serves_on(dddb, member)
 
 
 def main():
@@ -360,6 +463,7 @@ def main():
                          charset='utf8') as dddb:
 
         import_committees(dddb)
+        insert_floor_committees(dddb)
 
         logger.info(__file__ + " terminated successfully",
                     full_msg="Inserted " + str(CN_INSERTED) + " rows in CommitteeNames, "

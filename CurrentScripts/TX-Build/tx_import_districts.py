@@ -43,7 +43,8 @@ QI_DISTRICT = '''INSERT INTO District
 
 # URL String
 API_URL = 'https://openstates.org/api/v1/districts/boundary/ocd-division/country:us/state:tx/'
-API_URL += 'sld{0}:{1}'
+API_URL += 'sld{0}:{1}/'
+API_URL += '?apikey=c12c4c7e02c04976865f3f9e95c3275b'
 
 # Constants
 _NUM_LOWER_DISTRICTS = 150

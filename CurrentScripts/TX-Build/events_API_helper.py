@@ -21,8 +21,8 @@ import datetime as dt
 EVENT_SEARCH_URL = "https://openstates.org/api/v1/events/?state={0}"
 EVENT_SEARCH_URL += "&apikey=c12c4c7e02c04976865f3f9e95c3275b"
 
-STATE_METADATA_URL = "https://openstates.org/api/v1/metadata/{0}"
-STATE_METADATA_URL += "&apikey=c12c4c7e02c04976865f3f9e95c3275b"
+STATE_METADATA_URL = "https://openstates.org/api/v1/metadata/{0}/"
+STATE_METADATA_URL += "?apikey=c12c4c7e02c04976865f3f9e95c3275b"
 
 
 '''
