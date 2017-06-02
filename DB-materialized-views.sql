@@ -373,6 +373,7 @@ CREATE TABLE CombinedAlignmentScores(
   session_year enum('2015', '2017', 'All'),
   pid_house_party VARCHAR(255),
   dr_id int unique,
+  rank int,
 
   PRIMARY KEY (pid, oid, session_year, no_abstain_votes, no_resolutions, no_unanimous),
   index pid_idx (pid),
