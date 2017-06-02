@@ -1,5 +1,6 @@
 #!/usr/bin/env python2.7
 # -*- coding: utf8 -*-
+
 """
 File: tx_import_bills.py
 Author: Andrew Rose
@@ -67,8 +68,12 @@ SELECT_COMMITTEE = '''SELECT cid FROM Committee
                       AND state = %(state)s
                       AND session_year = %(session)s'''
 
-SELECT_PID = '''SELECT pid FROM AlternateId
-                WHERE alt_id = %(alt_id)s'''
+SELECT_PID = '''SELECT * FROM Person p
+                JOIN Term t ON p.pid = t.pid
+                WHERE t.state = 'TX'
+                AND t.current_term = 1
+                AND p.last LIKE %(last)s
+                '''
 
 SELECT_ACTION = '''SELECT * FROM Action
                    WHERE bid = %(bid)s
@@ -175,6 +180,10 @@ def is_version_in_db(version, dddb):
                        additional_fields=create_payload("BillVersion", (SELECT_VERSION % version)))
 
 
+'''
+Each vote is associated with a motion.
+If a motion already exists in the DB, use that motion's ID
+'''
 def get_motion_id(motion, passed, dddb):
     mot = {'motion': motion, 'doPass': passed}
 
@@ -206,26 +215,33 @@ def get_vote_id(vote, dddb):
                        additional_fields=create_payload("BillVoteSummary", (SELECT_VOTE % vote_info)))
 
 
-def get_pid(vote, dddb):
-    alt_id = {'alt_id': vote['leg_id']}
-
-    if vote['leg_id'] is None:
-        return None
+'''
+Get a legislator's PID from the database
+Because of how OpenStates formats votes, have to select PID by matching
+legislator names
+'''
+def get_pid(vote_name, dddb):
+    mem_name = vote_name.strip()
+    legislator = {'last': '%' + mem_name + '%'}
 
     try:
-        dddb.execute(SELECT_PID, alt_id)
+        dddb.execute(SELECT_PID, legislator)
 
-        if dddb.rowcount == 0:
-            print("Error: Person with alt ID " + str(alt_id) + " not found")
+        if dddb.rowcount != 1:
+            print("Error: PID for " + mem_name + " not found")
             return None
         else:
             return dddb.fetchone()[0]
 
     except MySQLdb.Error:
         logger.warning("PID selection failed", full_msg=traceback.format_exc(),
-                       additional_fields=create_payload("AltId", (SELECT_PID % alt_id)))
+                       additional_fields=create_payload("Person", (SELECT_LEG_PID % legislator)))
 
 
+'''
+Motion IDs don't auto-increment for some reason,
+so this function grabs the highest MID from the Motion table
+'''
 def get_last_mid(dddb):
     try:
         dddb.execute(SELECT_LAST_MID)
@@ -236,6 +252,9 @@ def get_last_mid(dddb):
                        additional_fields=create_payload("Motion", SELECT_LAST_MID))
 
 
+'''
+Inserts vote data into the BillVoteSummary and BillVoteDetail tables
+'''
 def import_votes(vote_list, dddb):
     global M_INSERTED, BVS_INSERTED, BVD_INSERTED
 
@@ -272,50 +291,62 @@ def import_votes(vote_list, dddb):
                 logger.warning("BillVoteSummary insertion failed", full_msg=traceback.format_exc(),
                                additional_fields=create_payload("BillVoteSummary", (INSERT_BVS % vote_info)))
 
-
+        # This part of the function inserts votes to the BillVoteDetail table
         for aye_vote in vote['aye_votes']:
-            aye_vote['voteRes'] = 'AYE'
-            aye_vote['voteId'] = vote['vid']
-            aye_vote['pid'] = get_pid(aye_vote, dddb)
-            aye_vote['state'] = 'TX'
+            aye_voters = aye_vote['name'].split(',')
+            for voter_name in aye_voters:
+                voter = dict()
+                voter['voteRes'] = 'AYE'
+                voter['voteId'] = vote['vid']
+                voter['pid'] = get_pid(voter_name, dddb)
+                voter['state'] = 'TX'
 
-            if aye_vote['pid'] is not None and not is_bvd_in_db(aye_vote, dddb):
-                try:
-                    dddb.execute(INSERT_BVD, aye_vote)
-                    BVD_INSERTED += dddb.rowcount
-                except MySQLdb.Error:
-                    logger.warning("BillVoteDetail insertion failed", full_msg=traceback.format_exc(),
-                                   additional_fields=create_payload("BillVoteDetail", (INSERT_BVD % aye_vote)))
+                if voter['pid'] is not None and not is_bvd_in_db(voter, dddb):
+                    try:
+                        dddb.execute(INSERT_BVD, voter)
+                        BVD_INSERTED += dddb.rowcount
+                    except MySQLdb.Error:
+                        logger.warning("BillVoteDetail insertion failed", full_msg=traceback.format_exc(),
+                                       additional_fields=create_payload("BillVoteDetail", (INSERT_BVD % voter)))
 
         for nae_vote in vote['nae_votes']:
-            nae_vote['voteRes'] = 'NOE'
-            nae_vote['voteId'] = vote['vid']
-            nae_vote['pid'] = get_pid(nae_vote, dddb)
-            nae_vote['state'] = 'TX'
+            nae_voters = nae_vote['name'].split(',')
+            for voter_name in nae_voters:
+                voter = dict()
+                voter['voteRes'] = 'NOE'
+                voter['voteId'] = vote['vid']
+                voter['pid'] = get_pid(voter_name, dddb)
+                voter['state'] = 'TX'
 
-            if nae_vote['pid'] is not None and not is_bvd_in_db(nae_vote, dddb):
-                try:
-                    dddb.execute(INSERT_BVD, nae_vote)
-                    BVD_INSERTED += dddb.rowcount
-                except MySQLdb.Error:
-                    logger.warning("BillVoteDetail insertion failed", full_msg=traceback.format_exc(),
-                                   additional_fields=create_payload("BillVoteDetail", (INSERT_BVD % nae_vote)))
+                if voter['pid'] is not None and not is_bvd_in_db(voter, dddb):
+                    try:
+                        dddb.execute(INSERT_BVD, voter)
+                        BVD_INSERTED += dddb.rowcount
+                    except MySQLdb.Error:
+                        logger.warning("BillVoteDetail insertion failed", full_msg=traceback.format_exc(),
+                                       additional_fields=create_payload("BillVoteDetail", (INSERT_BVD % voter)))
 
         for other_vote in vote['other_votes']:
-            other_vote['voteRes'] = 'ABS'
-            other_vote['voteId'] = vote['vid']
-            other_vote['pid'] = get_pid(other_vote, dddb)
-            other_vote['state'] = 'TX'
+            other_voters = other_vote['name'].split(',')
+            for voter_name in other_voters:
+                voter = dict()
+                voter['voteRes'] = 'ABS'
+                voter['voteId'] = vote['vid']
+                voter['pid'] = get_pid(voter_name, dddb)
+                voter['state'] = 'TX'
 
-            if other_vote['pid'] is not None and not is_bvd_in_db(other_vote, dddb):
-                try:
-                    dddb.execute(INSERT_BVD, other_vote)
-                    BVD_INSERTED += dddb.rowcount
-                except MySQLdb.Error:
-                    logger.warning("BillVoteDetail insertion failed", full_msg=traceback.format_exc(),
-                                   additional_fields=create_payload("BillVoteDetail", (INSERT_BVD % other_vote)))
+                if voter['pid'] is not None and not is_bvd_in_db(voter, dddb):
+                    try:
+                        dddb.execute(INSERT_BVD, voter)
+                        BVD_INSERTED += dddb.rowcount
+                    except MySQLdb.Error:
+                        logger.warning("BillVoteDetail insertion failed", full_msg=traceback.format_exc(),
+                                       additional_fields=create_payload("BillVoteDetail", (INSERT_BVD % voter)))
 
 
+'''
+Inserts into the Action table
+'''
 def import_actions(actions, dddb):
     global A_INSERTED
 
@@ -329,6 +360,9 @@ def import_actions(actions, dddb):
                                additional_fields=create_payload("Action", (INSERT_ACTION % action)))
 
 
+'''
+Inserts into the BillVersion table
+'''
 def import_versions(bill_title, versions, dddb):
     global V_INSERTED
 
@@ -352,7 +386,7 @@ def import_bills(dddb):
 
     bill_list = get_bills('TX')
 
-    for bill in bill_list:
+    for bill in bill_list[:2]:
         print(bill['bid'])
 
         if not is_bill_in_db(dddb, bill):
@@ -402,6 +436,14 @@ def main():
                                                     + ', Action: ' + str(A_INSERTED)
                                                     + ', BillVersion: ' + str(V_INSERTED),
                                        '_state': 'TX'})
+        
+        LOG = {'tables': [{'state': 'TX', 'name': 'Bill', 'inserted': B_INSERTED, 'updated': 0, 'deleted': 0},
+                          {'state': 'TX', 'name': 'Motion', 'inserted': M_INSERTED, 'updated': 0, 'deleted': 0},
+                          {'state': 'TX', 'name': 'BillVoteSummary', 'inserted': BVS_INSERTED, 'updated': 0, 'deleted': 0},
+                          {'state': 'TX', 'name': 'BillVoteDetail', 'inserted': BVD_INSERTED, 'updated': 0, 'deleted': 0},
+                          {'state': 'TX', 'name': 'Action', 'inserted': A_INSERTED, 'updated': 0, 'deleted': 0},
+                          {'state': 'TX', 'name': 'BillVersion', 'inserted': V_INSERTED, 'updated': 0, 'deleted': 0}]}
+        sys.stderr.write(json.dumps(LOG))
 
 
 if __name__ == "__main__":

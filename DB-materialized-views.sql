@@ -53,6 +53,7 @@ CREATE TABLE OrgAlignments (
   analysis_flag BOOL,
   session_year YEAR,
   state VARCHAR(2),
+  lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
 
   PRIMARY KEY(oa_id),
   UNIQUE (oid, bid, hid, alignment, analysis_flag, alignment_date),

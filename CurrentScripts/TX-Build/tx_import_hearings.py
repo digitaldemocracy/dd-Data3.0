@@ -68,6 +68,10 @@ def create_payload(table, sqlstmt):
     }
 
 
+'''
+Selects a committee's CID from the database
+using the committee name associated with a hearing
+'''
 def get_comm_cid(committee, dddb):
     try:
         dddb.execute(SELECT_COMMITTEE, committee)
@@ -83,6 +87,9 @@ def get_comm_cid(committee, dddb):
                        additional_fields=create_payload('Committee', (SELECT_COMMITTEE % committee)))
 
 
+'''
+Gets a bill's BID from the database using the bill's type and number
+'''
 def get_bill_bid(bill, dddb):
     try:
         dddb.execute(SELECT_BILL, bill)
@@ -98,6 +105,9 @@ def get_bill_bid(bill, dddb):
                        additional_fields=create_payload('Bill', (SELECT_BILL % bill)))
 
 
+'''
+Inserts CommitteeHearings into the DB
+'''
 def insert_committee_hearings(committees, hid, dddb):
     global CH_INS
 
@@ -115,6 +125,9 @@ def insert_committee_hearings(committees, hid, dddb):
                                additional_fields=create_payload('CommitteeHearing', (INSERT_COMM_HEARING % comm_hearing)))
 
 
+'''
+Inserts HearingAgendas into the DB
+'''
 def insert_hearing_agendas(bills, hid, dddb):
     global HA_INS
 
@@ -132,6 +145,11 @@ def insert_hearing_agendas(bills, hid, dddb):
                                additional_fields=create_payload('HearingAgenda', (INSERT_HEARING_AGENDA % hearing_agenda)))
 
 
+'''
+Gets hearing data from OpenStates and inserts it into the database
+Once a Hearing has been inserted, this function also inserts
+the corresponding CommitteeHearings and HearingAgendas.
+'''
 def import_hearings(dddb):
     global H_INS
     hearings = get_event_list('TX')
@@ -176,6 +194,12 @@ def main():
                                                     + ', HearingAgenda: ' + str(HA_INS),
                                        '_updated': 'HearingAgenda: ' + str(HA_UPD),
                                        '_state': 'TX'})
+
+        LOG = {'tables': [{'state': 'FL', 'name': 'Hearing', 'inserted': H_INS, 'updated': 0, 'deleted': 0},
+                          {'state': 'FL', 'name': 'CommitteeHearing', 'inserted': CH_INS, 'updated': 0, 'deleted': 0},
+                          {'state': 'FL', 'name': 'HearingAgenda', 'inserted': HA_INS, 'updated': HA_UPD,
+                           'deleted': 0}]}
+        sys.stderr.write(json.dumps(LOG))
 
 
 if __name__ == '__main__':

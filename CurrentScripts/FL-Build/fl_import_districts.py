@@ -46,7 +46,8 @@ QI_DISTRICT = '''INSERT INTO District
                 (%s, %s, %s, %s, %s, %s, %s)'''
 
 API_URL = 'https://openstates.org/api/v1/districts/boundary/ocd-division/country:us/state:fl/'
-API_URL += 'sld{0}:{1}'
+API_URL += 'sld{0}:{1}/'
+API_URL += '?apikey=c12c4c7e02c04976865f3f9e95c3275b'
 
 NUM_HOUSE_DISTRICTS = 120
 NUM_SENATE_DISTRICTS = 40
@@ -168,6 +169,9 @@ def main():
                     additional_fields={'_affected_rows': 'District:' + str(D_INSERT),
                                        '_inserted': 'District:' + str(D_INSERT),
                                        '_state': 'FL'})
+
+        LOG = {'tables': [{'state': 'FL', 'name': 'District', 'inserted': D_INSERT, 'updated': 0, 'deleted': 0}]}
+        sys.stderr.write(json.dumps(LOG))
 
 
 if __name__ == '__main__':

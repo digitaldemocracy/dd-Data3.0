@@ -43,7 +43,8 @@ QI_DISTRICT = '''INSERT INTO District
 
 # URL String
 API_URL = 'https://openstates.org/api/v1/districts/boundary/ocd-division/country:us/state:tx/'
-API_URL += 'sld{0}:{1}'
+API_URL += 'sld{0}:{1}/'
+API_URL += '?apikey=c12c4c7e02c04976865f3f9e95c3275b'
 
 # Constants
 _NUM_LOWER_DISTRICTS = 150
@@ -153,6 +154,7 @@ def main():
                          user=dbinfo['user'],
                          passwd=dbinfo['passwd'],
                          charset='utf8') as dd_cursor:
+
         get_districts(dd_cursor)
         logger.info(__file__ + ' terminated successfully.',
                     full_msg='Inserted ' + str(INSERTED) + ' rows in District',
@@ -161,8 +163,8 @@ def main():
                                        '_state': 'TX',
                                        '_log_type': 'Database'})
 
-    #LOG = {'tables': [{'state': 'TX', 'name': 'District', 'inserted': INSERTED, 'updated': 0, 'deleted': 0}]}
-    #sys.stderr.write(json.dumps(LOG))
+        LOG = {'tables': [{'state': 'TX', 'name': 'District', 'inserted': INSERTED, 'updated': 0, 'deleted': 0}]}
+        sys.stderr.write(json.dumps(LOG))
 
 
 if __name__ == "__main__":

@@ -40,6 +40,7 @@ DO
         JOIN (SELECT DISTINCT pid, session_year FROM PersonClassifications WHERE PersonType != 'Legislator') p
           ON u.pid = p.pid
              AND h.session_year = p.session_year
+      WHERE p.pid not in (4468)
       GROUP BY p.pid, h.session_year, u.state
       ORDER BY BillDiscussionCount DESC;
 

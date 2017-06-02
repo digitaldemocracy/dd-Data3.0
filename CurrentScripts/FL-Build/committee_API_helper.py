@@ -5,7 +5,7 @@
 File: committee_API_helper.py
 Author: Andrew Rose
 Date: 3/9/2017
-Last Updated: 4/28/2017
+Last Updated: 5/16/2017
 
 Description:
   -This file offers helper methods for scripts that take committee data from OpenStates.
@@ -17,10 +17,14 @@ Source:
 import requests
 import json
 
-COMMITTEE_SEARCH_URL = 'https://openstates.org/api/v1/committees/?state={0}'
-COMMITTEE_DETAIL_URL = 'https://openstates.org/api/v1/committees/{0}'
+COMMITTEE_SEARCH_URL = "https://openstates.org/api/v1/committees/?state={0}"
+COMMITTEE_SEARCH_URL += "&apikey=c12c4c7e02c04976865f3f9e95c3275b"
 
-STATE_METADATA_URL = "https://openstates.org/api/v1/metadata/{0}"
+COMMITTEE_DETAIL_URL = "https://openstates.org/api/v1/committees/{0}/"
+COMMITTEE_DETAIL_URL += "?apikey=c12c4c7e02c04976865f3f9e95c3275b"
+
+STATE_METADATA_URL = "https://openstates.org/api/v1/metadata/{0}/"
+STATE_METADATA_URL += "?apikey=c12c4c7e02c04976865f3f9e95c3275b"
 
 
 '''
@@ -109,6 +113,8 @@ def get_committee_membership(comm_id):
             member['position'] = 'Chair'
         else:
             member['position'] = 'Member'
+
+        member['name'] = entry['name']
 
         member_list.append(member)
 
