@@ -74,6 +74,24 @@ CREATE TABLE IF NOT EXISTS District (
   ENGINE = INNODB
   CHARACTER SET utf8 COLLATE utf8_general_ci;
 
+/* One to one relationship with District. Contains extra district information. I just
+   did not want to confuse this with geographic info, but could totally be one table.
+
+   Sources: One time add
+ */
+CREATE TABLE DistrictInfo (
+      district INT,
+      house VARCHAR(200),
+      republicans INT,
+      democrats INT,
+      year INT,
+      state VARCHAR(2),
+
+      PRIMARY KEY (district, house, state, year)
+)
+ENGINE = INNODB
+CHARACTER SET utf8 COLLATE utf8_general_ci;
+
 
 /*
   A house in a legislature. Necessary because different states can have
