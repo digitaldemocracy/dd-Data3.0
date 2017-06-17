@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+
+
 import ScrapeSupportFixed
 import InsertAlignments
 import AlignmentMeter
