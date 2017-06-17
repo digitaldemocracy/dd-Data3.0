@@ -128,10 +128,10 @@ def create_leg_votes_tbl():
 
 
 def create_concept_alignments_tbl():
-    cols = ['oid', 'name']
+    cols = ['oid', 'name', 'meter_flag']
     data = [
-        [-1, 'One'],
-        [-2, 'Two']
+        [-1, 'One', 1],
+        [-2, 'Two', 1]
     ]
     org_concept_tbl = pd.DataFrame(data, columns=cols)
 
