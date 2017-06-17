@@ -449,9 +449,9 @@ def make_concept_alignments(org_alignments_df, cnxn):
 
     org_alignments_df = pd.merge(concept_df, org_alignments_df, left_on=['old_oid'], right_on=['oid'],
                                  suffixes=['_concept', '_ali'])
-    org_alignments_df = org_alignments_df[['oid_concept', 'bid', 'hid', 'alignment', 'date', 'name_concept']].rename(
-        columns={'oid_concept': 'oid',
-                 'name_concept': 'org_name'})
+    org_alignments_df = org_alignments_df[['oid_concept', 'bid', 'hid', 'alignment', 'date', 'name_concept',
+                                           'analysis_flag']].rename(columns={'oid_concept': 'oid',
+                                                                             'name_concept': 'org_name'})
 
     return org_alignments_df
 
@@ -469,7 +469,10 @@ def make_data_table(org_alignments_df, leg_votes_df):
                  'result': 'leg_alignment',
                  'date_org': 'date_of_org_alignment',
                  'org_name': 'organization',
-                 'oid': 'oid'}
+                 'oid': 'oid',
+                 'unanimous': 'unanimous',
+                 'abstain_vote': 'abstain_vote',
+                 'resolution': 'resolution'}
     df = df[list(cols_dict.keys())].rename(columns=cols_dict)
 
     return df
@@ -646,13 +649,15 @@ def write_to_db(df, org_alignments_df, leg_votes_all_df, cnxn):
                                                                    str(row['house']), str(row['party'])), axis=1)
     # feels unnecessary
     df['state'] = 'CA'
+    # Added per Toshi request
+    df['rank'] = np.nan
 
     df.to_sql('CombinedAlignmentScores', cnxn, flavor='mysql', if_exists='replace', index=False)
 
     add_table_indices(cnxn)
 
 
-# TODO drop the print statements
+# Print statements are left intentionally so you can monitor process
 def main():
     cnxn = pymysql.connect(**CONN_INFO)
 
@@ -675,6 +680,7 @@ def main():
 
     df.rename(columns={'no_abstain_vote': 'no_abstain_votes',
                        'no_resolution': 'no_resolutions'}, inplace=True)
+    # Code takes a long time to run, so you don't want to lose data if there is an issue on the db side
     pickle.dump(df, open(PCKL_DIR + 'final_df.p', 'wb'))
 
     write_to_db(df, org_alignments_df, leg_votes_all_df, cnxn)

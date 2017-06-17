@@ -1,4 +1,5 @@
 import re
+import unidecode
 
 
 """checks to see if the organization is an actual org,
@@ -85,6 +86,7 @@ def writeOutput(input_orgs, out_file):
         with open(out_file, 'w') as output:
             first = True
             for org in output_orgs:
+                org = unidecode.unidecode(org).lower()
                 if first:
                     first = False
                     output.write('"{}"'.format(org))

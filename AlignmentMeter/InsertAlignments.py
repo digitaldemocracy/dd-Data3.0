@@ -130,9 +130,9 @@ def insert_alignment(cursor, bid, hid, oid, alignment, date):
         cursor.execute(stmt, (bid, hid, int(oid), alignment, date, session_year))
     except pymysql.err.IntegrityError as e:
         # just means it's a repeat
-        print('Repeat Values')
+        # print('Repeat Values')
         # print(stmt % (bid, hid, oid, alignment, date, session_year))
-        # pass
+        pass
 
 """Filters obviously bad organization names"""
 def filter_org_names(org_name):

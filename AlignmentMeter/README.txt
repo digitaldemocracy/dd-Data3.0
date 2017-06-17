@@ -21,6 +21,11 @@ Run: AlignmentMeter.py
       alignment meter
 
 
+ALTERNATIVELY:
+
+- Run AlignmentMeterDriver.py. This simply calls all these files
+
+
 Testing:
 AlignmentMeterTests.py contains unit tests for AligmentMeter.py. If you make any changes please
 run these tests and make sure they pass to ensure that you did not break anything upstream
