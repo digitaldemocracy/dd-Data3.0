@@ -1734,6 +1734,7 @@ CREATE TABLE IF NOT EXISTS OfficePersonnel (
 CREATE TABLE OrgConcept (
   oid INT,
   name VARCHAR(250),
+  meter_flag BOOL,
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
   lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
   dr_id INTEGER UNIQUE AUTO_INCREMENT,
