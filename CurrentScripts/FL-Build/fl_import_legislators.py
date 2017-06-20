@@ -205,7 +205,7 @@ if __name__ == "__main__":
                                       passwd=dbinfo['passwd'],
                                       charset='utf8') as dddb:
         pi_count = ti_count = 0
-        with GrayLogger(API_URL) as _logger:
+        with GrayLogger(GRAY_URL) as _logger:
             logger = _logger
             add_legislators_db(dddb, get_legislators_list("fl"))
             logger.info(__file__ + ' terminated successfully.',

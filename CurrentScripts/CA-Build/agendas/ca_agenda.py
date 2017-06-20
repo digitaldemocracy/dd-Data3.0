@@ -66,6 +66,16 @@ def change_committee_names(agendas):
     item = list(item)
     if item[2] == 'Water, Parks and Wildlife':
       item[2] = 'Water, Parks, and Wildlife'
+    if item[2] == "Public Employees, Retirement and Social Security":
+        item[2] = "Public Employees, Retirement, and Social Security"
+        print(item)
+        print("Asdf")
+    if item[2] == "Aging and Long Term Care":
+        item[2] = "Aging And Long-Term Care"
+        print(item)
+    if "Long" in item[2]:
+        print("fa;lsdkfa\n\n")
+        print(item[2])
 
     item[2] = item[2].lower().title()
     new_agendas.append(item)
