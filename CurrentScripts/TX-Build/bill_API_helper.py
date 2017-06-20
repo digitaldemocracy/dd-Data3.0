@@ -20,13 +20,13 @@ import json
 import datetime as dt
 
 BILL_SEARCH_URL = "https://openstates.org/api/v1/bills/?state={0}&search_window=session"
-BILL_SEARCH_URL += "&apikey=c12c4c7e02c04976865f3f9e95c3275b"
+BILL_SEARCH_URL += "&apikey=3017b0ca-3d4f-482b-9865-1c575283754a"
 
 BILL_DETAIL_URL = "https://openstates.org/api/v1/bills/{0}/"
-BILL_DETAIL_URL += "?apikey=c12c4c7e02c04976865f3f9e95c3275b"
+BILL_DETAIL_URL += "?apikey=3017b0ca-3d4f-482b-9865-1c575283754a"
 
 STATE_METADATA_URL = "https://openstates.org/api/v1/metadata/{0}/"
-STATE_METADATA_URL += "?apikey=c12c4c7e02c04976865f3f9e95c3275b"
+STATE_METADATA_URL += "?apikey=3017b0ca-3d4f-482b-9865-1c575283754a"
 
 
 '''
@@ -112,6 +112,7 @@ The dictionary includes these fields:
     nae_votes: A list containing identifying information on the legislators who voted nae
     other_votes: A list containing identifying information on the legislators who made some other vote
     passed: Contains true if the motion passed, false otherwise
+    result: Contains the text (PASS) or (FAIL) depending on the vote's outcome
 '''
 def get_bill_votes(bill_votes, bid, state):
     metadata_url = STATE_METADATA_URL.format(state.lower())

@@ -47,7 +47,7 @@ QI_DISTRICT = '''INSERT INTO District
 
 API_URL = 'https://openstates.org/api/v1/districts/boundary/ocd-division/country:us/state:fl/'
 API_URL += 'sld{0}:{1}/'
-API_URL += '?apikey=c12c4c7e02c04976865f3f9e95c3275b'
+API_URL += '?apikey=3017b0ca-3d4f-482b-9865-1c575283754a'
 
 NUM_HOUSE_DISTRICTS = 120
 NUM_SENATE_DISTRICTS = 40
