@@ -431,7 +431,9 @@ def insert_floor_committees(dddb):
         if is_comm_name_in_db(dddb, floor) is False:
             insert_comm_name(dddb, floor)
 
-        if get_comm_cid(dddb, floor) is None:
+        cid = get_comm_cid(dddb, floor)
+
+        if cid is None:
             cid = insert_committee(dddb, floor)
 
         house_members = get_house_members(dddb, {'year': session_year, 'house': floor['house']})

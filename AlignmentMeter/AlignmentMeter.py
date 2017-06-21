@@ -536,7 +536,7 @@ def write_score_table(df, grp_cols, cnxn=None, tbl_name=None):
     df = summed_cols_df.merge(score_df, on=grp_cols)
 
     if tbl_name:
-        df.to_sql(tbl_name, cnxn, flavor='mysql', if_exists='replace', index=False)
+        df.to_sql(tbl_name, cnxn, if_exists='replace', index=False)
 
     return df
 
@@ -610,11 +610,11 @@ def add_term_info(df, term_df):
     return df
 
 
-def write_to_db(df, org_alignments_df, leg_votes_all_df, cnxn):
+def write_to_db(df, org_alignments_df, leg_votes_all_df, cnxn, engine):
     """Pretty obvious. Writes these tables to the db"""
     data_df = make_data_table(org_alignments_df, leg_votes_all_df)
-    data_df.to_sql('AlignmentScoresData', cnxn, flavor='mysql', if_exists='replace', index=False)
-    df.to_sql('BillAlignmentScores', cnxn, flavor='mysql', if_exists='replace', index=False)
+    data_df.to_sql('AlignmentScoresData', engine, if_exists='replace', index=False)
+    df.to_sql('BillAlignmentScores', engine, if_exists='replace', index=False)
 
     df_cpy = df.copy()
     df_cpy['session_year'] = 'All'
@@ -629,7 +629,7 @@ def write_to_db(df, org_alignments_df, leg_votes_all_df, cnxn):
                     'no_resolutions',
                     'no_unanimous'
                     ]
-    leg_df = write_score_table(df, leg_grp_cols, cnxn, 'LegAlignmentScores')
+    leg_df = write_score_table(df, leg_grp_cols, engine, 'LegAlignmentScores')
 
     chamber_grp_cols = ['oid',
                         'house',
@@ -638,10 +638,10 @@ def write_to_db(df, org_alignments_df, leg_votes_all_df, cnxn):
                         'no_abstain_votes',
                         'no_resolutions',
                         'no_unanimous']
-    chamber_df = write_score_table(df, chamber_grp_cols, cnxn, 'ChamberAlignmentScores')
+    chamber_df = write_score_table(df, chamber_grp_cols, engine, 'ChamberAlignmentScores')
 
     org_grp_cols = ['oid', 'session_year', 'no_abstain_votes', 'no_resolutions', 'no_unanimous']
-    org_df = write_score_table(df, org_grp_cols, cnxn, 'OrgAlignmentScores')
+    org_df = write_score_table(df, org_grp_cols, engine, 'OrgAlignmentScores')
 
     # Combines them together for the CombinedAlignment table
     df = pd.concat([leg_df, chamber_df, org_df])
@@ -652,9 +652,9 @@ def write_to_db(df, org_alignments_df, leg_votes_all_df, cnxn):
     # Added per Toshi request
     df['rank'] = np.nan
 
-    df.to_sql('CombinedAlignmentScores', cnxn, flavor='mysql', if_exists='replace', index=False)
-
-    add_table_indices(cnxn)
+    df.to_sql('CombinedAlignmentScores', engine, if_exists='replace', index=False)
+#    Excluding will make the query run slower
+#    add_table_indices(cnxn)
 
 
 # Print statements are left intentionally so you can monitor process
@@ -682,9 +682,12 @@ def main():
                        'no_resolution': 'no_resolutions'}, inplace=True)
     # Code takes a long time to run, so you don't want to lose data if there is an issue on the db side
     pickle.dump(df, open(PCKL_DIR + 'final_df.p', 'wb'))
-
-    write_to_db(df, org_alignments_df, leg_votes_all_df, cnxn)
+    
+    engine = 'mysql+pymysql://{user}:{passwd}@{host}/{db}'.format(**CONN_INFO)
+    write_to_db(df, org_alignments_df, leg_votes_all_df, cnxn, engine)
+    
     cnxn.close()
-
+    
+    
 if __name__ == '__main__':
     main()

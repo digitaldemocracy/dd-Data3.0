@@ -22,6 +22,7 @@ import sys
 import traceback
 import re
 import time
+import json
 from datetime import datetime
 from bs4 import BeautifulSoup
 from graylogger.graylogger import GrayLogger
@@ -109,15 +110,16 @@ def get_name(eid):
     for s in soup.find("title"):
         name = s
 
-    name = name.split('-')[0]
+    print(name)
+    name = name.split(' - ')[0]
     name = name.strip()
     name = name.split(',')
 
     first = None
     last = None
 
-    if len(name) == 2:
-        first = name[1]
+    if len(name) >= 2:
+        first = ','.join(name[1:])
         last = name[0]
 
         if len(first.split(' ')) > 2:
@@ -128,6 +130,8 @@ def get_name(eid):
                 first = first[2]
             elif len(first) == 3:
                 first = first[1] + " " + first[2]
+            else:
+                first = ' '.join(first)
 
         if len(last.split(' ')) > 1:
             last = last.split(' ')
