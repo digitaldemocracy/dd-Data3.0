@@ -18,7 +18,7 @@ import requests
 import json
 import datetime as dt
 
-BILL_SEARCH_URL = "https://openstates.org/api/v1/bills/?state={0}&search_window=session"
+BILL_SEARCH_URL = "https://openstates.org/api/v1/bills/?state={0}&search_window=session:2017"
 BILL_SEARCH_URL += "&apikey=3017b0ca-3d4f-482b-9865-1c575283754a"
 
 BILL_DETAIL_URL = "https://openstates.org/api/v1/bills/{0}/"
@@ -223,7 +223,8 @@ def get_bill_versions(bill_versions, bid, state):
         version['state'] = state.upper()
 
         version["name"] = entry["name"]
-        version["doc"] = entry["url"]
+        version['doctype'] = entry['mimetype']
+        version["url"] = entry["url"]
 
         version['vid'] = version['bid'] + version['name'].split(' ')[-1]
 

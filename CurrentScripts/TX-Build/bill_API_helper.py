@@ -19,7 +19,7 @@ import urllib2
 import json
 import datetime as dt
 
-BILL_SEARCH_URL = "https://openstates.org/api/v1/bills/?state={0}&search_window=session"
+BILL_SEARCH_URL = "https://openstates.org/api/v1/bills/?state={0}&search_window=session&chamber={1}"
 BILL_SEARCH_URL += "&apikey=3017b0ca-3d4f-482b-9865-1c575283754a"
 
 BILL_DETAIL_URL = "https://openstates.org/api/v1/bills/{0}/"
@@ -31,7 +31,7 @@ STATE_METADATA_URL += "?apikey=3017b0ca-3d4f-482b-9865-1c575283754a"
 
 '''
 This function builds and returns a list of dictionaries, each containing information on a single bill.
-Takes a state abbreviation.
+Takes a state abbreviation and the legislative chamber to search (upper or lower).
 
 Each dictionary includes these fields:
     os_bid: The OpenStates bill ID number
@@ -44,8 +44,8 @@ Each dictionary includes these fields:
                   was introduced in a special session
     title: The title given to the bill
 '''
-def get_bills(state):
-    api_url = BILL_SEARCH_URL.format(state.lower())
+def get_bills(state, chamber):
+    api_url = BILL_SEARCH_URL.format(state.lower(), chamber.lower())
     metadata_url = STATE_METADATA_URL.format(state.lower())
 
     bill_json = requests.get(api_url).json()

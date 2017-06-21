@@ -25,6 +25,7 @@ import MySQLdb
 import traceback
 import sys
 import urllib2
+import subprocess
 from bs4 import BeautifulSoup
 from graylogger.graylogger import GrayLogger
 from Database_Connection import mysql_connection
@@ -116,6 +117,10 @@ INSERT_VERSION = '''INSERT INTO BillVersion
                     (vid, bid, date, billState, subject, text, state)
                     VALUES
                     (%(vid)s, %(bid)s, %(date)s, %(name)s, %(subject)s, %(doc)s, %(state)s)'''
+
+# SQL Updates
+
+UPDATE_VERSION_TEXT = '''UPDATE BillVersion SET text = %(doc)s, date = %(date)s WHERE vid = %(vid)s'''
 
 
 def create_payload(table, sqlstmt):
@@ -353,6 +358,24 @@ def scrape_version_date(url):
 
 
 '''
+Some bills have their bill text stored as a PDF
+This function downloads these PDFs and converts them to text
+'''
+def read_pdf(url):
+    pdf = requests.get(url)
+    f = open('billtext.pdf', 'wb')
+    f.write(pdf.content)
+    f.close()
+
+    subprocess.call("pdftotext billtext.pdf")
+
+    with open('billtext.txt', 'r'):
+        doc = f.read()
+
+    return doc
+
+
+'''
 Inserts vote data into the BillVoteSummary and BillVoteDetail tables
 '''
 def import_votes(vote_list, dddb):
@@ -460,7 +483,7 @@ Inserts into the BillVersion table
 def import_versions(bill_title, versions, dddb):
     global V_INSERTED
 
-    ver_dates = scrape_version_date(versions[0]['doc'])
+    ver_dates = scrape_version_date(versions[0]['url'])
 
     for version in versions:
         version['subject'] = bill_title
@@ -470,6 +493,13 @@ def import_versions(bill_title, versions, dddb):
         except:
             print("Error getting version date for bill " + version['bid'])
 
+        if version['doctype'] == 'text/html':
+            version['doc'] = requests.get(version['url']).content
+        else:
+            # Need to install xpdf for this to work
+            #version['doc'] = read_pdf(version['url'])
+            version['doc'] = 'PDF'
+
         if not is_version_in_db(version, dddb):
             try:
                 dddb.execute(INSERT_VERSION, version)
@@ -477,6 +507,14 @@ def import_versions(bill_title, versions, dddb):
             except MySQLdb.Error:
                 logger.warning("BillVersion insertion failed", full_msg=traceback.format_exc(),
                                additional_fields=create_payload("BillVersion", (INSERT_VERSION % version)))
+        else:
+            if version['doctype'] == 'text/html':
+                try:
+                    dddb.execute(UPDATE_VERSION_TEXT, version)
+                    V_INSERTED += dddb.rowcount
+                except MySQLdb.Error:
+                    logger.warning("BillVersion update failed", full_msg=traceback.format_exc(),
+                                   additional_fields=create_payload("BillVersion", (UPDATE_VERSION_TEXT % version)))
 
 
 '''
@@ -510,12 +548,18 @@ def import_bills(dddb):
 
 
 def main():
-    dbinfo = mysql_connection(sys.argv)
-    with MySQLdb.connect(host=dbinfo['host'],
-                         port=dbinfo['port'],
-                         db=dbinfo['db'],
-                         user=dbinfo['user'],
-                         passwd=dbinfo['passwd'],
+    # dbinfo = mysql_connection(sys.argv)
+    # with MySQLdb.connect(host=dbinfo['host'],
+    #                      port=dbinfo['port'],
+    #                      db=dbinfo['db'],
+    #                      user=dbinfo['user'],
+    #                      passwd=dbinfo['passwd'],
+    #                      charset='utf8') as dddb:
+    with MySQLdb.connect(host='dev.digitaldemocracy.org',
+                         port=3306,
+                         db='parose_dddb',
+                         user='parose',
+                         passwd='parose221',
                          charset='utf8') as dddb:
 
         import_bills(dddb)
