@@ -18,13 +18,13 @@ import requests
 import json
 
 COMMITTEE_SEARCH_URL = "https://openstates.org/api/v1/committees/?state={0}"
-COMMITTEE_SEARCH_URL += "&apikey=c12c4c7e02c04976865f3f9e95c3275b"
+COMMITTEE_SEARCH_URL += "&apikey=3017b0ca-3d4f-482b-9865-1c575283754a"
 
 COMMITTEE_DETAIL_URL = "https://openstates.org/api/v1/committees/{0}/"
-COMMITTEE_DETAIL_URL += "?apikey=c12c4c7e02c04976865f3f9e95c3275b"
+COMMITTEE_DETAIL_URL += "?apikey=3017b0ca-3d4f-482b-9865-1c575283754a"
 
 STATE_METADATA_URL = "https://openstates.org/api/v1/metadata/{0}/"
-STATE_METADATA_URL += "?apikey=c12c4c7e02c04976865f3f9e95c3275b"
+STATE_METADATA_URL += "?apikey=3017b0ca-3d4f-482b-9865-1c575283754a"
 
 
 '''
