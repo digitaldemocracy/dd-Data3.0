@@ -1956,6 +1956,11 @@ CREATE TABLE IF NOT EXISTS Newspaper (
    name VARCHAR(255) NOT NULL,
    state VARCHAR(2) NOT NULL DEFAULT '',
    city_id INTEGER NOT NULL,
+   zip_code VARCHAR(10),
+   home_page_url VARCHAR(255),
+   email VARCHAR(255),
+   media_type VARCHAR(255),
+   topic VARCHAR(255),
    FOREIGN KEY (city_id) REFERENCES City(city_id),
    FOREIGN KEY (state) REFERENCES State(abbrev)
 )  ENGINE=InnoDB DEFAULT CHARSET=utf8;
