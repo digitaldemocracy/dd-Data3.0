@@ -2,14 +2,14 @@
 # -*- coding: utf8 -*-
 
 '''
-File: fl_import_lobbyists.py
+File: TX_import_lobbyists.py
 Author: Nick Russo
 Maintained: Nick Russo
 Date: 4/3/2017
 Last Modified: 4/3/17
 
 Description:
-  - Imports FL lobbyist data from files from FL lobbyist registration website.
+  - Imports TX lobbyist data from files from TX lobbyist registration website.
 
 Populates:
   - Person
@@ -32,18 +32,16 @@ Populates:
     - (name, city, stateHeadquartered, type)
 
 Source:
-  EXEC_LOBBYIST_URL = 'https://www.floridalobbyist.gov/reports/elob.txt'
-  LEG_LOBBYIST_URL = 'https://www.floridalobbyist.gov/reports/llob.txt'
+TX_LOBBYIST_URL = 'https://www.ethics.state.tx.us/tedd/2017LobbyistGroupByClient.nopag.xlsx'
 '''
 
 from Database_Connection import mysql_connection
 import pprint
-import re
+import pandas as pd
 import sys
 from datetime import date
 import traceback
 import urllib
-import urllib2
 import json
 import MySQLdb
 import csv
@@ -53,10 +51,29 @@ from graylogger.graylogger import GrayLogger
 API_URL = 'http://dw.digitaldemocracy.org:12202/gelf'
 logger = None
 
-TX_LOBBYIST_URL = 'https://www.ethics.state.tx.us/tedd/2017LobbyistGroupByClient.nopag.xlsx'
+TX_LOBBYIST_URL = 'https://www.ethics.state.tx.us/tedd/2017LobbyistGroupByLobbyist.nopag.xlsx'
 LOBBYIST_FILE_DIRECTORY = "./lobbyistFiles/"
-TODAYS_LOBBYIST_CSV = LOBBYIST_FILE_DIRECTORY + str(date.today()) + "_2017LobbyistGroupByClient.csv"
-TODAYS_LOBBYIST_XLSX = LOBBYIST_FILE_DIRECTORY + str(date.today()) + "_2017LobbyistGroupByClient.nopag.xlsx"
+TODAYS_LOBBYIST_CSV = LOBBYIST_FILE_DIRECTORY + str(date.today()) + "_2017LobbyistGroupByLobbyist.csv"
+TODAYS_LOBBYIST_XLSX = LOBBYIST_FILE_DIRECTORY + str(date.today()) + "_2017LobbyistGroupByLobbyist.nopag.xlsx"
+
+COMPANIES_ENDINGS = {"llc", "pc", "inc.", "l.p."}
+BAD_BUSINESSES = {"attorney", "business consultant", "business and legislative consultant",
+                  "businessman", "attorney/consultant", "attorney/lobbyist",
+                  "attorney at law/governmental consultant", "attorney at law",
+                  "attorney and consultant", "attorney-at-law",
+                  "business & legislative consultant",
+                  "business and legislative consultant", "business consultant",
+                  "consultant", "government affairs", "geologist", "general counsel",
+                  "financial services", "external affairs", "executive director",
+                  "vice president", "ceo", "consulting", "vp", "evp", "energy",
+                  "employee of", "educator association employee", "director", "direct energy",
+                  "developer", "counselor", "consulting", "government affairs",
+                  "corporate executive", "government relations", "governmental relations",
+                  "healthcare", "lobbyist", "investment adviser", "insurance company",
+                  "investment advisor", "insurance", "investment management",
+                  "law", "law and government relations", "land development",
+                  ""}
+
 # GLOBALS
 
 P_INSERT = 0
@@ -198,58 +215,7 @@ name_checks = ['(', '\\' ,'/', 'OFFICE', 'LLC', 'LLP', 'INC', 'PLLC', 'LP', 'PC'
                 'UNION', 'SOCIETY', 'CHAPTER', 'NATIONAL', 'FOUNDATION', 'PUBLIC', 'MANAGEMENT']
 name_acronyms = ['LLC', 'LLP', 'INC', 'PLLC', 'LP', 'PC', 'CO', 'LTD', 'II']
 reporting_period = {'JF':0, 'MA':1, 'MJ':2, 'JA':3, 'SO':4, 'ND':5}
-state_abbrev = {
-        'Alabama': 'AL',
-        'Alaska': 'AK',
-        'Arizona': 'AZ',
-        'Arkansas': 'AR',
-        'California': 'CA',
-        'Colorado': 'CO',
-        'Connecticut': 'CT',
-        'Delaware': 'DE',
-        'Florida': 'FL',
-        'Georgia': 'GA',
-        'Hawaii': 'HI',
-        'Idaho': 'ID',
-        'Illinois': 'IL',
-        'Indiana': 'IN',
-        'Iowa': 'IA',
-        'Kansas': 'KS',
-        'Kentucky': 'KY',
-        'Louisiana': 'LA',
-        'Maine': 'ME',
-        'Maryland': 'MD',
-        'Massachusetts': 'MA',
-        'Michigan': 'MI',
-        'Minnesota': 'MN',
-        'Mississippi': 'MS',
-        'Missouri': 'MO',
-        'Montana': 'MT',
-        'Nebraska': 'NE',
-        'Nevada': 'NV',
-        'New Hampshire': 'NH',
-        'New Jersey': 'NJ',
-        'New Mexico': 'NM',
-        'New York': 'NY',
-        'North Carolina': 'NC',
-        'North Dakota': 'ND',
-        'Ohio': 'OH',
-        'Oklahoma': 'OK',
-        'Oregon': 'OR',
-        'Pennsylvania': 'PA',
-        'Rhode Island': 'RI',
-        'South Carolina': 'SC',
-        'South Dakota': 'SD',
-        'Tennessee': 'TN',
-        'Texas': 'TX',
-        'Utah': 'UT',
-        'Vermont': 'VT',
-        'Virginia': 'VA',
-        'Washington': 'WA',
-        'West Virginia': 'WV',
-        'Wisconsin': 'WI',
-        'Wyoming': 'WY',
-}
+
 def create_payload(table, sqlstmt):
     return { 
             '_table': table,
@@ -262,14 +228,21 @@ def create_payload(table, sqlstmt):
 def download_files():
     if not os.path.exists(LOBBYIST_FILE_DIRECTORY):
             os.makedirs(LOBBYIST_FILE_DIRECTORY)
-    if not os.path.exists(TODAYS_LOBBYIST_XLSX):
-        urllib.urlretrieve(TX_LOBBYIST_URL, TODAYS_LOBBYIST_XLSX);
+    if not os.path.exists(TODAYS_LOBBYIST_CSV):
+        if not os.path.exists(TODAYS_LOBBYIST_XLSX):
+            urllib.urlretrieve(TX_LOBBYIST_URL, TODAYS_LOBBYIST_XLSX);
         wb = openpyxl.load_workbook(TODAYS_LOBBYIST_XLSX)
         sh = wb.get_active_sheet()
-        with open(TODAYS_LOBBYIST_CSV, 'wb', encoding='utf-8') as f:
+        with open(TODAYS_LOBBYIST_CSV, 'wb') as f:
             c = csv.writer(f)
             for r in sh.rows:
-                c.writerow([cell.value for cell in r])
+                for cell in r:
+                    if type(cell.value) is not unicode:
+                        print(cell.value)
+                        print(type(cell.value))
+                        cell.value = unicode(cell.value)
+
+                c.writerow([cell.value.encode('utf-8') for cell in r if type(cell.value) is unicode])
 
 def is_person_in_db(dddb, lobbyist):
     try:
@@ -358,16 +331,62 @@ def insert_organization(dddb, org):
 def insert_obj(dddb, obj, qs_query, qi_query, objType):
     if not is_obj_in_db(dddb, qs_query, obj, objType):
         try:
-            print("\n\n\n HERE")
             dddb.execute(qi_query, obj)
             return dddb.rowcount
         except MySQLdb.Error:
-            print("\n\nfdasdf")
             logger.warning('Insert Failed', full_msg=traceback.format_exc(),
                     additional_fields=create_payload(objType, (qi_query%obj)))
             #sys.exit()
     return 0
-          
+
+
+def parse_last_name(row):
+    full_name = row["Filer Name"].split(", ")
+    return full_name[0].strip()
+
+def parse_first_name(row):
+    full_name = row["Filer Name"].split(", ")
+    first_name_with_suffix = full_name[1].strip().split(" ")
+
+    return first_name_with_suffix[0]
+
+def parse_middle_name(row):
+    full_name = row["Filer Name"].split(", ")
+    first_name = full_name[1]
+    parts = first_name.split()
+    if len(parts) > 2:
+        if "(" in first_name and ")" in first_name:
+                return first_name.split()[-2]
+        else:
+                return first_name.split()[-1]
+    return None
+
+def format_name(name):
+    if "," not in name:
+        return None
+    else:
+        for ending in COMPANIES_ENDINGS:
+            if ending in name:
+                return None
+
+        name_parts = name.split(",")
+        return [name_parts[0].strip(), name_parts[1].string]
+
+def parse_name(row, lobbyist):
+    if not ("," in row["Filer Name"] and "(" in row["Filer Name"] and ")" in row["Filer Name"]):
+        formatted_name = format_name(row["Filer Name"])
+        if formatted_name is None:
+            return None
+        lobbyist["first"] = formatted_name[0]
+        lobbyist["last"] = formatted_name[1]
+    else:
+        lobbyist["first"] = parse_first_name(row)
+        lobbyist["last"] = parse_last_name(row)
+
+    lobbyist["middle"] = parse_middle_name(row)
+
+    return lobbyist
+
 
 
 def parse_lobbyist(dddb, lobFile, lobUrl):
@@ -378,149 +397,182 @@ def parse_lobbyist(dddb, lobFile, lobUrl):
     global LEMPLOYMENT_INSERT
     global LDE_INSERT
 
-    with open(lobFile, "r") as lob:
-        pp = pprint.PrettyPrinter(indent=4)
-        print("AsdfasdFa")
-        datareader = csv.reader(lob, delimiter="\t")
-        lobbyist = dict()
-        org = dict()
-        lobFirm = dict()
-        
-        for row in datareader:
-            rowCount = rowCount + 1
-            print("asdf" + str(rowCount))
-            #if rowCount >= 1000:
-            #    return;
-            if rowCount <= 3:
-                continue;
-            else: 
-                print("geg")
-                # Adding person table info
-                lobbyist['last'] = row[0]
-                lobbyist['first'] = row[1] + " " + row[3] # First name + suffix
-                lobbyist['middle'] = row[2]
-                lobbyist['source'] = lobUrl
-                    
-                # Adding lobbyist table info
-                lobbyist['state'] = "FL"
-                lobbyist = insert_lobbyist(dddb, lobbyist)
+    frame = pd.read_csv(lobFile)
+    frame = frame.drop_duplicates()
+    pp = pprint.PrettyPrinter(indent=4)
+    lobbyist = dict()
+    org = dict()
+    lobFirm = dict()
 
-                # if the lobbyist works for a firm
-                if len(row) > 24:
-                    
-                    # Add Organization info
-                    org["name"] = row[23]
-                    org["city"] = row[26]
-                    if len(row[27].strip()) > 2 and row[27].strip() in state_abbrev:
-                        org["stateHeadquartered"] = state_abbrev[row[27].strip().lower().title()]
-                    elif len(row[27].strip()) > 2 and row[27].strip() not in state_abbrev:
-                        print(repr(row[27]))
-                        continue
-                    else:
-                        org["stateHeadquartered"] = row[27].strip().upper()
-                    org["source"] = lobUrl
-                    org = insert_organization(dddb, org)
-                     
-                    
-                    # Add LobbyingFirm table info
-                    lobFirm["oid"] = org["oid"]
-                    lobFirm["state"] = "FL"
-                    lobFirm["filer_naml"] = row[23]
-                    LF_INSERT += insert_obj(dddb, lobFirm, QS_LOBBYINGFIRM, QI_LOBBYINGFIRM, "Lobbyist Firm")
-                    
-                    # Add LobbyingFirmState table info
-                    lobFirm["filer_id"] = org["oid"] # use oid for unique key
-                    print(row[33].split("/"))
-                    print(row[34].split("/"))
-                    print(row)
-                    if row[33]:
-                        lobFirm["ls_beg_yr"] = int(row[33].split("/")[-1])
-                    else:
-                        lobFirm["ls_beg_yr"] = None
-                    if row[34]:
-                        lobFirm["ls_end_yr"] = int(row[34].split("/")[-1])
-                    else:
-                        lobFirm["ls_end_yr"] = None
-                    LFS_INSERT += insert_obj(dddb, lobFirm,  QS_LOBBYINGFIRMSTATE, QI_LOBBYINGFIRMSTATE, "Lobbyist Firm State")
+    for index, row in frame.iterrows():
+        if rowCount > 10:
+            return
 
-                    # Add LobbyistEmployer skipping coalition
-                    # Skipping coalition
-                    # Use previous filer_id
-                    LEMPLOYER_INSERT += insert_obj(dddb, lobFirm, QS_LOBBYISTEMPLOYER, QI_LOBBYISTEMPLOYER, "Lobbyist Employer") 
-                    
-                    # Add LobbyistEmployment
-                    lobbyist["sender_id"] = lobFirm["filer_id"]
-                    lobbyist["rpt_date"] = str(date.today())
-                    if row[14]:
-                        lobbyist["ls_beg_yr"] = int(row[14].split("/")[-1])
-                    else:
-                        lobbyist["ls_beg_yr"] = None
-                    if row[15]:
-                        lobbyist["ls_end_yr"] = int(row[15].split("/")[-1])
-                    else:
-                        lobbyist["ls_end_yr"] = 2018
-                    LEMPLOYMENT_INSERT += insert_obj(dddb, lobbyist, QS_LOBBYISTEMPLOYMENT, QI_LOBBYISTEMPLOYMENT, "Lobbyist Employment")
-                    
-                    # Add Organization they are representing
-                    org["name"] = row[13]
-                    org["city"] = row[18]
-                    if len(row[19].strip()) > 2 and row[19].strip() in state_abbrev:
-                        org["stateHeadquartered"] = state_abbrev[row[19].strip().lower().title()]
-                    elif len(row[19].strip()) > 2 and row[19].strip() not in state_abbrev:
-                        print(repr(row[19]))
-                        continue
-                    else:
-                        org["stateHeadquartered"] = row[19].strip().upper()
-                    org = insert_organization(dddb, org)
-                    
-                else:
-                    # Add Organization they are representing
-                    org["name"] = row[13]
-                    org["type"] = 0
-                    org["city"] = row[18]
-                    org["source"] = lobUrl
-                    if len(row[19].strip()) > 2 and row[19].strip() in state_abbrev:
-                        org["stateHeadquartered"] = state_abbrev[row[19].strip().lower().title()]
-                    elif len(row[19].strip()) > 2 and row[19].strip() not in state_abbrev:
-                        print(repr(row[19]))
-                        continue
-                    else:
-                        org["stateHeadquartered"] = row[19].strip().upper()
-                    org["state"] = "FL"
-                    org = insert_organization(dddb, org)
-                    
-                    # Add LobbyistEmployer in-house lobbyist use organization they are representing
-                    # Skipping coalition
-                    org['filer_id'] = org["oid"]
-                    LEMPLOYER_INSERT += insert_obj(dddb, org, QS_LOBBYISTEMPLOYER, QI_LOBBYISTEMPLOYER, "Lobbyist Employer")
+        # Adding Person table info
+        lobbyist = parse_name(row, lobbyist)
 
-                    # Add LobbyistEmployment
-                    # NEED PID 
-                    # NEED OID for lobbyist_employer
-                    lobbyist["lobbyist_employer"] = org["filer_id"]
-                    lobbyist["rpt_date"] = str(date.today())
-                    if row[14]:
-                        lobbyist["ls_beg_yr"] = row[14].split("/")[-1]
-                    else:
-                        lobbyist["ls_beg_yr"] = None
-                    if row[15]:
-                        lobbyist["ls_end_yr"] = int(row[15].split("/")[-1])
-                    else:
-                        lobbyist["ls_end_yr"] = 2018
-                    LDE_INSERT += insert_obj(dddb, lobbyist, QS_LOBBYISTDIRECTEMPLOYMENT, QI_LOBBYISTDIRECTEMPLOYMENT, "Lobbyist Direct Employment")
-                    
-                    
-
-                
+        if lobbyist is not None:
+            lobbyist["source"] = lobUrl
+            # Adding lobbyist table info
+            lobbyist['state'] = "TX"
+            lobbyist = insert_lobbyist(dddb, lobbyist)
 
 
-                # Add LobbyingContracts
-                # Use sender_id from above
-                # Use rpt_date ls beg and end from above
-                #lobbyist["filer_id"] = ' '.join(row[4:10]) # using full address as unique id for lobbyist
-                
-                pp.pprint(lobbyist)
-                print("\n\n\n")
+
+
+        print(lobbyist)
+        rowCount += 1
+
+
+
+        #if the lobbyist works for a firm
+        if row["Business"] is not None:
+            org["name"] = row["Business"]
+            org["city"] = row["City"]
+            org["stateHeadquartered"] = row["State"]
+            org["source"] = lobUrl
+            org = insert_organization(dddb, org)
+
+            #Add LobbyingFirm table info
+            lobFirm["oid"] = org["oid"]
+            lobFirm["state"] = "TX"
+            lobFirm["filer_naml"] = row["Business"]
+            LF_INSERT += insert_obj(dddb, lobFirm, QS_LOBBYINGFIRM, QI_LOBBYINGFIRM, "Lobbyist Firm")
+
+
+             # Add LobbyingFirmState table info
+            lobFirm["filer_id"] = org["oid"]  # use oid for unique key
+            print(row[33].split("/"))
+            print(row[34].split("/"))
+            print(row)
+            if row[33]:
+                lobFirm["ls_beg_yr"] = int(row[33].split("/")[-1])
+            else:
+                lobFirm["ls_beg_yr"] = None
+            if row[34]:
+                lobFirm["ls_end_yr"] = int(row[34].split("/")[-1])
+            else:
+                lobFirm["ls_end_yr"] = None
+            LFS_INSERT += insert_obj(dddb, lobFirm,  QS_LOBBYINGFIRMSTATE, QI_LOBBYINGFIRMSTATE, "Lobbyist Firm State")
+
+
+
+        # # if the lobbyist works for a firm
+        # if len(row) > 24:
+        #
+        #     # Add Organization info
+        #     org["name"] = row[23]
+        #     org["city"] = row[26]
+        #     if len(row[27].strip()) > 2 and row[27].strip() in state_abbrev:
+        #         org["stateHeadquartered"] = state_abbrev[row[27].strip().lower().title()]
+        #     elif len(row[27].strip()) > 2 and row[27].strip() not in state_abbrev:
+        #         print(repr(row[27]))
+        #         continue
+        #     else:
+        #         org["stateHeadquartered"] = row[27].strip().upper()
+        #     org["source"] = lobUrl
+        #     org = insert_organization(dddb, org)
+        #
+        #
+        #     # Add LobbyingFirm table info
+        #     lobFirm["oid"] = org["oid"]
+        #     lobFirm["state"] = "TX"
+        #     lobFirm["filer_naml"] = row[23]
+        #     LF_INSERT += insert_obj(dddb, lobFirm, QS_LOBBYINGFIRM, QI_LOBBYINGFIRM, "Lobbyist Firm")
+        #
+        #     # Add LobbyingFirmState table info
+        #     lobFirm["filer_id"] = org["oid"] # use oid for unique key
+        #     print(row[33].split("/"))
+        #     print(row[34].split("/"))
+        #     print(row)
+        #     if row[33]:
+        #         lobFirm["ls_beg_yr"] = int(row[33].split("/")[-1])
+        #     else:
+        #         lobFirm["ls_beg_yr"] = None
+        #     if row[34]:
+        #         lobFirm["ls_end_yr"] = int(row[34].split("/")[-1])
+        #     else:
+        #         lobFirm["ls_end_yr"] = None
+        #     LFS_INSERT += insert_obj(dddb, lobFirm,  QS_LOBBYINGFIRMSTATE, QI_LOBBYINGFIRMSTATE, "Lobbyist Firm State")
+        #
+        #     # Add LobbyistEmployer skipping coalition
+        #     # Skipping coalition
+        #     # Use previous filer_id
+        #     LEMPLOYER_INSERT += insert_obj(dddb, lobFirm, QS_LOBBYISTEMPLOYER, QI_LOBBYISTEMPLOYER, "Lobbyist Employer")
+        #
+        #     # Add LobbyistEmployment
+        #     lobbyist["sender_id"] = lobFirm["filer_id"]
+        #     lobbyist["rpt_date"] = str(date.today())
+        #     if row[14]:
+        #         lobbyist["ls_beg_yr"] = int(row[14].split("/")[-1])
+        #     else:
+        #         lobbyist["ls_beg_yr"] = None
+        #     if row[15]:
+        #         lobbyist["ls_end_yr"] = int(row[15].split("/")[-1])
+        #     else:
+        #         lobbyist["ls_end_yr"] = 2018
+        #     LEMPLOYMENT_INSERT += insert_obj(dddb, lobbyist, QS_LOBBYISTEMPLOYMENT, QI_LOBBYISTEMPLOYMENT, "Lobbyist Employment")
+        #
+        #     # Add Organization they are representing
+        #     org["name"] = row[13]
+        #     org["city"] = row[18]
+        #     if len(row[19].strip()) > 2 and row[19].strip() in state_abbrev:
+        #         org["stateHeadquartered"] = state_abbrev[row[19].strip().lower().title()]
+        #     elif len(row[19].strip()) > 2 and row[19].strip() not in state_abbrev:
+        #         print(repr(row[19]))
+        #         continue
+        #     else:
+        #         org["stateHeadquartered"] = row[19].strip().upper()
+        #     org = insert_organization(dddb, org)
+        #
+        # else:
+        #     # Add Organization they are representing
+        #     org["name"] = row[13]
+        #     org["type"] = 0
+        #     org["city"] = row[18]
+        #     org["source"] = lobUrl
+        #     if len(row[19].strip()) > 2 and row[19].strip() in state_abbrev:
+        #         org["stateHeadquartered"] = state_abbrev[row[19].strip().lower().title()]
+        #     elif len(row[19].strip()) > 2 and row[19].strip() not in state_abbrev:
+        #         print(repr(row[19]))
+        #         continue
+        #     else:
+        #         org["stateHeadquartered"] = row[19].strip().upper()
+        #     org["state"] = "TX"
+        #     org = insert_organization(dddb, org)
+        #
+        #     # Add LobbyistEmployer in-house lobbyist use organization they are representing
+        #     # Skipping coalition
+        #     org['filer_id'] = org["oid"]
+        #     LEMPLOYER_INSERT += insert_obj(dddb, org, QS_LOBBYISTEMPLOYER, QI_LOBBYISTEMPLOYER, "Lobbyist Employer")
+        #
+        #     # Add LobbyistEmployment
+        #     # NEED PID
+        #     # NEED OID for lobbyist_employer
+        #     lobbyist["lobbyist_employer"] = org["filer_id"]
+        #     lobbyist["rpt_date"] = str(date.today())
+        #     if row[14]:
+        #         lobbyist["ls_beg_yr"] = row[14].split("/")[-1]
+        #     else:
+        #         lobbyist["ls_beg_yr"] = None
+        #     if row[15]:
+        #         lobbyist["ls_end_yr"] = int(row[15].split("/")[-1])
+        #     else:
+        #         lobbyist["ls_end_yr"] = 2018
+        #     LDE_INSERT += insert_obj(dddb, lobbyist, QS_LOBBYISTDIRECTEMPLOYMENT, QI_LOBBYISTDIRECTEMPLOYMENT, "Lobbyist Direct Employment")
+        #
+        #
+        #
+        #
+        #
+        #
+        #     # Add LobbyingContracts
+        #     # Use sender_id from above
+        #     # Use rpt_date ls beg and end from above
+        #     #lobbyist["filer_id"] = ' '.join(row[4:10]) # using full address as unique id for lobbyist
+        #
+        #     pp.pprint(lobbyist)
+        #     print("\n\n\n")
 
 
 
@@ -599,17 +651,17 @@ def main():
                                              ', LobbyistEmployment:'+str(LEMPLOYMENT_INSERT)+
                                             ', LobbyistDirectEmployment:'+str(LDE_INSERT)+
                                             ', LobbyingContracts:'+str(LC_INSERT),
-                                        '_state':'FL'})
+                                        '_state':'TX'})
     
-        LOG = {'tables': [{'state': 'FL', 'name': 'LobbingFirm', 'inserted':LF_INSERT, 'updated': 0, 'deleted': 0},
-              {'state': 'FL', 'name': 'LobbyingFirmState', 'inserted':LFS_INSERT, 'updated': 0, 'deleted': 0},
-              {'state': 'FL', 'name': 'Lobbyist', 'inserted':L_INSERT, 'updated': 0, 'deleted': 0},
-              {'state': 'FL', 'name': 'Person', 'inserted':P_INSERT, 'updated': 0, 'deleted': 0},
-              {'state': 'FL', 'name': 'Organizations', 'inserted':O_INSERT, 'updated': 0, 'deleted': 0},
-              {'state': 'FL', 'name': 'LobbyistEmployer', 'inserted':LEMPLOYER_INSERT, 'updated': 0, 'deleted': 0},
-              {'state': 'FL', 'name': 'LobbyistEmployment', 'inserted':LEMPLOYMENT_INSERT, 'updated': 0, 'deleted': 0},
-              {'state': 'FL', 'name': 'LobbyistDirectEmployment', 'inserted':LDE_INSERT, 'updated': 0, 'deleted': 0},
-              {'state': 'FL', 'name': 'LobbyingContracts', 'inserted':LC_INSERT, 'updated': 0, 'deleted': 0}]}
+        LOG = {'tables': [{'state': 'TX', 'name': 'LobbingFirm', 'inserted':LF_INSERT, 'updated': 0, 'deleted': 0},
+              {'state': 'TX', 'name': 'LobbyingFirmState', 'inserted':LFS_INSERT, 'updated': 0, 'deleted': 0},
+              {'state': 'TX', 'name': 'Lobbyist', 'inserted':L_INSERT, 'updated': 0, 'deleted': 0},
+              {'state': 'TX', 'name': 'Person', 'inserted':P_INSERT, 'updated': 0, 'deleted': 0},
+              {'state': 'TX', 'name': 'Organizations', 'inserted':O_INSERT, 'updated': 0, 'deleted': 0},
+              {'state': 'TX', 'name': 'LobbyistEmployer', 'inserted':LEMPLOYER_INSERT, 'updated': 0, 'deleted': 0},
+              {'state': 'TX', 'name': 'LobbyistEmployment', 'inserted':LEMPLOYMENT_INSERT, 'updated': 0, 'deleted': 0},
+              {'state': 'TX', 'name': 'LobbyistDirectEmployment', 'inserted':LDE_INSERT, 'updated': 0, 'deleted': 0},
+              {'state': 'TX', 'name': 'LobbyingContracts', 'inserted':LC_INSERT, 'updated': 0, 'deleted': 0}]}
         sys.stderr.write(json.dumps(LOG))
 
 if __name__ == '__main__':
