@@ -5,7 +5,7 @@ that all scripts run sloowly
 
 Process for Running: (In order)
 
-Run: ScrapedSupportFixed.py
+Run: ScrapeSupportFixed.py
     - Downloads data in lob files from here: 'http://downloads.leginfo.legislature.ca.gov/pubinfo_2017.zip'
     - Unzips these files into CollectingData/BillAnalysisLobs
         - It depends on this directory existing
