@@ -99,8 +99,10 @@ def get_legislators_list(state):
         legislator["source"] = "openstates"
         legislator["image"] = entry["photo_url"]
         # ------- Filling legislator data now
-        if entry["party"] == "Republican" or entry["party"] == "Democrat":
+        if entry["party"] == "Republican":
             legislator["party"] = entry["party"]
+        elif entry["party"] == "Democratic":
+            legislator["party"] = "Democrat"
         else:
              legislator["party"] = "Other"
         
