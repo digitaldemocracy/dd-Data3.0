@@ -29,7 +29,7 @@ import sys
 from Database_Connection import mysql_connection
 from graylogger.graylogger import GrayLogger
 from legislators_API_helper import *
-GRAY_URL = 'http://development.digitaldemocracy.org:12202/gelf'
+GRAY_URL = 'http://dw.digitaldemocracy.org:12202/gelf'
 logger = None
 API_URL = 'http://openstates.org/api/v1/legislators/?state=fl&chamber={0}&apikey=c12c4c7e02c04976865f3f9e95c3275b'
 
@@ -107,6 +107,7 @@ def create_payload(table, sqlstmt):
     '_state': 'FL'
   }
 
+
 '''
 The function checks to see if a term entry already exists
 in the DB. 
@@ -132,6 +133,7 @@ def is_term_in_db(dddb, leg):
 
   return True
 
+
 '''
 This function checks to see if a legislator is already 
 in the DB. Returns true or false.
@@ -146,6 +148,7 @@ def is_leg_in_db(dddb, leg):
     return False
 
   return query[0]
+
 
 '''
 This function adds the legislators into the Person, Term, and Legislator
@@ -195,6 +198,8 @@ def add_legislators_db(dddb, leg_list):
         print((QI_TERM%leg))
         logger.warning('Insert Failed', full_msg=traceback.format_exc(),
             additional_fields=create_payload('Term', (QI_TERM%leg)))
+
+
 if __name__ == "__main__":
     dbinfo = mysql_connection(sys.argv)
     # MUST SPECIFY charset='utf8' OR BAD THINGS WILL HAPPEN.
@@ -204,6 +209,7 @@ if __name__ == "__main__":
                                       user=dbinfo['user'],
                                       passwd=dbinfo['passwd'],
                                       charset='utf8') as dddb:
+
         pi_count = ti_count = 0
         with GrayLogger(GRAY_URL) as _logger:
             logger = _logger

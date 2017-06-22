@@ -22,7 +22,10 @@ reload(sys)
 sys.setdefaultencoding('utf-8')
 
 LEGISLATORS_SEARCH_URL = 'https://openstates.org/api/v1/legislators/?state={0}&active=true'
+LEGISLATORS_SEARCH_URL += '&apikey=3017b0ca-3d4f-482b-9865-1c575283754a'
+
 LEGISLATORS_DETAIL_URL = 'https://openstates.org/api/v1/legislators/{0}'
+LEGISLATORS_DETAIL_URL += '&apikey=3017b0ca-3d4f-482b-9865-1c575283754a'
 
 validation_list = {"offices", "photo_url", "party", "email", "district"}
 emails = {"tx_house": "@house.texas.gov", "tx_senate": "@senate.texas.gov", "fl_house" : "@myfloridahouse.gov", "fl_senate" : "@flsenate.gov"}
@@ -90,8 +93,10 @@ def get_legislators_list(state):
         legislator["image"] = str(entry["photo_url"])
         #print(entry["created_at"]) 
         # ------- Filling legislator data now
-        if str(entry["party"]) == "Republican" or str(entry["party"]) == "Democrat":
+        if str(entry["party"]) == "Republican":
             legislator["party"] = str(entry["party"])
+        elif str(entry["party"]) == "Democratic":
+            legislator["party"] = "Democrat"
         else:
              legislator["party"] = "Other"
         

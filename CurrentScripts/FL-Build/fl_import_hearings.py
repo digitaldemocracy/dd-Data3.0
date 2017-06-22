@@ -32,6 +32,7 @@ import requests
 import sys
 import datetime as dt
 import subprocess
+import json
 from bs4 import BeautifulSoup
 from graylogger.graylogger import GrayLogger
 
@@ -368,7 +369,7 @@ def insert_committee_hearing(cid, hid, dddb):
         CH_INS += dddb.rowcount
 
     except MySQLdb.Error:
-        print traceback.format_exc()
+        #print traceback.format_exc()
         logger.warning("CommitteeHearing insert failed", full_msg=traceback.format_exc(),
                        additional_fields=create_payload("CommitteeHearings", (INSERT_COMMITTEE_HEARING % comm_hearing)))
 
@@ -388,7 +389,7 @@ def insert_hearing_agenda(hid, bid, date, dddb):
             HA_INS += dddb.rowcount
 
         except MySQLdb.Error:
-            print traceback.format_exc()
+            #print traceback.format_exc()
             logger.warning("HearingAgenda insert failed", full_msg=traceback.format_exc(),
                            additional_fields=create_payload("HearingAgenda", (INSERT_HEARING_AGENDA % agenda)))
 
@@ -455,6 +456,7 @@ def import_senate_agendas(f, dddb):
 
     date = None
     posted_date = None
+    hid = None
 
     for line in f:
         d_match = re.search(r'^([a-zA-Z]+),\s([a-zA-Z]+)\s([0-9]{1,2}),\s([0-9]{4})', line)
@@ -509,14 +511,17 @@ def get_agenda_text(link):
     f.write(response.content)
     f.close()
 
-    subprocess.call("pdftotext calendar.pdf")
+    subprocess.call(["./pdftotext", "calendar.pdf"])
 
 
 '''
 Gets all House agenda PDFs listed on the Florida website
 '''
 def get_house_agenda(dddb):
-    html_soup = BeautifulSoup(urllib2.urlopen(HOUSE_SOURCE).read())
+    #html_soup = BeautifulSoup(urllib2.urlopen(HOUSE_SOURCE).read())
+
+    f = open("fl_house_hearings.txt", "r")
+    html_soup = BeautifulSoup(f.read())
 
     for link in html_soup.find_all('li', class_='calendarlist'):
         doc_link = 'http://www.myfloridahouse.gov' + link.find('a').get('href').strip()
@@ -543,16 +548,23 @@ def get_senate_agenda(dddb):
 
 
 def main():
-    dbinfo = mysql_connection(sys.argv)
-    # MUST SPECIFY charset='utf8' OR BAD THINGS WILL HAPPEN.
-    with MySQLdb.connect(host=dbinfo['host'],
-                         port=dbinfo['port'],
-                         db=dbinfo['db'],
-                         user=dbinfo['user'],
-                         passwd=dbinfo['passwd'],
+    # dbinfo = mysql_connection(sys.argv)
+    # # MUST SPECIFY charset='utf8' OR BAD THINGS WILL HAPPEN.
+    # with MySQLdb.connect(host=dbinfo['host'],
+    #                      port=dbinfo['port'],
+    #                      db=dbinfo['db'],
+    #                      user=dbinfo['user'],
+    #                      passwd=dbinfo['passwd'],
+    #                      charset='utf8') as dddb:
+    with MySQLdb.connect(host='dev.digitaldemocracy.org',
+                         port=3306,
+                         db='parose_dddb',
+                         user='parose',
+                         passwd='parose221',
                          charset='utf8') as dddb:
+
         get_senate_agenda(dddb)
-        get_house_agenda(dddb)
+        #get_house_agenda(dddb)
 
         logger.info(__file__ + " terminated successfully",
                     full_msg="Inserted " + str(H_INS) + " rows in Hearing, "
