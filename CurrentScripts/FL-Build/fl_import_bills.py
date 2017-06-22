@@ -362,17 +362,21 @@ Some bills have their bill text stored as a PDF
 This function downloads these PDFs and converts them to text
 '''
 def read_pdf(url):
-    pdf = requests.get(url)
-    f = open('billtext.pdf', 'wb')
-    f.write(pdf.content)
-    f.close()
+    try:
+        pdf = requests.get(url)
+        f = open('billtext.pdf', 'wb')
+        f.write(pdf.content)
+        f.close()
 
-    subprocess.call("pdftotext billtext.pdf")
+        subprocess.call(['./pdftotext', 'billtext.pdf'])
 
-    with open('billtext.txt', 'r'):
-        doc = f.read()
+        with open('billtext.txt', 'r') as f:
+            doc = f.read()
 
-    return doc
+        return doc
+
+    except:
+        return None
 
 
 '''
@@ -497,8 +501,8 @@ def import_versions(bill_title, versions, dddb):
             version['doc'] = requests.get(version['url']).content
         else:
             # Need to install xpdf for this to work
-            #version['doc'] = read_pdf(version['url'])
-            version['doc'] = 'PDF'
+            version['doc'] = read_pdf(version['url'])
+            #version['doc'] = 'PDF'
 
         if not is_version_in_db(version, dddb):
             try:
@@ -508,7 +512,7 @@ def import_versions(bill_title, versions, dddb):
                 logger.warning("BillVersion insertion failed", full_msg=traceback.format_exc(),
                                additional_fields=create_payload("BillVersion", (INSERT_VERSION % version)))
         else:
-            if version['doctype'] == 'text/html':
+            if version['doc'] is not None:
                 try:
                     dddb.execute(UPDATE_VERSION_TEXT, version)
                     V_INSERTED += dddb.rowcount
@@ -548,18 +552,12 @@ def import_bills(dddb):
 
 
 def main():
-    # dbinfo = mysql_connection(sys.argv)
-    # with MySQLdb.connect(host=dbinfo['host'],
-    #                      port=dbinfo['port'],
-    #                      db=dbinfo['db'],
-    #                      user=dbinfo['user'],
-    #                      passwd=dbinfo['passwd'],
-    #                      charset='utf8') as dddb:
-    with MySQLdb.connect(host='dev.digitaldemocracy.org',
-                         port=3306,
-                         db='parose_dddb',
-                         user='parose',
-                         passwd='parose221',
+    dbinfo = mysql_connection(sys.argv)
+    with MySQLdb.connect(host=dbinfo['host'],
+                         port=dbinfo['port'],
+                         db=dbinfo['db'],
+                         user=dbinfo['user'],
+                         passwd=dbinfo['passwd'],
                          charset='utf8') as dddb:
 
         import_bills(dddb)
