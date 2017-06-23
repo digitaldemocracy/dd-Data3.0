@@ -26,6 +26,7 @@ import traceback
 import sys
 import urllib2
 import subprocess
+import os
 from bs4 import BeautifulSoup
 from graylogger.graylogger import GrayLogger
 from Database_Connection import mysql_connection
@@ -358,15 +359,22 @@ def scrape_version_date(url):
 
 
 '''
+Downloads bill texts stored as PDFs
+'''
+def get_pdf(url):
+    pdf = requests.get(url)
+    f = open('billtext.pdf', 'wb')
+    f.write(pdf.content)
+    f.close()
+
+
+'''
 Some bills have their bill text stored as a PDF
 This function downloads these PDFs and converts them to text
 '''
-def read_pdf(url):
+def read_pdf_text(url):
     try:
-        pdf = requests.get(url)
-        f = open('billtext.pdf', 'wb')
-        f.write(pdf.content)
-        f.close()
+        get_pdf(url)
 
         subprocess.call(['./pdftotext', 'billtext.pdf'])
 
@@ -377,6 +385,45 @@ def read_pdf(url):
 
     except:
         return None
+
+
+'''
+Combines the bill text HTML files into one HTML file
+
+Also removes image tags from the HTML files
+'''
+def knit_html():
+    dirname = 'billtext_html/'
+    htmlfiles = [f for f in os.listdir(dirname) if f.split('.')[-1] == 'html' and 'page' in f.split('.')[0]]
+    print(htmlfiles)
+    print([int(h.split('.')[0][4:]) for h in htmlfiles])
+    htmlfiles = sorted(htmlfiles, key=int(str.split('.')[0][4:]))
+
+    print(htmlfiles)
+
+    # with open('billtext.html', 'w') as wf:
+    #     for html in htmlfiles:
+    #         with open(dirname + html, 'r') as f:
+    #             htmlsoup = BeautifulSoup(f.read())
+    #
+    #             for line in htmlsoup.find_all():
+    #                 if not line.name == 'img':
+    #                     print(line)
+    #                     wf.write(str(line))
+
+
+'''
+Converts Bill Text PDF to HTML and scrapes the HTML
+'''
+def read_pdf_html(url):
+    get_pdf(url)
+
+    if os.path.exists('billtext_html/'):
+        subprocess.call(['rm', '-r', 'billtext_html'])
+
+    subprocess.call(['./pdftohtml', '-q', 'billtext.pdf', 'billtext_html'])
+
+    knit_html()
 
 
 '''
@@ -501,7 +548,7 @@ def import_versions(bill_title, versions, dddb):
             version['doc'] = requests.get(version['url']).content
         else:
             # Need to install xpdf for this to work
-            version['doc'] = read_pdf(version['url'])
+            version['doc'] = read_pdf_html(version['url'])
             #version['doc'] = 'PDF'
 
         if not is_version_in_db(version, dddb):
@@ -532,7 +579,7 @@ def import_bills(dddb):
 
     bill_list = get_bills('FL')
 
-    for bill in bill_list[:5]:
+    for bill in bill_list[1:2]:
         print(bill['bid'])
 
         if not is_bill_in_db(dddb, bill):
@@ -552,12 +599,18 @@ def import_bills(dddb):
 
 
 def main():
-    dbinfo = mysql_connection(sys.argv)
-    with MySQLdb.connect(host=dbinfo['host'],
-                         port=dbinfo['port'],
-                         db=dbinfo['db'],
-                         user=dbinfo['user'],
-                         passwd=dbinfo['passwd'],
+    # dbinfo = mysql_connection(sys.argv)
+    # with MySQLdb.connect(host=dbinfo['host'],
+    #                      port=dbinfo['port'],
+    #                      db=dbinfo['db'],
+    #                      user=dbinfo['user'],
+    #                      passwd=dbinfo['passwd'],
+    #                      charset='utf8') as dddb:
+    with MySQLdb.connect(host='dev.digitaldemocracy.org',
+                         port=3306,
+                         db='parose_dddb',
+                         user='parose',
+                         passwd='parose221',
                          charset='utf8') as dddb:
 
         import_bills(dddb)

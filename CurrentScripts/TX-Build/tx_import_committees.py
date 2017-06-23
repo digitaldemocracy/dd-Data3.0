@@ -59,13 +59,25 @@ SELECT_COMMITTEE = '''SELECT cid FROM Committee
 SELECT_PID = '''SELECT pid FROM AlternateId
                 WHERE alt_id = %(alt_id)s'''
 
-SELECT_LEG_PID = '''SELECT * FROM Person p
+SELECT_LEG_PID = '''SELECT p.pid FROM Person p
                     JOIN Term t ON p.pid = t.pid
                     WHERE t.state = 'TX'
                     AND t.current_term = 1
-                    AND p.first LIKE %(first)s
                     AND p.last LIKE %(last)s
                     '''
+
+SELECT_LEG_FIRSTNAME = '''SELECT p.pid FROM Person p
+                    JOIN Term t ON p.pid = t.pid
+                    WHERE t.state = 'TX'
+                    AND t.current_term = 1
+                    AND p.first LIKE %(first)s'''
+
+SELECT_LEG_FIRSTLAST = '''SELECT * FROM Person p
+                          JOIN Term t ON p.pid = t.pid
+                          WHERE t.state = 'TX'
+                          AND t.current_term = 1
+                          AND p.first LIKE %(first)s
+                          AND p.last LIKE %(last)s'''
 
 SELECT_SERVES_ON = '''SELECT * FROM servesOn
                       WHERE pid = %(pid)s
@@ -192,11 +204,24 @@ def get_pid_name(dddb, member):
     try:
         dddb.execute(SELECT_LEG_PID, legislator)
 
-        if dddb.rowcount != 1:
-            print("Error: PID for " + member['name'] + " not found")
-            return None
-        else:
+        if dddb.rowcount == 1:
             return dddb.fetchone()[0]
+        else:
+            dddb.nextset()
+            dddb.execute(SELECT_LEG_FIRSTNAME, legislator)
+
+            if dddb.rowcount == 1:
+                return dddb.fetchone()[0]
+            else:
+                dddb.nextset()
+                dddb.execute(SELECT_LEG_FIRSTLAST, legislator)
+
+                if dddb.rowcount == 1:
+                    return dddb.fetchone()[0]
+
+                else:
+                    print("Error: PID for " + legislator['first'] + " " + legislator['last'] + " not found.")
+                    return None
 
     except MySQLdb.Error:
         logger.warning("PID selection failed", full_msg=traceback.format_exc(),
@@ -469,7 +494,7 @@ def main():
 
         logger.info(__file__ + " terminated successfully",
                     full_msg="Inserted " + str(CN_INSERTED) + " rows in CommitteeNames, "
-                             + str(C_INSERTED) + " rows in Committee, and"
+                             + str(C_INSERTED) + " rows in Committee, and "
                              + str(SO_INSERTED) + " rows in servesOn.",
                     additional_fields={'_affected_rows': 'CommitteeNames: ' + str(CN_INSERTED)
                                                          + ', Committee: ' + str(C_INSERTED)

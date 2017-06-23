@@ -231,7 +231,7 @@ def get_pid_name(vote_name, dddb):
         dddb.execute(SELECT_PID_NAME, legislator)
 
         if dddb.rowcount != 1:
-            print("Error: PID for " + mem_name + " not found")
+            #print("Error: PID for " + mem_name + " not found")
             return None
         else:
             return dddb.fetchone()[0]
@@ -251,7 +251,7 @@ def get_pid(vote, dddb):
         dddb.execute(SELECT_PID, alt_id)
 
         if dddb.rowcount == 0:
-            print("Error: Person not found with Alt ID " + str(alt_id['alt_id']) + ", checking member name")
+            #print("Error: Person not found with Alt ID " + str(alt_id['alt_id']) + ", checking member name")
             return get_pid_name(vote['name'], dddb)
         else:
             return dddb.fetchone()[0]
@@ -458,7 +458,7 @@ def import_bills(dddb, chamber):
     bill_list = get_bills('TX', chamber)
 
     for bill in bill_list:
-        print(bill['bid'])
+        #print(bill['bid'])
 
         if not is_bill_in_db(dddb, bill):
             try:
@@ -477,6 +477,13 @@ def import_bills(dddb, chamber):
 
 
 def main():
+    if len(sys.argv) < 2:
+        print("Usage: python tx_import_bills.py (db) [chamber]")
+        exit()
+
+    chamber = sys.argv.pop()
+    #print(chamber)
+
     dbinfo = mysql_connection(sys.argv)
     with MySQLdb.connect(host=dbinfo['host'],
                          port=dbinfo['port'],
@@ -485,12 +492,6 @@ def main():
                          passwd=dbinfo['passwd'],
                          charset='utf8') as dddb:
 
-        if len(sys.argv) != 2:
-            print("Usage: python tx_import_bills.py [chamber]")
-            exit()
-
-        chamber = sys.argv[1]
-        print(chamber)
         import_bills(dddb, chamber)
 
         logger.info(__file__ + " terminated successfully",
@@ -513,7 +514,7 @@ def main():
                                                     + ', Action: ' + str(A_INSERTED)
                                                     + ', BillVersion: ' + str(V_INSERTED),
                                        '_state': 'TX'})
-        
+
         LOG = {'tables': [{'state': 'TX', 'name': 'Bill', 'inserted': B_INSERTED, 'updated': 0, 'deleted': 0},
                           {'state': 'TX', 'name': 'Motion', 'inserted': M_INSERTED, 'updated': 0, 'deleted': 0},
                           {'state': 'TX', 'name': 'BillVoteSummary', 'inserted': BVS_INSERTED, 'updated': 0, 'deleted': 0},
