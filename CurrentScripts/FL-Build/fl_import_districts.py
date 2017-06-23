@@ -20,30 +20,19 @@ Populates:
 
 import datetime
 import requests
-import MySQLdb
-import traceback
+import sys
 import json
 from Database_Connection import mysql_connection
 from graylogger.graylogger import GrayLogger
+from Constants.Districts_Queries import *
+from Constants.General_Constants import *
+from Utils.DatabaseUtils_NR import *
 
-GRAY_URL = 'http://dw.digitaldemocracy.org:12202/gelf'
 logger = None
 
 # Globals
 D_INSERT = 0
 
-# Selects
-QS_DISTRICT = '''SELECT *
-                FROM District
-                WHERE did=%s
-                AND house=%s
-                AND state=%s'''
-
-# Inserts
-QI_DISTRICT = '''INSERT INTO District
-                (state, house, did, note, year, region, geoData)
-                VALUES 
-                (%s, %s, %s, %s, %s, %s, %s)'''
 
 API_URL = 'https://openstates.org/api/v1/districts/boundary/ocd-division/country:us/state:fl/'
 API_URL += 'sld{0}:{1}/'
@@ -52,18 +41,6 @@ API_URL += '?apikey=3017b0ca-3d4f-482b-9865-1c575283754a'
 NUM_HOUSE_DISTRICTS = 120
 NUM_SENATE_DISTRICTS = 40
 
-
-'''
-This function formats information for Graylogger
-when a SQL statement causes an error
-'''
-def create_payload(table, sqlstmt):
-    return {
-        '_table': table,
-        '_sqlstmt': sqlstmt,
-        '_state': 'FL',
-        '_log_type': 'Database'
-    }
 
 
 '''
@@ -175,6 +152,6 @@ def main():
 
 
 if __name__ == '__main__':
-    with GrayLogger(GRAY_URL) as _logger:
+    with GrayLogger(GRAY_LOGGER_URL) as _logger:
         logger = _logger
         main()

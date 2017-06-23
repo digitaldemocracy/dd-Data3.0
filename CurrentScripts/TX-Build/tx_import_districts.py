@@ -28,18 +28,14 @@ import requests
 from urllib import urlopen
 from Database_Connection import mysql_connection
 from graylogger.graylogger import GrayLogger
+from Constants.Districts_Queries import *
+from Constants.General_Constants import *
+from Utils.DatabaseUtils_NR import *
 
-API_URL = 'http://dw.digitaldemocracy.org:12202/gelf'
+
 logger = None
 INSERTED = 0
 
-# Queries
-QS_DISTRICT = '''SELECT * FROM District
-                 WHERE did = %(did)s
-                  AND house = %(house)s'''
-QI_DISTRICT = '''INSERT INTO District
-                           (state, house, did, note, year, geodata, region)
-                           VALUES (%s, %s, %s, %s, %s, %s, %s)'''
 
 # URL String
 API_URL = 'https://openstates.org/api/v1/districts/boundary/ocd-division/country:us/state:tx/'
@@ -50,14 +46,6 @@ API_URL += '?apikey=3017b0ca-3d4f-482b-9865-1c575283754a'
 _NUM_LOWER_DISTRICTS = 150
 _NUM_UPPER_DISTRICTS = 31
 
-
-def create_payload(table, sqlstmt):
-    return {
-        '_table': table,
-        '_sqlstmt': sqlstmt,
-        '_state': 'TX',
-        '_log_type': 'Database'
-    }
 
 
 '''
@@ -168,6 +156,6 @@ def main():
 
 
 if __name__ == "__main__":
-    with GrayLogger(API_URL) as _logger:
+    with GrayLogger(GRAY_LOGGER_URL) as _logger:
         logger = _logger
         main()

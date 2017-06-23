@@ -28,8 +28,10 @@ from time import strptime
 from graylogger.graylogger import GrayLogger
 from committee_API_helper import *
 from Database_Connection import mysql_connection
+from Constants.Committee_Queries import *
+from Constants.General_Constants import *
+from Utils.DatabaseUtils_NR import *
 
-API_URL = 'http://dw.digitaldemocracy.org:12202/gelf'
 logger = None
 
 # Global counters
@@ -38,89 +40,6 @@ C_INSERTED = 0
 SO_INSERTED = 0
 SO_UPDATED = 0
 
-# SQL Selects
-SELECT_SESSION_YEAR = '''SELECT max(start_year) FROM Session
-                         WHERE state = 'TX'
-                         '''
-
-SELECT_COMMITTEE_NAME = '''SELECT * FROM CommitteeNames
-                           WHERE name = %(name)s
-                           AND house = %(house)s
-                           AND state = %(state)s
-                           '''
-
-SELECT_COMMITTEE = '''SELECT cid FROM Committee
-                      WHERE state = %(state)s
-                      AND name = %(name)s
-                      AND house = %(house)s
-                      AND session_year = %(session_year)s
-                      '''
-
-SELECT_PID = '''SELECT pid FROM AlternateId
-                WHERE alt_id = %(alt_id)s'''
-
-SELECT_LEG_PID = '''SELECT * FROM Person p
-                    JOIN Term t ON p.pid = t.pid
-                    WHERE t.state = 'TX'
-                    AND t.current_term = 1
-                    AND p.first LIKE %(first)s
-                    AND p.last LIKE %(last)s
-                    '''
-
-SELECT_SERVES_ON = '''SELECT * FROM servesOn
-                      WHERE pid = %(pid)s
-                      AND year = %(session_year)s
-                      AND house = %(house)s
-                      AND cid = %(cid)s
-                      AND state = %(state)s'''
-
-SELECT_COMMITTEE_MEMBERS = '''SELECT pid FROM servesOn
-                            WHERE house = %(house)s
-                            AND cid = %(cid)s
-                            AND state = %(state)s
-                            AND current_flag = true
-                            AND year = %(year)s'''
-
-SELECT_HOUSE_MEMBERS = '''SELECT p.pid FROM Person p
-                          JOIN Legislator l ON p.pid = l.pid
-                          JOIN Term t ON l.pid = t.pid
-                          WHERE l.state = 'TX'
-                          AND t.year = %(year)s
-                          AND t.house = %(house)s'''
-
-# SQL Inserts
-INSERT_COMMITTEE_NAME = '''INSERT INTO CommitteeNames
-                           (name, house, state)
-                           VALUES
-                           (%(name)s, %(house)s, %(state)s)'''
-
-INSERT_COMMITTEE = '''INSERT INTO Committee
-                      (name, short_name, type, state, house, session_year)
-                      VALUES
-                      (%(name)s, %(short_name)s, %(type)s, %(state)s, %(house)s, %(session_year)s)'''
-
-INSERT_SERVES_ON = '''INSERT INTO servesOn
-                      (pid, year, house, cid, state, current_flag, start_date, position)
-                      VALUES
-                      (%(pid)s, %(session_year)s, %(house)s, %(cid)s, %(state)s, 1, %(start_date)s, %(position)s)'''
-
-# SQL Updates
-UPDATE_SERVESON = '''UPDATE servesOn
-                     SET current_flag = %(current_flag)s, end_date = %(end_date)s
-                     WHERE pid = %(pid)s
-                     AND cid = %(cid)s
-                     AND house = %(house)s
-                     AND year = %(year)s
-                     AND state = %(state)s'''
-
-
-def create_payload(table, sqlstmt):
-    return {
-        '_table': table,
-        '_sqlstmt': sqlstmt,
-        '_state': 'TX',
-        '_log_type': 'Database'
-    }
 
 
 def is_comm_name_in_db(dddb, committee):
@@ -487,6 +406,6 @@ def main():
 
 
 if __name__ == '__main__':
-    with GrayLogger(API_URL) as _logger:
+    with GrayLogger(GRAY_LOGGER_URL) as _logger:
         logger = _logger
         main()

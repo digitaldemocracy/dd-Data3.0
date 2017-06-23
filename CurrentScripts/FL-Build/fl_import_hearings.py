@@ -35,11 +35,11 @@ import subprocess
 import json
 from bs4 import BeautifulSoup
 from graylogger.graylogger import GrayLogger
+from Constants.Hearings_Queries import *
+from Constants.General_Constants import *
+from Utils.DatabaseUtils_NR import *
 
-HOUSE_SOURCE = "http://www.myfloridahouse.gov/Sections/HouseSchedule/houseschedule.aspx"
-SENATE_SOURCE = "https://www.flsenate.gov/Session/Calendars/2017"
 
-API_URL = 'http://dw.digitaldemocracy.org:12202/gelf'
 logger = None
 
 # Global counters
@@ -48,76 +48,6 @@ CH_INS = 0  # CommitteeHearings inserted
 HA_INS = 0  # HearingAgenda inserted
 HA_UPD = 0  # HearingAgenda updated
 
-# SQL Selects
-SELECT_COMMITTEE = '''SELECT cid FROM Committee
-                      WHERE short_name = %(name)s
-                      AND house = %(house)s
-                      AND type = %(type)s
-                      AND session_year = %(session_year)s
-                      AND state = %(state)s'''
-
-SELECT_HEARING = '''SELECT hid FROM Hearing
-                    WHERE date = %(date)s
-                    AND state = %(state)s
-                    AND session_year = %(session_year)s'''
-
-SELECT_CHAMBER_HEARING = '''SELECT distinct h.hid FROM Hearing h
-                            JOIN CommitteeHearings ch ON h.hid = ch.hid
-                            WHERE cid in (SELECT cid FROM Committee
-                                          WHERE state = 'FL'
-                                          AND house = %(house)s
-                                          AND session_year = %(year)s)
-                            AND date = %(date)s
-                            AND state = %(state)s
-                            AND session_year = %(year)s'''
-
-SELECT_COMMITTEE_HEARING = '''SELECT * FROM CommitteeHearings
-                              WHERE cid = %(cid)s
-                              AND hid = %(hid)s'''
-
-SELECT_BILL = '''SELECT bid FROM Bill
-                 WHERE state = %(state)s
-                 AND sessionYear = %(session_year)s
-                 AND type = %(type)s
-                 AND number = %(number)s'''
-
-SELECT_HEARING_AGENDA = '''SELECT * FROM HearingAgenda
-                           WHERE hid = %(hid)s
-                           AND bid = %(bid)s
-                           AND date_created = %(date)s'''
-
-SELECT_CURRENT_AGENDA = '''SELECT date_created FROM HearingAgenda
-                           WHERE hid = %(hid)s
-                           AND bid = %(bid)s
-                           AND current_flag = 1'''
-
-# SQL Inserts
-INSERT_HEARING = '''INSERT INTO Hearing (date, state, session_year) VALUE (%(date)s, %(state)s, %(session_year)s)'''
-
-INSERT_COMMITTEE_HEARING = '''INSERT INTO CommitteeHearings
-                              (cid, hid)
-                              VALUES
-                              (%(cid)s, %(hid)s)'''
-
-INSERT_HEARING_AGENDA = '''INSERT INTO HearingAgenda
-                           (hid, bid, date_created, current_flag)
-                           VALUES
-                           (%(hid)s, %(bid)s, %(date_created)s, %(current_flag)s)'''
-
-# SQL Updates
-UPDATE_HEARING_AGENDA = '''UPDATE HearingAgenda
-                           SET current_flag = 0
-                           WHERE hid = %(hid)s
-                           AND bid = %(bid)s'''
-
-
-def create_payload(table, sqlstmt):
-    return {
-        '_table': table,
-        '_sqlstmt': sqlstmt,
-        '_state': 'FL',
-        '_log_type': 'Database'
-    }
 
 
 '''
@@ -536,7 +466,7 @@ def get_house_agenda(dddb):
 Gets all Senate agenda PDFs listed on the Florida website
 '''
 def get_senate_agenda(dddb):
-    html_soup = BeautifulSoup(urllib2.urlopen(SENATE_SOURCE).read())
+    html_soup = BeautifulSoup(urllib2.urlopen(FL_HEARING_SENATE_SOURCE).read())
 
     for link in html_soup.find('div', class_='grid-33').find_all('li'):
         doc_link = 'https://www.flsenate.gov' + link.find('a').get('href').strip()
@@ -587,6 +517,6 @@ def main():
 
 
 if __name__ == '__main__':
-    with GrayLogger(API_URL) as _logger:
+    with GrayLogger(GRAY_LOGGER_URL) as _logger:
         logger = _logger
         main()

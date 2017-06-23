@@ -29,7 +29,10 @@ import sys
 from Database_Connection import mysql_connection
 from graylogger.graylogger import GrayLogger
 from legislators_API_helper import *
-GRAY_URL = 'http://dw.digitaldemocracy.org:12202/gelf'
+from Constants.Legislator_Queries import *
+from Constants.General_Constants import *
+from Utils.DatabaseUtils_NR import *
+
 logger = None
 API_URL = 'http://openstates.org/api/v1/legislators/?state=fl&chamber={0}&apikey=c12c4c7e02c04976865f3f9e95c3275b'
 
@@ -39,73 +42,6 @@ L_INSERT = 0
 T_INSERT = 0
 T_UPDATE = 0
 
-#Selects
-QS_LEGISLATOR = '''
-                SELECT p.pid
-                FROM Legislator l, Person p
-                WHERE first=%(first)s
-                AND last=%(last)s
-                AND state=%(state)s
-                AND l.pid=p.pid
-                '''
-
-QS_TERM = '''
-          SELECT district
-          FROM Term
-          WHERE pid=%(pid)s
-          AND state=%(state)s
-          AND year=%(year)s
-          AND house=%(house)s
-          '''
-
-#Inserts
-QI_LEGISLATOR = '''
-                INSERT INTO Legislator
-                  (pid,state,capitol_phone,capitol_fax,website_url,room_number)
-                VALUES
-                  (%(pid)s,%(state)s,%(capitol_phone)s,%(capitol_fax)s,%(website_url)s,%(room_number)s)
-                '''
-
-QI_PERSON = '''
-            INSERT INTO Person
-              (first,middle,last, source, image)
-            VALUES
-              (%(first)s,%(middle)s,%(last)s,%(source)s,%(image)s)
-            '''
-QI_PERSONSTATE = '''
-                INSERT INTO PersonStateAffiliation
-                    (pid, state)
-                VALUES
-                    (%(pid)s,%(state)s)
-                 '''
-QI_ALTID = '''
-           INSERT INTO AlternateId (pid, alt_id, source)
-            VALUES (%(pid)s, %(alt_id)s, %(source)s)
-            '''
-
-QI_TERM = '''
-          INSERT INTO Term
-            (pid,year,house,state,district,party,current_term, start)
-          VALUES
-            (%(pid)s,%(year)s,%(house)s,%(state)s,%(district)s,%(party)s,%(current_term)s,%(start)s)
-          '''
-
-QU_TERM = '''
-          UPDATE Term
-          SET district=%(district)s
-          WHERE pid=%(pid)s
-          AND state=%(state)s
-          AND year=%(year)s
-          AND house=%(house)s
-'''
-
-
-def create_payload(table, sqlstmt):                                             
-  return {
-    '_table': table,
-    '_sqlstmt': sqlstmt,
-    '_state': 'FL'
-  }
 
 
 '''
@@ -211,7 +147,7 @@ if __name__ == "__main__":
                                       charset='utf8') as dddb:
 
         pi_count = ti_count = 0
-        with GrayLogger(GRAY_URL) as _logger:
+        with GrayLogger(GRAY_LOGGER_URL) as _logger:
             logger = _logger
             add_legislators_db(dddb, get_legislators_list("fl"))
             logger.info(__file__ + ' terminated successfully.',
