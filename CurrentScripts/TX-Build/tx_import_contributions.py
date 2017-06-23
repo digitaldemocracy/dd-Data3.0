@@ -26,61 +26,15 @@ import json
 from datetime import datetime
 from bs4 import BeautifulSoup
 from graylogger.graylogger import GrayLogger
+from Constants.Contribution_Queries import *
+from Constants.General_Constants import *
+from Utils.DatabaseUtils_NR import *
 
-GRAY_URL = 'http://dw.digitaldemocracy.org:12202/gelf'
 logger = None
 
 # global counters
 I_O = 0  # org insert counter
 I_C = 0  # contribution insert counter
-
-S_PERSON = '''SELECT p.pid
-              FROM Person p, Legislator l
-              WHERE p.pid = l.pid
-              AND state = 'TX'
-              AND first LIKE %s
-              AND last LIKE %s'''
-
-S_TERM = '''SELECT house
-            FROM Term
-            WHERE pid = %s
-            AND year = %s
-            AND state = %s'''
-
-S_CONTRIBUTION = '''SELECT id
-                    FROM Contribution
-                    WHERE id = %s
-                    AND pid = %s
-                    AND year = %s
-                    AND date = %s
-                    AND house = %s
-                    AND donorName = %s
-                    AND (donorOrg = %s or donorOrg is Null)
-                    AND amount = %s
-                    AND state = %s
-                    AND (oid = %s or oid is Null)'''
-
-S_ORGANIZATION = '''SELECT oid
-                    FROM Organizations
-                    WHERE name = %s'''
-
-I_ORGANIZATION = '''INSERT INTO Organizations
-                    (name, stateHeadquartered)
-                    VALUES (%s, %s)'''
-
-I_CONTRIBUTION = '''INSERT INTO Contribution
-                    (id, pid, year, date, house, donorName, donorOrg, amount, state, oid)
-                    VALUES
-                    (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)'''
-
-
-def create_payload(table, sqlstmt):
-    return {
-        '_table': table,
-        '_sqlstmt': sqlstmt,
-        '_state': 'TX'
-    }
-
 
 '''
 Parse eid from text file
@@ -363,6 +317,6 @@ def main():
 
 
 if __name__ == '__main__':
-    with GrayLogger(GRAY_URL) as _logger:
+    with GrayLogger(GRAY_LOGGER_URL) as _logger:
         logger = _logger
         main()

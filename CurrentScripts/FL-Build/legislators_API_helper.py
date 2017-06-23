@@ -112,5 +112,3 @@ def get_legislators_list(state):
         legislator["start"] = "2017-01-01"
         legislators.append(legislator);
     return legislators
-
-get_legislators_list("tx")

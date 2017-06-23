@@ -1947,6 +1947,7 @@ CREATE TABLE IF NOT EXISTS City (
    state VARCHAR(2) NOT NULL,
    lat  decimal(10,8),
    lon  decimal(11,8),
+   type ENUM('City', 'Town', 'CDP', 'Neighborhood', 'Community') DEFAULT 'City',
    FOREIGN KEY (county_id) REFERENCES County(county_id),
    FOREIGN KEY (state) REFERENCES State(abbrev)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -1954,13 +1955,18 @@ CREATE TABLE IF NOT EXISTS City (
 CREATE TABLE IF NOT EXISTS Newspaper (
    news_id INTEGER AUTO_INCREMENT PRIMARY KEY,
    name VARCHAR(255) NOT NULL,
-   state VARCHAR(2) NOT NULL DEFAULT '',
+   state VARCHAR(2) NOT NULL,
    city_id INTEGER NOT NULL,
    zip_code VARCHAR(10),
    home_page_url VARCHAR(255),
    email VARCHAR(255),
    media_type VARCHAR(255),
    topic VARCHAR(255),
+   facebook VARCHAR(255),
+   twitter VARCHAR(255),
+   address_line1 VARCHAR(255),
+   address_line2 VARCHAR(255),
+   phone VARCHAR(255),
    FOREIGN KEY (city_id) REFERENCES City(city_id),
    FOREIGN KEY (state) REFERENCES State(abbrev)
 )  ENGINE=InnoDB DEFAULT CHARSET=utf8;

@@ -26,8 +26,10 @@ import traceback
 from graylogger.graylogger import GrayLogger
 from Database_Connection import mysql_connection
 from events_API_helper import *
+from Constants.Hearings_Queries import *
+from Constants.General_Constants import *
+from Utils.DatabaseUtils_NR import *
 
-API_URL = 'http://dw.digitaldemocracy.org:12202/gelf'
 logger = None
 
 # Global counters
@@ -35,37 +37,6 @@ H_INS = 0  # Hearings inserted
 CH_INS = 0  # CommitteeHearings inserted
 HA_INS = 0  # HearingAgenda inserted
 HA_UPD = 0  # HearingAgenda updated
-
-# SQL Selects
-SELECT_COMMITTEE = '''SELECT cid FROM Committee
-                      where short_name = %(comm)s
-                      and house = %(house)s
-                      and state = %(state)s'''
-
-SELECT_BILL = '''SELECT bid FROM Bill
-                 where state = %(state)s
-                 and sessionYear = %(session_year)s
-                 and type = %(type)s
-                 and number = %(number)s'''
-
-# SQL Inserts
-INSERT_HEARING = '''INSERT INTO Hearing (date, state, type, session_year)
-                    VALUES (%(date)s, %(state)s, %(type)s, %(session_year)s)'''
-
-INSERT_COMM_HEARING = '''INSERT INTO CommitteeHearings (hid, cid)
-                         VALUES (%(hid)s, %(cid)s)'''
-
-INSERT_HEARING_AGENDA = '''INSERT INTO HearingAgenda (hid, bid, date_created, current_flag)
-                           VALUES (%(hid)s, %(bid)s, %(date_created)s, %(current_flag)s)'''
-
-
-def create_payload(table, sqlstmt):
-    return {
-        '_table': table,
-        '_sqlstmt': sqlstmt,
-        '_state': 'TX',
-        '_log_type': 'Database'
-    }
 
 
 '''
@@ -117,12 +88,12 @@ def insert_committee_hearings(committees, hid, dddb):
 
         if cid is not None:
             try:
-                dddb.execute(INSERT_COMM_HEARING, comm_hearing)
+                dddb.execute(INSERT_COMMITTEE_HEARING, comm_hearing)
                 CH_INS += dddb.rowcount
 
             except MySQLdb.Error:
                 logger.warning('Insert statement failed', full_msg=traceback.format_exc(),
-                               additional_fields=create_payload('CommitteeHearing', (INSERT_COMM_HEARING % comm_hearing)))
+                               additional_fields=create_payload('CommitteeHearing', (INSERT_COMMITTEE_HEARING % comm_hearing)))
 
 
 '''
@@ -203,6 +174,6 @@ def main():
 
 
 if __name__ == '__main__':
-    with GrayLogger(API_URL) as _logger:
+    with GrayLogger(GRAY_LOGGER_URL) as _logger:
         logger = _logger
         main()
