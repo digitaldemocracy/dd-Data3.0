@@ -21,6 +21,7 @@ Populates:
     - BillVersion
 """
 
+import MySQLdb
 import subprocess
 import sys
 import urllib2
@@ -35,6 +36,7 @@ from Utils.DatabaseUtils_NR import *
 from bill_API_helper import *
 from graylogger.graylogger import GrayLogger
 
+GRAY_LOGGER_URL = 'http://dw.digitaldemocracy.org:12202/gelf'
 logger = None
 
 # Global Counters
@@ -44,7 +46,6 @@ BVS_INSERTED = 0
 BVD_INSERTED = 0
 A_INSERTED = 0
 V_INSERTED = 0
-
 
 
 def is_bill_in_db(dddb, bill):
@@ -188,7 +189,7 @@ gets their PID by matching their name
 '''
 def get_pid_name(vote, dddb):
     mem_name = vote['name'].split(',')
-    legislator = {'last': '%' + mem_name[0] + '%'}
+    legislator = {'last': '%' + mem_name[0] + '%', 'state': 'FL'}
 
     try:
         dddb.execute(SELECT_LEG_PID, legislator)
@@ -286,15 +287,30 @@ def get_pdf(url):
 Some bills have their bill text stored as a PDF
 This function downloads these PDFs and converts them to text
 '''
-def read_pdf_text(url):
+def read_pdf_text():
     try:
-        get_pdf(url)
-
         subprocess.call(['./pdftotext', 'billtext.pdf'])
 
         with open('billtext.txt', 'r') as f:
             doc = f.read()
 
+        return doc
+
+    except:
+        return None
+
+
+'''
+Converts a bill text PDF to PNG files
+'''
+def read_pdf_png(url, vid):
+    try:
+        get_pdf(url)
+
+        png_root = 'billtext_png/' + vid
+        subprocess.call(['./pdftopng', '-q', 'billtext.pdf', png_root])
+
+        doc = read_pdf_text()
         return doc
 
     except:
@@ -311,19 +327,33 @@ def knit_html():
     htmlfiles = [f for f in os.listdir(dirname) if f.split('.')[-1] == 'html' and 'page' in f.split('.')[0]]
     print(htmlfiles)
     print([int(h.split('.')[0][4:]) for h in htmlfiles])
-    htmlfiles = sorted(htmlfiles, key=int(str.split('.')[0][4:]))
+    htmlfiles = sorted(htmlfiles, key=lambda string: int(string.split('.')[0][4:]))
 
     print(htmlfiles)
 
-    # with open('billtext.html', 'w') as wf:
-    #     for html in htmlfiles:
-    #         with open(dirname + html, 'r') as f:
-    #             htmlsoup = BeautifulSoup(f.read())
-    #
-    #             for line in htmlsoup.find_all():
-    #                 if not line.name == 'img':
-    #                     print(line)
-    #                     wf.write(str(line))
+    with open('billtext.html', 'w') as wf:
+        wf.write('<html>\n')
+
+        with open(dirname + htmlfiles[0], 'r') as f:
+            htmlsoup = BeautifulSoup(f.read())
+
+            wf.write(str(htmlsoup.find('head')))
+
+            wf.write('<body>')
+            for line in htmlsoup.find_all('span'):
+                writestr = '<p>' + line.string + '</p>\n'
+                wf.write(writestr.encode('utf8'))
+
+        for html in htmlfiles[1:]:
+            with open(dirname + html, 'r') as f:
+                htmlsoup = BeautifulSoup(f.read())
+
+                for line in htmlsoup.find_all('span', id='f1'):
+                    writestr = '<p>' + line.string + '</p>\n'
+                    wf.write(writestr.encode('utf8'))
+
+        wf.write('</body>\n')
+        wf.write('</html>\n')
 
 
 '''
@@ -338,6 +368,11 @@ def read_pdf_html(url):
     subprocess.call(['./pdftohtml', '-q', 'billtext.pdf', 'billtext_html'])
 
     knit_html()
+
+    with open('billtext.html', 'r') as f:
+        doc = f.read()
+
+    return doc
 
 
 '''
@@ -462,8 +497,9 @@ def import_versions(bill_title, versions, dddb):
             version['doc'] = requests.get(version['url']).content
         else:
             # Need to install xpdf for this to work
-            version['doc'] = read_pdf_html(version['url'])
-            #version['doc'] = 'PDF'
+            #version['doc'] = read_pdf_html(version['url'])
+            #read_pdf_png(version['url'], version['vid'])
+            version['doc'] = None
 
         if not is_version_in_db(version, dddb):
             try:
@@ -513,18 +549,14 @@ def import_bills(dddb):
 
 
 def main():
-    # dbinfo = mysql_connection(sys.argv)
-    # with MySQLdb.connect(host=dbinfo['host'],
-    #                      port=dbinfo['port'],
-    #                      db=dbinfo['db'],
-    #                      user=dbinfo['user'],
-    #                      passwd=dbinfo['passwd'],
-    #                      charset='utf8') as dddb:
-    with MySQLdb.connect(host='dev.digitaldemocracy.org',
-                         port=3306,
-                         db='parose_dddb',
-                         user='parose',
-                         passwd='parose221',
+    os.chdir('FL-Build/')
+
+    dbinfo = mysql_connection(sys.argv)
+    with MySQLdb.connect(host=dbinfo['host'],
+                         port=dbinfo['port'],
+                         db=dbinfo['db'],
+                         user=dbinfo['user'],
+                         passwd=dbinfo['passwd'],
                          charset='utf8') as dddb:
 
         import_bills(dddb)

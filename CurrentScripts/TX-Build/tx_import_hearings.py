@@ -166,9 +166,9 @@ def main():
                                        '_updated': 'HearingAgenda: ' + str(HA_UPD),
                                        '_state': 'TX'})
 
-        LOG = {'tables': [{'state': 'FL', 'name': 'Hearing', 'inserted': H_INS, 'updated': 0, 'deleted': 0},
-                          {'state': 'FL', 'name': 'CommitteeHearing', 'inserted': CH_INS, 'updated': 0, 'deleted': 0},
-                          {'state': 'FL', 'name': 'HearingAgenda', 'inserted': HA_INS, 'updated': HA_UPD,
+        LOG = {'tables': [{'state': 'TX', 'name': 'Hearing', 'inserted': H_INS, 'updated': 0, 'deleted': 0},
+                          {'state': 'TX', 'name': 'CommitteeHearing', 'inserted': CH_INS, 'updated': 0, 'deleted': 0},
+                          {'state': 'TX', 'name': 'HearingAgenda', 'inserted': HA_INS, 'updated': HA_UPD,
                            'deleted': 0}]}
         sys.stderr.write(json.dumps(LOG))
 

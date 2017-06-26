@@ -35,8 +35,7 @@ from Constants.General_Constants import *
 from Utils.DatabaseUtils_NR import *
 
 
-
-
+GRAY_LOGGER_URL = 'http://dw.digitaldemocracy.org:12202/gelf'
 logger = None
 
 # Global Counters
@@ -145,10 +144,10 @@ legislator names
 '''
 def get_pid_name(vote_name, dddb):
     mem_name = vote_name.strip()
-    legislator = {'last': '%' + mem_name + '%'}
+    legislator = {'last': '%' + mem_name + '%', 'state': 'TX'}
 
     try:
-        dddb.execute(SELECT_PID_NAME, legislator)
+        dddb.execute(SELECT_LEG_PID, legislator)
 
         if dddb.rowcount != 1:
             #print("Error: PID for " + mem_name + " not found")
@@ -158,7 +157,7 @@ def get_pid_name(vote_name, dddb):
 
     except MySQLdb.Error:
         logger.warning("PID selection failed", full_msg=traceback.format_exc(),
-                       additional_fields=create_payload("Person", (SELECT_PID_NAME % legislator)))
+                       additional_fields=create_payload("Person", (SELECT_LEG_PID % legislator)))
 
 
 '''
@@ -221,7 +220,7 @@ def import_votes(vote_list, dddb):
 
         vote['vid'] = get_vote_id(vote, dddb)
         if vote['vid'] is None:
-            vote_info = {'bid': vote['bid'], 'mid': vote['mid'], 'date': vote['date'],
+            vote_info = {'bid': vote['bid'], 'mid': vote['mid'], 'cid': None, 'date': vote['date'],
                          'ayes': vote['ayes'], 'naes': vote['naes'], 'other': vote['other'], 'result': vote['result'],
                          'vote_seq': vote['vote_seq']}
 
@@ -377,7 +376,7 @@ def import_bills(dddb, chamber):
 
     bill_list = get_bills('TX', chamber)
 
-    for bill in bill_list:
+    for bill in bill_list[:2]:
         #print(bill['bid'])
 
         if not is_bill_in_db(dddb, bill):
@@ -398,7 +397,7 @@ def import_bills(dddb, chamber):
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: python tx_import_bills.py (db) [chamber]")
+        print("Usage: python tx_import_bills.py (db) [chamber] [bill flags]")
         exit()
 
     chamber = sys.argv.pop()

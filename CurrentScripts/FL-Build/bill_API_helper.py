@@ -37,10 +37,12 @@ Each dictionary includes these fields:
     house: The name of the legislative house where the bill originated
     type: The type of bill, obtained from the official bill ID
     number: The bill number, obtained from the official bill ID
-    session: The OpenStates session key for the bill
-    session_type: Contains a 0 if the bill was introduced in a normal session or a 1 if the bill
-                  was introduced in a special session
+    session_year: The OpenStates session key for the bill
+    session: Contains a 0 if the bill was introduced in a normal session or a 1 if the bill
+             was introduced in a special session
     title: The title given to the bill
+    bid: The bid used in the database.
+
 '''
 def get_bills(state):
     api_url = BILL_SEARCH_URL.format(state.lower())
@@ -166,8 +168,10 @@ Takes a bill's OpenStates ID number and returns a list of dictionaries for each 
 been taken on the specified bill.
 
 Each dictionary contains:
+    bid: The bill id used in the database.
     date: The date the action was taken
     text: A description of the action
+    seq_num: If multiple actions occur on the same day, this value is incremented
 '''
 def get_bill_actions(bill_actions, bid):
     action_list = list()
@@ -211,7 +215,9 @@ of the specified bill.
 
 Each dictionary contains:
     name: The name of the document containing the version text
-    doc: A URL of the document that contains the version text
+    doctype: The type of document the text is stored in, eg. text/html
+    url: A URL of the document that contains the version text
+    vid: The bill's version ID in the database
 '''
 def get_bill_versions(bill_versions, bid, state):
     version_list = list()

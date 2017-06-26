@@ -14,7 +14,7 @@ SELECT_HEARING = '''SELECT hid FROM Hearing
 SELECT_CHAMBER_HEARING = '''SELECT distinct h.hid FROM Hearing h
                             JOIN CommitteeHearings ch ON h.hid = ch.hid
                             WHERE cid in (SELECT cid FROM Committee
-                                          WHERE state = 'FL'
+                                          WHERE state = %(state)s
                                           AND house = %(house)s
                                           AND session_year = %(year)s)
                             AND date = %(date)s

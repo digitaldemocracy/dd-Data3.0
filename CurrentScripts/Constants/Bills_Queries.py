@@ -29,7 +29,7 @@ SELECT_PID = '''SELECT pid FROM AlternateId
 
 SELECT_LEG_PID = '''SELECT * FROM Person p
                     JOIN Term t ON p.pid = t.pid
-                    WHERE t.state = 'FL'
+                    WHERE t.state = %(state)s
                     AND t.current_term = 1
                     AND p.last LIKE %(last)s
                     '''
@@ -77,11 +77,3 @@ INSERT_VERSION = '''INSERT INTO BillVersion
 # SQL Updates
 
 UPDATE_VERSION_TEXT = '''UPDATE BillVersion SET text = %(doc)s, date = %(date)s WHERE vid = %(vid)s'''
-
-
-SELECT_PID_NAME = '''SELECT * FROM Person p
-                JOIN Term t ON p.pid = t.pid
-                WHERE t.state = 'TX'
-                AND t.current_term = 1
-                AND p.last LIKE %(last)s
-                '''

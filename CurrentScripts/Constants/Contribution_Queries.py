@@ -1,9 +1,9 @@
 S_PERSON = '''SELECT p.pid
               FROM Person p, Legislator l
               WHERE p.pid = l.pid
-              AND state = 'FL'
-              AND first LIKE %s
-              AND last LIKE %s'''
+              AND state = %(state)s
+              AND first LIKE %(first)s
+              AND last LIKE %(last)s'''
 
 S_TERM = '''SELECT house
             FROM Term

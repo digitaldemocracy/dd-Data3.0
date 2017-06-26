@@ -6,10 +6,8 @@ File: tx_import_contributions.py
 Author: James Ly
 Last Maintained: Andrew Rose
 Last Updated: 05/19/2017
-
 Description:
  - imports contributions for NY from followthemoney.org
-
 Tables affected:
  - Organizations
  - Contribution
@@ -21,6 +19,7 @@ import MySQLdb
 import sys
 import traceback
 import re
+import os
 import time
 import json
 from datetime import datetime
@@ -36,9 +35,9 @@ logger = None
 I_O = 0  # org insert counter
 I_C = 0  # contribution insert counter
 
+
 '''
 Parse eid from text file
-
 The text file contains URLs to the FollowTheMoney page for each winner
 of a state legislative election
 '''
@@ -64,7 +63,6 @@ def get_name(eid):
     for s in soup.find("title"):
         name = s
 
-    print(name)
     name = name.split(' - ')[0]
     name = name.strip()
     name = name.split(',')
@@ -126,7 +124,7 @@ def get_pid(cursor, first, last):
     first = "%" + first[:3] + "%"
     last = "%" + last + "%"
     try:
-        cursor.execute(S_PERSON, (first, last))
+        cursor.execute(S_PERSON, {'state': 'TX', 'first': first, 'last': last})
         if cursor.rowcount == 1:
             result = cursor.fetchone()[0]
         else:
@@ -229,6 +227,8 @@ def insert_contribution(cursor, conID, pid, year, date, house, donorName, donorO
 
 
 def main():
+    os.chdir('TX-Build/')
+
     ddinfo = mysql_connection(sys.argv)
     with MySQLdb.connect(host=ddinfo['host'],
                          user=ddinfo['user'],
@@ -270,6 +270,9 @@ def main():
                         if str(date) == '':
                             date = None
                             year = None
+                        elif str(date) == '0000-00-00':
+                            date = None
+                            year = '2017'
                         else:
                             date = str(date) + " 00:00:00"
                             year = date.split("-")[0]
