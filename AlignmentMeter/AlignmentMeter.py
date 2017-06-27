@@ -208,7 +208,8 @@ def fetch_leg_votes(cnxn):
                WHERE bvs.bid like 'CA%' """
 
     leg_votes_df = pd.read_sql(query, cnxn)
-
+    # When abstained votes are included in the alignment score, they are counted 
+    # as against the organizations position no matter the position.
     leg_votes_df.loc[leg_votes_df.result == 'AYE', 'result'] = 'For'
     leg_votes_df.loc[leg_votes_df.result == 'NOE', 'result'] = 'Against'
     leg_votes_df['abstain_vote'] = leg_votes_df.result == 'ABS'
