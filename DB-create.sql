@@ -662,6 +662,7 @@ CREATE TABLE IF NOT EXISTS Video (
   srtFlag TINYINT(1) DEFAULT 0,
   state VARCHAR(2),
   source ENUM("YouTube", "Local", "Other"),
+  rank TINYINT(1) DEFAULT 0,
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
   lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
 
