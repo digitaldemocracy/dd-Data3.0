@@ -115,7 +115,7 @@ def get_districts_api(dddb):
             geodata = format_to_string(result['shape'])
             insert_district_db(dddb, state, house, did, note, year, region, geodata)
         except:
-            print(traceback.format_exc())
+            print("Error connecting to API")
 
     # Get upper chamber districts
     # Missing districts 3, 5, 21
@@ -132,7 +132,7 @@ def get_districts_api(dddb):
             geodata = format_to_string(result['shape'])
             insert_district_db(dddb, state, house, did, note, year, region, geodata)
         except:
-            print(traceback.format_exc())
+            print("Error connecting to API")
 
 
 def main():

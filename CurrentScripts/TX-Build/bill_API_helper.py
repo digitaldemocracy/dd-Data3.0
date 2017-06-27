@@ -19,7 +19,7 @@ import urllib2
 import json
 import datetime as dt
 
-BILL_SEARCH_URL = "https://openstates.org/api/v1/bills/?state={0}&search_window=session&chamber={1}"
+BILL_SEARCH_URL = "https://openstates.org/api/v1/bills/?state={0}&search_window=session&chamber={1}&type={2}"
 BILL_SEARCH_URL += "&apikey=3017b0ca-3d4f-482b-9865-1c575283754a"
 
 BILL_DETAIL_URL = "https://openstates.org/api/v1/bills/{0}/"
@@ -44,8 +44,8 @@ Each dictionary includes these fields:
                   was introduced in a special session
     title: The title given to the bill
 '''
-def get_bills(state, chamber):
-    api_url = BILL_SEARCH_URL.format(state.lower(), chamber.lower())
+def get_bills(state, chamber, type):
+    api_url = BILL_SEARCH_URL.format(state.lower(), chamber.lower(), type.lower())
     metadata_url = STATE_METADATA_URL.format(state.lower())
 
     bill_json = requests.get(api_url).json()
@@ -245,14 +245,14 @@ def get_bill_versions(bill_versions, bid, state):
         # Downloads bill text over an FTP link provided by OpenStates
         try:
             version_doc = urllib2.urlopen(entry['url'], timeout=10)
-            version['text'] = ''
+            version['doc'] = ''
             while True:
                 read_text = version_doc.read(1024)
                 if not read_text:
                     break
-                version['text']+= read_text
+                version['doc']+= read_text
         except urllib2.URLError:
-            version['text'] = None
+            version['doc'] = None
             print('URL error with version ' + version['vid'])
 
 
