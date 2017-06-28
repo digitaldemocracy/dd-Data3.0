@@ -19,6 +19,7 @@ Populates:
     -ServesOn
 """
 
+import sys
 import datetime as dt
 from Constants.Committee_Queries import *
 from Constants.General_Constants import *
@@ -34,8 +35,6 @@ CN_INSERTED = 0
 C_INSERTED = 0
 SO_INSERTED = 0
 SO_UPDATED = 0
-
-
 
 
 def is_comm_name_in_db(dddb, committee):
@@ -85,14 +84,14 @@ def get_comm_cid(dddb, committee):
                        additional_fields=create_payload("Committee", (SELECT_COMMITTEE % comm)))
 
 
-def get_session_year(dddb):
+def get_session_year(dddb, state):
     try:
-        dddb.execute(SELECT_SESSION_YEAR)
+        dddb.execute(SELECT_SESSION_YEAR, state)
 
         return dddb.fetchone()[0]
     except MySQLdb.Error:
         logger.warning("Session selection failed", full_msg=traceback.format_exc(),
-                       additional_fields=create_payload("Session", SELECT_SESSION_YEAR))
+                       additional_fields=create_payload("Session", (SELECT_SESSION_YEAR % state)))
 
 
 '''
@@ -102,7 +101,7 @@ gets their PID by matching their name
 '''
 def get_pid_name(dddb, member):
     mem_name = member['name'].split(' ')
-    legislator = {'first': "%" + mem_name[0] + "%", 'last': "%" + mem_name[-1] + "%"}
+    legislator = {'first': "%" + mem_name[0] + "%", 'last': "%" + mem_name[-1] + "%", 'state': 'FL'}
 
     try:
         dddb.execute(SELECT_LEG_PID, legislator)
@@ -336,7 +335,7 @@ Both House and Senate have special floor committees
 Each member of a legislative house belongs to their respective floor committee
 '''
 def insert_floor_committees(dddb):
-    session_year = get_session_year(dddb)
+    session_year = get_session_year(dddb, {'state': 'FL'})
     senate_floor = {'state': 'FL', 'session_year': session_year, 'type': 'Floor', 'current_flag': 1,
                     'house': 'Senate', 'name': 'Senate Floor', 'short_name': 'Senate Floor'}
     house_floor = {'state': 'FL', 'session_year': session_year, 'type': 'Floor', 'current_flag': 1,
@@ -346,10 +345,12 @@ def insert_floor_committees(dddb):
         if is_comm_name_in_db(dddb, floor) is False:
             insert_comm_name(dddb, floor)
 
-        if get_comm_cid(dddb, floor) is None:
+        cid = get_comm_cid(dddb, floor)
+
+        if cid is None:
             cid = insert_committee(dddb, floor)
 
-        house_members = get_house_members(dddb, {'year': session_year, 'house': floor['house']})
+        house_members = get_house_members(dddb, {'year': session_year, 'house': floor['house'], 'state': 'FL'})
 
         if house_members is not None:
             for house_member in house_members:

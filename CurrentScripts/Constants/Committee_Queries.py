@@ -1,6 +1,6 @@
 # SQL Selects
 SELECT_SESSION_YEAR = '''SELECT max(start_year) FROM Session
-                         WHERE state = 'FL'
+                         WHERE state = %(state)s
                          '''
 
 SELECT_COMMITTEE_NAME = '''SELECT * FROM CommitteeNames
@@ -21,7 +21,7 @@ SELECT_PID = '''SELECT pid FROM AlternateId
 
 SELECT_LEG_PID = '''SELECT * FROM Person p
                     JOIN Term t ON p.pid = t.pid
-                    WHERE t.state = 'FL'
+                    WHERE t.state = %(state)s
                     AND t.current_term = 1
                     AND p.first LIKE %(first)s
                     AND p.last LIKE %(last)s
@@ -44,7 +44,7 @@ SELECT_COMMITTEE_MEMBERS = '''SELECT pid FROM servesOn
 SELECT_HOUSE_MEMBERS = '''SELECT p.pid FROM Person p
                           JOIN Legislator l ON p.pid = l.pid
                           JOIN Term t ON l.pid = t.pid
-                          WHERE l.state = 'FL'
+                          WHERE l.state = %(state)s
                           AND t.year = %(year)s
                           AND t.house = %(house)s'''
 

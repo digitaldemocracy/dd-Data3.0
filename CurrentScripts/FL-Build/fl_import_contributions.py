@@ -18,6 +18,8 @@ Tables affected:
 from Database_Connection import mysql_connection
 import requests
 import sys
+import os
+import json
 from bs4 import BeautifulSoup
 from graylogger.graylogger import GrayLogger
 from Constants.Contribution_Queries import *
@@ -118,7 +120,7 @@ def get_pid(cursor, first, last):
     first = "%" + first[:3] + "%"
     last = "%" + last + "%"
     try:
-        cursor.execute(S_PERSON, (first, last))
+        cursor.execute(S_PERSON, {'first': first, 'last': last, 'state': 'FL'})
         if cursor.rowcount == 1:
             result = cursor.fetchone()[0]
         else:
@@ -221,6 +223,8 @@ def insert_contribution(cursor, conID, pid, year, date, house, donorName, donorO
 
 
 def main():
+    os.chdir('FL-Build/')
+
     ddinfo = mysql_connection(sys.argv)
     with MySQLdb.connect(host=ddinfo['host'],
                          user=ddinfo['user'],

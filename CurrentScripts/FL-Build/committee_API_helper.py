@@ -95,6 +95,7 @@ This function returns a list of dictionaries for each committe member on the spe
 The dictionaries returned by this function have two fields:
     leg_id: The member's OpenStates ID number
     position: The member's position on the committee
+    name: The committee member's name
 '''
 def get_committee_membership(comm_id):
     api_url = COMMITTEE_DETAIL_URL.format(comm_id)

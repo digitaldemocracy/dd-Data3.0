@@ -40,6 +40,30 @@ C_INSERTED = 0
 SO_INSERTED = 0
 SO_UPDATED = 0
 
+# File specific SQL Queries
+
+SELECT_LEG_LASTNAME = '''SELECT * FROM Person p
+                    JOIN Term t ON p.pid = t.pid
+                    WHERE t.state = 'TX'
+                    AND t.current_term = 1
+                    AND p.last LIKE %(last)s
+                    '''
+
+SELECT_LEG_FIRSTNAME = '''SELECT * FROM Person p
+                    JOIN Term t ON p.pid = t.pid
+                    WHERE t.state = 'TX'
+                    AND t.current_term = 1
+                    AND p.first LIKE %(first)s
+                    '''
+
+SELECT_LEG_FIRSTLAST = '''SELECT * FROM Person p
+                    JOIN Term t ON p.pid = t.pid
+                    WHERE t.state = 'TX'
+                    AND t.current_term = 1
+                    AND p.first LIKE %(first)s
+                    AND p.last LIKE %(last)s
+                    '''
+
 
 def is_comm_name_in_db(dddb, committee):
     comm_name = {'name': committee['name'], 'house': committee['house'], 'state': committee['state']}
@@ -88,14 +112,14 @@ def get_comm_cid(dddb, committee):
                        additional_fields=create_payload("Committee", (SELECT_COMMITTEE % comm)))
 
 
-def get_session_year(dddb):
+def get_session_year(dddb, state):
     try:
-        dddb.execute(SELECT_SESSION_YEAR)
+        dddb.execute(SELECT_SESSION_YEAR, state)
 
         return dddb.fetchone()[0]
     except MySQLdb.Error:
         logger.warning("Session selection failed", full_msg=traceback.format_exc(),
-                       additional_fields=create_payload("Session", SELECT_SESSION_YEAR))
+                       additional_fields=create_payload("Session", (SELECT_SESSION_YEAR % state)))
 
 
 '''
@@ -108,7 +132,7 @@ def get_pid_name(dddb, member):
     legislator = {'first': "%" + mem_name[0] + "%", 'last': "%" + mem_name[-1] + "%"}
 
     try:
-        dddb.execute(SELECT_LEG_PID, legislator)
+        dddb.execute(SELECT_LEG_LASTNAME, legislator)
 
         if dddb.rowcount == 1:
             return dddb.fetchone()[0]
@@ -131,7 +155,7 @@ def get_pid_name(dddb, member):
 
     except MySQLdb.Error:
         logger.warning("PID selection failed", full_msg=traceback.format_exc(),
-                       additional_fields=create_payload("Person", (SELECT_LEG_PID % legislator)))
+                       additional_fields=create_payload("Person", (SELECT_LEG_FIRSTLAST % legislator)))
 
 
 '''
@@ -352,7 +376,7 @@ Both House and Senate have special floor committees
 Each member of a legislative house belongs to their respective floor committee
 '''
 def insert_floor_committees(dddb):
-    session_year = get_session_year(dddb)
+    session_year = get_session_year(dddb, {'state':'TX'})
     senate_floor = {'state': 'TX', 'session_year': session_year, 'type': 'Floor', 'current_flag': 1,
                     'house': 'Senate', 'name': 'Senate Floor', 'short_name': 'Senate Floor'}
     house_floor = {'state': 'TX', 'session_year': session_year, 'type': 'Floor', 'current_flag': 1,
@@ -367,7 +391,7 @@ def insert_floor_committees(dddb):
         if cid is None:
             cid = insert_committee(dddb, floor)
 
-        house_members = get_house_members(dddb, {'year': session_year, 'house': floor['house']})
+        house_members = get_house_members(dddb, {'year': session_year, 'house': floor['house'], 'state': 'TX'})
 
         if house_members is not None:
             for house_member in house_members:

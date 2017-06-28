@@ -1,12 +1,12 @@
 # Selects
 QS_DISTRICT = '''SELECT *
                 FROM District
-                WHERE did=%s
-                AND house=%s
-                AND state=%s'''
+                WHERE did=%(did)s
+                AND house=%(house)s
+                AND state=%(state)s'''
 
 # Inserts
 QI_DISTRICT = '''INSERT INTO District
                 (state, house, did, note, year, region, geoData)
                 VALUES
-                (%s, %s, %s, %s, %s, %s, %s)'''
+                (%(state)s, %(house)s, %(did)s, %(note)s, %(year)s, %(region)s, %(geoData)s)'''

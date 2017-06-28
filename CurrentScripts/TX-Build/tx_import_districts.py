@@ -19,6 +19,7 @@ Populates:
 
 '''
 
+
 import traceback
 import datetime
 import json
@@ -35,6 +36,7 @@ from Utils.DatabaseUtils_NR import *
 
 logger = None
 INSERTED = 0
+GRAY_LOGGER_URL = 'http://dw.digitaldemocracy.org:12202/gelf'
 
 
 # URL String
@@ -42,10 +44,10 @@ API_URL = 'https://openstates.org/api/v1/districts/boundary/ocd-division/country
 API_URL += 'sld{0}:{1}/'
 API_URL += '?apikey=3017b0ca-3d4f-482b-9865-1c575283754a'
 
+
 # Constants
 _NUM_LOWER_DISTRICTS = 150
 _NUM_UPPER_DISTRICTS = 31
-
 
 
 '''
@@ -79,17 +81,19 @@ If district is not in DDDB, add. Otherwise, skip.
 '''
 def insert_district(cursor, state, house, did, note, year, region, geodata):
     global INSERTED
-    cursor.execute(QS_DISTRICT, {'did': did, 'house': house})
+    cursor.execute(QS_DISTRICT, {'did': did, 'house': house, 'state': 'TX'})
     if cursor.rowcount == 0:
         try:
             cursor.execute(QI_DISTRICT,
-                           (state, house, did, note, year, geodata, region))
+                           {'state': state, 'house': house, 'did': did, 'note': note,
+                            'year': year, 'geoData': geodata, 'region': region})
             INSERTED += cursor.rowcount
         except MySQLdb.Error:
             logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-                           additional_fields=create_payload('Distrcit',
-                                                            (QI_DISTRICT % (
-                                                            state, house, did, note, year, geodata, region))))
+                           additional_fields=create_payload('District',
+                                                            (QI_DISTRICT %
+                                                            {'state': state, 'house': house, 'did': did, 'note': note,
+                                                             'year': year, 'geoData': geodata, 'region': region})))
 
 
 '''

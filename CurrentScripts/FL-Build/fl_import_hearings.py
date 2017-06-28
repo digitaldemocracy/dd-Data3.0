@@ -33,6 +33,7 @@ import sys
 import datetime as dt
 import subprocess
 import json
+import os
 from bs4 import BeautifulSoup
 from graylogger.graylogger import GrayLogger
 from Constants.Hearings_Queries import *
@@ -478,23 +479,19 @@ def get_senate_agenda(dddb):
 
 
 def main():
-    # dbinfo = mysql_connection(sys.argv)
-    # # MUST SPECIFY charset='utf8' OR BAD THINGS WILL HAPPEN.
-    # with MySQLdb.connect(host=dbinfo['host'],
-    #                      port=dbinfo['port'],
-    #                      db=dbinfo['db'],
-    #                      user=dbinfo['user'],
-    #                      passwd=dbinfo['passwd'],
-    #                      charset='utf8') as dddb:
-    with MySQLdb.connect(host='dev.digitaldemocracy.org',
-                         port=3306,
-                         db='parose_dddb',
-                         user='parose',
-                         passwd='parose221',
+    os.chdir('FL-Build/')
+
+    dbinfo = mysql_connection(sys.argv)
+    # MUST SPECIFY charset='utf8' OR BAD THINGS WILL HAPPEN.
+    with MySQLdb.connect(host=dbinfo['host'],
+                         port=dbinfo['port'],
+                         db=dbinfo['db'],
+                         user=dbinfo['user'],
+                         passwd=dbinfo['passwd'],
                          charset='utf8') as dddb:
 
         get_senate_agenda(dddb)
-        #get_house_agenda(dddb)
+        get_house_agenda(dddb)
 
         logger.info(__file__ + " terminated successfully",
                     full_msg="Inserted " + str(H_INS) + " rows in Hearing, "

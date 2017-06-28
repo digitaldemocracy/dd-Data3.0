@@ -18,10 +18,12 @@ Populates:
   - District (state, house, did, note, year, region, geoData)
 '''
 
+import MySQLdb
 import datetime
 import requests
 import sys
 import json
+import traceback
 from Database_Connection import mysql_connection
 from graylogger.graylogger import GrayLogger
 from Constants.Districts_Queries import *
@@ -38,9 +40,9 @@ API_URL = 'https://openstates.org/api/v1/districts/boundary/ocd-division/country
 API_URL += 'sld{0}:{1}/'
 API_URL += '?apikey=3017b0ca-3d4f-482b-9865-1c575283754a'
 
+
 NUM_HOUSE_DISTRICTS = 120
 NUM_SENATE_DISTRICTS = 40
-
 
 
 '''
@@ -73,20 +75,21 @@ def format_to_string(geo_data):
 '''
 This function inserts a district into the DB.
 '''
-def insert_district_db(dddb, state, house, did, note, year, region, geoData):
+def insert_district_db(dddb, state, house, did, note, year, region, geodata):
     global D_INSERT
 
-    dddb.execute(QS_DISTRICT, (did, house, state))
+    dddb.execute(QS_DISTRICT, {'did': did, 'house': house, 'state': 'FL'})
     if dddb.rowcount == 0:
         try:
-            dddb.execute(QI_DISTRICT, (state, house, did, note, year, region, geoData))
+            dddb.execute(QI_DISTRICT, {'state': state, 'house': house, 'did': did, 'note': note,
+                                       'year': year, 'geoData': geodata, 'region': region})
             D_INSERT += 1
         except MySQLdb.Error:
             logger.warning('Insert Failed', full_msg=traceback.format_exc(),
                            additional_fields=create_payload('District',
-                                                            (QI_DISTRICT % (
-                                                            state, house, did, note, year, region, geoData))))
-
+                                                            (QI_DISTRICT %
+                                                            {'state': state, 'house': house, 'did': did, 'note': note,
+                                                             'year': year, 'geoData': geodata, 'region': region})))
 
 '''
 This function gets all the districts from the OpenStates API
@@ -98,6 +101,7 @@ def get_districts_api(dddb):
     state = 'FL'
 
     # Get lower chamber districts
+    # Missing district 10
     for j in xrange(1, NUM_HOUSE_DISTRICTS+1):
         url = API_URL.format('l', j)
         print(url)
@@ -114,6 +118,7 @@ def get_districts_api(dddb):
             print("Error connecting to API")
 
     # Get upper chamber districts
+    # Missing districts 3, 5, 21
     for j in xrange(1, NUM_SENATE_DISTRICTS+1):
         url = API_URL.format('u', j)
         print(url)

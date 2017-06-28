@@ -35,8 +35,7 @@ from Constants.General_Constants import *
 from Utils.DatabaseUtils_NR import *
 
 
-
-
+GRAY_LOGGER_URL = 'http://dw.digitaldemocracy.org:12202/gelf'
 logger = None
 
 # Global Counters
@@ -145,10 +144,10 @@ legislator names
 '''
 def get_pid_name(vote_name, dddb):
     mem_name = vote_name.strip()
-    legislator = {'last': '%' + mem_name + '%'}
+    legislator = {'last': '%' + mem_name + '%', 'state': 'TX'}
 
     try:
-        dddb.execute(SELECT_PID_NAME, legislator)
+        dddb.execute(SELECT_LEG_PID, legislator)
 
         if dddb.rowcount != 1:
             #print("Error: PID for " + mem_name + " not found")
@@ -158,7 +157,7 @@ def get_pid_name(vote_name, dddb):
 
     except MySQLdb.Error:
         logger.warning("PID selection failed", full_msg=traceback.format_exc(),
-                       additional_fields=create_payload("Person", (SELECT_PID_NAME % legislator)))
+                       additional_fields=create_payload("Person", (SELECT_LEG_PID % legislator)))
 
 
 '''
@@ -221,7 +220,7 @@ def import_votes(vote_list, dddb):
 
         vote['vid'] = get_vote_id(vote, dddb)
         if vote['vid'] is None:
-            vote_info = {'bid': vote['bid'], 'mid': vote['mid'], 'date': vote['date'],
+            vote_info = {'bid': vote['bid'], 'mid': vote['mid'], 'cid': None, 'date': vote['date'],
                          'ayes': vote['ayes'], 'naes': vote['naes'], 'other': vote['other'], 'result': vote['result'],
                          'vote_seq': vote['vote_seq']}
 
@@ -360,7 +359,7 @@ def import_versions(bill_title, versions, dddb):
     for version in versions:
         version['subject'] = bill_title
 
-        if version['text'] is None:
+        if version['doc'] is None:
             logger.warning("Bill text download failed", full_msg = "URL error with bill version " + version['vid'])
         else:
             if not is_version_in_db(version, dddb):
@@ -372,13 +371,13 @@ def import_versions(bill_title, versions, dddb):
                                    additional_fields=create_payload("BillVersion", (INSERT_VERSION % version)))
 
 
-def import_bills(dddb, chamber):
+def import_bills(dddb, chamber, type):
     global B_INSERTED
 
-    bill_list = get_bills('TX', chamber)
+    bill_list = get_bills('TX', chamber, type)
 
     for bill in bill_list:
-        #print(bill['bid'])
+        print(bill['bid'])
 
         if not is_bill_in_db(dddb, bill):
             try:
@@ -397,13 +396,6 @@ def import_bills(dddb, chamber):
 
 
 def main():
-    if len(sys.argv) < 2:
-        print("Usage: python tx_import_bills.py (db) [chamber]")
-        exit()
-
-    chamber = sys.argv.pop()
-    #print(chamber)
-
     dbinfo = mysql_connection(sys.argv)
     with MySQLdb.connect(host=dbinfo['host'],
                          port=dbinfo['port'],
@@ -412,7 +404,16 @@ def main():
                          passwd=dbinfo['passwd'],
                          charset='utf8') as dddb:
 
-        import_bills(dddb, chamber)
+        for chamber in ['upper', 'lower']:
+            for flag in ['-cr', '-jr', '-r', '-b']:
+                if flag == '-b':
+                    import_bills(dddb, chamber, 'bill')
+                elif flag == '-r':
+                    import_bills(dddb, chamber, 'resolution')
+                elif flag == '-jr':
+                    import_bills(dddb, chamber, 'joint resolution')
+                elif flag == '-cr':
+                    import_bills(dddb, chamber, 'concurrent resolution')
 
         logger.info(__file__ + " terminated successfully",
                     full_msg="Inserted " + str(B_INSERTED) + " rows in Bill, "
