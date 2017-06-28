@@ -549,7 +549,7 @@ def import_bills(dddb):
 
 
 def main():
-    os.chdir('FL-Build/')
+    #os.chdir('FL-Build/')
 
     dbinfo = mysql_connection(sys.argv)
     with MySQLdb.connect(host=dbinfo['host'],
