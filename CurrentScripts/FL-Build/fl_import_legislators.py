@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.6
+#!/usr/bin/env python2.7
 # -*- coding: utf8 -*-
 
 '''
@@ -22,10 +22,6 @@ Populates:
   - PersonStateAffiliation (pid, state)
 '''
 
-import datetime
-import MySQLdb
-import traceback
-import sys
 from Database_Connection import mysql_connection
 from graylogger.graylogger import GrayLogger
 from legislators_API_helper import *
