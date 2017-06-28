@@ -21,13 +21,15 @@ Populates:
   - AltId (pid, altId)
   - PersonStateAffiliation (pid, state)
 '''
-
+import traceback
+import MySQLdb
 from Database_Connection import mysql_connection
 from graylogger.graylogger import GrayLogger
 from legislators_API_helper import *
 from Constants.Legislator_Queries import *
 from Constants.General_Constants import *
-from Utils.DatabaseUtils_NR import *
+from Utils.Generic_Utils import *
+
 logger = None
 API_URL = 'http://openstates.org/api/v1/legislators/?state=tx&chamber={0}&apikey=' + OPENSTATES_API_KEY
 
