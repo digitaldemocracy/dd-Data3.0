@@ -61,7 +61,7 @@ SELECT_BEHEST = '''SELECT * FROM Behests
                    AND amount = %(Amount)s
                    AND payee = %(oid)s
                    '''
-
+SELECT_STATE = '''SELECT * FROM State WHERE abbrev = %(state)s'''
 
 # Inserts
 INSERT_PAYOR = '''INSERT INTO Payors (name, city, state)
@@ -132,6 +132,20 @@ NAME_EXCEPTIONS = {
 }
 
 
+def check_state(dddb, state):
+    try:
+        dddb.execute(SELECT_STATE, state)
+
+        if dddb.rowcount > 0:
+            return True
+        else:
+            return False
+
+    except MySQLdb.Error:
+        logger.warning("Behest selection failed", full_msg=traceback.format_exc(),
+                       additional_fields=create_payload('Behests', (SELECT_BEHEST % behest)))
+
+
 def is_behest_in_db(dddb, behest):
     try:
         dddb.execute(SELECT_BEHEST, behest)
@@ -162,6 +176,9 @@ def insert_behest(dddb, behest):
 def insert_payor(dddb, behest):
     global PAYOR_INSERTED
 
+    if not check_state(dddb, {'state': behest['PayorState']}):
+        behest['PayorState'] = None
+
     try:
         dddb.execute(INSERT_PAYOR, behest)
         PAYOR_INSERTED += dddb.rowcount
@@ -173,6 +190,9 @@ def insert_payor(dddb, behest):
 
 def insert_payee(dddb, behest):
     global ORG_INSERTED
+
+    if not check_state(dddb, {'state': behest['PayeeState']}):
+        behest['PayeeState'] = None
 
     try:
         dddb.execute(INSERT_ORG, behest)
@@ -284,18 +304,14 @@ def import_behests(dddb):
 
 
 def main():
-    with MySQLdb.connect(host='dev.digitaldemocracy.org',
-                         port=3306,
-                         db='parose_dddb',
-                         user='parose',
-                         passwd='parose221',
+    dbinfo = mysql_connection(sys.argv)
+    # MUST SPECIFY charset='utf8' OR BAD THINGS WILL HAPPEN.
+    with MySQLdb.connect(host=dbinfo['host'],
+                         port=dbinfo['port'],
+                         db=dbinfo['db'],
+                         user=dbinfo['user'],
+                         passwd=dbinfo['passwd'],
                          charset='utf8') as dddb:
-        # with MySQLdb.connect(host='dddb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-        #                      port=3306,
-        #                      db='DDDB2016Aug',
-        #                      user='awsDB',
-        #                      passwd='digitaldemocracy789',
-        #                      charset='utf8') as dddb:
 
         import_behests(dddb)
 
