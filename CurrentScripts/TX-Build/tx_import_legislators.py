@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.6
+#!/usr/bin/env python2.7
 # -*- coding: utf8 -*-
 
 '''
@@ -21,17 +21,17 @@ Populates:
   - AltId (pid, altId)
   - PersonStateAffiliation (pid, state)
 '''
-
-import datetime
-import MySQLdb
 import traceback
-import sys
+import MySQLdb
 from Database_Connection import mysql_connection
 from graylogger.graylogger import GrayLogger
 from legislators_API_helper import *
-GRAY_URL = 'http://dw.digitaldemocracy.org:12202/gelf'
+from Constants.Legislator_Queries import *
+from Constants.General_Constants import *
+from Utils.Generic_Utils import *
+
 logger = None
-API_URL = 'http://openstates.org/api/v1/legislators/?state=tx&chamber={0}&apikey=3017b0ca-3d4f-482b-9865-1c575283754a'
+API_URL = 'http://openstates.org/api/v1/legislators/?state=tx&chamber={0}&apikey=' + OPENSTATES_API_KEY
 
 #Globals
 P_INSERT = 0
@@ -39,14 +39,6 @@ L_INSERT = 0
 T_INSERT = 0
 T_UPDATE = 0
 
-
-
-def create_payload(table, sqlstmt):
-  return {
-    '_table': table,
-    '_sqlstmt': sqlstmt,
-    '_state': 'TX'
-  }
 
 
 '''
@@ -148,7 +140,7 @@ if __name__ == "__main__":
                                       charset='utf8') as dddb:
 
         pi_count = ti_count = 0
-        with GrayLogger(API_URL) as _logger:
+        with GrayLogger(GRAY_LOGGER_URL) as _logger:
             logger = _logger
             add_legislators_db(dddb, get_legislators_list("tx"))
             logger.info(__file__ + ' terminated successfully.',

@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/python2.7
 # -*- coding: utf8 -*-
 
 """
@@ -26,7 +26,6 @@ LEGISLATORS_SEARCH_URL += '&apikey=3017b0ca-3d4f-482b-9865-1c575283754a'
 
 LEGISLATORS_DETAIL_URL = 'https://openstates.org/api/v1/legislators/{0}'
 LEGISLATORS_DETAIL_URL += '&apikey=3017b0ca-3d4f-482b-9865-1c575283754a'
-
 validation_list = {"offices", "photo_url", "party", "email", "district"}
 emails = {"tx_house": "@house.texas.gov", "tx_senate": "@senate.texas.gov", "fl_house" : "@myfloridahouse.gov", "fl_senate" : "@flsenate.gov"}
 
