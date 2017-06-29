@@ -1,376 +1,296 @@
-#!/usr/bin/env python
-'''
+#!/usr/bin/env python2.7
+# -*- coding: utf8 -*-
+
+"""
 File: insert_Behests.py
 Author: Mandy Chan
+Modified by: Andrew Rose
 Date: 7/18/2015
+Last Updated: 6/28/2017
 
 Description:
   - Gathers Behest Data and puts it into DDDB
 
-NOTE: If you want to use this and you grab the data from Windows and vim shows 
-      ^M instead of line breaks, use the following command:
-      
-      :%s/^V^M/\r/g (where ^V^M means CTRL+V, CTRL+M)
-
-      in order to replace all instances of ^M with newline characters. 
-      Otherwise, this script will think there is only one line in the file.
-
 Usage:
-  python insert_Behests.py [file_name.csv]
-  - file_name.csv : a .csv file containing the Behests
+  python insert_Behests.py
 
 Source:
-  - California Fair Political Practices Commission (fppc.ca.gov/index.php?id=499)
-    - YYYY-Senate.xlsx
-    - YYYY-Assembly.xlsx
+  - California Fair Political Practices Commission spreadsheets
+    - Eventually we should start downloading the spreadsheets from their website once it updates.
+      For now it assumes that the spreadsheet named behesteddata.csv is in the working directory.
 
 Populates:
   - Behests (official, datePaid, payor, amount, payee, description, purpose, noticeReceived)
   - Organizations (name, city, state)
   - Payors (name, city, state)
+"""
 
-'''
-
-import json
-import os
-import re
-import sys
-import csv
-import requests
 import MySQLdb
-import openpyxl
+import csv
 import traceback
-from pprint import pprint
-from datetime import datetime
-from Database_Connection import mysql_connection
+import json
+import sys
+import datetime as dt
+from Constants.General_Constants import *
+from Utils.DatabaseUtils_NR import create_payload
+from Utils.Utils import clean_name
 from graylogger.graylogger import GrayLogger
+from Database_Connection import mysql_connection
 
-# Global Data
-#GreyLogger info
-API_URL = "http://dw.digitaldemocracy.org:12202/gelf"
+# SQL Queries
+# Selects
+SELECT_PERSON = '''SELECT p.pid FROM Person p
+                   JOIN PersonStateAffiliation psa ON p.pid = psa.pid
+                   WHERE psa.state = 'CA'
+                   AND p.first LIKE %(OfficialFirst)s
+                   AND p.last LIKE %(OfficialLast)s
+                   '''
+SELECT_LEGISLATOR = '''SELECT distinct p.pid FROM Person p
+                       JOIN Legislator l on p.pid = l.pid
+                       WHERE l.state = 'CA'
+                       AND p.first LIKE %(OfficialFirst)s
+                       AND p.last LIKE %(OfficialLast)s
+                       '''
+SELECT_ORG = '''SELECT oid FROM Organizations WHERE stateHeadquartered = 'CA'
+                AND name SOUNDS LIKE %(Payee)s'''
+SELECT_PAYOR = '''SELECT prid FROM Payors WHERE name SOUNDS LIKE %(Payor)s'''
+SELECT_BEHEST = '''SELECT * FROM Behests
+                   WHERE official = %(pid)s
+                   AND datePaid = %(DateOfPayment)s
+                   AND payor = %(prid)s
+                   AND amount = %(Amount)s
+                   AND payee = %(oid)s
+                   '''
+
+
+# Inserts
+INSERT_PAYOR = '''INSERT INTO Payors (name, city, state)
+                  VALUES (%(Payor)s, %(PayorCity)s, %(PayorState)s)'''
+INSERT_ORG = '''INSERT INTO Organizations (name, city, stateHeadquartered, source)
+                VALUES (%(Payee)s, %(PayeeCity)s, %(PayeeState)s, 'import_csv_behests.py')'''
+INSERT_BEHEST = '''INSERT INTO Behests (official, datePaid, payor, amount, payee,
+                                        description, purpose, noticeReceived, sessionYear, state)
+                   VALUES (%(pid)s, %(DateOfPayment)s, %(prid)s, %(Amount)s, %(oid)s,
+                           %(Description)s, %(LGCpurpose)s, %(NoticeReceived)s, %(PaymentYear)s, 'CA')'''
+
+# Globals
 logger = None
-B_INSERT = 0
 
-#URLS for behest data
-ASSEMBLY_URL = "http://www.fppc.ca.gov/content/dam/fppc/documents/behested-payments/2016/2016_Assembly.xlsx"
+ORG_INSERTED = 0
+PAYOR_INSERTED = 0
+BEHEST_INSERTED = 0
 
-SENATE_URL = "http://www.fppc.ca.gov/content/dam/fppc/documents/behested-payments/2016/2016_Senate.xlsx"
-
-# Number of cmdline arguments needed
-NUM_ARGS = 2
-
-# Column names dictionary
-COL = {
-  'official': 0, 'pay_date': 1, 'payor': 2, 'payor_city': 3, 'payor_state': 4,
-  'amount': 5,   'payee': 6,    'payee_city': 7,  'payee_state': 8,
-  'descr': 9,    'purpose': 10, 'notice_rec': 11, 'ytd': 12
-}
-
-# Dictionary of problematic legislator names. Add as necessary.
 NAME_EXCEPTIONS = {
-    "Achadjian, Katcho":"Achadjian, K.H. \"Katcho\"",
-    "Allen, Ben":"Allen, Benjamin",
-    "Bonilla, Susan A.":"Bonilla, Susan",
-    "Calderon, Charles":"Calderon, Ian Charles",
-    "Calderon, Ian":"Calderon, Ian Charles",
-    "Chau, Edwin":"Chau, Ed",
-    "DeLeon, Kevin":"De Leon, Kevin",
-    "Eggman, Susan":"Eggman, Susan Talamantes",
-    "Frazier, James":"Frazier, Jim",
-    "Hall, Isadore III":"Hall, Isadore",
-    "Jackson, Hanna- Beth":"Jackson, Hannah-Beth",
-    "Jones-Sawyer, Reginald Byron":"Jones-Sawyer, Reginald",
-    "Perea, Henry T.":"Perea, Henry",
-    "Rodriquez, Freddie":"Rodriguez, Freddie",
-    "Stone, Jeffrey":"Stone, Jeff",
-    "Thomas-Ridley, Sebastian":"Ridley-Thomas, Sebastian",
-    "Ting, Phil":"Ting, Philip",
-    "Vidak, James Andy":"Vidak, Andy",
+    "Achadijan, Katcho": "Achadjian, K.H. \"Katcho\"",
+    "Achadjian, Katcho": "Achadjian, K.H. \"Katcho\"",
+    "Allen, Ben": "Allen, Benjamin",
+    "Bonilla, Susan A.": "Bonilla, Susan",
+    "Calderon, Charles": "Calderon, Ian Charles",
+    "Calderon, Ian": "Calderon, Ian Charles",
+    "Chau, Edwin": "Chau, Ed",
+    "DeLeon, Kevin": "De Leon, Kevin",
+    "Eggman, Susan": "Eggman, Susan Talamantes",
+    "Frazier, James": "Frazier, Jim",
+    "Hall, Isadore III": "Hall, Isadore",
+    "Jackson, Hanna- Beth": "Jackson, Hannah-Beth",
+    "Jones-Sawyer, Reginald Byron": "Jones-Sawyer, Reginald",
+    "Perea, Henry T.": "Perea, Henry",
+    "Rodriquez, Freddie": "Rodriguez, Freddie",
+    "Stone, Jeffrey": "Stone, Jeff",
+    "Thomas-Ridley, Sebastian": "Ridley-Thomas, Sebastian",
+    "Ting, Phil": "Ting, Philip",
+    "Vidak, James Andy": "Vidak, Andy",
 }
 
-def create_payload(table, sqlstmt):
-  return {'_table':table,
-          '_sqlstmt':sqlstmt,
-          '_state':'CA'}
 
-'''
-Finds the pid of the official. If found, returns tuple (name, pid). Otherwise,
-(name, -1).
-'''
-def find_official(dd_cursor, name):
-  # Check and refactor legislator name if necessary
-  name = NAME_EXCEPTIONS.get(name, name)
-
-  # Find legislator pid from name
-  select_stmt = '''SELECT l.pid
-                   FROM Person p
-                   JOIN Legislator l ON p.pid = l.pid
-                   WHERE CONCAT_WS(', ',last,first) = %(name)s;
-                '''
-  dd_cursor.execute(select_stmt, {'name':name})
-
-  # Returns the pid if found, otherwise -1
-  query = dd_cursor.fetchone()
-  if query is None:
-    return (name, -1)
-  return (name, query[0])
-
-'''
-Creates a row in Organizations table.
-'''
-def create_organization(dd_cursor, org, city, state):
-  insert_stmt = '''INSERT INTO Organizations
-                   (name, city, stateHeadquartered)
-                   VALUES
-                   (%(name)s, %(city)s, %(state)s);
-                '''
-  
-  temp = {'name': org, 'city': city, 'state':state}
-
-  try:
-    dd_cursor.execute(insert_stmt, temp)
-  except:
-    logger.warning("Insert statement failed.", full_msg = traceback.format_exc(),
-     additional_fields = create_payload('Organizations', (insert_stmt % temp)))
-  
-  return dd_cursor.lastrowid
-
-'''
-Finds organization from the organization name, city, and state. If found, 
-returns the organization's 'oid'. Otherwise, creates an organization row and 
-returns the newly created 'oid'.
-'''
-def find_organization(dd_cursor, org, city, state):
-  select_stmt = '''SELECT oid
-                   FROM Organizations
-                   WHERE name = %(name)s
-                    AND city = %(city)s
-                    AND stateHeadquartered = %(state)s
-                '''
-  dd_cursor.execute(select_stmt, {'name':org, 'city':city, 'state':state})
-  query = dd_cursor.fetchone()
-  if query is None:
-    return create_organization(dd_cursor, org, city, state)
-  return query[0]
-
-'''
-Creates a row in Payors table.
-'''
-def create_payor(dd_cursor, payor, city, state):
-  insert_stmt = '''INSERT INTO Payors (name, city, state)
-                   VALUES (%(name)s, %(city)s, %(state)s);
-                '''
-  temp = {'name':payor, 'city':city, 'state':state}
-    
-  try:
-    dd_cursor.execute(insert_stmt, temp)
-  except:
-    logger.warning("Insert statement failed.", full_msg = traceback.format_exc(),
-     additional_fields = create_payload('Payors', (insert_stmt % temp)))
-  return dd_cursor.lastrowid
-
-'''
-Finds payor from the payor name, city, and state. If found, returns the payor's
-'prid'. Otherwise, create a payor row and return the newly created 'prid'.
-'''
-def find_payor(dd_cursor, payor, city, state):
-  select_stmt = '''SELECT prid
-                   FROM Payors
-                   WHERE name = %(name)s
-                    AND city = %(city)s
-                    AND state = %(state)s
-                '''
-  dd_cursor.execute(select_stmt, {'name':payor, 'city':city, 'state':state})
-  query = dd_cursor.fetchone()
-  if query is None:
-    return create_payor(dd_cursor, payor, city, state)
-  return query[0]
-
-'''
-Check if there is already a behest with the same exact information
-'''
-def duplicate_behest(dd_cursor,
-    off_pid, date_paid, payor_id, amt, payee_id, descr, purpose, notice_rec):
-  #select_stmt = '''SELECT *
-  #                 FROM Behests
-  #                 WHERE official = %(off_pid)s
-  #                  AND datePaid = %(date)s AND payor = %(payor)s
-  #                  AND amount = %(amt)s AND payee = %(payee)s
-  #                  AND description = %(descr)s AND purpose = %(purpose)s
-  #                  AND noticeReceived = %(notice_rec)s
-  #              '''
-  #dd_cursor.execute(select_stmt, {'off_pid':off_pid, 'date':date_paid, 
-  #  'payor':payor_id, 'amt':amt, 'payee':payee_id, 'descr':descr,
-  #  'purpose':purpose, 'notice_rec':notice_rec})
-
-  select_stmt = '''SELECT *
-                   FROM Behests
-                   WHERE official = %(off_pid)s
-                    AND datePaid = %(date)s AND payor = %(payor)s
-                    AND payee = %(payee)s'''
-
-  dd_cursor.execute(select_stmt, {'off_pid':off_pid, 'date':date_paid,
-    'payor':payor_id, 'payee':payee_id})
-
-  query = dd_cursor.fetchone()
-  if query is None:
-    return False
-  return True
-
-def get_session_year(dd_cursor):
-    select_stmt = '''SELECT MAX(start_year)
-                     FROM Session
-                     WHERE state = 'CA'
-                  '''
-    dd_cursor.execute(select_stmt)
-    year = dd_cursor.fetchone()[0]
-    return year
-
-'''
-Insert row into Behests
-'''
-def create_behest(dd_cursor,
-    off_pid, date_paid, payor_id, amt, payee_id, descr, purpose, notice_rec):
-  if duplicate_behest(dd_cursor, off_pid, date_paid, payor_id, amt, payee_id,
-      descr, purpose, notice_rec):
-    return 0
-
-  session_year = get_session_year(dd_cursor)
-
-  insert_stmt = '''INSERT INTO Behests
-                   (official, datePaid, payor, amount, payee, description, purpose, noticeReceived, sessionYear)
-                   VALUES
-                   (%(off_pid)s, %(datePaid)s, %(payor_id)s, %(amount)s, 
-                     %(payee_id)s, %(descr)s, %(purpose)s, %(notice_rec)s, %(session_year)s)
-                ''' 
-  
-  temp = {'off_pid':off_pid, 'datePaid':date_paid, 'payor_id':payor_id,
-    'amount':amt, 'payee_id':payee_id, 'descr':descr, 'purpose':purpose,
-    'notice_rec':notice_rec, 'session_year':session_year}
-
-  try:
-    dd_cursor.execute(insert_stmt, temp)
-  except:
-    logger.warning("Insert statement failed.", full_msg = traceback.format_exc(),
-     additional_fields = create_payload('Behests', (insert_stmt % temp)))
-
-  return dd_cursor.rowcount
-
-'''
-Parse the row and insert the information to DDDB. It then returns the current 
-official because the Behest files don't have the officials mentioned every 
-line. (see Behest data)
-'''
-def parse_row(dd_cursor, attribs, official):
-  global B_INSERT
-
-  # Assume if Official and Payor are blank, the line is unnecessary
-  if attribs[COL['official']].value == None and attribs[COL['payor']].value == None:
-    return official
-  # If legislator/official name is present in this row, find their pid
-  elif attribs[COL['official']].value != None:
-    official = find_official(dd_cursor, attribs[COL['official']].value.strip())
-  
-  name = official[0]
-  pid = official[1]
-
-  # If official isn't found, return without inserting anything
-  if pid < 0:
-    print('Could not find Legislator: %(name)s, skipping' % {'name':name})
-    return (name, pid)
-
-  # Find Payor id from Payors table
-  payor_id = find_payor(dd_cursor,
-      attribs[COL['payor']].value.strip(), attribs[COL['payor_city']].value.strip(),
-      attribs[COL['payor_state']].value.strip())
-
-  # Find Payee id from Organizations table 
-  payee_id = find_organization(dd_cursor,
-      attribs[COL['payee']].value.strip(), attribs[COL['payee_city']].value.strip(),
-      attribs[COL['payee_state']].value.strip())
-
-  # Rest of variables
-  date_paid = attribs[COL['pay_date']].value
-  amount = attribs[COL['amount']].value
-  descr = attribs[COL['descr']].value
-  purpose = attribs[COL['purpose']].value
-  notice_rec = None if attribs[COL['notice_rec']].value == 'No date' or type(attribs[COL['notice_rec']].value) is not datetime else (
-      attribs[COL['notice_rec']].value)
-
-  # Format dates correctly
-  try:
-      date_paid = date_paid.strftime('%Y-%m-%d')
-  except AttributeError:
-    #pattern = '\d{1,2}/\d{1,2}-\d{1,2}/\d{1,2}/\d{2}'
-    #if re.match(pattern, date_paid):
-    date_paid = date_paid.split('-')[0].strip()
+def is_behest_in_db(dddb, behest):
     try:
-      date_paid = (datetime.strptime(date_paid, '%m/%d/%y').
-       strftime('%Y-%m-%d'))
-    except ValueError:
-      date_paid = (datetime.strptime(date_paid, '%m/%Y').
-       strftime('%Y-%m-%d'))
-    #else:
-    #  print('Incorrect date format! %s' % date_paid)
- 
-  B_INSERT += create_behest(dd_cursor, pid, date_paid, payor_id, amount, payee_id, descr, 
-      purpose, notice_rec)
-  return official
+        dddb.execute(SELECT_BEHEST, behest)
 
-'''
-Downloads behest information from the FPPC website
-'''
-def download_behests():
-  with open("senate_behests.xlsx", "wb") as file:
-    response = requests.get(SENATE_URL)
-    file.write(response.content)
-    file.close
+        if dddb.rowcount > 0:
+            return True
+        else:
+            return False
 
-  with open("assembly_behests.xlsx", "wb") as file:
-    response = requests.get(ASSEMBLY_URL)
-    file.write(response.content)
-    file.close
+    except MySQLdb.Error:
+        logger.warning("Behest selection failed", full_msg=traceback.format_exc(),
+                       additional_fields=create_payload('Behests', (SELECT_BEHEST % behest)))
+        return False
+
+
+def insert_behest(dddb, behest):
+    global BEHEST_INSERTED
+
+    try:
+        dddb.execute(INSERT_BEHEST, behest)
+        BEHEST_INSERTED += dddb.rowcount
+
+    except MySQLdb.Error:
+        logger.warning("Behest insertion failed", full_msg=traceback.format_exc(),
+                       additional_fields=create_payload('Behests', (INSERT_BEHEST % behest)))
+
+
+def insert_payor(dddb, behest):
+    global PAYOR_INSERTED
+
+    try:
+        dddb.execute(INSERT_PAYOR, behest)
+        PAYOR_INSERTED += dddb.rowcount
+
+    except MySQLdb.Error:
+        logger.warning("Payor insertion failed", full_msg=traceback.format_exc(),
+                       additional_fields=create_payload('Payors', (INSERT_PAYOR % behest)))
+
+
+def insert_payee(dddb, behest):
+    global ORG_INSERTED
+
+    try:
+        dddb.execute(INSERT_ORG, behest)
+        ORG_INSERTED += dddb.rowcount
+
+    except MySQLdb.Error:
+        logger.warning("Organization insertion failed", full_msg=traceback.format_exc(),
+                       additional_fields=create_payload('Organization', (INSERT_ORG % behest)))
+
+
+def get_official_pid(dddb, official):
+    try:
+        if (official['OfficialType'] == 'Assembly'
+            or official['OfficialType'] == 'Senate'):
+            dddb.execute(SELECT_LEGISLATOR, official)
+
+            if dddb.rowcount == 1:
+                return dddb.fetchone()[0]
+            else:
+                print("Error selecting legislator with name " + official['Official'])
+                return None
+
+        else:
+            dddb.execute(SELECT_PERSON, official)
+
+            if dddb.rowcount != 0:
+                return dddb.fetchone()[0]
+            else:
+                print("Error selecting person with name " + official['Official'])
+                return None
+
+    except MySQLdb.Error:
+        print(traceback.format_exc())
+        logger.warning("Person selection failed", full_msg=traceback.format_exc(),
+                       additional_fields=create_payload('Organization', (SELECT_PERSON % official)))
+
+
+def get_org_id(dddb, payee_org):
+    try:
+        dddb.execute(SELECT_ORG, payee_org)
+
+        if dddb.rowcount != 0:
+            return dddb.fetchone()[0]
+        else:
+            #print("Payee org with name " + payee_org['Payee'] + " not found")
+            return None
+
+    except MySQLdb.Error:
+        logger.warning("Organization selection failed", full_msg=traceback.format_exc(),
+                       additional_fields=create_payload('Organization', (SELECT_ORG % payee_org)))
+
+
+def get_payor_id(dddb, payor):
+    try:
+        dddb.execute(SELECT_PAYOR, payor)
+
+        if dddb.rowcount != 0:
+            return dddb.fetchone()[0]
+        else:
+            #print("Payor with name " + payor['Payor'] + " not found")
+            return None
+
+    except MySQLdb.Error:
+        logger.warning("Payor selection failed", full_msg=traceback.format_exc(),
+                       additional_fields=create_payload('Organization', (SELECT_PAYOR % payor)))
+
+
+def import_behests(dddb):
+    with open('behesteddata.csv', 'rU') as csvfile:
+        csv_reader = csv.DictReader(csvfile)
+
+        behests = [row for row in csv_reader]
+
+        for behest in behests:
+            official_name = clean_name(behest['Official'], problem_names=NAME_EXCEPTIONS)
+            #print(official_name)
+
+            official = {'OfficialFirst': '%'+official_name['first']+'%', 'OfficialLast': '%'+official_name['last']+'%',
+                        'OfficialType': behest['OfficialType'], 'Official': behest['Official']}
+
+            behest['pid'] = get_official_pid(dddb, official)
+            behest['prid'] = get_payor_id(dddb, behest)
+            behest['oid'] = get_org_id(dddb, behest)
+
+            if int(behest['PaymentYear']) % 2 == 0:
+                behest['PaymentYear'] = int(behest['PaymentYear']) - 1
+
+            try:
+                behest['DateOfPayment'] = dt.datetime.strptime(behest['DateOfPayment'], '%m/%d/%y').date()
+            except ValueError:
+                behest['DateOfPayment'] = None
+
+            try:
+                behest['NoticeReceived'] = dt.datetime.strptime(behest['NoticeReceived'], '%m/%d/%y').date()
+            except:
+                behest['NoticeReceived'] = None
+
+            if behest['pid'] is not None:
+                if behest['prid'] is None:
+                    insert_payor(dddb, behest)
+                    behest['prid'] = dddb.lastrowid
+
+                if behest['oid'] is None:
+                    insert_payee(dddb, behest)
+                    behest['oid'] = dddb.lastrowid
+
+                if not is_behest_in_db(dddb, behest):
+                    insert_behest(dddb, behest)
+
 
 def main():
-  global logger
-  # Current Official (as (name, pid) tuple)
-  cur_official = (None, -1)
+    with MySQLdb.connect(host='dev.digitaldemocracy.org',
+                         port=3306,
+                         db='parose_dddb',
+                         user='parose',
+                         passwd='parose221',
+                         charset='utf8') as dddb:
+        # with MySQLdb.connect(host='dddb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+        #                      port=3306,
+        #                      db='DDDB2016Aug',
+        #                      user='awsDB',
+        #                      passwd='digitaldemocracy789',
+        #                      charset='utf8') as dddb:
 
-  download_behests()
+        import_behests(dddb)
 
-  dbinfo = mysql_connection(sys.argv)
+        logger.info(__file__ + " terminated successfully.",
+                    full_msg="Inserted " + str(BEHEST_INSERTED) + " rows in Behests, "
+                             + str(PAYOR_INSERTED) + " rows in Payors, and "
+                             + str(ORG_INSERTED) + " rows in Organizations.",
+                    additional_fields={'_affected_rows': "Behests: " + str(BEHEST_INSERTED)
+                                                         + ", Payors: " + str(PAYOR_INSERTED)
+                                                         + ", Organizations: " + str(ORG_INSERTED),
+                                       '_inserted': "Behests: " + str(BEHEST_INSERTED)
+                                                    + ", Payors: " + str(PAYOR_INSERTED)
+                                                    + ", Organizations: " + str(ORG_INSERTED),
+                                       '_state': 'CA',
+                                       '_log_type': 'Database'})
 
-  # Opening db connection
-  with MySQLdb.connect(host = dbinfo['host'],
-                       port = dbinfo['port'],
-                       db = dbinfo['db'],
-                       user = dbinfo['user'],
-                       passwd = dbinfo['passwd']) as dd_cursor:
-    with GrayLogger(API_URL) as _logger:
-      logger = _logger  
-      
-      # Opening file and start at the header_line number
-      assembly = openpyxl.load_workbook("assembly_behests.xlsx", data_only = True)
-      assembly_ws = assembly['Sheet1']
+        LOG = {'tables': [{'state': 'CA', 'name': 'Behests', 'inserted': BEHEST_INSERTED, 'updated': 0, 'deleted': 0},
+                          {'state': 'CA', 'name': 'Payors', 'inserted': PAYOR_INSERTED, 'updated': 0, 'deleted': 0},
+                          {'state': 'CA', 'name': 'Organizations', 'inserted': ORG_INSERTED, 'updated': 0,
+                           'deleted': 0}]}
+        sys.stderr.write(json.dumps(LOG))
 
-      for row in assembly_ws.iter_rows(min_row = 6, max_row = assembly_ws.max_row):
-        cur_official = parse_row(dd_cursor, row, cur_official)
 
-      senate = openpyxl.load_workbook("senate_behests.xlsx", data_only = True)
-      senate_ws = senate['Sheet1']
-
-      for row in senate_ws.iter_rows(min_row = 6, max_row = senate_ws.max_row):
-        cur_official = parse_row(dd_cursor, row, cur_official)
-
-      logger.info(__file__ + " terminated successfully.",
-        full_msg = "Inserted " + str(B_INSERT) + " rows in Behests.",
-        additional_fields = {'_affected_rows': "Behests: " + str(B_INSERT),
-                             '_inserted': "Behests: " + str(B_INSERT),
-                             '_state': 'CA',
-                             '_log_type': 'Database'})
-
-  LOG = {'tables': [{'state': 'CA', 'name': 'Behests', 'inserted':B_INSERT, 'updated': 0, 'deleted': 0}]}
-  sys.stderr.write(json.dumps(LOG))
-
-if __name__ == "__main__":
-  main()
+if __name__ == '__main__':
+    with GrayLogger(GRAY_LOGGER_URL) as _logger:
+        logger = _logger
+        main()
