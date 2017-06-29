@@ -5,7 +5,7 @@
 File: bill_API_helper.py
 Author: Andrew Rose
 Date: 3/14/2017
-Last Updated: 5/4/2017
+Last Updated: 6/29/2017
 
 Description:
   -This file offers helper methods for scripts that take bill data from OpenStates.
@@ -19,7 +19,7 @@ import urllib2
 import json
 import datetime as dt
 
-BILL_SEARCH_URL = "https://openstates.org/api/v1/bills/?state={0}&search_window=session&chamber={1}&type={2}"
+BILL_SEARCH_URL = "https://openstates.org/api/v1/bills/?state={0}&search_window=session&updated_since={1}"
 BILL_SEARCH_URL += "&apikey=3017b0ca-3d4f-482b-9865-1c575283754a"
 
 BILL_DETAIL_URL = "https://openstates.org/api/v1/bills/{0}/"
@@ -44,8 +44,10 @@ Each dictionary includes these fields:
                   was introduced in a special session
     title: The title given to the bill
 '''
-def get_bills(state, chamber, type):
-    api_url = BILL_SEARCH_URL.format(state.lower(), chamber.lower(), type.lower())
+def get_bills(state):
+    updated_date = dt.date.today() - dt.timedelta(weeks=1)
+    updated_date = updated_date.strftime('%Y-%m-%d')
+    api_url = BILL_SEARCH_URL.format(state.lower(), updated_date)
     metadata_url = STATE_METADATA_URL.format(state.lower())
 
     bill_json = requests.get(api_url).json()
@@ -177,7 +179,9 @@ Takes a bill's OpenStates ID number and returns a list of dictionaries for each 
 been taken on the specified bill.
 
 Each dictionary contains:
+    bid: The bill's BID in our database
     date: The date the action was taken
+    seq_num: If multiple actions occur on the same day, this value is incremented
     text: A description of the action
 '''
 def get_bill_actions(bill_actions, bid):
@@ -221,8 +225,11 @@ Takes a bill's OpenStates ID number and returns a list of dictionaries for each 
 of the specified bill.
 
 Each dictionary contains:
+    bid: The bill's BID in our database
+    vid: The bill's version ID in our database
+    state: The abbreviation of the state the bill is in. In this case, TX
     name: The name of the document containing the version text
-    doc: A URL of the document that contains the version text
+    url: A URL of the document that contains the version text
 '''
 def get_bill_versions(bill_versions, bid, state):
     version_list = list()
@@ -238,23 +245,10 @@ def get_bill_versions(bill_versions, bid, state):
         version['name'] = entry['name']
 
         version['vid'] = version['bid'] + version['name'].split(' ')[-1]
+        version['url'] = entry['url']
 
         version['date'] = dummy_date
         dummy_date += dt.timedelta(days=1)
-
-        # Downloads bill text over an FTP link provided by OpenStates
-        try:
-            version_doc = urllib2.urlopen(entry['url'], timeout=10)
-            version['doc'] = ''
-            while True:
-                read_text = version_doc.read(1024)
-                if not read_text:
-                    break
-                version['doc']+= read_text
-        except urllib2.URLError:
-            version['doc'] = None
-            print('URL error with version ' + version['vid'])
-
 
         version_list.append(version)
 

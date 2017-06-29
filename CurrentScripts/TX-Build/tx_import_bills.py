@@ -359,22 +359,32 @@ def import_versions(bill_title, versions, dddb):
     for version in versions:
         version['subject'] = bill_title
 
-        if version['doc'] is None:
-            logger.warning("Bill text download failed", full_msg = "URL error with bill version " + version['vid'])
-        else:
-            if not is_version_in_db(version, dddb):
-                try:
-                    dddb.execute(INSERT_VERSION, version)
-                    V_INSERTED += dddb.rowcount
-                except MySQLdb.Error:
-                    logger.warning("BillVersion insertion failed", full_msg=traceback.format_exc(),
-                                   additional_fields=create_payload("BillVersion", (INSERT_VERSION % version)))
+        if not is_version_in_db(version, dddb):
+            # Downloads bill text over an FTP link provided by OpenStates
+            try:
+                version_doc = urllib2.urlopen(version['url'], timeout=15)
+                version['doc'] = ''
+                while True:
+                    read_text = version_doc.read(1024)
+                    if not read_text:
+                        break
+                    version['doc'] += read_text
+            except urllib2.URLError:
+                version['doc'] = None
+                print('URL error with version ' + version['vid'])
+
+            try:
+                dddb.execute(INSERT_VERSION, version)
+                V_INSERTED += dddb.rowcount
+            except MySQLdb.Error:
+                logger.warning("BillVersion insertion failed", full_msg=traceback.format_exc(),
+                                additional_fields=create_payload("BillVersion", (INSERT_VERSION % version)))
 
 
-def import_bills(dddb, chamber, type):
+def import_bills(dddb):
     global B_INSERTED
 
-    bill_list = get_bills('TX', chamber, type)
+    bill_list = get_bills('TX')
 
     for bill in bill_list:
         print(bill['bid'])
@@ -404,16 +414,7 @@ def main():
                          passwd=dbinfo['passwd'],
                          charset='utf8') as dddb:
 
-        for chamber in ['upper', 'lower']:
-            for flag in ['-cr', '-jr', '-r', '-b']:
-                if flag == '-b':
-                    import_bills(dddb, chamber, 'bill')
-                elif flag == '-r':
-                    import_bills(dddb, chamber, 'resolution')
-                elif flag == '-jr':
-                    import_bills(dddb, chamber, 'joint resolution')
-                elif flag == '-cr':
-                    import_bills(dddb, chamber, 'concurrent resolution')
+        import_bills(dddb)
 
         logger.info(__file__ + " terminated successfully",
                     full_msg="Inserted " + str(B_INSERTED) + " rows in Bill, "

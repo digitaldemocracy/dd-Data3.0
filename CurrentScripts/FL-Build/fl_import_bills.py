@@ -276,9 +276,10 @@ def scrape_version_date(url):
 '''
 Downloads bill texts stored as PDFs
 '''
-def get_pdf(url):
+def get_pdf(url, vid):
+    pdf_name = vid + '.pdf'
     pdf = requests.get(url)
-    f = open('billtext.pdf', 'wb')
+    f = open(pdf_name, 'wb')
     f.write(pdf.content)
     f.close()
 
@@ -287,11 +288,13 @@ def get_pdf(url):
 Some bills have their bill text stored as a PDF
 This function downloads these PDFs and converts them to text
 '''
-def read_pdf_text():
-    try:
-        subprocess.call(['./pdftotext', 'billtext.pdf'])
+def read_pdf_text(vid):
+    pdf_name = vid + '.pdf'
 
-        with open('billtext.txt', 'r') as f:
+    try:
+        subprocess.call(['../pdftotext', pdf_name])
+
+        with open('pdf_name', 'r') as f:
             doc = f.read()
 
         return doc
@@ -308,7 +311,7 @@ def read_pdf_png(url, vid):
         get_pdf(url)
 
         png_root = 'billtext_png/' + vid
-        subprocess.call(['./pdftopng', '-q', 'billtext.pdf', png_root])
+        subprocess.call(['../pdftopng', '-q', 'billtext.pdf', png_root])
 
         doc = read_pdf_text()
         return doc
@@ -365,7 +368,7 @@ def read_pdf_html(url):
     if os.path.exists('billtext_html/'):
         subprocess.call(['rm', '-r', 'billtext_html'])
 
-    subprocess.call(['./pdftohtml', '-q', 'billtext.pdf', 'billtext_html'])
+    subprocess.call(['../pdftohtml', '-q', 'billtext.pdf', 'billtext_html'])
 
     knit_html()
 
@@ -496,9 +499,8 @@ def import_versions(bill_title, versions, dddb):
         if version['doctype'] == 'text/html':
             version['doc'] = requests.get(version['url']).content
         else:
-            # Need to install xpdf for this to work
-            #version['doc'] = read_pdf_html(version['url'])
-            #read_pdf_png(version['url'], version['vid'])
+            #get_pdf(version['url'], version['vid'])
+            #version['doc'] = read_pdf_text(version['vid'])
             version['doc'] = None
 
         if not is_version_in_db(version, dddb):
@@ -529,7 +531,7 @@ def import_bills(dddb):
 
     bill_list = get_bills('FL')
 
-    for bill in bill_list[1:2]:
+    for bill in bill_list:
         print(bill['bid'])
 
         if not is_bill_in_db(dddb, bill):
@@ -549,14 +551,18 @@ def import_bills(dddb):
 
 
 def main():
-    #os.chdir('FL-Build/')
-
-    dbinfo = mysql_connection(sys.argv)
-    with MySQLdb.connect(host=dbinfo['host'],
-                         port=dbinfo['port'],
-                         db=dbinfo['db'],
-                         user=dbinfo['user'],
-                         passwd=dbinfo['passwd'],
+    # dbinfo = mysql_connection(sys.argv)
+    # with MySQLdb.connect(host=dbinfo['host'],
+    #                      port=dbinfo['port'],
+    #                      db=dbinfo['db'],
+    #                      user=dbinfo['user'],
+    #                      passwd=dbinfo['passwd'],
+    #                      charset='utf8') as dddb:
+    with MySQLdb.connect(host='dev.digitaldemocracy.org',
+                         port=3306,
+                         db='parose_dddb',
+                         user='parose',
+                         passwd='parose221',
                          charset='utf8') as dddb:
 
         import_bills(dddb)
