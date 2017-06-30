@@ -1,8 +1,7 @@
 # SQL Selects
 SELECT_COMMITTEE = '''SELECT cid FROM Committee
-                      WHERE short_name = %(name)s
+                      WHERE name sounds like %(name)s
                       AND house = %(house)s
-                      AND type = %(type)s
                       AND session_year = %(session_year)s
                       AND state = %(state)s'''
 
