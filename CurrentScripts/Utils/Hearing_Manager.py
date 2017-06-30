@@ -1,12 +1,11 @@
-import re
+import sys
+import json
 import MySQLdb
-import traceback
 import datetime as dt
 from Generic_Utils import *
 from Constants.Hearings_Queries import *
-from graylogger.graylogger import GrayLogger
 from Constants.General_Constants import *
-
+from GrayLogger.graylogger import *
 
 class Hearings_Manager(object):
 
@@ -99,13 +98,12 @@ class Hearings_Manager(object):
 
 
     def update_hearing_agendas(self, hid, bid):
-        global HA_UPD
 
         ha = {'hid': hid, 'bid': bid}
 
         try:
             self.dddb.execute(UPDATE_HEARING_AGENDA, ha)
-            HA_UPD += self.dddb.rowcount
+            self.HA_UPD += self.dddb.rowcount
         except MySQLdb.Error:
             self.logger.warning("HearingAgenda update failed", fill_msg=traceback.format_exc(),
                            additional_fields=create_payload("HearingAgenda", (UPDATE_HEARING_AGENDA % ha)))
@@ -133,7 +131,7 @@ class Hearings_Manager(object):
                 date = dt.datetime.strptime(date, '%Y-%m-%d').date()
 
                 if date > curr_date:
-                    self.update_hearing_agendas(hid, bid, self.dddb)
+                    self.update_hearing_agendas(hid, bid)
 
                     return 1
                 elif date < curr_date:
@@ -152,7 +150,6 @@ class Hearings_Manager(object):
 
 
     def insert_hearing(self, date, state, session_year):
-        global H_INS
 
         hearing = dict()
 
@@ -160,7 +157,6 @@ class Hearings_Manager(object):
         hearing['session_year'] = session_year
         hearing['state'] = state
 
-        print hearing
 
         try:
             hearing['session_year'] = 2017
@@ -181,7 +177,6 @@ class Hearings_Manager(object):
 
 
     def insert_committee_hearing(self,  cid, hid):
-        global CH_INS
 
         comm_hearing = {'cid': cid, 'hid': hid}
 
@@ -200,7 +195,6 @@ class Hearings_Manager(object):
     Inserts HearingAgendas into the DB
     '''
     def insert_hearing_agenda(self, hid, bid, date):
-        global HA_INS
         current_flag = self.check_current_agenda(hid, bid, date)
 
         if current_flag is not None:
@@ -215,13 +209,30 @@ class Hearings_Manager(object):
                 self.logger.warning("HearingAgenda insert failed", full_msg=traceback.format_exc(),
                                additional_fields=create_payload("HearingAgenda", (INSERT_HEARING_AGENDA % agenda)))
 
+    '''
+    Gets hearing data from OpenStates and inserts it into the database
+    Once a Hearing has been inserted, this function also inserts
+    the corresponding CommitteeHearings and HearingAgendas.
+    '''
+
+    def import_hearings(self, hearings, cur_date):
+        for hearing in hearings:
+            hid = self.get_hearing_hid(hearing.hearing_date, hearing.session_year, hearing.house)
+            if hid is None:
+                hid = self.insert_hearing(hearing.hearing_date, hearing.state, hearing.session_year)
+
+            if not self.is_comm_hearing_in_db(hearing.cid, hid):
+                self.insert_committee_hearing(hearing.cid, hid)
+
+            if not self.is_hearing_agenda_in_db(hid, hearing.bid, cur_date):
+                self.insert_hearing_agenda(hid, hearing.bid, cur_date)
 
     '''
     Generates a report for graylogger
     '''
     def log(self):
         self.logger.info(__file__ + " terminated successfully",
-                         full_msg="Inserted " + str(H_INS) + " rows in Hearing, "
+                         full_msg="Inserted " + str(self.H_INS) + " rows in Hearing, "
                                   + str(self.CH_INS) + " rows in CommitteeHearing, "
                                   + str(self.HA_INS) + " rows in HearingAgenda, and updated "
                                   + str(self.HA_UPD) + " rows in HearingAgenda",
@@ -232,4 +243,9 @@ class Hearings_Manager(object):
                                                      + ', CommitteeHearing: ' + str(self.CH_INS)
                                                      + ', HearingAgenda: ' + str(self.HA_INS),
                                         '_updated': 'HearingAgenda: ' + str(self.HA_UPD),
-                                        '_state': 'FL'})
+                                        '_state': self.state})
+        LOG = {'tables': [{'state': self.state, 'name': 'Hearing', 'inserted': self.H_INS, 'updated': 0, 'deleted': 0},
+                          {'state': self.state, 'name': 'CommitteeHearing', 'inserted': self.CH_INS, 'updated': 0, 'deleted': 0},
+                          {'state': self.state, 'name': 'HearingAgenda', 'inserted': self.HA_INS, 'updated': self.HA_UPD,
+                           'deleted': 0}]}
+        sys.stderr.write(json.dumps(LOG))

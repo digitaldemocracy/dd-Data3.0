@@ -1,9 +1,11 @@
 GRAY_LOGGER_URL = 'http://dw.digitaldemocracy.org:12202/gelf'
 OPENSTATES_API_KEY = "3017b0ca-3d4f-482b-9865-1c575283754a"
 YEAR = 2017
+DEFAULT_TERM_START = "2017-01-01"
 
 FL_HEARING_HOUSE_SOURCE = "http://www.myfloridahouse.gov/Sections/HouseSchedule/houseschedule.aspx"
 FL_HEARING_SENATE_SOURCE = "https://www.flsenate.gov/Session/Calendars/2017"
+
 
 
 STATE_ABBREV = {

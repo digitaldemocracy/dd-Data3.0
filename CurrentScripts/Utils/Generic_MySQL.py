@@ -36,19 +36,26 @@ def is_entity_in_db(db_cursor, query, entity, objType, logger):
         if query is not None:
             return query[0]
     except:
+        print(query)
+        print(entity.to_dict())
+        print(query%entity)
         logger.warning('Check Failed', full_msg=traceback.format_exc(),
                 additional_fields=create_payload(objType, (query%entity)))
     return False
 
-def insert_entity(db_cursor, entity, qs_query, qi_query, objType, logger):
+def insert_entity_with_check(db_cursor, entity, qs_query, qi_query, objType, logger):
     if not is_entity_in_db(db_cursor, qs_query, entity, objType, logger):
-        try:
-            db_cursor.execute(qi_query, entity)
-            return db_cursor.rowcount
-        except MySQLdb.Error:
-            logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-                    additional_fields=create_payload(objType, (qi_query%entity)))
-    return 0
+        return insert_entity(db_cursor, entity, qi_query, objType, logger)
+    return False
+
+def insert_entity(db_cursor, entity, qi_query, objType, logger):
+    try:
+        db_cursor.execute(qi_query, entity)
+        return db_cursor.rowcount
+    except MySQLdb.Error:
+        logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+                additional_fields=create_payload(objType, (qi_query%entity)))
+    return False
 
 
 def get_entity_id(db_cursor, query, entity, objType, logger):
@@ -62,7 +69,7 @@ def get_entity_id(db_cursor, query, entity, objType, logger):
         logger.warning('Insert Failed', full_msg=traceback.format_exc(),
                            additional_fields=create_payload(objType, (query % entity)))
 
-    return None
+    return False
 
 '''
 Generic SQL update function
@@ -74,4 +81,4 @@ def update_entity(db_cursor, query, entity, objType, logger):
     except MySQLdb.Error:
         logger.warning('Insert Failed', full_msg=traceback.format_exc(),
                        additional_fields=create_payload(objType, (query % entity)))
-    return 0
+    return False
