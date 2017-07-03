@@ -51,9 +51,8 @@ SELECT_LEGISLATOR = '''SELECT distinct p.pid FROM Person p
                        AND p.first LIKE %(OfficialFirst)s
                        AND p.last LIKE %(OfficialLast)s
                        '''
-SELECT_ORG = '''SELECT oid FROM Organizations WHERE stateHeadquartered = 'CA'
-                AND name SOUNDS LIKE %(Payee)s'''
-SELECT_PAYOR = '''SELECT prid FROM Payors WHERE name SOUNDS LIKE %(Payor)s'''
+SELECT_ORG = '''SELECT oid FROM Organizations WHERE name SOUNDS LIKE %(Payee)s'''
+SELECT_PAYOR = '''SELECT prid FROM Payors WHERE name LIKE %(Payor)s'''
 SELECT_BEHEST = '''SELECT * FROM Behests
                    WHERE official = %(pid)s
                    AND datePaid = %(DateOfPayment)s
@@ -67,7 +66,7 @@ SELECT_STATE = '''SELECT * FROM State WHERE abbrev = %(state)s'''
 INSERT_PAYOR = '''INSERT INTO Payors (name, city, state)
                   VALUES (%(Payor)s, %(PayorCity)s, %(PayorState)s)'''
 INSERT_ORG = '''INSERT INTO Organizations (name, city, stateHeadquartered, source)
-                VALUES (%(Payee)s, %(PayeeCity)s, %(PayeeState)s, 'import_csv_behests.py')'''
+                VALUES (%(Payee)s, %(PayeeCity)s, %(PayeeState)s, 'refactored_insert_Behests.py')'''
 INSERT_BEHEST = '''INSERT INTO Behests (official, datePaid, payor, amount, payee,
                                         description, purpose, noticeReceived, sessionYear, state)
                    VALUES (%(pid)s, %(DateOfPayment)s, %(prid)s, %(Amount)s, %(oid)s,
@@ -212,7 +211,7 @@ def get_official_pid(dddb, official):
             if dddb.rowcount == 1:
                 return dddb.fetchone()[0]
             else:
-                print("Error selecting legislator with name " + official['Official'])
+                #print("Error selecting legislator with name " + official['Official'])
                 return None
 
         else:
@@ -221,7 +220,7 @@ def get_official_pid(dddb, official):
             if dddb.rowcount != 0:
                 return dddb.fetchone()[0]
             else:
-                print("Error selecting person with name " + official['Official'])
+                #print("Error selecting person with name " + official['Official'])
                 return None
 
     except MySQLdb.Error:
@@ -235,7 +234,8 @@ def get_org_id(dddb, payee_org):
         dddb.execute(SELECT_ORG, payee_org)
 
         if dddb.rowcount != 0:
-            return dddb.fetchone()[0]
+            oid = dddb.fetchone()[0]
+            return oid
         else:
             #print("Payee org with name " + payee_org['Payee'] + " not found")
             return None
@@ -274,7 +274,7 @@ def import_behests(dddb):
                         'OfficialType': behest['OfficialType'], 'Official': behest['Official']}
 
             behest['pid'] = get_official_pid(dddb, official)
-            behest['prid'] = get_payor_id(dddb, behest)
+            behest['prid'] = get_payor_id(dddb, {'Payor': '%' + behest['Payor'] + '%'})
             behest['oid'] = get_org_id(dddb, behest)
 
             if int(behest['PaymentYear']) % 2 == 0:
