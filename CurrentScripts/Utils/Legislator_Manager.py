@@ -37,6 +37,9 @@ class Legislator_Mangaer(object):
         self.state = state
 
 
+    '''
+    Handles DW and Graylogger logging.
+    '''
     def log(self):
         self.logger.info(__file__ + ' terminated successfully.',
                          full_msg='Updated ' + str(self.T_UPDATE) + ' rows in Legislator',
@@ -77,6 +80,11 @@ class Legislator_Mangaer(object):
     def is_leg_in_db(self, leg):
         return get_entity_id(self.dddb, QS_LEGISLATOR, leg, "Legislator", logger)
 
+    '''
+    Handles inserting a person into the database.
+    - returns the result of inserting a person, person-state affliation, and altID
+        - if one fails, the function returns true else false.
+    '''
     def insert_person(self, person):
         return insert_entity(db_cursor=self.dddb,
                       entity=person,
@@ -96,6 +104,7 @@ class Legislator_Mangaer(object):
 
     '''
     Handles insert legislator into the database
+    - returns true if the legislator was successfully inserted into the database, false otherwise.
     '''
     def insert_legislator(self, legislator):
         return insert_entity(db_cursor=self.dddb,
