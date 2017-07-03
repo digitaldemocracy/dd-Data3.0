@@ -417,7 +417,7 @@ def main():
                          db=dbinfo['db'],
                          user=dbinfo['user'],
                          passwd=dbinfo['passwd'],
-                         charset='utf8') as dddb:
+                         charset='utf8') as dddb
 
         import_committees(dddb)
         insert_floor_committees(dddb)
