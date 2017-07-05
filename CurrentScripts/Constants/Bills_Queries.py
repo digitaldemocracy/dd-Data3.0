@@ -34,6 +34,13 @@ SELECT_LEG_PID = '''SELECT * FROM Person p
                     AND p.last LIKE %(last)s
                     '''
 
+SELECT_LEG_PID_FIRSTNAME = '''SELECT * FROM Person p
+                              JOIN Term t on p.pid = t.pid
+                              WHERE t.state = %(state)s
+                              AND t.current_term = 1
+                              AND p.last LIKE %(last)s
+                              AND p.first LIKE %(first)s'''
+
 SELECT_ACTION = '''SELECT * FROM Action
                    WHERE bid = %(bid)s
                    AND date = %(date)s

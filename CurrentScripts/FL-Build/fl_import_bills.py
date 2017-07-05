@@ -188,17 +188,36 @@ If a legislator has an incorrect/missing ID, this function
 gets their PID by matching their name
 '''
 def get_pid_name(vote, dddb):
-    mem_name = vote['name'].split(',')
-    legislator = {'last': '%' + mem_name[0] + '%', 'state': 'FL'}
+    mem_name = vote['name'].replace('President', '')
+
+    mem_name = mem_name.split(',')
+
+    legislator = {'last': '%' + mem_name[0].strip() + '%', 'state': 'FL'}
+
+    if len(mem_name) > 1:
+        mem_name[1] = mem_name[1].strip('.').strip()
+        legislator['first'] = '%' + mem_name[1] + '%'
 
     try:
         dddb.execute(SELECT_LEG_PID, legislator)
 
-        if dddb.rowcount != 1:
-            print("Error: PID for " + vote['name'] + " not found")
-            return None
-        else:
+        if dddb.rowcount == 1:
             return dddb.fetchone()[0]
+
+        elif len(mem_name) > 1:
+            dddb.execute(SELECT_LEG_PID_FIRSTNAME, legislator)
+
+            if dddb.rowcount != 1:
+                print("Error: PID for " + vote['name'] + " not found")
+                print(legislator)
+                return None
+            else:
+                return dddb.fetchone()[0]
+
+        else:
+            print("Error: PID for " + vote['name'] + " not found")
+            print(legislator)
+            return None
 
     except MySQLdb.Error:
         logger.warning("PID selection failed", full_msg=traceback.format_exc(),
@@ -551,18 +570,12 @@ def import_bills(dddb):
 
 
 def main():
-    # dbinfo = mysql_connection(sys.argv)
-    # with MySQLdb.connect(host=dbinfo['host'],
-    #                      port=dbinfo['port'],
-    #                      db=dbinfo['db'],
-    #                      user=dbinfo['user'],
-    #                      passwd=dbinfo['passwd'],
-    #                      charset='utf8') as dddb:
-    with MySQLdb.connect(host='dev.digitaldemocracy.org',
-                         port=3306,
-                         db='parose_dddb',
-                         user='parose',
-                         passwd='parose221',
+    dbinfo = mysql_connection(sys.argv)
+    with MySQLdb.connect(host=dbinfo['host'],
+                         port=dbinfo['port'],
+                         db=dbinfo['db'],
+                         user=dbinfo['user'],
+                         passwd=dbinfo['passwd'],
                          charset='utf8') as dddb:
 
         import_bills(dddb)

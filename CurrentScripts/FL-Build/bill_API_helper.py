@@ -16,9 +16,10 @@ Source:
 
 import requests
 import json
+import re
 import datetime as dt
 
-BILL_SEARCH_URL = "https://openstates.org/api/v1/bills/?state={0}&search_window=session:2017"
+BILL_SEARCH_URL = "https://openstates.org/api/v1/bills/?state={0}&search_window=session&updated_since={1}"
 BILL_SEARCH_URL += "&apikey=3017b0ca-3d4f-482b-9865-1c575283754a"
 
 BILL_DETAIL_URL = "https://openstates.org/api/v1/bills/{0}/"
@@ -45,7 +46,9 @@ Each dictionary includes these fields:
 
 '''
 def get_bills(state):
-    api_url = BILL_SEARCH_URL.format(state.lower())
+    updated_date = dt.date.today() - dt.timedelta(weeks=1)
+    updated_date = updated_date.strftime('%Y-%m-%d')
+    api_url = BILL_SEARCH_URL.format(state.lower(), updated_date)
     metadata_url = STATE_METADATA_URL.format(state.lower())
 
     bill_json = requests.get(api_url).json()
@@ -66,7 +69,10 @@ def get_bills(state):
         bill["type"] = bill_id[0]
         bill["number"] = bill_id[1]
 
-        bill["session_year"] = entry["session"]
+        session_name = entry["session"]
+        for term in metadata["terms"]:
+            if session_name in term["sessions"]:
+                bill["session_year"] = term["start_year"]
 
         meta_session = metadata["session_details"][entry["session"]]
         if meta_session["type"] == "primary":
@@ -76,7 +82,7 @@ def get_bills(state):
 
         bill["title"] = entry["title"]
 
-        bill["bid"] = state.upper() + "_" + bill["session_year"] + str(bill["session"]) + bill["type"] + bill["number"]
+        bill["bid"] = state.upper() + "_" + session_name + str(bill["session"]) + bill["type"] + bill["number"]
 
         # Placeholder for billState until we get data - not needed for transcription
         bill['billState'] = 'TBD'
