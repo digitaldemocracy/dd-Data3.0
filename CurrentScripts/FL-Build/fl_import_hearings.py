@@ -39,6 +39,7 @@ from graylogger.graylogger import GrayLogger
 from Constants.Hearings_Queries import *
 from Constants.General_Constants import *
 from Utils.DatabaseUtils_NR import *
+from Database_Connection import mysql_connection
 
 
 logger = None
@@ -48,7 +49,6 @@ H_INS = 0  # Hearings inserted
 CH_INS = 0  # CommitteeHearings inserted
 HA_INS = 0  # HearingAgenda inserted
 HA_UPD = 0  # HearingAgenda updated
-
 
 
 '''
@@ -442,7 +442,7 @@ def get_agenda_text(link):
     f.write(response.content)
     f.close()
 
-    subprocess.call(["./pdftotext", "calendar.pdf"])
+    subprocess.call(["../pdftotext", "calendar.pdf"])
 
 
 '''
@@ -479,8 +479,6 @@ def get_senate_agenda(dddb):
 
 
 def main():
-    os.chdir('FL-Build/')
-
     dbinfo = mysql_connection(sys.argv)
     # MUST SPECIFY charset='utf8' OR BAD THINGS WILL HAPPEN.
     with MySQLdb.connect(host=dbinfo['host'],

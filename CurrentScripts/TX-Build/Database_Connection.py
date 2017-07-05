@@ -17,16 +17,16 @@ QS_DBINFO = '''SELECT * FROM DBConnection
 
 def mysql_connection(args):
   if len(args) == 1:
-    return {#'host':'dddb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+    return {'host':'dddb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
             'port':3306,
             #'db':'EricTest',
-            #'db':'DDDB2016Aug',
-            #'user':'awsDB',
-            #'passwd':'digitaldemocracy789'
-            'host':'localhost',
-            'db':'russo_dddb',
-            'user':'root',
-         'passwd':''
+            'db':'DDDB2016Aug',
+            'user':'awsDB',
+            'passwd':'digitaldemocracy789'
+            #'host':'localhost',
+            #'db':'russo_dddb',
+            #'user':'root',
+            #'passwd':''
             }
   else:
     with MySQLdb.connect(host='localhost',

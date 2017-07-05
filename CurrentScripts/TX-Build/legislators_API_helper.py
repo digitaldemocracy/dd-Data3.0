@@ -17,12 +17,16 @@ Source:
 import requests
 import json
 import sys
+from Models.Person import *
+from Models.Legislator import *
+from Models.Term import *
+from Constants.General_Constants import *
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
-LEGISLATORS_SEARCH_URL = 'https://openstates.org/api/v1/legislators/?state={0}&active=true&apikey=3017b0ca-3d4f-482b-9865-1c575283754a'
-LEGISLATORS_DETAIL_URL = 'https://openstates.org/api/v1/legislators/{0}&apikey=3017b0ca-3d4f-482b-9865-1c575283754a'
+LEGISLATORS_SEARCH_URL = 'https://openstates.org/api/v1/legislators/?state={0}&active=true&apikey=' + OPENSTATES_API_KEY
+LEGISLATORS_DETAIL_URL = 'https://openstates.org/api/v1/legislators/{0}&apikey=' + OPENSTATES_API_KEY
 
 validation_list = {"offices", "photo_url", "party", "email", "district"}
 emails = {"tx_house": "@house.texas.gov", "tx_senate": "@senate.texas.gov"}
@@ -40,13 +44,13 @@ def clean_values(entry):
 
 
 
-def set_office_info(entry, legislator):
-    if entry["offices"] == None or len(entry["offices"]) == 0:
+def set_office_info(legislator):
+    if legislator["offices"] == None or len(legislator["offices"]) == 0:
         legislator["capitol_phone"] = "N/A"
         legislator["capitol_fax"] = "N//A"
         legislator['room_number'] = "N/A"
     else:
-        offices = entry["offices"]
+        offices = legislator["offices"]
         for office in offices:
             if office["type"] == "capitol":
                 legislator["capitol_phone"] = str(office["phone"])
@@ -63,24 +67,26 @@ def set_house(person):
     return person
 
 
-def construct_email(person, state):
+def construct_email(person):
     if person["house"] == "N/A":
         person["email"] = "N/A"
     else:
         person["email"] = person["first_name"] + "." + person["last_name"] + emails["tx_" + person["house"].lower()]
     return person
 
-def validate_person(person, state):
-    person = set_house(person)
+def format_legislator(legislator):
+    legislator = set_house(legislator)
     for field in validation_list:
-        if field not in person or not person[field]:
+        if field not in legislator or not legislator[field]:
             if field == "email":
-                person = construct_email(person, state)
+                legislator = construct_email(legislator)
             elif field == "district":
-                person["district"] = 0
+                legislator["district"] = 0
             else:
-                person[field] = None
-    return person
+                legislator[field] = None
+        if field == "offices":
+            legislator = set_office_info(legislator)
+    return legislator
 
 
 def get_legislators_list(state):
@@ -89,32 +95,33 @@ def get_legislators_list(state):
     legislators = list()
     for entry in legislator_json:
         entry = clean_values(entry)
-        entry = validate_person(entry, state)
-        legislator = dict()
-        legislator["alt_id"] = entry["leg_id"]
-        legislator["state"] = entry["state"].upper()
-        legislator["last"] = entry["last_name"] + " " + entry["suffixes"]
-        legislator["middle"] = entry["middle_name"]
-        legislator["first"] = entry["first_name"]
-        legislator["source"] = "openstates"
-        legislator["image"] = entry["photo_url"]
-        # ------- Filling legislator data now
-        if entry["party"] == "Republican":
-            legislator["party"] = entry["party"]
-        elif entry["party"] == "Democratic":
-            legislator["party"] = "Democrat"
-        else:
-             legislator["party"] = "Other"
-        
-        legislator["house"] = entry["house"]
-        legislator["year"] = "2017"
-        legislator["email"] = entry["email"]
-        legislator["website_url"] = entry["url"]
-        legislator["district"] = entry["district"]
-       
-        legislator = set_office_info(entry, legislator)
+        entry = format_legislator(entry)
+        # Person table data
+        person = Person(first=str(entry["first_name"]),
+                        last=str(entry["last_name"]) + " " + str(entry["suffixes"]),
+                        middle=str(entry["middle_name"]),
+                        image=str(entry["photo_url"]),
+                        source="openstates",
+                        state=state,
+                        alt_id=str(entry["leg_id"]))
 
-        legislator["current_term"] = 1
-        legislator["start"] = "2017-01-01"
+        # Term table data
+        term = Term(person = person,
+                    year=YEAR,
+                    house = entry["house"],
+                    state = state,
+                    district=str(entry["district"]),
+                    party = str(entry["party"]),
+                    start = DEFAULT_TERM_START,
+                    current_term = 1)
+
+        legislator = Legislator(person=person,
+                                term=term,
+                                state=state,
+                                website_url=str(entry["url"]),
+                                capitol_phone=entry["capitol_phone"],
+                                capitol_fax=entry["capitol_fax"],
+                                room_number=entry["room_number"],
+                                email=str(entry["email"]))
         legislators.append(legislator)
     return legislators
