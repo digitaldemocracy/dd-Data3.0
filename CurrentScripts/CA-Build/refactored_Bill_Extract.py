@@ -38,6 +38,7 @@ import json
 
 from Database_Connection import mysql_connection
 from graylogger.graylogger import GrayLogger
+from Utils.Database_Connection import *
 
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -232,9 +233,7 @@ def get_bill_versions(ca_cursor, dd_cursor):
         record[0] = '%s_%s' % (US_STATE, record[0])
         record[1] = '%s_%s' % (US_STATE, record[1])
         if record[4] is not None:
-            print(record[4])
             record[4] = record[4].encode('utf-8')
-            print(record[4])
         # Appropriation is 'Yes' or 'No' in capublic, but an int in DDDB.
         if record[5] is not None:
             record[5] = 0 if record[5] == 'No' else 1
@@ -246,13 +245,7 @@ def get_bill_versions(ca_cursor, dd_cursor):
 def main():
     import sys
     ddinfo = mysql_connection(sys.argv)
-    with MySQLdb.connect(host=ddinfo['host'],
-                         port=ddinfo['port'],
-                         db=ddinfo['db'],
-                         user=ddinfo['user'],
-                         passwd=ddinfo['passwd'],
-                         charset='utf8'
-                         ) as dd_cursor:
+    with connect("local") as dd_cursor:
         with MySQLdb.connect(host='transcription.digitaldemocracy.org',
                              user='monty',
                              db='capublic',
