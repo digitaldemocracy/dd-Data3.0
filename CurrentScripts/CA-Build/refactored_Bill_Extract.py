@@ -163,9 +163,6 @@ Checks if BillVersion exists. If not, adds the BillVersion.
 '''
 def add_bill_version(dd_cursor, values):
     global BV_INSERT
-    if "SB410" in values[1]:
-        print("here")
-        print(values[4])
     dd_cursor.execute(QS_BILLVERSION_CHECK, (values[0],))
     if dd_cursor.rowcount == 0:
         try:
@@ -245,7 +242,7 @@ def get_bill_versions(ca_cursor, dd_cursor):
 def main():
     import sys
     ddinfo = mysql_connection(sys.argv)
-    with connect("local") as dd_cursor:
+    with connect() as dd_cursor:
         with MySQLdb.connect(host='transcription.digitaldemocracy.org',
                              user='monty',
                              db='capublic',
