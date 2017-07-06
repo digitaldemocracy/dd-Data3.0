@@ -31,11 +31,13 @@ def countdown(db):
 def connect(db = None):
     '''
     Returns a MySQLdb connection to the specified database.
+    Checks the current IP address and checks against the dw server. If the script is running on the
+    dw server then the check is skipped.
     :param db: string: live for live database, local for local host database, defaults to dev server
     :param override_flag: override_flag forces the scripted to run on the live server
     :return: a MySQLdb connection to the specified database
     '''
-    if socket.gethostname() == "dw.digitaldemocracy.org" or (db == "live"
+    if socket.gethostbyname(socket.gethostname()) == "172.31.37.21" or (db == "live"
                                                              and raw_input("Are you sure you want to run "
                                                                            "this script on the live database? (y/n) ").lower() == "y"):
         countdown("live")
@@ -61,7 +63,6 @@ def connect(db = None):
                          user='awsDB',
                          passwd='digitaldemocracy789',
                          charset='utf8')
-
 
 
 
