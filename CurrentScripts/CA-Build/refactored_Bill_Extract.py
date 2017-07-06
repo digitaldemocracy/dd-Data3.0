@@ -37,7 +37,7 @@ import MySQLdb
 import json
 
 from Database_Connection import mysql_connection
-from graylogger.graylogger import GrayLogger
+from GrayLogger.graylogger import GrayLogger
 from Utils.Database_Connection import *
 
 reload(sys)
@@ -242,7 +242,7 @@ def get_bill_versions(ca_cursor, dd_cursor):
 def main():
     import sys
     ddinfo = mysql_connection(sys.argv)
-    with connect() as dd_cursor:
+    with connect("local") as dd_cursor:
         with MySQLdb.connect(host='transcription.digitaldemocracy.org',
                              user='monty',
                              db='capublic',

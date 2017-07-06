@@ -34,7 +34,7 @@ import datetime as dt
 from Constants.General_Constants import *
 from Utils.DatabaseUtils_NR import create_payload
 from Utils.Utils import clean_name
-from graylogger.graylogger import GrayLogger
+from GrayLogger.graylogger import GrayLogger
 from Database_Connection import mysql_connection
 
 # SQL Queries

@@ -39,7 +39,7 @@ import csv
 import mysql.connector
 from pprint import pprint
 from urllib import urlopen
-from graylogger.graylogger import GrayLogger
+from GrayLogger.graylogger import GrayLogger
 API_URL = 'http://dw.digitaldemocracy.org:12202/gelf'
 logger = None
 LOG = {'Contribution': {'inserted': 0}}
