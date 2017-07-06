@@ -22,7 +22,7 @@ Populates:
 '''
 
 from Database_Connection import mysql_connection
-from graylogger.graylogger import GrayLogger
+from GrayLogger.graylogger import GrayLogger
 from bs4 import BeautifulSoup
 import sys
 import MySQLdb

@@ -33,7 +33,7 @@ Populates:
 from Database_Connection import mysql_connection
 import traceback
 import MySQLdb
-from graylogger.graylogger import GrayLogger
+from GrayLogger.graylogger import GrayLogger
 import json
 API_URL = 'http://dw.digitaldemocracy.org:12202/gelf'
 logger = None

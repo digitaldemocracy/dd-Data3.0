@@ -34,7 +34,7 @@ from lxml import etree
 import unicodedata
 import MySQLdb
 import re
-from graylogger.graylogger import GrayLogger                                    
+from GrayLogger.graylogger import GrayLogger
 import json
 API_URL = 'http://dw.digitaldemocracy.org:12202/gelf'                  
 logger = None

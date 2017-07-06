@@ -25,7 +25,7 @@ import json
 import MySQLdb
 import sys
 from urllib import urlopen
-from graylogger.graylogger import GrayLogger                                    
+from GrayLogger.graylogger import GrayLogger
 API_URL = 'http://dw.digitaldemocracy.org:12202/gelf'                  
 logger = None
 INSERTED = 0
