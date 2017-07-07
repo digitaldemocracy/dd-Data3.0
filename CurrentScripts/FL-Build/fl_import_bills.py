@@ -29,11 +29,10 @@ import os
 from bs4 import BeautifulSoup
 from Utils.Database_Connection import *
 from bill_API_helper import *
-from Constants.Bills_Queries import *
-from Constants.General_Constants import *
-from Utils.DatabaseUtils_NR import *
 from Utils.Bill_Manager import *
 from bill_API_helper import *
+from Constants.Bills_Queries import *
+from Constants.General_Constants import *
 from GrayLogger.graylogger import GrayLogger
 
 
