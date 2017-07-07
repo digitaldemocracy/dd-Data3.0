@@ -39,13 +39,13 @@ SELECT_COMMITTEE_MEMBERS = '''SELECT pid FROM servesOn
                             AND cid = %(cid)s
                             AND state = %(state)s
                             AND current_flag = true
-                            AND year = %(year)s'''
+                            AND year = %(session_year)s'''
 
 SELECT_HOUSE_MEMBERS = '''SELECT p.pid FROM Person p
                           JOIN Legislator l ON p.pid = l.pid
                           JOIN Term t ON l.pid = t.pid
                           WHERE l.state = %(state)s
-                          AND t.year = %(year)s
+                          AND t.year = %(session_year)s
                           AND t.house = %(house)s'''
 
 
@@ -63,7 +63,7 @@ INSERT_COMMITTEE = '''INSERT INTO Committee
 INSERT_SERVES_ON = '''INSERT INTO servesOn
                       (pid, year, house, cid, state, current_flag, start_date, position)
                       VALUES
-                      (%(pid)s, %(session_year)s, %(house)s, %(cid)s, %(state)s, 1, %(start_date)s, %(position)s)'''
+                      (%(pid)s, %(session_year)s, %(house)s, %(cid)s, %(state)s, %(current_flag)s, %(start_date)s, %(position)s)'''
 
 # SQL Updates
 UPDATE_SERVESON = '''UPDATE servesOn
@@ -71,5 +71,28 @@ UPDATE_SERVESON = '''UPDATE servesOn
                      WHERE pid = %(pid)s
                      AND cid = %(cid)s
                      AND house = %(house)s
-                     AND year = %(year)s
+                     AND year = %(session_year)s
                      AND state = %(state)s'''
+
+
+SELECT_LEG_LASTNAME = '''SELECT * FROM Person p
+                    JOIN Term t ON p.pid = t.pid
+                    WHERE t.state = %(state)s
+                    AND t.current_term = 1
+                    AND p.last LIKE %(last)s
+                    '''
+
+SELECT_LEG_FIRSTNAME = '''SELECT * FROM Person p
+                    JOIN Term t ON p.pid = t.pid
+                    WHERE t.state = %(state)s
+                    AND t.current_term = 1
+                    AND p.first LIKE %(first)s
+                    '''
+
+SELECT_LEG_FIRSTLAST = '''SELECT * FROM Person p
+                    JOIN Term t ON p.pid = t.pid
+                    WHERE t.state = %(state)s
+                    AND t.current_term = 1
+                    AND p.first LIKE %(first)s
+                    AND p.last LIKE %(last)s
+                    '''
