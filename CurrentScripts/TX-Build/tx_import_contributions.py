@@ -227,8 +227,6 @@ def insert_contribution(cursor, conID, pid, year, date, house, donorName, donorO
 
 
 def main():
-    os.chdir('TX-Build/')
-
     ddinfo = mysql_connection(sys.argv)
     with MySQLdb.connect(host=ddinfo['host'],
                          user=ddinfo['user'],
