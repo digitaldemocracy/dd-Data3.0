@@ -16,6 +16,8 @@ Source:
 
 import requests
 import json
+import datetime as dt
+
 
 COMMITTEE_SEARCH_URL = "https://openstates.org/api/v1/committees/?state={0}"
 COMMITTEE_SEARCH_URL += "&apikey=3017b0ca-3d4f-482b-9865-1c575283754a"
@@ -47,47 +49,48 @@ def get_committee_list(state):
 
     comm_list = list()
     for entry in committee_json:
-        committee = dict()
+        if is_committee_current(entry['updated_at']):
+            committee = dict()
 
-        committee['comm_id'] = entry['id']
-        committee['state'] = state.upper()
+            committee['comm_id'] = entry['id']
+            committee['state'] = state.upper()
 
-        if entry['chamber'] == 'joint':
-            committee['house'] = 'Joint'
-        else:
-            committee['house'] = metadata['chambers'][entry['chamber']]['name']
-
-        committee['updated'] = entry['updated_at']
-
-        if entry['subcommittee'] is not None:
-            committee['type'] = 'Subcommittee'
-            committee['name'] = committee['house'] + ' ' + entry['committee']
-
-            if 'Subcommittee on the' in entry['subcommittee']:
-                committee['name'] = committee['name'].strip() + ' ' + entry['subcommittee']
-                committee['short_name'] = entry['subcommittee'].replace('Subcommittee on the', '').strip()
-            elif 'Subcommittee on' in entry['subcommittee']:
-                committee['name'] = committee['name'].strip() + ' ' + entry['subcommittee']
-                committee['short_name'] = entry['subcommittee'].replace('Subcommittee on', '').strip()
+            if entry['chamber'] == 'joint':
+                committee['house'] = 'Joint'
             else:
-                committee['name'] = committee['name'].strip() + ' Subcommittee on ' + entry['subcommittee'].replace('Subcommittee', '').strip()
-                committee['short_name'] = entry['subcommittee'].replace('Subcommittee', '').strip()
-        elif 'Joint' in entry['committee']:
-            committee['short_name'] = entry['committee'].replace('Committee', '', 1).strip()
-            committee['type'] = 'Joint'
-            committee['name'] = entry['committee']
-        elif 'Select' in entry['committee']:
-            committee['short_name'] = entry['committee'].replace('Select Committee on', '', 1).strip()
-            committee['type'] = 'Select'
-            committee['name'] = committee['house'] + ' ' + entry['committee']
-        else:
-            committee['short_name'] = entry['committee'].replace('Committee', '', 1).strip()
-            committee['type'] = 'Standing'
-            committee['name'] = committee['house'] + ' ' + committee['type'] + ' Committee on ' + committee['short_name']
+                committee['house'] = metadata['chambers'][entry['chamber']]['name']
 
-        comm_list.append(committee)
+            committee['updated'] = entry['updated_at']
 
-    return comm_list
+            if entry['subcommittee'] is not None:
+                committee['type'] = 'Subcommittee'
+                committee['name'] = committee['house'] + ' ' + entry['committee']
+
+                if 'Subcommittee on the' in entry['subcommittee']:
+                    committee['name'] = committee['name'].strip() + ' ' + entry['subcommittee']
+                    committee['short_name'] = entry['subcommittee'].replace('Subcommittee on the', '').strip()
+                elif 'Subcommittee on' in entry['subcommittee']:
+                    committee['name'] = committee['name'].strip() + ' ' + entry['subcommittee']
+                    committee['short_name'] = entry['subcommittee'].replace('Subcommittee on', '').strip()
+                else:
+                    committee['name'] = committee['name'].strip() + ' Subcommittee on ' + entry['subcommittee'].replace('Subcommittee', '').strip()
+                    committee['short_name'] = entry['subcommittee'].replace('Subcommittee', '').strip()
+            elif 'Joint' in entry['committee']:
+                committee['short_name'] = entry['committee'].replace('Committee', '', 1).strip()
+                committee['type'] = 'Joint'
+                committee['name'] = entry['committee']
+            elif 'Select' in entry['committee']:
+                committee['short_name'] = entry['committee'].replace('Select Committee on', '', 1).strip()
+                committee['type'] = 'Select'
+                committee['name'] = committee['house'] + ' ' + entry['committee']
+            else:
+                committee['short_name'] = entry['committee'].replace('Committee', '', 1).strip()
+                committee['type'] = 'Standing'
+                committee['name'] = committee['house'] + ' ' + committee['type'] + ' Committee on ' + committee['short_name']
+
+            comm_list.append(committee)
+
+        return comm_list
 
 '''
 This function returns a list of dictionaries for each committe member on the specified committee.
@@ -120,3 +123,14 @@ def get_committee_membership(comm_id):
         member_list.append(member)
 
     return member_list
+
+'''
+Committees that OpenStates has updated in the past week
+are defined as current in the database
+'''
+def is_committee_current(updated):
+    update_date = dt.datetime.strptime(updated, '%Y-%m-%d %H:%M:%S')
+
+    diff = dt.datetime.now() - update_date
+
+    return diff.days <= 7
