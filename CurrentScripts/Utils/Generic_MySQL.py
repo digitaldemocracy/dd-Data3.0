@@ -1,5 +1,8 @@
 import MySQLdb
 import traceback
+from Constants.Committee_Queries import *
+from Database_Connection import *
+
 def create_payload(table, sqlstmt):
     return {
         '_table': table,
@@ -71,6 +74,16 @@ def get_entity_id(db_cursor, query, entity, objType, logger):
 
     return False
 
+def get_all(db_cursor, query, entity, objType, logger):
+    try:
+
+        db_cursor.execute(query, entity)
+        return db_cursor.fetchall()
+    except MySQLdb.Error:
+        logger.warning("Failed Select All", full_msg=traceback.format_exc(),
+                       additional_fields=create_payload(objType, (query % entity)))
+
+    return False
 '''
 Generic SQL update function
 '''
@@ -82,3 +95,11 @@ def update_entity(db_cursor, query, entity, objType, logger):
         logger.warning('Insert Failed', full_msg=traceback.format_exc(),
                        additional_fields=create_payload(objType, (query % entity)))
     return False
+
+def get_session_year(db_cursor, state, logger):
+    with connect("force"):
+        is_entity_in_db(db_cursor=db_cursor,
+                        query=SELECT_SERVES_ON,
+                        entity=state,
+                        objType="Session for State",
+                        logger=logger)
