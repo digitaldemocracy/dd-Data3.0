@@ -40,7 +40,7 @@ def is_entity_in_db(db_cursor, query, entity, objType, logger):
             return query[0]
     except:
         print(query)
-        print(entity.to_dict())
+
         print(query%entity)
         logger.warning('Check Failed', full_msg=traceback.format_exc(),
                 additional_fields=create_payload(objType, (query%entity)))
@@ -97,9 +97,9 @@ def update_entity(db_cursor, query, entity, objType, logger):
     return False
 
 def get_session_year(db_cursor, state, logger):
-    with connect("force"):
-        is_entity_in_db(db_cursor=db_cursor,
-                        query=SELECT_SERVES_ON,
-                        entity=state,
-                        objType="Session for State",
-                        logger=logger)
+        entity = {"state" : state}
+        return is_entity_in_db(db_cursor=db_cursor,
+                                query=SELECT_SESSION_YEAR,
+                                entity=entity,
+                                objType="Session for State",
+                                logger=logger)
