@@ -37,9 +37,8 @@ def connect(db = None):
     :param override_flag: override_flag forces the scripted to run on the live server
     :return: a MySQLdb connection to the specified database
     '''
-    if socket.gethostbyname(socket.gethostname()) == "172.31.37.21" or (db == "live"
-                                                             and raw_input("Are you sure you want to run "
-                                                                           "this script on the live database? (y/n) ").lower() == "y"):
+    if socket.gethostbyname(socket.gethostname()) == "172.31.37.21" or db == "force" or \
+          (db == "live" and raw_input("Are you sure you want this script on the live database? (y/n) ").lower() == "y"):
         countdown("live")
         return MySQLdb.connect(host='dddb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                          port=3306,

@@ -21,7 +21,7 @@ import sys
 import os
 import json
 from bs4 import BeautifulSoup
-from graylogger.graylogger import GrayLogger
+from GrayLogger.graylogger import GrayLogger
 from Constants.Contribution_Queries import *
 from Constants.General_Constants import *
 from Utils.DatabaseUtils_NR import *

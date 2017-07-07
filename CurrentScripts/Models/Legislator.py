@@ -37,7 +37,7 @@ class Legislator(object):
                 "OfficialBio": self.official_bio}
 
     def person_dict(self):
-        return self.person.to_dict()
+        return self.person.__dict__
 
     def term_dict(self):
-        return self.term.to_dict()
+        return self.term.__dict__

@@ -140,8 +140,9 @@ if __name__ == "__main__":
                                       charset='utf8') as dddb:
 
         with GrayLogger(GRAY_LOGGER_URL) as logger:
+            session_year = get_session_year(dddb, "TX", logger)
             leg_manager = Legislator_Mangaer(dddb, logger, "TX")
-            legislators = get_legislators_list("TX")
+            legislators = get_legislators_list("TX", session_year)
             leg_manager.add_legislators_db(legislators)
             leg_manager.log()
     #         logger = _logger

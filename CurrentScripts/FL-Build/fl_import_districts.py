@@ -25,7 +25,7 @@ import sys
 import json
 import traceback
 from Database_Connection import mysql_connection
-from graylogger.graylogger import GrayLogger
+from GrayLogger.graylogger import GrayLogger
 from Constants.Districts_Queries import *
 from Constants.General_Constants import *
 from Utils.DatabaseUtils_NR import *
