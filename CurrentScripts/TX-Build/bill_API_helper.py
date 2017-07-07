@@ -18,15 +18,20 @@ import requests
 import urllib2
 import json
 import datetime as dt
+from Constants.General_Constants import *
+from Models.Bill import *
+from Models.Vote import *
+from Models.Version import *
+from Models.Action import *
 
 BILL_SEARCH_URL = "https://openstates.org/api/v1/bills/?state={0}&search_window=session&updated_since={1}"
-BILL_SEARCH_URL += "&apikey=3017b0ca-3d4f-482b-9865-1c575283754a"
+BILL_SEARCH_URL += "&apikey=" + OPENSTATES_API_KEY
 
 BILL_DETAIL_URL = "https://openstates.org/api/v1/bills/{0}/"
-BILL_DETAIL_URL += "?apikey=3017b0ca-3d4f-482b-9865-1c575283754a"
+BILL_DETAIL_URL += "?apikey=" + OPENSTATES_API_KEY
 
 STATE_METADATA_URL = "https://openstates.org/api/v1/metadata/{0}/"
-STATE_METADATA_URL += "?apikey=3017b0ca-3d4f-482b-9865-1c575283754a"
+STATE_METADATA_URL += "?apikey=" + OPENSTATES_API_KEY
 
 
 '''
@@ -56,40 +61,58 @@ def get_bills(state):
     bill_list = list()
 
     for entry in bill_json:
-        bill = dict()
+        #bill['os_bid'] = entry["id"]
 
-        bill["os_bid"] = entry["id"]
+        state = entry["state"].upper()
+        house = metadata["chambers"][entry["chamber"]]["name"]
 
-        bill["state"] = entry["state"].upper()
-        bill["house"] = metadata["chambers"][entry["chamber"]]["name"]
-
+        # The bill's type and number, eg. SB 01
+        # bill_id[0] is the type, [1] is the number
         bill_id = entry["bill_id"].split(" ", 1)
 
-        bill["type"] = bill_id[0]
-        bill["number"] = bill_id[1]
+        #bill["type"] = bill_id[0]
+        #bill["number"] = bill_id[1]
 
         session_data = metadata["session_details"][entry["session"]]
-        bill["session_year"] = dt.datetime.strptime(session_data['start_date'], '%Y-%m-%d %H:%M:%S').date().year
+        #session_year = dt.datetime.strptime(session_data['start_date'], '%Y-%m-%d %H:%M:%S').date().year
+
+        session_name = entry["session"]
+        for term in metadata["terms"]:
+            if session_name in term["sessions"]:
+                session_year = term["start_year"]
 
         # This value is used to construct the BID for a bill
-        bid_session = str(bill["session_year"])
-        session_end = dt.datetime.strptime(session_data['end_date'], '%Y-%m-%d %H:%M:%S').date().year
+        bid_session = str(session_year)
 
-        if session_end != bill['session_year']:
-            bid_session += str(session_end)
+        session_data = metadata['session_details'][entry['session']]
 
         if session_data["type"] == "primary":
-            bill["session"] = 0
+            session = 0
         elif session_data["type"] == "special":
-            bill["session"] = 1
+            session = 1
 
-        bill["title"] = entry["title"]
+        #bill['title'] = entry["title"]
 
         # BID format: (State)_(Session year)(Session code)(Bill type)(Bill number)
-        bill["bid"] = state.upper() + "_" + bid_session + str(bill["session"]) + bill["type"] + bill["number"]
+        bid = state.upper() + "_" + bid_session + str(session) + bill_id[0] + bill_id[1]
 
         # Placeholder for billState until we get data - not needed for transcription
-        bill['billState'] = 'TBD'
+        bill_state = 'TBD'
+
+        bill = Bill(bid=bid, bill_type=bill_id[0], number=bill_id[1],
+                    house=house, bill_state=bill_state,
+                    session=session, state=state,
+                    os_bid = entry['id'], title = entry['title'],
+                    session_year=session_year)
+
+        details = get_bill_details(os_bid=entry['id'],
+                                   bid=bid,
+                                   title=entry['title'],
+                                   state=state)
+
+        bill.set_votes(details['votes'])
+        bill.set_versions(details['versions'])
+        bill.set_actions(details['actions'])
 
         bill_list.append(bill)
 
@@ -125,21 +148,21 @@ def get_bill_votes(bill_votes, bid, state):
     vote_list = list()
 
     for entry in bill_votes:
-        vote = dict()
+        #vote = dict()
 
-        vote['bid'] = bid
+        #vote['bid'] = bid
 
-        vote["os_vid"] = entry["id"]
-        vote["state"] = entry["state"]
+        #vote["os_vid"] = entry["id"]
+        #vote["state"] = entry["state"]
 
-        vote['date'] = dt.datetime.strptime(entry['date'], '%Y-%m-%d %H:%M:%S').date()
+        date = dt.datetime.strptime(entry['date'], '%Y-%m-%d %H:%M:%S').date()
 
         # If there is more than one vote in a day, later votes get higher sequence numbers
         if old_vote_date is None:
             vote_seq = 1
-            old_vote_date = vote['date']
+            old_vote_date = date
         else:
-            new_vote_date = vote['date']
+            new_vote_date = date
 
             if new_vote_date == old_vote_date:
                 vote_seq += 1
@@ -147,27 +170,43 @@ def get_bill_votes(bill_votes, bid, state):
                 vote_seq = 1
                 old_vote_date = new_vote_date
 
-        vote['vote_seq'] = vote_seq
-        vote['date'] = str(vote['date'])
+        #vote['vote_seq'] = vote_seq
+        date = str(dt.datetime.combine(date, dt.datetime.min.time()))
 
-        vote["house"] = metadata["chambers"][entry["chamber"]]["name"]
-        vote["session"] = entry["session"]
-        vote["motion"] = entry["motion"]
+        house = metadata["chambers"][entry["chamber"]]["name"]
+        #vote["house"] = metadata["chambers"][entry["chamber"]]["name"]
+        #vote["session"] = entry["session"]
+        #vote["motion"] = entry["motion"]
 
-        vote["ayes"] = entry["yes_count"]
-        vote["naes"] = entry["no_count"]
-        vote["other"] = entry["other_count"]
+        # vote["ayes"] = entry["yes_count"]
+        # vote["naes"] = entry["no_count"]
+        # vote["other"] = entry["other_count"]
 
-        vote["aye_votes"] = entry["yes_votes"]
-        vote["nae_votes"] = entry["no_votes"]
-        vote["other_votes"] = entry["other_votes"]
+        #vote["aye_votes"] = entry["yes_votes"]
+        #vote["nae_votes"] = entry["no_votes"]
+        #vote["other_votes"] = entry["other_votes"]
 
-        vote["passed"] = entry["passed"]
+        # vote["passed"] = entry["passed"]
 
-        if vote['passed'] == 1:
-            vote['result'] = '(PASS)'
-        else:
-            vote['result'] = '(FAIL)'
+        # if entry['passed'] == 1:
+        #     vote['result'] = '(PASS)'
+        # else:
+        #     vote['result'] = '(FAIL)'
+
+        vote = Vote(vote_date=date, vote_date_seq=vote_seq,
+                    ayes=entry['yes_count'],naes=entry['no_count'],
+                    other=entry['other_count'], motion=entry['motion'],
+                    result=entry['passed'], bid=bid, house=house)
+
+        for yes_vote in entry['yes_votes']:
+            person = {'alt_id': yes_vote['leg_id'], 'name': yes_vote['name']}
+            vote.add_vote_detail(entry['state'].upper(), 'AYE', person=person)
+        for no_vote in entry['no_votes']:
+            person = {'alt_id': no_vote['leg_id'], 'name': no_vote['name']}
+            vote.add_vote_detail(entry['state'].upper(), 'NOE', person=person)
+        for other_vote in entry['other_votes']:
+            person = {'alt_id': other_vote['leg_id'], 'name': other_vote['name']}
+            vote.add_vote_detail(entry['state'].upper(), 'ABS', person=person)
 
         vote_list.append(vote)
 
@@ -191,18 +230,18 @@ def get_bill_actions(bill_actions, bid):
     old_action_date = None
 
     for entry in bill_actions:
-        action = dict()
+        #action = dict()
 
-        action['bid'] = bid
+        #action['bid'] = bid
 
-        action['date'] = dt.datetime.strptime(entry['date'], '%Y-%m-%d %H:%M:%S').date()
+        date = dt.datetime.strptime(entry['date'], '%Y-%m-%d %H:%M:%S').date()
 
         # If there is more than one action in a day, later actions get higher sequence numbers
         if old_action_date is None:
             action_seq = 1
-            old_action_date = action['date']
+            old_action_date = date
         else:
-            new_action_date = action['date']
+            new_action_date = date
 
             if new_action_date == old_action_date:
                 action_seq += 1
@@ -210,10 +249,15 @@ def get_bill_actions(bill_actions, bid):
                 action_seq = 1
                 old_action_date = new_action_date
 
-        action['seq_num'] = action_seq
-        action['date'] = str(action['date'])
+        #action['seq_num'] = action_seq
+        date = str(date)
 
-        action["text"] = entry["action"]
+        #action["text"] = entry["action"]
+
+        action = Action(bid=bid,
+                        date=date,
+                        text=entry['action'],
+                        seq_num=action_seq)
 
         action_list.append(action)
 
@@ -231,7 +275,7 @@ Each dictionary contains:
     name: The name of the document containing the version text
     url: A URL of the document that contains the version text
 '''
-def get_bill_versions(bill_versions, bid, state):
+def get_bill_versions(bill_versions, bid, title, state):
     version_list = list()
 
     dummy_date = dt.date(2017, 1, 1)
@@ -240,15 +284,20 @@ def get_bill_versions(bill_versions, bid, state):
     for entry in bill_versions[::-1]:
         version = dict()
 
-        version['bid'] = bid
-        version['state'] = state.upper()
-        version['name'] = entry['name']
+        #version['bid'] = bid
+        #version['state'] = state.upper()
+        #version['name'] = entry['name']
 
-        version['vid'] = version['bid'] + version['name'].split(' ')[-1]
-        version['url'] = entry['url']
+        vid = bid + entry['name'].split(' ')[-1]
+        #version['url'] = entry['url']
 
-        version['date'] = dummy_date
+        #version['date'] = dummy_date
         dummy_date += dt.timedelta(days=1)
+
+        version = Version(vid=vid, bid=bid, state=state.upper(),
+                          bill_state=entry['name'], subject=title,
+                          doctype=entry['mimetype'], url=entry['url'],
+                          date=dummy_date)
 
         version_list.append(version)
 
@@ -261,7 +310,7 @@ on that bill's votes, actions, and versions.
 
 This function exists to reduce the number of API calls per bill
 '''
-def get_bill_details(os_bid, bid, state):
+def get_bill_details(os_bid, bid, title, state):
     api_url = BILL_DETAIL_URL.format(os_bid)
 
     detail_json = requests.get(api_url).json()
@@ -270,6 +319,6 @@ def get_bill_details(os_bid, bid, state):
 
     details['votes'] = get_bill_votes(detail_json['votes'], bid, state)
     details['actions'] = get_bill_actions(detail_json['actions'], bid)
-    details['versions'] = get_bill_versions(detail_json['versions'], bid, state)
+    details['versions'] = get_bill_versions(detail_json['versions'], bid, title, state)
 
     return details

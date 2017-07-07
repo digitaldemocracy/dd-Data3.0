@@ -59,7 +59,7 @@ INSERT_BILL = '''INSERT INTO Bill
 INSERT_MOTION = '''INSERT INTO Motion
                    (mid, text, doPass)
                    VALUES
-                   (%(mid)s, %(text)s, %(pass)s)'''
+                   (%(mid)s, %(motion)s, %(doPass)s)'''
 
 INSERT_BVS = '''INSERT INTO BillVoteSummary
                 (bid, mid, cid, VoteDate, ayes, naes, abstain, result, VoteDateSeq)
@@ -79,7 +79,7 @@ INSERT_ACTION = '''INSERT INTO Action
 INSERT_VERSION = '''INSERT INTO BillVersion
                     (vid, bid, date, billState, subject, text, state)
                     VALUES
-                    (%(vid)s, %(bid)s, %(date)s, %(name)s, %(subject)s, %(doc)s, %(state)s)'''
+                    (%(vid)s, %(bid)s, %(date)s, %(bill_state)s, %(subject)s, %(doc)s, %(state)s)'''
 
 # SQL Updates
 
