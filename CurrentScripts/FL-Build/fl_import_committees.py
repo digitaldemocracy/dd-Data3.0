@@ -26,7 +26,7 @@ from Constants.General_Constants import *
 from Database_Connection import mysql_connection
 from Utils.DatabaseUtils_NR import *
 from committee_API_helper import *
-from graylogger.graylogger import GrayLogger
+from GrayLogger.graylogger import GrayLogger
 
 logger = None
 

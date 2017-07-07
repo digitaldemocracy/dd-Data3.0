@@ -48,7 +48,7 @@ import json
 import MySQLdb
 import csv
 import os
-from graylogger.graylogger import GrayLogger
+from GrayLogger.graylogger import GrayLogger
 from Constants.Lobbyist_Queries import *
 from Constants.General_Constants import *
 from Utils.DatabaseUtils_NR import *

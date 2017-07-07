@@ -34,7 +34,7 @@ from Constants.General_Constants import *
 from Database_Connection import mysql_connection
 from Utils.DatabaseUtils_NR import *
 from bill_API_helper import *
-from graylogger.graylogger import GrayLogger
+from GrayLogger.graylogger import GrayLogger
 
 GRAY_LOGGER_URL = 'http://dw.digitaldemocracy.org:12202/gelf'
 logger = None
