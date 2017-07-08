@@ -23,8 +23,8 @@ Populates:
 
 import sys
 import json
-from Constants.Bills_Queries import *
 from Generic_MySQL import *
+from Constants.Bills_Queries import *
 
 
 class BillManager(object):
@@ -63,14 +63,14 @@ class BillManager(object):
                                                     + ', BillVoteDetail: ' + str(self.BVD_INSERTED)
                                                     + ', Action: ' + str(self.A_INSERTED)
                                                     + ', BillVersion: ' + str(self.V_INSERTED),
-                                       '_state': 'TX'})
+                                       '_state': self.state})
 
-        LOG = {'tables': [{'state': 'TX', 'name': 'Bill', 'inserted': self.B_INSERTED, 'updated': 0, 'deleted': 0},
-                          {'state': 'TX', 'name': 'Motion', 'inserted': self.M_INSERTED, 'updated': 0, 'deleted': 0},
-                          {'state': 'TX', 'name': 'BillVoteSummary', 'inserted': self.BVS_INSERTED, 'updated': 0, 'deleted': 0},
-                          {'state': 'TX', 'name': 'BillVoteDetail', 'inserted': self.BVD_INSERTED, 'updated': 0, 'deleted': 0},
-                          {'state': 'TX', 'name': 'Action', 'inserted': self.A_INSERTED, 'updated': 0, 'deleted': 0},
-                          {'state': 'TX', 'name': 'BillVersion', 'inserted': self.V_INSERTED, 'updated': 0, 'deleted': 0}]}
+        LOG = {'tables': [{'state': self.state, 'name': 'Bill', 'inserted': self.B_INSERTED, 'updated': 0, 'deleted': 0},
+                          {'state': self.state, 'name': 'Motion', 'inserted': self.M_INSERTED, 'updated': 0, 'deleted': 0},
+                          {'state': self.state, 'name': 'BillVoteSummary', 'inserted': self.BVS_INSERTED, 'updated': 0, 'deleted': 0},
+                          {'state': self.state, 'name': 'BillVoteDetail', 'inserted': self.BVD_INSERTED, 'updated': 0, 'deleted': 0},
+                          {'state': self.state, 'name': 'Action', 'inserted': self.A_INSERTED, 'updated': 0, 'deleted': 0},
+                          {'state': self.state, 'name': 'BillVersion', 'inserted': self.V_INSERTED, 'updated': 0, 'deleted': 0}]}
         sys.stderr.write(json.dumps(LOG))
 
 

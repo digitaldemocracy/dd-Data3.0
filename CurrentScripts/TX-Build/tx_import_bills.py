@@ -30,10 +30,11 @@ from bs4 import BeautifulSoup
 from graylogger.graylogger import GrayLogger
 from Utils.Database_Connection import *
 from bill_API_helper import *
-from Constants.Bills_Queries import *
-from Constants.General_Constants import *
 from Utils.DatabaseUtils_NR import *
 from Utils.Bill_Manager import *
+from Constants.Bills_Queries import *
+from Constants.General_Constants import *
+
 
 #GRAY_LOGGER_URL = 'http://dw.digitaldemocracy.org:12202/gelf'
 logger = None
