@@ -470,6 +470,6 @@ def main():
         logger.info(LOG)
 
 if __name__ == '__main__':
-    logger = create_logger()g
+    logger = create_logger()
     main()
 
