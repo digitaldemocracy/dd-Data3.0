@@ -20,18 +20,12 @@ Populates:
     - PersonStateAffiliation (pid, state)
     - LegislativeStaff (pid, state)
 '''
-
-from Database_Connection import mysql_connection
-from GrayLogger.graylogger import GrayLogger
-from bs4 import BeautifulSoup
-import sys
-import MySQLdb
-import urllib2
-import traceback
 import json
-import datetime as dt
+import urllib2
+from bs4 import BeautifulSoup
+from Utils.Generic_Utils import *
+from Utils.Database_Connection import *
 
-API_URL = 'http://dw.digitaldemocracy.org:12202/gelf'
 logger = None
 
 # Global Counters
@@ -191,8 +185,7 @@ def get_committee_cid(house, committee, session_year, dd):
 
         cid = dd.fetchone()[0]
     except:
-        logger.warning("Committee selection failed", full_msg=traceback.format_exc(),
-                       additional_fields=create_payload('Committee', (SELECT_COMMITTEE_CID % query_dict)))
+        logger.exception(format_logger_message("Committee selection failed", (SELECT_COMMITTEE_CID % query_dict)))
         return None
 
     return cid
@@ -226,8 +219,7 @@ def is_legstaff_in_db(consultant, dd):
         else:
             return False
     except MySQLdb.Error:
-        logger.warning("Consultant selection failed", full_msg=traceback.format_exc(),
-                       additional_fields=create_payload('Person', (SELECT_CONSULT_PID % person_query_dict)))
+        logger.exception(format_logger_message("Consultant selection failed for Person", (SELECT_CONSULT_PID % person_query_dict)))
         return None
 
 
@@ -242,8 +234,7 @@ def is_person_in_db(consultant, dd):
         else:
             return False
     except MySQLdb.Error:
-        logger.warning("Person selection failed", full_msg=traceback.format_exc(),
-                       additional_fields=create_payload('Person', (SELECT_PERSON % query_dict)))
+        logger.exception(format_logger_message("Person selection failed", (SELECT_PERSON % query_dict)))
         return None
 
 
@@ -256,8 +247,7 @@ def is_consultant_in_db(consultant, dd):
         if query is None:
             return False
     except MySQLdb.Error:
-        logger.warning("Select statement failed", full_msg=traceback.format_exc(),
-                       additional_fields=create_payload('ConsultantServesOn', (SELECT_CONSULT_SERVESON % query_dict)))
+        logger.exception(format_logger_message("Select statement failed for ConsultantServesOn", (SELECT_CONSULT_SERVESON % query_dict)))
     return True
 
 
@@ -269,8 +259,7 @@ def insert_person(consultant, dd):
         dd.execute(INSERT_PERSON, insert_dict)
         P_INSERT += dd.rowcount
     except MySQLdb.Error:
-        logger.warning("Insert statement failed", full_msg=traceback.format_exc(),
-                       additional_fields=create_payload('Person', (INSERT_PERSON % insert_dict)))
+        logger.exception(format_logger_message("Insert statement failed for Person", (INSERT_PERSON % insert_dict)))
 
 
 def insert_person_state_aff(legstaff_pid, dd):
@@ -281,8 +270,7 @@ def insert_person_state_aff(legstaff_pid, dd):
         dd.execute(INSERT_PERSON_STATE_AFF, insert_dict)
         PSA_INSERT += dd.rowcount
     except MySQLdb.Error:
-        logger.warning("Insert statement failed", full_msg=traceback.format_exc(),
-                       additional_fields=create_payload('PersonStateAffiliation',
+        logger.exception(format_logger_message("Insert statement failed for PersonStateAffiliation",
                                                         (INSERT_PERSON_STATE_AFF % insert_dict)))
 
 
@@ -294,8 +282,7 @@ def insert_legstaff(legstaff_pid, dd):
         dd.execute(INSERT_LEGSTAFF, insert_dict)
         L_INSERT += dd.rowcount
     except MySQLdb.Error:
-        logger.warning("Insert statement failed", full_msg=traceback.format_exc(),
-                       additional_fields=create_payload('LegislativeStaff', (INSERT_LEGSTAFF % insert_dict)))
+        logger.exception(format_logger_message("Insert statement failed for LegislativeStaff", (INSERT_LEGSTAFF % insert_dict)))
 
 
 def get_consultant_info(name, header):
@@ -336,8 +323,7 @@ def get_session_year(dd):
     try:
         year = dd.fetchone()[0]
     except MySQLdb.Error:
-        logger.warning("Select statement failed", full_msg=traceback.format_exc(),
-                       additional_fields=create_payload("Session", SELECT_SESSION_YEAR))
+        logger.exception(format_logger_message("Select statement failed for Session", SELECT_SESSION_YEAR))
         return None
 
     return year
@@ -358,7 +344,7 @@ def scrape_assembly_problem_sites(comm_url):
     try:
         htmlSoup = BeautifulSoup(urllib2.urlopen(host).read(), 'lxml')
     except urllib2.HTTPError:
-        logger.warning("HTTP Error connecting to %s" % comm_url, full_msg=traceback.format_exc())
+        logger.exception(format_logger_message("Error", "HTTP Error connecting to %s" % comm_url))
         return consultant_names
 
     if commName in ['aesm', 'aedn', 'agri']:
@@ -556,7 +542,7 @@ def scrape_assembly_special_comms(comm_url):
         try:
             htmlSoup = BeautifulSoup(urllib2.urlopen(comm_url).read(), 'lxml')
         except urllib2.HTTPError:
-            logger.warning("HTTP Error connecting to %s" % comm_url, full_msg=traceback.format_exc())
+            logger.exception(format_logger_message("Error", "HTTP Error connecting to %s" % comm_url))
             return consultant_names
 
         commName = comm_url.split('/')[-1]
@@ -583,7 +569,7 @@ def scrape_problematic_sites(comm_url):
     try:
         htmlSoup = BeautifulSoup(urllib2.urlopen(comm_url).read(), 'lxml')
     except urllib2.HTTPError:
-        logger.warning("HTTP Error connecting to %s" % comm_url, full_msg=traceback.format_exc())
+        logger.exception(format_logger_message("Error", "HTTP Error connecting to %s" % comm_url))
         return consultant_names
 
     print("Problem site identified: " + commName)
@@ -680,7 +666,7 @@ def scrape_joint_committees(comm_url):
     try:
         htmlSoup = BeautifulSoup(urllib2.urlopen(comm_url).read(), 'lxml')
     except urllib2.HTTPError:
-        logger.warning("HTTP Error connecting to %s" % comm_url, full_msg=traceback.format_exc())
+        logger.exception(format_logger_message("Error", "HTTP Error connecting to %s" % comm_url))
         return consultant_names
 
     if 'senate' in comm_name or 'assembly' in comm_name:
@@ -746,8 +732,7 @@ def scrape_consultants(comm_url, house):
             try:
                 htmlSoup = BeautifulSoup(urllib2.urlopen(host).read(), 'lxml')
             except urllib2.HTTPError:
-                logger.warning("HTTP Error connecting to %s" % comm_url, full_msg=traceback.format_exc())
-                print("HTTP Error")
+                logger.exception(format_logger_message("Error", "HTTP Error connecting to %s" % comm_url))
                 return consultant_names
             content_div = htmlSoup.find('div', 'content')
             header = content_div.find('p')
@@ -767,7 +752,7 @@ def scrape_consultants(comm_url, house):
             try:
                 htmlSoup = BeautifulSoup(urllib2.urlopen(host).read(), 'lxml')
             except urllib2.HTTPError:
-                logger.warning("HTTP Error connecting to %s" % comm_url, full_msg=traceback.format_exc())
+                logger.exception(format_logger_message("Error", "HTTP Error connecting to %s" % comm_url))
                 print("HTTP Error")
                 return consultant_names
             for header in htmlSoup.find_all('div', 'sidebar-information')[1].find_all('strong'):
@@ -804,8 +789,7 @@ def get_past_consultants(consultants, house, committee, session_year, dd):
                 staff['state'] = STATE
                 update_consultants.append(staff)
     except MySQLdb.Error:
-        logger.warning("Select statement failed", full_msg=traceback.format_exc(),
-                       additional_fields=create_payload('ConsultantServesOn', (SELECT_CURRENT_MEMBERS % select_dict)))
+        logger.exception(format_logger_message("Select statement failed for ConsultantServesOn", (SELECT_CURRENT_MEMBERS % select_dict)))
 
     return update_consultants
 
@@ -935,7 +919,7 @@ def insert_consultants(house, dd):
                 elif committee['type'] == 'Special':
                     committee['staff'] = scrape_assembly_special_comms(committee['link'])
         except:
-            logger.warning("Web scraping failed for website " + str(committee['link']), full_msg=traceback.format_exc())
+            logger.exception(format_logger_message("Error", "Web scraping failed for website " + str(committee['link'])))
             continue
 
         if committee['staff'] is not None and len(committee['staff']) > 0:
@@ -955,8 +939,7 @@ def insert_consultants(house, dd):
                         dd.execute(INSERT_CONSULT_SERVESON, consultant)
                         C_INSERT += dd.rowcount
                     except MySQLdb.Error:
-                        logger.warning("Insert statement failed", full_msg=traceback.format_exc(),
-                                       additional_fields=create_payload("ConsultantServesOn",
+                        logger.exception(format_logger_message("Insert statement failed for ConsultantServesOn",
                                                                         (INSERT_CONSULT_SERVESON % consultant)))
 
             update_consultants = get_past_consultants(committee['staff'], committee['house'],
@@ -968,47 +951,22 @@ def insert_consultants(house, dd):
                         dd.execute(UPDATE_CONSULTANTS, consultant)
                         C_UPDATE += dd.rowcount
                     except MySQLdb.Error:
-                        logger.warning("Update failed", full_msg=traceback.format_exc(),
-                                       additional_fields=create_payload("ConsultantServesOn",
+                        logger.exception(format_logger_message("Update failed for ConsultantServesOn",
                                                                         (UPDATE_CONSULTANTS % consultant)))
 
 
 def main():
-    dbinfo = mysql_connection(sys.argv)
-    with MySQLdb.connect(host=dbinfo['host'],
-                         port=dbinfo['port'],
-                         db=dbinfo['db'],
-                         user=dbinfo['user'],
-                         passwd=dbinfo['passwd'],
-                         charset='utf8') as dd:
-
+    with connect() as dd:
         for house in ['Assembly', 'Senate']:
             insert_consultants(house, dd)
-
-        logger.info(__file__ + " terminated successfully.",
-                    full_msg='Inserted ' + str(P_INSERT) + ' rows in Person, '
-                             + str(PSA_INSERT) + ' rows in PersonStateAffiliation, '
-                             + str(L_INSERT) + ' rows in LegislativeStaff, and inserted '
-                             + str(C_INSERT) + ' rows and updated '
-                             + str(C_UPDATE) + ' rows in ConsultantServesOn',
-                    additional_fields={'_affected_rows': 'ConsultantServesOn: ' + str(C_INSERT + C_UPDATE)
-                                                         + ', Person: ' + str(P_INSERT)
-                                                         + ', PersonStateAffiliation: ' + str(PSA_INSERT)
-                                                         + ', LegislativeStaff: ' + str(L_INSERT),
-                                       '_inserted': 'ConsultantServesOn: ' + str(C_INSERT)
-                                                    + ', Person: ' + str(P_INSERT)
-                                                    + ', PersonStateAffiliation: ' + str(PSA_INSERT)
-                                                    + ', LegislativeStaff: ' + str(L_INSERT),
-                                       '_updated': 'ConsultantServesOn: ' + str(C_UPDATE),
-                                       '_state': 'CA'})
 
     LOG = {'tables': [{'state': 'CA', 'name': 'ConsultantServesOn', 'inserted':C_INSERT, 'updated': C_UPDATE, 'deleted': 0},
       {'state': 'CA', 'name': 'Person', 'inserted':P_INSERT, 'updated': 0, 'deleted': 0},
       {'state': 'CA', 'name': 'PersonStateAffiliation', 'inserted':PSA_INSERT, 'updated': 0, 'deleted': 0},
       {'state': 'CA', 'name': 'LegislativeStaff', 'inserted':L_INSERT, 'updated': 0, 'deleted': 0}]}
     sys.stderr.write(json.dumps(LOG))
+    logger.info(LOG)
 
 if __name__ == '__main__':
-    with GrayLogger(API_URL) as _logger:
-        logger = _logger
-        main()
+    logger = create_logger()
+    main()

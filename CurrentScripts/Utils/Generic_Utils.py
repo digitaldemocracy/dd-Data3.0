@@ -1,8 +1,8 @@
 import os
+import re
 import sys
 import logging
 import datetime as dt
-import re
 
 def capublic_format_committee_name(short_name, house):
     if house == 'CX' or house == "Assembly":

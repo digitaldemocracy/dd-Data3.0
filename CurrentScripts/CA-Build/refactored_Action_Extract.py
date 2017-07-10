@@ -27,13 +27,13 @@ Populates:
   - Action (bid, date, text)
 '''
 
-from Database_Connection import mysql_connection
 import sys
-import traceback
-import MySQLdb
-from GrayLogger.graylogger import GrayLogger
 import json
-API_URL = 'http://dw.digitaldemocracy.org:12202/gelf' 
+import MySQLdb
+import traceback
+from Utils.Generic_Utils import *
+from Utils.Database_Connection import *
+
 logger = None
 LOG = {'Action' : {'inserted': 0, 'updated': 0}}
 INSERTED = 0
@@ -82,12 +82,12 @@ QU_ACTION_TEXT = '''UPDATE Action
                      AND seq_num = %s'''
 
 def create_payload(table, sqlstmt):
-  return {
-      '_table': table,
-      '_sqlstmt': sqlstmt,
-      '_state': 'CA',
-      '_log_type':'Database'
-  }
+    return {
+        '_table': table,
+        '_sqlstmt': sqlstmt,
+        '_state': 'CA',
+        '_log_type':'Database'
+    }
 
 '''
 Checks if the Action is in DDDB. If it isn't, insert it. Otherwise, skip.
@@ -99,85 +99,73 @@ Checks if the Action is in DDDB. If it isn't, insert it. Otherwise, skip.
   |text|: Text of action
 '''
 def insert_Action(dd_cursor, values):
-  global INSERTED, UPDATED, LOG
-  values[0] = '%s_%s' % (STATE, values[0])
+    global INSERTED, UPDATED, LOG
+    values[0] = '%s_%s' % (STATE, values[0])
 
-  # Check if DDDB already has this action
-  dd_cursor.execute(QS_ACTION_CHECK, (values[0], values[1], values[3]))
-  # If Action not in DDDB, add
-  if(dd_cursor.rowcount == 0):
-#    logger.info('New Action %s %s %s' % (values[0], values[1], values[2]))
-    try:
-      dd_cursor.execute(QI_ACTION, values)
-      INSERTED += dd_cursor.rowcount
-      LOG['Action']['inserted'] += dd_cursor.rowcount
-    except MySQLdb.Error:
-      logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-          additional_fields=create_payload('Action', (QI_ACTION % (values[0], values[1], values[2], values[3]))))
-  else:
-    # Check if text has changed
-    dd_cursor.execute(QS_ACTION_TEXT, values)
-    # If text is different update text
+    # Check if DDDB already has this action
+    dd_cursor.execute(QS_ACTION_CHECK, (values[0], values[1], values[3]))
+    # If Action not in DDDB, add
+    if(dd_cursor.rowcount == 0):
+        #    logger.info('New Action %s %s %s' % (values[0], values[1], values[2]))
+        try:
+            dd_cursor.execute(QI_ACTION, values)
+            INSERTED += dd_cursor.rowcount
+            LOG['Action']['inserted'] += dd_cursor.rowcount
+        except MySQLdb.Error:
+            logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+                           additional_fields=create_payload('Action', (QI_ACTION % (values[0], values[1], values[2], values[3]))))
+    else:
+        # Check if text has changed
+        dd_cursor.execute(QS_ACTION_TEXT, values)
+        # If text is different update text
+        if dd_cursor.rowcount == 1:
+            try:
+                dd_cursor.execute(QU_ACTION_TEXT, (values[2], values[0], values[1], values[3]))
+                UPDATED += dd_cursor.rowcount
+                LOG['Action']['updated'] += dd_cursor.rowcount
+            except MySQLdb.Error:
+                logger.warning('Update Failed', full_msg=traceback.format_exc(),
+                               additional_fields=create_payload('Action',
+                                                                QU_ACTION_TEXT % (values[2], values[0], values[1], values[3])))
+
+
+def update_Action(dd_cursor, values):
+    global UPDATED, LOG
+    values[0] = '%s_%s' % (STATE, values[0])
+
+    # Check if DDDB already has this action
+    dd_cursor.execute(QS_ACTION_SEQ_CHECK, (values[0], values[1], values[2], values[3]))
+
     if dd_cursor.rowcount == 1:
-      try:
-        dd_cursor.execute(QU_ACTION_TEXT, (values[2], values[0], values[1], values[3]))
+        dd_cursor.execute(QU_ACTION_SEQ, (values[3], values[0], values[1], values [2]))
+
         UPDATED += dd_cursor.rowcount
         LOG['Action']['updated'] += dd_cursor.rowcount
-      except MySQLdb.Error:
-        logger.warning('Update Failed', full_msg=traceback.format_exc(),
-            additional_fields=create_payload('Action',
-              QU_ACTION_TEXT % (values[2], values[0], values[1], values[3])))
-
-  
-def update_Action(dd_cursor, values):
-  global UPDATED, LOG
-  values[0] = '%s_%s' % (STATE, values[0])
-
-  # Check if DDDB already has this action
-  dd_cursor.execute(QS_ACTION_SEQ_CHECK, (values[0], values[1], values[2], values[3]))
-
-  if dd_cursor.rowcount == 1:
-    dd_cursor.execute(QU_ACTION_SEQ, (values[3], values[0], values[1], values [2]))
-
-    UPDATED += dd_cursor.rowcount
-    LOG['Action']['updated'] += dd_cursor.rowcount
 
 '''
 Loops through all Actions from capublic and adds them as necessary
 '''
 def main():
-  dbinfo = mysql_connection(sys.argv)
-  with MySQLdb.connect(host=dbinfo['host'],
-                         port=dbinfo['port'],
-                         db=dbinfo['db'],
-                         user=dbinfo['user'],
-                         passwd=dbinfo['passwd']) as dd_cursor:
-    with MySQLdb.connect(host='transcription.digitaldemocracy.org',
-                         user='monty',
-                         db='capublic',
-                         passwd='python'
-                         #host='localhost',
-                         #user='root',
-                         #db='historic_capublic',
-                         #passwd=''
-                         ) as ca_cursor:
-      # Get all of the Actions from capublic
-      ca_cursor.execute(QS_BILL_HISTORY_TBL)
+    with connect() as dd_cursor:
+        with MySQLdb.connect(host='transcription.digitaldemocracy.org',
+                             user='monty',
+                             db='capublic',
+                             passwd='python'
+                             #host='localhost',
+                             #user='root',
+                             #db='historic_capublic',
+                             #passwd=''
+                             ) as ca_cursor:
+            # Get all of the Actions from capublic
+            ca_cursor.execute(QS_BILL_HISTORY_TBL)
 
-      for record in ca_cursor.fetchall():
-        insert_Action(dd_cursor, list(record))
-        update_Action(dd_cursor, list(record))
-      logger.info(__file__ + ' terminated successfully.', 
-          full_msg='Inserted ' + str(INSERTED) + ' and updated ' + str(UPDATED) + ' rows in Action',
-          additional_fields={'_affected_rows':'Action:'+str(INSERTED + UPDATED),
-                             '_inserted':'Action:'+str(INSERTED),
-                             '_updated':'Action:'+str(UPDATED),
-                             '_state':'CA',
-                             '_log_type':'Database'})
-      LOG = {'tables': [{'state': 'CA', 'name': 'Action', 'inserted': INSERTED, 'updated': UPDATED}]}
-      sys.stderr.write(json.dumps(LOG))
+            for record in ca_cursor.fetchall():
+                insert_Action(dd_cursor, list(record))
+                update_Action(dd_cursor, list(record))
+            LOG = {'tables': [{'state': 'CA', 'name': 'Action', 'inserted': INSERTED, 'updated': UPDATED}]}
+            sys.stderr.write(json.dumps(LOG))
+            logger.info(LOG)
 
 if __name__ == "__main__":
-  with GrayLogger(API_URL) as _logger:
-    logger = _logger
+    logger = create_logger()
     main()
