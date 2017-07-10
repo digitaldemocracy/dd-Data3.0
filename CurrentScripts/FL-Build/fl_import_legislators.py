@@ -3,8 +3,7 @@
 
 '''
 File: fl_import_legislators.py
-Author: Miguel Aguilar
-Maintained: Nick Russo
+Author: Nick Russo
 Date: 07/05/2016
 Last Updated: 03/18/2017
 
@@ -23,19 +22,17 @@ Populates:
 '''
 
 from legislators_API_helper import *
-from Constants.General_Constants import *
-from Utils.Legislator_Manager import *
+from Utils.Legislator_Insertion_Manager import *
 from Utils.Database_Connection import *
-from GrayLogger.graylogger import *
 
 
 if __name__ == "__main__":
-    with connect("local") as dddb:
-        with GrayLogger(GRAY_LOGGER_URL) as logger:
-            session_year = get_session_year(dddb, "FL", logger)
-            leg_manager = Legislator_Mangaer(dddb, logger, "FL")
-            legislators = get_legislators_list("FL", session_year)
-            leg_manager.add_legislators_db(legislators)
-            leg_manager.log()
+    with connect() as dddb:
+        logger = create_logger()
+        session_year = get_session_year(dddb, "FL", logger)
+        leg_manager = LegislatorInsertionManager(dddb, logger, "FL")
+        legislators = get_legislators_list("FL", session_year)
+        leg_manager.add_legislators_db(legislators)
+        leg_manager.log()
 
 
