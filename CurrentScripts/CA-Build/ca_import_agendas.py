@@ -12,10 +12,10 @@ Sources:
 '''
 
 from pytz import timezone
-from Database_Connection import mysql_connection
-from Utils.DatabaseUtils_NR import *
-from Utils.Hearing_Manager import *
 from Models.Hearing import *
+from Utils.Generic_Utils import *
+from Utils.Hearing_Manager import *
+from Utils.Database_Connection import connect
 
 logger = None
 
@@ -54,8 +54,7 @@ def get_comm_cid(dddb, comm_name, house, session_year, state):
             return dddb.fetchone()[0]
 
     except MySQLdb.Error:
-        logger.warning("Committee selection failed", full_msg=traceback.format_exc(),
-                       additional_fields=create_payload("Committee", (SELECT_COMMITTEE % comm_name)))
+        logger.exception(format_logger_message("Committee selection failed for Committee", (SELECT_COMMITTEE % comm_name)))
 
 
 
@@ -110,21 +109,12 @@ def main():
                          db='capublic',
                          charset='utf8') as connection:
         agendas = get_all_agendas(connection, cur_date)
-    dbinfo = mysql_connection(sys.argv)
-    print(dbinfo)
-    with MySQLdb.connect(host=dbinfo['host'],
-                         port=dbinfo['port'],
-                         db=dbinfo['db'],
-                         user=dbinfo['user'],
-                         passwd=dbinfo['passwd'],
-                         charset='utf8') as dddb:
+    with connect() as dddb:
         agendas = get_formatted_agendas(dddb, agendas)
         hearing_manager = Hearings_Manager(dddb, "CA")
         hearing_manager.import_hearings(agendas, cur_date)
         hearing_manager.log()
 
-
-
-
 if __name__ == '__main__':
+    logger = create_logger()
     main()
