@@ -26,7 +26,7 @@ from Generic_MySQL import *
 
 logger = None
 
-class Legislator_Mangaer(object):
+class LegislatorInsertionManager(object):
     def __init__(self, dddb, logger, state):
         self.P_INSERT = 0
         self.L_INSERT = 0
@@ -41,13 +41,11 @@ class Legislator_Mangaer(object):
     Handles DW and Graylogger logging.
     '''
     def log(self):
-        self.logger.info(__file__ + ' terminated successfully.',
-                         full_msg='Updated ' + str(self.T_UPDATE) + ' rows in Legislator',
-                         additional_fields={'_affected_rows': 'Legislator' + str(self.T_UPDATE),
-                                            '_updated': 'BillVersion:' + str(self.T_UPDATE),
-                                            '_state': 'FL',
-                                            '_log_type': 'Database'})
-        LOG = {'tables': [{'state': self.state, 'name': self.state + ' Legislator', 'Legislators inserted': self.L_INSERT , 'Term inserted': self.T_INSERT, 'deleted': 0}]}
+        LOG = {'tables': [{'state': self.state, 'name': self.state + ' Legislator',
+                           'Legislators inserted': self.L_INSERT ,
+                           'Term inserted': self.T_INSERT,
+                           'deleted': 0}]}
+        self.logger.info(LOG)
         sys.stderr.write(json.dumps(LOG))
 
 
