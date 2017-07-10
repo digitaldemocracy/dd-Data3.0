@@ -22,9 +22,8 @@ Populates:
 '''
 
 from legislators_API_helper import *
-from Utils.Legislator_Insertion_Manager import *
 from Utils.Database_Connection import *
-
+from Utils.Legislator_Insertion_Manager import *
 
 if __name__ == "__main__":
     with connect() as dddb:

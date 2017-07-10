@@ -24,20 +24,15 @@ Populates:
     - HearingAgenda (hid, bid, date_created, current_flag)
 """
 
-import traceback
-import re
+import json
 import urllib2
 import requests
-import sys
-import datetime as dt
 import subprocess
-import json
-import os
 from bs4 import BeautifulSoup
-from Constants.Hearings_Queries import *
-from Constants.General_Constants import *
-from Utils.Database_Connection import *
 from Utils.Generic_Utils import *
+from Utils.Database_Connection import *
+from Constants.General_Constants import *
+from Constants.Hearings_Queries import *
 
 
 logger = None
@@ -123,7 +118,7 @@ def is_hearing_agenda_in_db(hid, bid, date, dddb):
             return True
 
     except MySQLdb.Error:
-        logger.exception("Selection failed for HearingAgenda", (SELECT_HEARING_AGENDA % ha))
+        logger.exception(format_logger_message("Selection failed for HearingAgenda", (SELECT_HEARING_AGENDA % ha)))
 
 
 def is_comm_hearing_in_db(cid, hid, dddb):
@@ -138,7 +133,7 @@ def is_comm_hearing_in_db(cid, hid, dddb):
             return True
 
     except MySQLdb.Error:
-        logger.exception("Selection failed for CommitteeHearing", (SELECT_COMMITTEE_HEARING % comm_hearing))
+        logger.exception(format_logger_message("Selection failed for CommitteeHearing", (SELECT_COMMITTEE_HEARING % comm_hearing)))
 
 
 '''
@@ -158,7 +153,7 @@ def get_hearing_hid(date, house, dddb):
             return dddb.fetchone()[0]
 
     except MySQLdb.Error:
-        logger.exception("Selection failed for Hearing", (SELECT_CHAMBER_HEARING % hearing))
+        logger.exception(format_logger_message("Selection failed for Hearing", (SELECT_CHAMBER_HEARING % hearing)))
 
 
 '''
@@ -178,7 +173,7 @@ def get_comm_cid(comm, house, date, dddb):
             return dddb.fetchone()[0]
 
     except MySQLdb.Error:
-        logger.exception("Selection failed for Committee", (SELECT_COMMITTEE % comm_name))
+        logger.exception(format_logger_message("Selection failed for Committee", (SELECT_COMMITTEE % comm_name)))
 
 
 '''
@@ -204,7 +199,7 @@ def get_bill_bid(bill, date, dddb):
         else:
             return dddb.fetchone()[0]
     except MySQLdb.Error:
-        logger.exception("Selection failed for Bill", (SELECT_BILL % bill_info))
+        logger.exception(format_logger_message("Selection failed for Bill", (SELECT_BILL % bill_info)))
 
 
 def update_hearing_agendas(hid, bid, dddb):
@@ -216,7 +211,7 @@ def update_hearing_agendas(hid, bid, dddb):
         dddb.execute(UPDATE_HEARING_AGENDA, ha)
         HA_UPD += dddb.rowcount
     except MySQLdb.Error:
-        logger.exception("Update failed for HearingAgenda", (UPDATE_HEARING_AGENDA % ha))
+        logger.exception(format_logger_message("Update failed for HearingAgenda", (UPDATE_HEARING_AGENDA % ha)))
 
 
 '''
@@ -248,7 +243,7 @@ def check_current_agenda(hid, bid, date, dddb):
                 return None
 
     except MySQLdb.Error:
-        logger.exception("Selection failed for HearingAgenda", (SELECT_CURRENT_AGENDA % ha))
+        logger.exception(format_logger_message("Selection failed for HearingAgenda", (SELECT_CURRENT_AGENDA % ha)))
 
 
 '''
@@ -274,7 +269,7 @@ def insert_hearing(date, dddb):
         return dddb.lastrowid
 
     except MySQLdb.Error:
-        logger.exception("Insert failed for Hearing", (INSERT_HEARING % hearing))
+        logger.exception(format_logger_message("Insert failed for Hearing", (INSERT_HEARING % hearing)))
 
 
 '''
@@ -290,7 +285,7 @@ def insert_committee_hearing(cid, hid, dddb):
         CH_INS += dddb.rowcount
 
     except MySQLdb.Error:
-        logger.exception("Insert failed for CommitteeHearing", (INSERT_COMMITTEE_HEARING % comm_hearing))
+        logger.exception(format_logger_message("Insert failed for CommitteeHearing", (INSERT_COMMITTEE_HEARING % comm_hearing)))
 
 
 '''
@@ -308,7 +303,7 @@ def insert_hearing_agenda(hid, bid, date, dddb):
             HA_INS += dddb.rowcount
 
         except MySQLdb.Error:
-            logger.exception("Insert failed for HearingAgenda", (INSERT_HEARING_AGENDA % agenda))
+            logger.exception(format_logger_message("Insert failed for HearingAgenda", (INSERT_HEARING_AGENDA % agenda)))
 
 
 '''

@@ -18,14 +18,12 @@ Populates:
   - District (state, house, did, note, year, region, geoData)
 '''
 
-import sys
 import json
 import requests
 import datetime
-from Constants.Districts_Queries import *
-from Constants.General_Constants import *
-from Utils.Database_Connection import *
 from Utils.Generic_Utils import *
+from Utils.Database_Connection import *
+from Constants.Districts_Queries import *
 
 logger = None
 
@@ -82,8 +80,7 @@ def insert_district_db(dddb, state, house, did, note, year, region, geodata):
                                        'year': year, 'geoData': geodata, 'region': region})
             D_INSERT += 1
         except MySQLdb.Error:
-            logger.exception('Insert Failed', full_msg=traceback.format_exc(),
-                             additional_fields=create_payload('District',
+            logger.exception(format_logger_message('Insert Failed for District',
                                                               (QI_DISTRICT %
                                                                {'state': state, 'house': house, 'did': did,
                                                                 'note': note,
