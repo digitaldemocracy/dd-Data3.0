@@ -20,18 +20,14 @@ Populates:
 '''
 
 
-import traceback
-import datetime
-import json
-import MySQLdb
 import sys
+import json
 import requests
-from urllib import urlopen
-from Database_Connection import mysql_connection
-from graylogger.graylogger import GrayLogger
-from Constants.Districts_Queries import *
-from Constants.General_Constants import *
+import datetime
 from Utils.DatabaseUtils_NR import *
+from Utils.Database_Connection import *
+from Constants.Districts_Queries import *
+from Utils.Generic_Utils import *
 
 
 logger = None
@@ -89,7 +85,7 @@ def insert_district(cursor, state, house, did, note, year, region, geodata):
                             'year': year, 'geoData': geodata, 'region': region})
             INSERTED += cursor.rowcount
         except MySQLdb.Error:
-            logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+            logger.exception('Insert Failed', full_msg=traceback.format_exc(),
                            additional_fields=create_payload('District',
                                                             (QI_DISTRICT %
                                                             {'state': state, 'house': house, 'did': did, 'note': note,
@@ -108,7 +104,6 @@ def get_districts(dd_cursor):
     # Get lower chamber districts
     for j in xrange(1, _NUM_LOWER_DISTRICTS+1):
         url = API_URL.format('l', j)
-        print(url)
         try:
             result = requests.get(url).json()
             state = result['abbr'].upper()
@@ -119,12 +114,11 @@ def get_districts(dd_cursor):
             geodata = format_to_string(result['shape'])
             insert_district(dd_cursor, state, house, did, note, year, region, geodata)
         except:
-            print("Error connecting to API")
+            logger.exception("Error connecting to API")
 
     # Get upper chamber districts
     for j in xrange(1, _NUM_UPPER_DISTRICTS+1):
         url = API_URL.format('u', j)
-        print(url)
         try:
             result = requests.get(url).json()
             state = result['abbr'].upper()
@@ -135,31 +129,18 @@ def get_districts(dd_cursor):
             geodata = format_to_string(result['shape'])
             insert_district(dd_cursor, state, house, did, note, year, region, geodata)
         except:
-            print("Error connecting to API")
+            logger.exception("Error connecting to API")
 
 
 def main():
-    dbinfo = mysql_connection(sys.argv)
-    with MySQLdb.connect(host=dbinfo['host'],
-                         port=dbinfo['port'],
-                         db=dbinfo['db'],
-                         user=dbinfo['user'],
-                         passwd=dbinfo['passwd'],
-                         charset='utf8') as dd_cursor:
-
+    with connect() as dd_cursor:
         get_districts(dd_cursor)
-        logger.info(__file__ + ' terminated successfully.',
-                    full_msg='Inserted ' + str(INSERTED) + ' rows in District',
-                    additional_fields={'_affected_rows': 'District:' + str(INSERTED),
-                                       '_inserted': 'District:' + str(INSERTED),
-                                       '_state': 'TX',
-                                       '_log_type': 'Database'})
 
         LOG = {'tables': [{'state': 'TX', 'name': 'District', 'inserted': INSERTED, 'updated': 0, 'deleted': 0}]}
+        logger.info(LOG)
         sys.stderr.write(json.dumps(LOG))
 
 
 if __name__ == "__main__":
-    with GrayLogger(GRAY_LOGGER_URL) as _logger:
-        logger = _logger
-        main()
+    logger = create_logger()
+    main()
