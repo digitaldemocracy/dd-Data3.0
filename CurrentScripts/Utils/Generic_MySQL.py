@@ -1,14 +1,8 @@
-import traceback
-from Constants.Committee_Queries import SELECT_SESSION_YEAR
+from Generic_Utils import *
 from Database_Connection import *
+from Constants.Committee_Queries import SELECT_SESSION_YEAR
 
-def create_payload(table, sqlstmt, state = "N/A"):
-    return {
-        '_table': table,
-        '_sqlstmt': sqlstmt,
-        '_state': state,
-        '_log_type': 'Database'
-    }
+
 
 '''
 Generic SQL insertion function
@@ -22,8 +16,7 @@ def insert_row(db_cursor, query, entity, objType, logger):
         num_inserted = db_cursor.rowcount
         row_id = db_cursor.lastrowid
     except MySQLdb.Error:
-        logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-                additional_fields=create_payload(objType, (query%entity)))
+        logger.exception(format_logger_message('Insert Failed for ' + objType, (query%entity)))
 
     return num_inserted, row_id
 
@@ -38,8 +31,8 @@ def is_entity_in_db(db_cursor, query, entity, objType, logger):
         if query is not None:
             return query[0]
     except:
-        logger.warning('Check Failed', full_msg=traceback.format_exc(),
-                additional_fields=create_payload(objType, (query%entity)))
+        logger.exception(format_logger_message('Check Failed for ' + objType, (query%entity)))
+
     return False
 
 def insert_entity_with_check(db_cursor, entity, qs_query, qi_query, objType, logger):
@@ -52,8 +45,8 @@ def insert_entity(db_cursor, entity, qi_query, objType, logger):
         db_cursor.execute(qi_query, entity)
         return int(db_cursor.lastrowid)
     except MySQLdb.Error:
-        logger.warning('Insert Failed for ' + objType, full_msg=traceback.format_exc(),
-                additional_fields=create_payload(objType, (qi_query%entity)))
+        logger.exception(format_logger_message('Insert Failed for ' + objType, (qi_query%entity)))
+
     return False
 
 
@@ -63,8 +56,8 @@ def get_entity_id(db_cursor, query, entity, objType, logger):
         if db_cursor.rowcount == 1:
             return db_cursor.fetchone()[0]
     except MySQLdb.Error:
-        logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-                           additional_fields=create_payload(objType, (query % entity)))
+        logger.exception(format_logger_message('ID Retrieval Failed for ' + objType, (query%entity)))
+
 
     return False
 
@@ -74,8 +67,8 @@ def get_all(db_cursor, query, entity, objType, logger):
 
         return db_cursor.fetchall()
     except MySQLdb.Error:
-        logger.warning("Failed Select All", full_msg=traceback.format_exc(),
-                       additional_fields=create_payload(objType, (query % entity)))
+        logger.exception(format_logger_message('Failed Selecting All for ' + objType, (query%entity)))
+
 
     return False
 '''
@@ -86,8 +79,8 @@ def update_entity(db_cursor, query, entity, objType, logger):
         db_cursor.execute(query, entity)
         return db_cursor.rowcount
     except MySQLdb.Error:
-        logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-                       additional_fields=create_payload(objType, (query % entity)))
+        logger.exception(format_logger_message('Update Failed for ' + objType, (query%entity)))
+
     return False
 
 def get_session_year(db_cursor, state, logger):
