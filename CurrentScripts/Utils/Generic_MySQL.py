@@ -2,11 +2,11 @@ import traceback
 from Constants.Committee_Queries import SELECT_SESSION_YEAR
 from Database_Connection import *
 
-def create_payload(table, sqlstmt):
+def create_payload(table, sqlstmt, state = "N/A"):
     return {
         '_table': table,
         '_sqlstmt': sqlstmt,
-        '_state': 'FL',
+        '_state': state,
         '_log_type': 'Database'
     }
 
