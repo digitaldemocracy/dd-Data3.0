@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #  -*- coding: utf-8 -*-
 '''
-File: get_Committee_Consultants.py
+File: ca_import_committee_consultants.py
 Author: Andrew Rose
 Date: 01/05/2017
 

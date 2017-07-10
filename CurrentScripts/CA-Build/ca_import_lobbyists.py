@@ -26,18 +26,17 @@ Populates:
   - LobbyistDirectEmployment (pid, lobbyist_employer, rpt_date, ls_beg_yr, ls_end_yr)
   - LobbyingContracts (filer_id, lobbyist_employer, rpt_date, ls_beg_yr, ls_end_yr)
 '''
-
-from Database_Connection import mysql_connection
-import csv
 import re
+import csv
+import json
 import MySQLdb
 import traceback
 from clean_name import clean_name
-import refactored_Lobbying_Firm_Name_Fix
 import refactored_Person_Name_Fix
-from GrayLogger.graylogger import GrayLogger
-import json
-API_URL = 'http://dw.digitaldemocracy.org:12202/gelf'                  
+from Utils.Generic_Utils import *
+from Utils.Database_Connection import *
+import refactored_Lobbying_Firm_Name_Fix
+
 logger = None
 
 # Global counters
@@ -162,13 +161,6 @@ Lobbyist= [[0 for x in xrange(7)] for x in xrange(10000)]
 Lobbyist_2= [[0 for x in xrange(6)] for x in xrange(50000)]
 Lobbyist_3= [[0 for x in xrange(9)] for x in xrange(50000)]
 
-def create_payload(table, sqlstmt):
-  return {
-      '_table': table,
-      '_sqlstmt': sqlstmt,
-      '_state': 'CA',
-      '_log_type':'Database'
-  }
 
 # Changes the date into a linux format for the database
 def format_date(date_str):
@@ -214,8 +206,7 @@ def get_person(dd_cursor, filer_id, filer_naml, filer_namf, val):
       dd_cursor.execute(QI_PERSON, (filer_naml, filer_namf))
       P_INSERT += dd_cursor.rowcount
     except MySQLdb.Error:                                              
-      logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-          additional_fields=create_payload('Person', 
+      logger.exception(format_logger_message('Insert Failed Person',
             (QI_PERSON % (filer_naml, filer_namf))))
     dd_cursor.execute(QS_PERSON_MAX_PID)
     pid = dd_cursor.fetchone()[0]
@@ -250,8 +241,7 @@ def insert_organization(dd_cursor, filer_naml, bus_city, bus_state):
       oid = dd_cursor.fetchone()[0]
       O_INSERT += dd_cursor.rowcount
     except MySQLdb.Error:
-      logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-          additional_fields=create_payload('Organizations', 
+      logger.exception(format_logger_message('Insert Failed for Organizations',
             (QI_ORGANIZATIONS % (filer_naml, bus_city, state))))
   else:
     oid = dd_cursor.fetchone()[0]
@@ -276,8 +266,7 @@ def insert_org_state_aff(dd_cursor, oid, bus_state):
       dd_cursor.execute(QI_ORG_STATE_AFF, (oid, bus_state))
       OSA_INSERT += dd_cursor.rowcount
     except MySQLdb.Error:
-      logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-          additional_fields=create_payload('OrganizationStateAffliation', 
+      logger.exception(format_logger_message('Insert Failed for OrganizationStateAffliation',
             (QI_ORG_STATE_AFF % (oid, bus_state))))
 
 
@@ -308,8 +297,7 @@ def insert_lobbyist_employer(dd_cursor, filer_naml, filer_id, oid, bus_city, bus
       #print 'GOOD!!  OID: %s   FILER_ID: %s'%(oid, filer_id)
     except MySQLdb.Error:
       #print 'BAD...  OID: %s   FILER_ID: %s'%(oid, filer_id)
-      logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-          additional_fields=create_payload('LobbyiestEmployer',
+      logger.exception(format_logger_message('Insert Failed for LobbyiestEmployer',
             (QI_LOBBYIST_EMPLOYER % (filer_id, oid, coalition, state))))
 
 '''
@@ -330,8 +318,7 @@ def insert_lobbying_firm(dd_cursor, filer_naml):
       LF_INSERT += dd_cursor.rowcount
       print LF_INSERT, filer_naml
     except MySQLdb.Error:                                              
-      logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-          additional_fields=create_payload('LobbyingFirm', 
+      logger.exception(format_logger_message('Insert Failed for LobbyingFirm',
             (QI_LOBBYING_FIRM % (filer_naml,))))
 
 '''
@@ -353,8 +340,7 @@ def insert_lobbying_firm_state(dd_cursor, filer_naml, filer_id, rpt_date, ls_beg
       dd_cursor.execute(QI_LOBBYING_FIRM_STATE, (filer_id, rpt_date, ls_beg_yr, ls_end_yr, filer_naml, state))
       FS_INSERT += dd_cursor.rowcount
     except MySQLdb.Error as error:                                              
-      logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-        additional_fields=create_payload('LobbyingFirmState', 
+      logger.exception(format_logger_message('Insert Failed for LobbyingFirmState',
           (QI_LOBBYING_FIRM_STATE % (filer_id, rpt_date, ls_beg_yr, ls_end_yr, filer_naml, state))))
 
 '''
@@ -375,8 +361,7 @@ def insert_lobbyist(dd_cursor, pid, filer_id):
       dd_cursor.execute(QI_LOBBYIST, (pid, filer_id, state))
       L_INSERT += dd_cursor.rowcount
     except MySQLdb.Error as error:                                              
-      logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-          additional_fields=create_payload('Lobbyist', 
+      logger.exception(format_logger_message('Insert Failed for Lobbyist',
             (QI_LOBBYIST % (pid, filer_id, state))))
 
 '''
@@ -398,8 +383,7 @@ def insert_lobbyist_employment(dd_cursor, pid, sender_id, rpt_date, ls_beg_yr, l
       dd_cursor.execute(QI_LOBBYIST_EMPLOYMENT, (pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr, state))
       EM_INSERT += dd_cursor.rowcount
     except MySQLdb.Error:
-      logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-          additional_fields=create_payload('LobbyistEmployment',
+      logger.exception(format_logger_message('Insert Failed for LobbyistEmployment',
             (QI_LOBBYIST_EMPLOYMENT % (pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr, state))))
     
 '''
@@ -430,8 +414,7 @@ def insert_lobbyist_direct_employment(dd_cursor, pid, sender_id, rpt_date, ls_be
         dd_cursor.execute(QI_LOBBYIST_DIRECT_EMPLOYMENT, (pid, oid, rpt_date, ls_beg_yr, ls_end_yr, state))
         DE_INSERT += dd_cursor.rowcount
       except MySQLdb.Error:
-        logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-            additional_fields=create_payload('LobbyistDirectEmployment',
+        logger.exception(format_logger_message('Insert Failed for LobbyistDirectEmployment',
               (QI_LOBBYIST_DIRECT_EMPLOYMENT % (pid, oid, rpt_date, ls_beg_yr, ls_end_yr, state))))
 
 '''
@@ -464,8 +447,7 @@ def insert_lobbyist_contracts(dd_cursor, filer_id, sender_id, rpt_date, ls_beg_y
             (filer_id, oid, rpt_date, ls_beg_yr, ls_end_yr, state))
         LC_INSERT += dd_cursor.rowcount
       except MySQLdb.Error:
-        logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-            additional_fields=create_payload('LobbingContracts',
+        logger.exception(format_logger_message('Insert Failed for LobbingContracts',
               (QI_LOBBYING_CONTRACTS % (filer_id, oid, rpt_date, ls_beg_yr, ls_end_yr, state))))
   
 # For case 4
@@ -487,8 +469,7 @@ def find_lobbyist_employment(dd_cursor, index):
           Lobbyist[index][3], Lobbyist[index][4], state))
         EM_INSERT += dd_cursor.rowcount
       except MySQLdb.Error:
-        logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-            additional_fields=create_payload('LobbyistEmployment',
+        logger.exception(format_logger_message('Insert Failed for LobbyistEmployment',
               (QI_LOBBYIST_EMPLOYMENT % (Lobbyist[index][0], 
               Lobbyist[index][1], Lobbyist[index][2],
               Lobbyist[index][3], Lobbyist[index][4], state))))
@@ -509,8 +490,7 @@ def find_lobbyist_employment(dd_cursor, index):
           oid, Lobbyist[index][2], Lobbyist[index][3], Lobbyist[index][4], state))
         DE_INSERT += dd_cursor.rowcount
       except MySQLdb.Error:
-        logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-            additional_fields=create_payload('LobbyistDirectEmployment',
+        logger.exception(format_logger_message('Insert Failed for LobbyistDirectEmployment',
               (QI_LOBBYIST_DIRECT_EMPLOYMENT % (Lobbyist[index][0], 
                 oid, Lobbyist[index][2], Lobbyist[index][3], Lobbyist[index][4], state))))
    
@@ -522,13 +502,7 @@ def is_in_lobbyingFirmState(dd_cursor, filer_id):
     return True
 
 def main():
-  import sys
-  dbinfo = mysql_connection(sys.argv)
-  with MySQLdb.connect(host=dbinfo['host'],
-                         port=dbinfo['port'],
-                         db=dbinfo['db'],
-                         user=dbinfo['user'],
-                         passwd=dbinfo['passwd']) as dd_cursor:
+  with connect() as dd_cursor:
     # Turn off foreign key checks
     #dd_cursor.execute('SET foreign_key_checks = 0')
     with open('/home/data_warehouse_common/scripts/CVR_REGISTRATION_CD.TSV', 'rb') as tsvin:
@@ -708,36 +682,6 @@ def main():
 
     #print 'TOTAL MISSES:   DIRECT => %d    CONTRACT => %d'%(DIRECT_MISS, CONTRACT_MISS)
 
-    logger.info(__file__ + ' terminated successfully.', 
-        full_msg='Inserted ' + str(LF_INSERT) + ' rows in LobbingFirm, inserted ' 
-                  + str(FS_INSERT) + ' rows in LobbyingFirmState, inserted ' 
-                  + str(L_INSERT) + ' rows in Lobbyist, inserted ' 
-                  + str(P_INSERT) + ' rows in Person, inserted ' 
-                  + str(O_INSERT) + ' rows in Organizations, inserted ' 
-                  + str(ER_INSERT) + ' rows in LobbyistEmployer, inserted '
-                  + str(EM_INSERT) + ' rows in LobbyistEmployment, inserted ' 
-                  + str(DE_INSERT) + ' rows in LobbyistDirectEmployment, and inserted '
-                  + str(LC_INSERT) + ' rows in LobbyingContracts.',
-        additional_fields={'_affected_rows':'LobbingFirm:'+str(LF_INSERT)
-                                       +', LobbyingFirmState:'+str(FS_INSERT)
-                                       +', Lobbyist:'+str(L_INSERT)
-                                       +', Person:'+str(P_INSERT)
-                                       +', Organizations:'+str(O_INSERT)
-                                       +', LobbyistEmployer:'+str(ER_INSERT)
-                                       +', LobbyistEmployment:'+str(EM_INSERT)
-                                       +', LobbyistDirectEmployment:'+str(DE_INSERT)
-                                       +', LobbyingContracts:'+str(LC_INSERT),
-                           '_inserted':'LobbingFirm:'+str(LF_INSERT)
-                                       +', LobbyingFirmState:'+str(FS_INSERT)
-                                       +', Lobbyist:'+str(L_INSERT)
-                                       +', Person:'+str(P_INSERT)
-                                       +', Organizations:'+str(O_INSERT)
-                                       +', LobbyistEmployer:'+str(ER_INSERT)
-                                       +', LobbyistEmployment:'+str(EM_INSERT)
-                                       +', LobbyistDirectEmployment:'+str(DE_INSERT)
-                                       +', LobbyingContracts:'+str(LC_INSERT),
-                           '_state':'CA',
-                           '_log_type':'Database'})
   LOG = {'tables': [{'state': 'CA', 'name': 'LobbingFirm', 'inserted':LF_INSERT, 'updated': 0, 'deleted': 0},
           {'state': 'CA', 'name': 'LobbyingFirmState', 'inserted':FS_INSERT, 'updated': 0, 'deleted': 0},
           {'state': 'CA', 'name': 'Lobbyist', 'inserted':L_INSERT, 'updated': 0, 'deleted': 0},
@@ -750,6 +694,5 @@ def main():
   sys.stderr.write(json.dumps(LOG))
       
 if __name__ == '__main__':
-  with GrayLogger(API_URL) as _logger:                                          
-    logger = _logger                                                            
+    logger = create_logger()
     main()

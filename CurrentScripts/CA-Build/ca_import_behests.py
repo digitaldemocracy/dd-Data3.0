@@ -25,17 +25,11 @@ Populates:
   - Payors (name, city, state)
 """
 
-import MySQLdb
 import csv
-import traceback
 import json
-import sys
-import datetime as dt
-from Constants.General_Constants import *
-from Utils.DatabaseUtils_NR import create_payload
-from Utils.Utils import clean_name
-from GrayLogger.graylogger import GrayLogger
-from Database_Connection import mysql_connection
+import traceback
+from Utils.Database_Connection import *
+from Utils.Generic_Utils import *
 
 # SQL Queries
 # Selects
@@ -66,7 +60,7 @@ SELECT_STATE = '''SELECT * FROM State WHERE abbrev = %(state)s'''
 INSERT_PAYOR = '''INSERT INTO Payors (name, city, state)
                   VALUES (%(Payor)s, %(PayorCity)s, %(PayorState)s)'''
 INSERT_ORG = '''INSERT INTO Organizations (name, city, stateHeadquartered, source)
-                VALUES (%(Payee)s, %(PayeeCity)s, %(PayeeState)s, 'refactored_insert_Behests.py')'''
+                VALUES (%(Payee)s, %(PayeeCity)s, %(PayeeState)s, ca_import_behests.py')'''
 INSERT_BEHEST = '''INSERT INTO Behests (official, datePaid, payor, amount, payee,
                                         description, purpose, noticeReceived, sessionYear, state)
                    VALUES (%(pid)s, %(DateOfPayment)s, %(prid)s, %(Amount)s, %(oid)s,
@@ -141,8 +135,7 @@ def check_state(dddb, state):
             return False
 
     except MySQLdb.Error:
-        logger.warning("Behest selection failed", full_msg=traceback.format_exc(),
-                       additional_fields=create_payload('Behests', (SELECT_BEHEST % behest)))
+        logger.exception(format_logger_message("Behest selection failed", (SELECT_STATE % state)))
 
 
 def is_behest_in_db(dddb, behest):
@@ -155,8 +148,7 @@ def is_behest_in_db(dddb, behest):
             return False
 
     except MySQLdb.Error:
-        logger.warning("Behest selection failed", full_msg=traceback.format_exc(),
-                       additional_fields=create_payload('Behests', (SELECT_BEHEST % behest)))
+        logger.exception(format_logger_message("Behest selection failed", (SELECT_BEHEST % behest)))
         return False
 
 
@@ -168,8 +160,7 @@ def insert_behest(dddb, behest):
         BEHEST_INSERTED += dddb.rowcount
 
     except MySQLdb.Error:
-        logger.warning("Behest insertion failed", full_msg=traceback.format_exc(),
-                       additional_fields=create_payload('Behests', (INSERT_BEHEST % behest)))
+        logger.exception(format_logger_message("Behest insertion failed", (INSERT_BEHEST % behest)))
 
 
 def insert_payor(dddb, behest):
@@ -183,8 +174,7 @@ def insert_payor(dddb, behest):
         PAYOR_INSERTED += dddb.rowcount
 
     except MySQLdb.Error:
-        logger.warning("Payor insertion failed", full_msg=traceback.format_exc(),
-                       additional_fields=create_payload('Payors', (INSERT_PAYOR % behest)))
+        logger.exception(format_logger_message("Payor insertion failed",(INSERT_PAYOR % behest)))
 
 
 def insert_payee(dddb, behest):
@@ -198,8 +188,7 @@ def insert_payee(dddb, behest):
         ORG_INSERTED += dddb.rowcount
 
     except MySQLdb.Error:
-        logger.warning("Organization insertion failed", full_msg=traceback.format_exc(),
-                       additional_fields=create_payload('Organization', (INSERT_ORG % behest)))
+        logger.exception(format_logger_message("Organization insertion failed", (INSERT_ORG % behest)))
 
 
 def get_official_pid(dddb, official):
@@ -225,8 +214,7 @@ def get_official_pid(dddb, official):
 
     except MySQLdb.Error:
         print(traceback.format_exc())
-        logger.warning("Person selection failed", full_msg=traceback.format_exc(),
-                       additional_fields=create_payload('Organization', (SELECT_PERSON % official)))
+        logger.exception(format_logger_message("Person selection failed", (SELECT_PERSON % official)))
 
 
 def get_org_id(dddb, payee_org):
@@ -241,8 +229,7 @@ def get_org_id(dddb, payee_org):
             return None
 
     except MySQLdb.Error:
-        logger.warning("Organization selection failed", full_msg=traceback.format_exc(),
-                       additional_fields=create_payload('Organization', (SELECT_ORG % payee_org)))
+        logger.exception(format_logger_message("Organization selection failed", (SELECT_ORG % payee_org)))
 
 
 def get_payor_id(dddb, payor):
@@ -256,8 +243,7 @@ def get_payor_id(dddb, payor):
             return None
 
     except MySQLdb.Error:
-        logger.warning("Payor selection failed", full_msg=traceback.format_exc(),
-                       additional_fields=create_payload('Organization', (SELECT_PAYOR % payor)))
+        logger.exception(format_logger_message("Payor selection failed", (SELECT_PAYOR % payor)))
 
 
 def import_behests(dddb):
@@ -304,38 +290,19 @@ def import_behests(dddb):
 
 
 def main():
-    dbinfo = mysql_connection(sys.argv)
-    # MUST SPECIFY charset='utf8' OR BAD THINGS WILL HAPPEN.
-    with MySQLdb.connect(host=dbinfo['host'],
-                         port=dbinfo['port'],
-                         db=dbinfo['db'],
-                         user=dbinfo['user'],
-                         passwd=dbinfo['passwd'],
-                         charset='utf8') as dddb:
+    with connect() as dddb:
 
         import_behests(dddb)
 
-        logger.info(__file__ + " terminated successfully.",
-                    full_msg="Inserted " + str(BEHEST_INSERTED) + " rows in Behests, "
-                             + str(PAYOR_INSERTED) + " rows in Payors, and "
-                             + str(ORG_INSERTED) + " rows in Organizations.",
-                    additional_fields={'_affected_rows': "Behests: " + str(BEHEST_INSERTED)
-                                                         + ", Payors: " + str(PAYOR_INSERTED)
-                                                         + ", Organizations: " + str(ORG_INSERTED),
-                                       '_inserted': "Behests: " + str(BEHEST_INSERTED)
-                                                    + ", Payors: " + str(PAYOR_INSERTED)
-                                                    + ", Organizations: " + str(ORG_INSERTED),
-                                       '_state': 'CA',
-                                       '_log_type': 'Database'})
 
         LOG = {'tables': [{'state': 'CA', 'name': 'Behests', 'inserted': BEHEST_INSERTED, 'updated': 0, 'deleted': 0},
                           {'state': 'CA', 'name': 'Payors', 'inserted': PAYOR_INSERTED, 'updated': 0, 'deleted': 0},
                           {'state': 'CA', 'name': 'Organizations', 'inserted': ORG_INSERTED, 'updated': 0,
                            'deleted': 0}]}
         sys.stderr.write(json.dumps(LOG))
+        logger.info(LOG)
 
 
 if __name__ == '__main__':
-    with GrayLogger(GRAY_LOGGER_URL) as _logger:
-        logger = _logger
+        logger = create_logger()
         main()
