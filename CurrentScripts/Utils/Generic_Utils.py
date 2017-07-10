@@ -1,9 +1,8 @@
-def create_payload(table, sqlstmt):
+def create_payload(table, sqlstmt, state = "N/A"):
     return {
         '_table': table,
         '_sqlstmt': sqlstmt,
-        '_state': 'FL',
-        '_log_type': 'Database'
+        '_state': state,
     }
 
 def capublic_format_committee_name(short_name, house):
