@@ -1,6 +1,6 @@
 import traceback
-import MySQLdb
 from Constants.Committee_Queries import SELECT_SESSION_YEAR
+from Database_Connection import *
 
 def create_payload(table, sqlstmt):
     return {
