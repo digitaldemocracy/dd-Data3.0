@@ -121,7 +121,7 @@ def get_pid(cursor, first, last):
         else:
             print("Person" + first + last + "not found")
     except MySQLdb.Error:
-        logger.exception('Select Failed for Person', (S_PERSON % (first, last)))
+        logger.exception(format_logger_message('Select Failed for Person', (S_PERSON % (first, last))))
 
     return result
 
@@ -137,7 +137,7 @@ def get_house(cursor, pid, session_year, state):
             result = cursor.fetchone()[0]
 
     except MySQLdb.Error:
-        logger.exception('Select Failed for Term',(S_TERM % (pid, session_year, state)))
+        logger.exception(format_logger_message('Select Failed for Term',(S_TERM % (pid, session_year, state))))
 
     return result
 
@@ -162,7 +162,7 @@ def get_oid(cursor, name):
             result = cursor.fetchone()[0]
 
     except MySQLdb.Error:
-        logger.exception('Select Failed for Organization', (S_ORGANIZATION % (name,)))
+        logger.exception(format_logger_message('Select Failed for Organization', (S_ORGANIZATION % (name,))))
 
     return result
 
@@ -177,7 +177,7 @@ def insert_org(cursor, name, state):
         I_O += cursor.rowcount
 
     except MySQLdb.Error:
-        logger.exception('Insert Failed for Organization', (I_ORGANIZATION % (name, state)))
+        logger.exception(format_logger_message('Insert Failed for Organization', (I_ORGANIZATION % (name, state))))
 
 
 '''
@@ -192,8 +192,8 @@ def get_con_id(cursor, con_id, pid, year, date, house, donor_name, donor_org, am
 
     except MySQLdb.Error:
 
-        logger.exception('Select Failed for Contribution',
-                       I_CONTRIBUTION % (con_id, pid, year, date, house, donor_name, donor_org, amount, state, oid))
+        logger.exception(format_logger_message('Select Failed for Contribution',
+                       I_CONTRIBUTION % (con_id, pid, year, date, house, donor_name, donor_org, amount, state, oid)))
 
     return result
 

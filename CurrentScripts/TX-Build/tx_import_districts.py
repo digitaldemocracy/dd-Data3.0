@@ -20,11 +20,9 @@ Populates:
 '''
 
 
-import sys
 import json
 import requests
 import datetime
-from Utils.DatabaseUtils_NR import *
 from Utils.Database_Connection import *
 from Constants.Districts_Queries import *
 from Utils.Generic_Utils import *
@@ -85,8 +83,7 @@ def insert_district(cursor, state, house, did, note, year, region, geodata):
                             'year': year, 'geoData': geodata, 'region': region})
             INSERTED += cursor.rowcount
         except MySQLdb.Error:
-            logger.exception('Insert Failed', full_msg=traceback.format_exc(),
-                           additional_fields=create_payload('District',
+            logger.exception(format_logger_message('Insert Failed for District',
                                                             (QI_DISTRICT %
                                                             {'state': state, 'house': house, 'did': did, 'note': note,
                                                              'year': year, 'geoData': geodata, 'region': region})))
@@ -135,7 +132,6 @@ def get_districts(dd_cursor):
 def main():
     with connect() as dd_cursor:
         get_districts(dd_cursor)
-
         LOG = {'tables': [{'state': 'TX', 'name': 'District', 'inserted': INSERTED, 'updated': 0, 'deleted': 0}]}
         logger.info(LOG)
         sys.stderr.write(json.dumps(LOG))
