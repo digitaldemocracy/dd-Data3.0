@@ -21,7 +21,6 @@ Populates:
   - Action
 """
 
-import sys
 import json
 from Generic_MySQL import *
 from Constants.Bills_Queries import *
@@ -83,8 +82,8 @@ class BillInsertionManager(object):
     Returns true if the insert succeeds, false otherwise.
     '''
     def insert_motion(self, motion):
-        dddb.execute(SELECT_LAST_MID)
-        mid = dddb.fetchone()[0]
+        self.dddb.execute(SELECT_LAST_MID)
+        mid = self.dddb.fetchone()[0]
         mid += 1
 
         motion['mid'] = mid

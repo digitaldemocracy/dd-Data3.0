@@ -89,8 +89,7 @@ class CommitteeInsertionManager(object):
                         return None
 
         except MySQLdb.Error:
-            self.logger.warning("PID selection failed", full_msg=traceback.format_exc(),
-                           additional_fields=create_payload("Person", (SELECT_LEG_FIRSTLAST % legislator)))
+            self.logger.exception(format_logger_message("PID selection failed for Person", (SELECT_LEG_FIRSTLAST % legislator)))
 
 
     '''
@@ -103,14 +102,13 @@ class CommitteeInsertionManager(object):
             try:
                 self.dddb.execute(SELECT_PID, member.__dict__)
                 if self.dddb.rowcount == 0:
-                    print("Error: Person not found with Alt ID " + str(member.alt_id) + ", checking member name")
+                    #print("Error: Person not found with Alt ID " + str(member.alt_id) + ", checking member name")
                     return self.get_pid_name(member)
                 else:
                     return self.dddb.fetchone()[0]
 
             except MySQLdb.Error:
-                self.logger.warning("PID selection failed", full_msg=traceback.format_exc(),
-                               additional_fields=create_payload("AltId", (SELECT_PID % member.__dict__)))
+                self.logger.exception(format_logger_message("PID selection failed for AltId", (SELECT_PID % member.__dict__)))
 
 
     '''
