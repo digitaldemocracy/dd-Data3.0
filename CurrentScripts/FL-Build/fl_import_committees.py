@@ -23,13 +23,13 @@ import sys
 import datetime as dt
 from Constants.Committee_Queries import *
 from Constants.General_Constants import *
-from Database_Connection import mysql_connection
-from Utils.DatabaseUtils_NR import *
 from fl_committee_parser import *
-from GrayLogger.graylogger import GrayLogger
+from Utils.Generic_Utils import *
 from Utils.Committee_Insertion_Manager import *
 from Utils.Database_Connection import *
-# logger = None
+
+logger = None
+
 #
 # # Global counters
 # CN_INSERTED = 0
@@ -368,24 +368,20 @@ from Utils.Database_Connection import *
 #                     insert_serves_on(dddb, member)
 
 
-#
-
 def main():
-    with connect("local") as dddb:
-        with GrayLogger(GRAY_LOGGER_URL) as logger:
-            print("Getting session year...")
-            session_year = get_session_year(dddb, "FL", logger)
-            committee_insertion_manager = CommitteeInsertionManager(dddb, "FL", session_year, logger)
-            parser = FlCommitteeParser(session_year)
-            print("Getting Committee List...")
-            committees = parser.get_committee_list()
-            print("Starting import...")
-            committee_insertion_manager.import_committees(committees)
-            print("Import finished")
-            committee_insertion_manager.log()
+    with connect() as dddb:
+        print("Getting session year...")
+        session_year = get_session_year(dddb, "FL", logger)
+        committee_insertion_manager = CommitteeInsertionManager(dddb, "FL", session_year, logger)
+        parser = FlCommitteeParser(session_year)
+        print("Getting Committee List...")
+        committees = parser.get_committee_list()
+        print("Starting import...")
+        committee_insertion_manager.import_committees(committees)
+        print("Import finished")
+        committee_insertion_manager.log()
 
 
 if __name__ == '__main__':
-    # with GrayLogger(GRAY_LOGGER_URL) as _logger:
-    #     logger = _logger
+    logger = create_logger()
     main()

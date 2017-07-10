@@ -24,7 +24,6 @@ Populates:
     - HearingAgenda (hid, bid, date_created, current_flag)
 """
 
-import MySQLdb
 import traceback
 import re
 import urllib2
@@ -35,11 +34,10 @@ import subprocess
 import json
 import os
 from bs4 import BeautifulSoup
-from GrayLogger.graylogger import GrayLogger
 from Constants.Hearings_Queries import *
 from Constants.General_Constants import *
-from Utils.DatabaseUtils_NR import *
-from Database_Connection import mysql_connection
+from Utils.Database_Connection import *
+from Utils.Generic_Utils import *
 
 
 logger = None
@@ -125,8 +123,7 @@ def is_hearing_agenda_in_db(hid, bid, date, dddb):
             return True
 
     except MySQLdb.Error:
-        logger.warning("HearingAgenda selection failed.", full_msg=traceback.format_exc(),
-                       additional_fields=create_payload("HearingAgenda", (SELECT_HEARING_AGENDA % ha)))
+        logger.exception("Selection failed for HearingAgenda", (SELECT_HEARING_AGENDA % ha))
 
 
 def is_comm_hearing_in_db(cid, hid, dddb):
@@ -141,8 +138,7 @@ def is_comm_hearing_in_db(cid, hid, dddb):
             return True
 
     except MySQLdb.Error:
-        logger.warning("CommitteeHearing selection failed.", full_msg=traceback.format_exc(),
-                       additional_fields=create_payload("CommitteeHearing", (SELECT_COMMITTEE_HEARING % comm_hearing)))
+        logger.exception("Selection failed for CommitteeHearing", (SELECT_COMMITTEE_HEARING % comm_hearing))
 
 
 '''
@@ -162,8 +158,7 @@ def get_hearing_hid(date, house, dddb):
             return dddb.fetchone()[0]
 
     except MySQLdb.Error:
-        logger.warning("Hearing selection failed", full_msg=traceback.format_exc(),
-                       additional_fields=create_payload("Hearing", (SELECT_CHAMBER_HEARING % hearing)))
+        logger.exception("Selection failed for Hearing", (SELECT_CHAMBER_HEARING % hearing))
 
 
 '''
@@ -183,8 +178,7 @@ def get_comm_cid(comm, house, date, dddb):
             return dddb.fetchone()[0]
 
     except MySQLdb.Error:
-        logger.warning("Committee selection failed", full_msg=traceback.format_exc(),
-                       additional_fields=create_payload("Committee", (SELECT_COMMITTEE % comm_name)))
+        logger.exception("Selection failed for Committee", (SELECT_COMMITTEE % comm_name))
 
 
 '''
@@ -210,8 +204,7 @@ def get_bill_bid(bill, date, dddb):
         else:
             return dddb.fetchone()[0]
     except MySQLdb.Error:
-        logger.warning("Bill selection failed", full_msg=traceback.format_exc(),
-                       additional_fields=create_payload("Bill", (SELECT_BILL % bill_info)))
+        logger.exception("Selection failed for Bill", (SELECT_BILL % bill_info))
 
 
 def update_hearing_agendas(hid, bid, dddb):
@@ -223,8 +216,7 @@ def update_hearing_agendas(hid, bid, dddb):
         dddb.execute(UPDATE_HEARING_AGENDA, ha)
         HA_UPD += dddb.rowcount
     except MySQLdb.Error:
-        logger.warning("HearingAgenda update failed", fill_msg=traceback.format_exc(),
-                       additional_fields=create_payload("HearingAgenda", (UPDATE_HEARING_AGENDA % ha)))
+        logger.exception("Update failed for HearingAgenda", (UPDATE_HEARING_AGENDA % ha))
 
 
 '''
@@ -256,8 +248,7 @@ def check_current_agenda(hid, bid, date, dddb):
                 return None
 
     except MySQLdb.Error:
-        logger.warning("HearingAgenda selection failed", full_msg=traceback.format_exc(),
-                       additional_fields=create_payload("HearingAgenda", (SELECT_CURRENT_AGENDA % ha)))
+        logger.exception("Selection failed for HearingAgenda", (SELECT_CURRENT_AGENDA % ha))
 
 
 '''
@@ -283,8 +274,7 @@ def insert_hearing(date, dddb):
         return dddb.lastrowid
 
     except MySQLdb.Error:
-        logger.warning("Hearing insert failed", full_msg=traceback.format_exc(),
-                       additional_fields=create_payload("Hearing", (INSERT_HEARING % hearing)))
+        logger.exception("Insert failed for Hearing", (INSERT_HEARING % hearing))
 
 
 '''
@@ -300,9 +290,7 @@ def insert_committee_hearing(cid, hid, dddb):
         CH_INS += dddb.rowcount
 
     except MySQLdb.Error:
-        #print traceback.format_exc()
-        logger.warning("CommitteeHearing insert failed", full_msg=traceback.format_exc(),
-                       additional_fields=create_payload("CommitteeHearings", (INSERT_COMMITTEE_HEARING % comm_hearing)))
+        logger.exception("Insert failed for CommitteeHearing", (INSERT_COMMITTEE_HEARING % comm_hearing))
 
 
 '''
@@ -320,9 +308,7 @@ def insert_hearing_agenda(hid, bid, date, dddb):
             HA_INS += dddb.rowcount
 
         except MySQLdb.Error:
-            #print traceback.format_exc()
-            logger.warning("HearingAgenda insert failed", full_msg=traceback.format_exc(),
-                           additional_fields=create_payload("HearingAgenda", (INSERT_HEARING_AGENDA % agenda)))
+            logger.exception("Insert failed for HearingAgenda", (INSERT_HEARING_AGENDA % agenda))
 
 
 '''
@@ -456,7 +442,7 @@ def get_house_agenda(dddb):
 
     for link in html_soup.find_all('li', class_='calendarlist'):
         doc_link = 'http://www.myfloridahouse.gov' + link.find('a').get('href').strip()
-        print doc_link
+
         get_agenda_text(doc_link)
 
         with open("calendar.txt", "r") as f:
@@ -471,7 +457,7 @@ def get_senate_agenda(dddb):
 
     for link in html_soup.find('div', class_='grid-33').find_all('li'):
         doc_link = 'https://www.flsenate.gov' + link.find('a').get('href').strip()
-        print doc_link
+
         get_agenda_text(doc_link)
 
         with open("calendar.txt", "r") as f:
@@ -479,39 +465,17 @@ def get_senate_agenda(dddb):
 
 
 def main():
-    dbinfo = mysql_connection(sys.argv)
-    # MUST SPECIFY charset='utf8' OR BAD THINGS WILL HAPPEN.
-    with MySQLdb.connect(host=dbinfo['host'],
-                         port=dbinfo['port'],
-                         db=dbinfo['db'],
-                         user=dbinfo['user'],
-                         passwd=dbinfo['passwd'],
-                         charset='utf8') as dddb:
-
+    with connect() as dddb:
         get_senate_agenda(dddb)
         get_house_agenda(dddb)
-
-        logger.info(__file__ + " terminated successfully",
-                    full_msg="Inserted " + str(H_INS) + " rows in Hearing, "
-                             + str(CH_INS) + " rows in CommitteeHearing, "
-                             + str(HA_INS) + " rows in HearingAgenda, and updated "
-                             + str(HA_UPD) + " rows in HearingAgenda",
-                    additional_fields={'_affected_rows': 'Hearing: ' + str(H_INS)
-                                                         + ', CommitteeHearing: ' + str(CH_INS)
-                                                         + ', HearingAgenda: ' + str(HA_INS + HA_UPD),
-                                       '_inserted': 'Hearing: ' + str(H_INS)
-                                                    + ', CommitteeHearing: ' + str(CH_INS)
-                                                    + ', HearingAgenda: ' + str(HA_INS),
-                                       '_updated': 'HearingAgenda: ' + str(HA_UPD),
-                                       '_state': 'FL'})
 
         LOG = {'tables': [{'state': 'FL', 'name': 'Hearing', 'inserted': H_INS, 'updated': 0, 'deleted': 0},
                           {'state': 'FL', 'name': 'CommitteeHearing', 'inserted': CH_INS, 'updated': 0, 'deleted': 0},
                           {'state': 'FL', 'name': 'HearingAgenda', 'inserted': HA_INS, 'updated': HA_UPD, 'deleted': 0}]}
+        logger.info(LOG)
         sys.stderr.write(json.dumps(LOG))
 
 
 if __name__ == '__main__':
-    with GrayLogger(GRAY_LOGGER_URL) as _logger:
-        logger = _logger
-        main()
+    logger = create_logger()
+    main()

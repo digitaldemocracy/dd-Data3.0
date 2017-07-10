@@ -15,16 +15,15 @@ Tables affected:
  - Contribution
 """
 
-from Database_Connection import mysql_connection
 import requests
 import sys
 import os
 import json
 from bs4 import BeautifulSoup
-from GrayLogger.graylogger import GrayLogger
 from Constants.Contribution_Queries import *
 from Constants.General_Constants import *
-from Utils.DatabaseUtils_NR import *
+from Utils.Database_Connection import *
+from Utils.Generic_Utils import *
 
 logger = None
 
@@ -126,8 +125,7 @@ def get_pid(cursor, first, last):
         else:
             print("Person" + first + last + "not found")
     except MySQLdb.Error:
-        logger.warning('Select Failed', full_msg=traceback.format_exc(),
-                       additional_fields=create_payload('Legislator', (S_PERSON % (first, last))))
+        logger.exception('Select Failed for Person', (S_PERSON % (first, last)))
 
     return result
 
@@ -143,8 +141,7 @@ def get_house(cursor, pid, session_year, state):
             result = cursor.fetchone()[0]
 
     except MySQLdb.Error:
-        logger.warning('Select Failed', full_msg=traceback.format_exc(),
-                       additional_fields=create_payload('Term', (S_TERM % (pid, session_year, state))))
+        logger.exception('Select Failed for Term', (S_TERM % (pid, session_year, state)))
 
     return result
 
@@ -169,8 +166,7 @@ def get_oid(cursor, name):
             result = cursor.fetchone()[0]
 
     except MySQLdb.Error:
-        logger.warning('Select Failed', full_msg=traceback.format_exc(),
-                       additional_fields=create_payload('Organizations', (S_ORGANIZATION % (name,))))
+        logger.exception('Select Failed for Organization', (S_ORGANIZATION % (name,)))
 
     return result
 
@@ -185,8 +181,7 @@ def insert_org(cursor, name, state):
         I_O += cursor.rowcount
 
     except MySQLdb.Error:
-        logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-                       additional_fields=create_payload('Organzations', (I_ORGANIZATION % (name, state))))
+        logger.exception('Insert Failed for Organization', (I_ORGANIZATION % (name, state)))
 
 
 '''
@@ -200,9 +195,8 @@ def get_con_id(cursor, con_id, pid, year, date, house, donor_name, donor_org, am
             result = cursor.fetchone()[0]
 
     except MySQLdb.Error:
-        logger.warning('Select Failed', full_msg=traceback.format_exc(),
-                       additional_fields=create_payload('Contribution', (
-                       I_CONTRIBUTION % (conID, pid, year, date, house, donor_name, donor_org, amount, state, oid))))
+        logger.exception('Select Failed for Contribution',
+                         I_CONTRIBUTION % (con_id, pid, year, date, house, donor_name, donor_org, amount, state, oid))
 
     return result
 
@@ -217,20 +211,14 @@ def insert_contribution(cursor, con_id, pid, year, date, house, donor_name, dono
             cursor.execute(I_CONTRIBUTION, (con_id, pid, year, date, house, donor_name, donor_org, amount, state, oid))
             I_C += cursor.rowcount
     except MySQLdb.Error:
-        logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-                       additional_fields=create_payload('Contribution', (
-                       I_CONTRIBUTION % (con_id, pid, year, date, house, donor_name, donor_org, amount, state, oid))))
+        logger.exception(format_logger_message('Insert Failed for Contribution',
+                                               I_CONTRIBUTION % (
+                                               con_id, pid, year, date, house, donor_name, donor_org, amount, state,
+                                               oid)))
 
 
 def main():
-    ddinfo = mysql_connection(sys.argv)
-    with MySQLdb.connect(host=ddinfo['host'],
-                         user=ddinfo['user'],
-                         db=ddinfo['db'],
-                         port=ddinfo['port'],
-                         passwd=ddinfo['passwd'],
-                         charset='utf8') as dddb:
-
+    with connect() as dddb:
         session_year = "2017"
         state = "FL"
 
@@ -292,24 +280,12 @@ def main():
                         insert_contribution(dddb, con_id, pid, year, date, house, donor_name, donor_org, amount, state,
                                             oid)
 
-        print "Inserted" + str(I_O) + " rows into Organizations"
-        print "Inserted" + str(I_C) + " rows into Contribution"
-
-        logger.info(__file__ + ' terminated successfully.',
-                    full_msg='Inserted ' + str(I_O) + ' rows in Organizations and inserted '
-                             + str(I_C) + ' rows in Contribution',
-                    additional_fields={'_affected_rows': 'Organizations:' + str(I_O) +
-                                                         ', Contribution:' + str(I_C),
-                                       '_inserted': 'Organizations:' + str(I_O) +
-                                                    ', Contribution:' + str(I_C),
-                                       '_state': 'FL'})
-
         LOG = {'tables': [{'state': 'FL', 'name': 'Organizations', 'inserted': I_O, 'updated': 0, 'deleted': 0},
                           {'state': 'FL', 'name': 'Contribution:', 'inserted': I_C, 'updated': 0, 'deleted': 0}]}
+        logger.info(LOG)
         sys.stderr.write(json.dumps(LOG))
 
 
 if __name__ == '__main__':
-    with GrayLogger(GRAY_LOGGER_URL) as _logger:
-        logger = _logger
-        main()
+    logger = create_logger()
+    main()
