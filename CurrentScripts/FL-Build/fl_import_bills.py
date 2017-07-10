@@ -30,10 +30,9 @@ from bs4 import BeautifulSoup
 from Utils.Database_Connection import *
 from fl_bill_parser import *
 from Utils.Bill_Insertion_Manager import *
-from bill_API_helper import *
 from Constants.Bills_Queries import *
 from Constants.General_Constants import *
-from GrayLogger.graylogger import GrayLogger
+from Utils.Generic_Utils import *
 
 logger = None
 
@@ -290,6 +289,5 @@ def main():
 
 
 if __name__ == "__main__":
-    with GrayLogger(GRAY_LOGGER_URL) as _logger:
-        logger = _logger
-        main()
+    logger = create_logger()
+    main()
