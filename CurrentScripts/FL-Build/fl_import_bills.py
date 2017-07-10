@@ -79,8 +79,7 @@ def get_vote_cid(dddb, vote):
         else:
             return dddb.fetchone()[0]
     except MySQLdb.Error:
-        logger.warning("Committee selection failed", full_msg=traceback.format_exc(),
-                       additional_fields=create_payload("Committee", (SELECT_COMMITTEE % comm_info)))
+        logger.exception(format_logger_message("Committee selection failed for Committee", (SELECT_COMMITTEE % comm_info)))
 
 
 def get_pid_name(dddb, person):
@@ -122,8 +121,7 @@ def get_pid_name(dddb, person):
             return None
 
     except MySQLdb.Error:
-        logger.warning("PID selection failed", full_msg=traceback.format_exc(),
-                       additional_fields=create_payload("Person", (SELECT_LEG_PID % legislator)))
+        logger.exception(format_logger_message("PID selection failed for Person", (SELECT_LEG_PID % legislator)))
 
 
 def get_pid(dddb, person):
@@ -149,8 +147,7 @@ def get_pid(dddb, person):
                 return dddb.fetchone()[0]
 
         except MySQLdb.Error:
-            logger.warning("PID selection failed", full_msg=traceback.format_exc(),
-                           additional_fields=create_payload("AltId", (SELECT_PID % alt_id)))
+            logger.exception(format_logger_message("PID selection failed for AltId", (SELECT_PID % alt_id)))
 
 
 def scrape_version_date(url):
