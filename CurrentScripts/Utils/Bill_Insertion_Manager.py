@@ -27,7 +27,7 @@ from Generic_MySQL import *
 from Constants.Bills_Queries import *
 
 
-class BillManager(object):
+class BillInsertionManager(object):
     def __init__(self, dddb, logger, state):
         self.B_INSERTED = 0
         self.M_INSERTED = 0
