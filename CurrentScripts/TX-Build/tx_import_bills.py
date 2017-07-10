@@ -82,7 +82,7 @@ def format_version(version_list):
 
     for version in version_list:
         try:
-            version_doc = urllib2.urlopen(entry['url'], timeout=15)
+            version_doc = urllib2.urlopen(version.url, timeout=15)
             doc = ''
             while True:
                 read_text = version_doc.read(1024)
@@ -91,7 +91,7 @@ def format_version(version_list):
                 doc += read_text
         except urllib2.URLError:
             doc = None
-            print('URL error with version ' + vid)
+            print('URL error with version ' + version.vid)
 
         version.set_text(doc)
 

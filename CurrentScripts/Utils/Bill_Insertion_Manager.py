@@ -44,33 +44,13 @@ class BillInsertionManager(object):
     Handles DW and GrayLogger logging
     '''
     def log(self):
-        self.logger.info(__file__ + " terminated successfully",
-                    full_msg="Inserted " + str(self.B_INSERTED) + " rows in Bill, "
-                                + str(self.M_INSERTED) + " rows in Motion, "
-                                + str(self.BVS_INSERTED) + " rows in BillVoteSummary, "
-                                + str(self.BVD_INSERTED) + " rows in BillVoteDetail, "
-                                + str(self.A_INSERTED) + " rows in Action, and "
-                                + str(self.V_INSERTED) + " rows in BillVersion.",
-                    additional_fields={'_affected_rows': 'Bill: ' + str(self.B_INSERTED)
-                                                         + ', Motion: ' + str(self.M_INSERTED)
-                                                         + ', BillVoteSummary: ' + str(self.BVS_INSERTED)
-                                                         + ', BillVoteDetail: ' + str(self.BVD_INSERTED)
-                                                         + ', Action: ' + str(self.A_INSERTED)
-                                                         + ', BillVersion: ' + str(self.V_INSERTED),
-                                       '_inserted': 'Bill: ' + str(self.B_INSERTED)
-                                                    + ', Motion: ' + str(self.M_INSERTED)
-                                                    + ', BillVoteSummary: ' + str(self.BVS_INSERTED)
-                                                    + ', BillVoteDetail: ' + str(self.BVD_INSERTED)
-                                                    + ', Action: ' + str(self.A_INSERTED)
-                                                    + ', BillVersion: ' + str(self.V_INSERTED),
-                                       '_state': self.state})
-
         LOG = {'tables': [{'state': self.state, 'name': 'Bill', 'inserted': self.B_INSERTED, 'updated': 0, 'deleted': 0},
                           {'state': self.state, 'name': 'Motion', 'inserted': self.M_INSERTED, 'updated': 0, 'deleted': 0},
                           {'state': self.state, 'name': 'BillVoteSummary', 'inserted': self.BVS_INSERTED, 'updated': 0, 'deleted': 0},
                           {'state': self.state, 'name': 'BillVoteDetail', 'inserted': self.BVD_INSERTED, 'updated': 0, 'deleted': 0},
                           {'state': self.state, 'name': 'Action', 'inserted': self.A_INSERTED, 'updated': 0, 'deleted': 0},
                           {'state': self.state, 'name': 'BillVersion', 'inserted': self.V_INSERTED, 'updated': 0, 'deleted': 0}]}
+        self.logger.info(LOG)
         sys.stderr.write(json.dumps(LOG))
 
 
