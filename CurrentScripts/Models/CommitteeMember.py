@@ -16,7 +16,7 @@ class CommitteeMember(object):
     def __init__(self, name = None, session_year = None, state = None, position = "Member", alt_id = None,
                        current_flag = None, start_date = None, end_date = None,
                        pid = None, cid = None, house = None):
-        if (name and session_year and state) or (pid and session_year):
+        if (name and session_year and state) or (pid and session_year and state):
             self.name = name
             self.position = position
             self.session_year = session_year

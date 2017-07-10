@@ -42,22 +42,11 @@ class CommitteeInsertionManager(object):
         self.SO_UPDATED = 0
 
     def log(self):
-        self.logger.info(__file__ + " terminated successfully",
-                    full_msg="Inserted " + str(self.CN_INSERTED) + " rows in CommitteeNames, "
-                             + str(self.C_INSERTED) + " rows in Committee, and "
-                             + str(self.SO_INSERTED) + " rows in servesOn.",
-                    additional_fields={'_affected_rows': 'CommitteeNames: ' + str(self.CN_INSERTED)
-                                                         + ', Committee: ' + str(self.C_INSERTED)
-                                                         + ', servesOn: ' + str(self.SO_INSERTED),
-                                       '_inserted': 'CommitteeNames: ' + str(self.CN_INSERTED)
-                                                    + ', Committee: ' + str(self.C_INSERTED)
-                                                    + ', servesOn: ' + str(self.SO_INSERTED),
-                                       '_updated': 'servesOn: ' + str(self.SO_UPDATED),
-                                       '_state': self.state})
 
         LOG = {'tables': [{'state': self.state, 'name': 'CommitteeNames', 'inserted': self.CN_INSERTED, 'updated': 0, 'deleted': 0},
                           {'state': self.state, 'name': 'Committee', 'inserted': self.C_INSERTED, 'updated': 0, 'deleted': 0},
                           {'state': self.state, 'name': 'servesOn', 'inserted': self.SO_INSERTED, 'updated': self.SO_UPDATED, 'deleted': 0}]}
+        self.logger.info(LOG)
         sys.stderr.write(json.dumps(LOG))
 
 
@@ -131,7 +120,8 @@ class CommitteeInsertionManager(object):
     def get_house_members(self, floor_committee):
         members = get_all(self.dddb, SELECT_HOUSE_MEMBERS, floor_committee.__dict__, "House Floor Member Selection", self.logger)
         return [CommitteeMember(pid=member[0],
-                                session_year=floor_committee.session_year) for member in members]
+                                session_year=floor_committee.session_year,
+                                state=self.state) for member in members]
 
 
     '''
