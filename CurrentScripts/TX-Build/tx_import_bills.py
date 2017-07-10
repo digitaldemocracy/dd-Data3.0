@@ -22,18 +22,10 @@ Populates:
     - BillVersion
 """
 
-import MySQLdb
-import traceback
-import sys
 import urllib2
-from bs4 import BeautifulSoup
-from graylogger.graylogger import GrayLogger
-from Utils.Database_Connection import *
 from tx_bill_parser import *
-from Utils.DatabaseUtils_NR import *
 from Utils.Bill_Insertion_Manager import *
 from Constants.Bills_Queries import *
-from Constants.General_Constants import *
 
 logger = None
 
@@ -58,8 +50,7 @@ def get_pid_name(dddb, person):
             return dddb.fetchone()[0]
 
     except MySQLdb.Error:
-        logger.warning("PID selection failed", full_msg=traceback.format_exc(),
-                       additional_fields=create_payload("Person", (SELECT_LEG_PID % legislator)))
+        logger.warning(format_logger_message("PID selection failed to Person", (SELECT_LEG_PID % legislator)))
 
 
 def get_pid(dddb, person):
@@ -80,8 +71,7 @@ def get_pid(dddb, person):
             return dddb.fetchone()[0]
 
     except MySQLdb.Error:
-        logger.warning("PID selection failed", full_msg=traceback.format_exc(),
-                       additional_fields=create_payload("AltId", (SELECT_PID % person)))
+        logger.warning(format_logger_message("PID selection failed for AltId", (SELECT_PID % person)))
 
 
 def format_version(version_list):
@@ -160,6 +150,5 @@ def main():
 
 
 if __name__ == "__main__":
-    with GrayLogger(GRAY_LOGGER_URL) as _logger:
-        logger = _logger
-        main()
+    logger = create_logger()
+    main()
