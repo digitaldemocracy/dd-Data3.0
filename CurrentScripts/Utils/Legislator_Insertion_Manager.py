@@ -23,6 +23,7 @@ import sys
 import json
 from Constants.Legislator_Queries import *
 from Generic_MySQL import *
+from Generic_Utils import *
 
 logger = None
 
@@ -62,8 +63,7 @@ class LegislatorInsertionManager(object):
                 self.T_UPDATE += self.dddb.rowcount
                 return True
             except MySQLdb.Error:
-                logger.warning('Update Failed', full_msg=traceback.format_exc(),
-                               additional_fields=create_payload('Term', (QU_TERM%leg)))
+                logger.warning(format_logger_message('Update Failed for Term', (QU_TERM%term)))
                 return False
         else:
             return False
