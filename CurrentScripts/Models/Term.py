@@ -11,7 +11,7 @@ class Term(object):
     Constructor
     '''
     def __init__(self, person, year, house, state, district, party, start, current_term, end = None, caucus = None):
-        self.person = person
+        self.pid = person.pid
         self.year = year
         self.district = district
         self.house = house

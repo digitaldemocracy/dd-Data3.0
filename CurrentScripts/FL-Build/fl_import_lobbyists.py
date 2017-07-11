@@ -35,23 +35,17 @@ Source:
   EXEC_LOBBYIST_URL = 'https://www.floridalobbyist.gov/reports/elob.txt'
   LEG_LOBBYIST_URL = 'https://www.floridalobbyist.gov/reports/llob.txt'
 '''
-
-from Database_Connection import mysql_connection
-import pprint
-import re
-import sys
-from datetime import date
-import traceback
-import urllib
-import urllib2
-import json
-import MySQLdb
-import csv
 import os
-from graylogger.graylogger import GrayLogger
+import csv
+import sys
+import json
+import pprint
+import urllib
+from datetime import date
+from Utils.Generic_Utils import *
+from Utils.Generic_MySQL import *
 from Constants.Lobbyist_Queries import *
 from Constants.General_Constants import *
-from Utils.DatabaseUtils_NR import *
 
 logger = None
 
@@ -99,8 +93,7 @@ def is_person_in_db(dddb, lobbyist):
         if query is not None:
             return query[0]
     except:
-        logger.warning('Check Failed', full_msg=traceback.format_exc(),
-                additional_fields=create_payload('Person', (QS_PERSON%lobbyist)))
+        logger.exception(format_logger_message('Check Failed for Person', (QS_PERSON%lobbyist)))
         return False
 
     return False
@@ -114,8 +107,7 @@ def get_pid(dddb, lobbyist):
             pid = dddb.lastrowid
             P_INSERT += dddb.rowcount
         except MySQLdb.Error:
-            logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-                    additional_fields=create_payload('Person', (QI_PERSON%lobbyist)))
+            logger.exception(format_logger_message('Insert Failed for Person', (QI_PERSON%lobbyist)))
     return pid
 
 def is_lobbyist_in_db(dddb, lobbyist):
@@ -126,8 +118,7 @@ def is_lobbyist_in_db(dddb, lobbyist):
         if query is not None:
             return query[0]
     except:
-        logger.warning('Check Failed', full_msg=traceback.format_exc(),
-                additional_fields=create_payload('Lobbyist', (QS_LOBBYIST%lobbyist)))
+        logger.exception(format_logger_message('Check Failed for Lobbyist', (QS_LOBBYIST%lobbyist)))
         return False
 
     return False
@@ -142,22 +133,20 @@ def insert_lobbyist(dddb, lobbyist):
             dddb.execute(QI_LOBBYIST, lobbyist)
             L_INSERT += dddb.rowcount
         except MySQLdb.Error:
-            logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-                    additional_fields=create_payload('Lobbyist', (QI_LOBBYIST%lobbyist)))
+            logger.exception(format_logger_message('Insert Failed for Lobbyist', (QI_LOBBYIST%lobbyist)))
     return lobbyist
 
 
 def insert_organization(dddb, org):
     global O_INSERT
-    org["oid"] = is_obj_in_db(dddb, QS_ORGANIZATIONS, org, "Organization", logger)
+    org["oid"] = is_entity_in_db(dddb, QS_ORGANIZATIONS, org, "Organization", logger)
     if not org["oid"]:
         try:
             dddb.execute(QI_ORGANIZATIONS, org)
             org["oid"] = dddb.lastrowid
             O_INSERT += dddb.rowcount
         except MySQLdb.Error:
-            logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-                    additional_fields=create_payload('Organizations', (QI_ORGANIZATIONS%org)))
+            logger.exception(format_logger_message('Insert Failed for Organizations', (QI_ORGANIZATIONS%org)))
     return org
 
 
@@ -216,7 +205,7 @@ def parse_lobbyist(dddb, lobFile, lobUrl):
                     lobFirm["oid"] = org["oid"]
                     lobFirm["state"] = "FL"
                     lobFirm["filer_naml"] = row[23]
-                    LF_INSERT += insert_obj(dddb, lobFirm, QS_LOBBYINGFIRM, QI_LOBBYINGFIRM, "Lobbyist Firm", logger)
+                    LF_INSERT += insert_entity(dddb, lobFirm, QS_LOBBYINGFIRM, QI_LOBBYINGFIRM, "Lobbyist Firm", logger)
                     
                     # Add LobbyingFirmState table info
                     lobFirm["filer_id"] = org["oid"] # use oid for unique key
@@ -231,12 +220,12 @@ def parse_lobbyist(dddb, lobFile, lobUrl):
                         lobFirm["ls_end_yr"] = int(row[34].split("/")[-1])
                     else:
                         lobFirm["ls_end_yr"] = None
-                    LFS_INSERT += insert_obj(dddb, lobFirm,  QS_LOBBYINGFIRMSTATE, QI_LOBBYINGFIRMSTATE, "Lobbyist Firm State", logger)
+                    LFS_INSERT += insert_entity(dddb, lobFirm,  QS_LOBBYINGFIRMSTATE, QI_LOBBYINGFIRMSTATE, "Lobbyist Firm State", logger)
 
                     # Add LobbyistEmployer skipping coalition
                     # Skipping coalition
                     # Use previous filer_id
-                    LEMPLOYER_INSERT += insert_obj(dddb, lobFirm, QS_LOBBYISTEMPLOYER, QI_LOBBYISTEMPLOYER, "Lobbyist Employer", logger)
+                    LEMPLOYER_INSERT += insert_entity(dddb, lobFirm, QS_LOBBYISTEMPLOYER, QI_LOBBYISTEMPLOYER, "Lobbyist Employer", logger)
                     
                     # Add LobbyistEmployment
                     lobbyist["sender_id"] = lobFirm["filer_id"]
@@ -249,7 +238,7 @@ def parse_lobbyist(dddb, lobFile, lobUrl):
                         lobbyist["ls_end_yr"] = int(row[15].split("/")[-1])
                     else:
                         lobbyist["ls_end_yr"] = 2018
-                    LEMPLOYMENT_INSERT += insert_obj(dddb, lobbyist, QS_LOBBYISTEMPLOYMENT, QI_LOBBYISTEMPLOYMENT, "Lobbyist Employment", logger)
+                    LEMPLOYMENT_INSERT += insert_entity(dddb, lobbyist, QS_LOBBYISTEMPLOYMENT, QI_LOBBYISTEMPLOYMENT, "Lobbyist Employment", logger)
                     
                     # Add Organization they are representing
                     org["name"] = row[13]
@@ -282,7 +271,7 @@ def parse_lobbyist(dddb, lobFile, lobUrl):
                     # Add LobbyistEmployer in-house lobbyist use organization they are representing
                     # Skipping coalition
                     org['filer_id'] = org["oid"]
-                    LEMPLOYER_INSERT += insert_obj(dddb, org, QS_LOBBYISTEMPLOYER, QI_LOBBYISTEMPLOYER, "Lobbyist Employer", logger)
+                    LEMPLOYER_INSERT += insert_entity(dddb, org, QS_LOBBYISTEMPLOYER, QI_LOBBYISTEMPLOYER, "Lobbyist Employer", logger)
 
                     # Add LobbyistEmployment
                     # NEED PID 
@@ -297,7 +286,7 @@ def parse_lobbyist(dddb, lobFile, lobUrl):
                         lobbyist["ls_end_yr"] = int(row[15].split("/")[-1])
                     else:
                         lobbyist["ls_end_yr"] = 2018
-                    LDE_INSERT += insert_obj(dddb, lobbyist, QS_LOBBYISTDIRECTEMPLOYMENT, QI_LOBBYISTDIRECTEMPLOYMENT, "Lobbyist Direct Employment", logger)
+                    LDE_INSERT += insert_entity(dddb, lobbyist, QS_LOBBYISTDIRECTEMPLOYMENT, QI_LOBBYISTDIRECTEMPLOYMENT, "Lobbyist Direct Employment", logger)
 
 
 def insert_lobbyist_db(dddb, lobbyist):
@@ -315,9 +304,7 @@ def insert_lobbyist_db(dddb, lobbyist):
                 dddb.execute(QI_PERSONSTATE, lobbyist)
                 P_INSERT += dddb.rowcount
             except MySQLdb.Error:
-                logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-                                                additional_fields=create_payload('Person', 
-                                                (QI_PERSON%lobbyist)))
+                logger.exception(format_logger_message('Insert Failed for Person', (QI_PERSON%lobbyist)))
         else:
             pid = dddb.fetchone()[0]
         lobbyist['pid'] = pid
@@ -325,55 +312,18 @@ def insert_lobbyist_db(dddb, lobbyist):
             dddb.execute(QI_LOBBYIST, lobbyist)
             L_INSERT += dddb.rowcount
         except MySQLdb.Error:
-            logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-                                            additional_fields=create_payload('Lobbyist', 
-                                            (QI_LOBBYIST%lobbyist)))
+            logger.exception(format_logger_message('Insert Failed for Lobbyist', (QI_LOBBYIST%lobbyist)))
     else:
         pid = dddb.fetchone()[0]
     
     return pid
 
 def main():
-    ddinfo = mysql_connection(sys.argv)
 
-    with MySQLdb.connect(host=ddinfo['host'],
-                         user=ddinfo['user'],
-                         db=ddinfo['db'],
-                         port=ddinfo['port'],
-                         passwd=ddinfo['passwd'],
-                         charset='utf8') as dddb:
+    with connect as dddb:
         download_files()
         parse_lobbyist(dddb, TODAYS_LEG_FILE, LEG_LOBBYIST_URL)
         parse_lobbyist(dddb, TODAYS_EXEC_FILE, EXEC_LOBBYIST_URL)
-        logger.info(__file__ + ' terminated successfully.', 
-                    full_msg='Inserted ' + str(P_INSERT) + ' rows in Person, inserted ' 
-                        + str(L_INSERT) + ' rows in Lobbyist, inserted '
-                        + str(O_INSERT) + ' rows in Organizations, inserted ' 
-                        + str(LFS_INSERT) + ' rows in LobbyingFirmState, inserted '
-                        + str(LF_INSERT) + ' rows in LobbyingFirm, inserted ' 
-                        + str(LEMPLOYER_INSERT) + ' rows in LobbyistEmployer, inserted '
-                        + str(LEMPLOYMENT_INSERT) + ' rows in LobbyistEmployment, inserted '
-                        + str(LDE_INSERT) + ' rows in LobbyistDirectEmployment, and inserted ' 
-                        + str(LC_INSERT) + ' rows in LobbyingContracts',
-                    additional_fields={'_affected_rows':'Person:'+str(P_INSERT)+
-                                            ', Lobbyist:'+str(L_INSERT)+
-                                            ', Organizations:'+str(O_INSERT)+
-                                            ', LobbyingFirmState:'+str(LFS_INSERT)+
-                                            ', LobbyingFirm:'+str(LF_INSERT)+
-                                            ', LobbyistEmployer:'+str(LEMPLOYER_INSERT)+
-                                            ', LobbyistEmployment:'+str(LEMPLOYMENT_INSERT)+
-                                            ', LobbyistDirectEmployment:'+str(LDE_INSERT)+
-                                            ', LobbyingContracts:'+str(LC_INSERT),
-                                        '_inserted':'Person:'+str(P_INSERT)+
-                                            ', Lobbyist:'+str(L_INSERT)+
-                                            ', Organizations:'+str(O_INSERT)+
-                                            ', LobbyingFirmState:'+str(LFS_INSERT)+
-                                            ', LobbyingFirm:'+str(LF_INSERT)+
-                                            ', LobbyistEmployer:'+str(LEMPLOYER_INSERT)+
-                                             ', LobbyistEmployment:'+str(LEMPLOYMENT_INSERT)+
-                                            ', LobbyistDirectEmployment:'+str(LDE_INSERT)+
-                                            ', LobbyingContracts:'+str(LC_INSERT),
-                                        '_state':'FL'})
     
         LOG = {'tables': [{'state': 'FL', 'name': 'LobbingFirm', 'inserted':LF_INSERT, 'updated': 0, 'deleted': 0},
               {'state': 'FL', 'name': 'LobbyingFirmState', 'inserted':LFS_INSERT, 'updated': 0, 'deleted': 0},
@@ -385,9 +335,10 @@ def main():
               {'state': 'FL', 'name': 'LobbyistDirectEmployment', 'inserted':LDE_INSERT, 'updated': 0, 'deleted': 0},
               {'state': 'FL', 'name': 'LobbyingContracts', 'inserted':LC_INSERT, 'updated': 0, 'deleted': 0}]}
         sys.stderr.write(json.dumps(LOG))
+        logger.info(LOG)
 
 if __name__ == '__main__':
-    with GrayLogger(GRAY_LOGGER_URL) as _logger:
-        logger = _logger 
+
+        logger = create_logger()
         main()
 

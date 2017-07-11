@@ -1,11 +1,9 @@
-import sys
 import json
 import MySQLdb
-import datetime as dt
+from Generic_Utils import *
 from Generic_Utils import *
 from Constants.Hearings_Queries import *
 from Constants.General_Constants import *
-from GrayLogger.graylogger import *
 
 class Hearings_Manager(object):
 
@@ -17,7 +15,7 @@ class Hearings_Manager(object):
         self.HA_UPD = 0  # HearingAgenda updated
         self.state = state
         self.dddb = dddb
-        self.logger = GrayLogger(GRAY_LOGGER_URL)
+        self.logger = create_logger()
 
 
     def is_hearing_agenda_in_db(self,  hid, bid, date):
@@ -32,8 +30,7 @@ class Hearings_Manager(object):
                 return True
 
         except MySQLdb.Error:
-            self.logger.warning("HearingAgenda selection failed.", full_msg=traceback.format_exc(),
-                           additional_fields=create_payload("HearingAgenda", (SELECT_HEARING_AGENDA % ha)))
+            self.logger.exception(format_logger_message("HearingAgenda selection failed.", (SELECT_HEARING_AGENDA % ha)))
 
 
     def is_comm_hearing_in_db(self,  cid, hid):
@@ -48,8 +45,7 @@ class Hearings_Manager(object):
                 return True
 
         except MySQLdb.Error:
-            self.logger.warning("CommitteeHearing selection failed.", full_msg=traceback.format_exc(),
-                           additional_fields=create_payload("CommitteeHearing", (SELECT_COMMITTEE_HEARING % comm_hearing)))
+            self.logger.exception(format_logger_message("CommitteeHearing selection failed.", (SELECT_COMMITTEE_HEARING % comm_hearing)))
 
 
     '''
@@ -70,8 +66,7 @@ class Hearings_Manager(object):
                 return self.dddb.fetchone()[0]
 
         except MySQLdb.Error:
-            self.logger.warning("Hearing selection failed", full_msg=traceback.format_exc(),
-                           additional_fields=create_payload("Hearing", (SELECT_CHAMBER_HEARING % hearing)))
+            self.logger.exception(format_logger_message("Hearing selection failed", (SELECT_CHAMBER_HEARING % hearing)))
 
 
     '''
@@ -92,8 +87,7 @@ class Hearings_Manager(object):
                 return self.dddb.fetchone()[0]
 
         except MySQLdb.Error:
-            self.logger.warning("Committee selection failed", full_msg=traceback.format_exc(),
-                           additional_fields=create_payload("Committee", (SELECT_COMMITTEE % comm_name)))
+            self.logger.exception(format_logger_message("Committee selection failed", (SELECT_COMMITTEE % comm_name)))
 
 
 
@@ -105,8 +99,7 @@ class Hearings_Manager(object):
             self.dddb.execute(UPDATE_HEARING_AGENDA, ha)
             self.HA_UPD += self.dddb.rowcount
         except MySQLdb.Error:
-            self.logger.warning("HearingAgenda update failed", fill_msg=traceback.format_exc(),
-                           additional_fields=create_payload("HearingAgenda", (UPDATE_HEARING_AGENDA % ha)))
+            self.logger.exception(format_logger_message("HearingAgenda update failed", (UPDATE_HEARING_AGENDA % ha)))
 
 
     '''
@@ -140,8 +133,7 @@ class Hearings_Manager(object):
                     return None
 
         except MySQLdb.Error:
-            self.logger.warning("HearingAgenda selection failed", full_msg=traceback.format_exc(),
-                           additional_fields=create_payload("HearingAgenda", (SELECT_CURRENT_AGENDA % ha)))
+            self.logger.exception(format_logger_message("HearingAgenda selection failed", (SELECT_CURRENT_AGENDA % ha)))
 
 
     '''
@@ -167,8 +159,7 @@ class Hearings_Manager(object):
             return self.dddb.lastrowid
 
         except MySQLdb.Error:
-            self.logger.warning("Hearing insert failed", full_msg=traceback.format_exc(),
-                           additional_fields=create_payload("Hearing", (INSERT_HEARING % hearing)))
+            self.logger.exception(format_logger_message("Hearing insert failed", (INSERT_HEARING % hearing)))
 
 
     '''
@@ -186,8 +177,7 @@ class Hearings_Manager(object):
 
         except MySQLdb.Error:
             # print traceback.format_exc()
-            self.logger.warning("CommitteeHearing insert failed", full_msg=traceback.format_exc(),
-                           additional_fields=create_payload("CommitteeHearings", (INSERT_COMMITTEE_HEARING % comm_hearing)))
+            self.logger.exception(format_logger_message("CommitteeHearing insert failed", (INSERT_COMMITTEE_HEARING % comm_hearing)))
 
 
 
@@ -206,8 +196,7 @@ class Hearings_Manager(object):
 
             except MySQLdb.Error:
                 #print traceback.format_exc()
-                self.logger.warning("HearingAgenda insert failed", full_msg=traceback.format_exc(),
-                               additional_fields=create_payload("HearingAgenda", (INSERT_HEARING_AGENDA % agenda)))
+                self.logger.exception(format_logger_message("HearingAgenda insert failed", (INSERT_HEARING_AGENDA % agenda)))
 
     '''
     Gets hearing data from OpenStates and inserts it into the database
@@ -231,21 +220,9 @@ class Hearings_Manager(object):
     Generates a report for graylogger
     '''
     def log(self):
-        self.logger.info(__file__ + " terminated successfully",
-                         full_msg="Inserted " + str(self.H_INS) + " rows in Hearing, "
-                                  + str(self.CH_INS) + " rows in CommitteeHearing, "
-                                  + str(self.HA_INS) + " rows in HearingAgenda, and updated "
-                                  + str(self.HA_UPD) + " rows in HearingAgenda",
-                         additional_fields={'_affected_rows': 'Hearing: ' + str(self.H_INS)
-                                                          + ', CommitteeHearing: ' + str(self.CH_INS)
-                                                          + ', HearingAgenda: ' + str(self.HA_INS + self.HA_UPD),
-                                        '_inserted': 'Hearing: ' + str(self.H_INS)
-                                                     + ', CommitteeHearing: ' + str(self.CH_INS)
-                                                     + ', HearingAgenda: ' + str(self.HA_INS),
-                                        '_updated': 'HearingAgenda: ' + str(self.HA_UPD),
-                                        '_state': self.state})
         LOG = {'tables': [{'state': self.state, 'name': 'Hearing', 'inserted': self.H_INS, 'updated': 0, 'deleted': 0},
                           {'state': self.state, 'name': 'CommitteeHearing', 'inserted': self.CH_INS, 'updated': 0, 'deleted': 0},
                           {'state': self.state, 'name': 'HearingAgenda', 'inserted': self.HA_INS, 'updated': self.HA_UPD,
                            'deleted': 0}]}
+        self.logger.info(LOG)
         sys.stderr.write(json.dumps(LOG))

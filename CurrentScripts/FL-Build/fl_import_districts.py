@@ -18,17 +18,12 @@ Populates:
   - District (state, house, did, note, year, region, geoData)
 '''
 
-import MySQLdb
-import datetime
-import requests
-import sys
 import json
-import traceback
-from Database_Connection import mysql_connection
-from graylogger.graylogger import GrayLogger
+import requests
+import datetime
+from Utils.Generic_Utils import *
+from Utils.Database_Connection import *
 from Constants.Districts_Queries import *
-from Constants.General_Constants import *
-from Utils.DatabaseUtils_NR import *
 
 logger = None
 
@@ -85,11 +80,12 @@ def insert_district_db(dddb, state, house, did, note, year, region, geodata):
                                        'year': year, 'geoData': geodata, 'region': region})
             D_INSERT += 1
         except MySQLdb.Error:
-            logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-                           additional_fields=create_payload('District',
-                                                            (QI_DISTRICT %
-                                                            {'state': state, 'house': house, 'did': did, 'note': note,
-                                                             'year': year, 'geoData': geodata, 'region': region})))
+            logger.exception(format_logger_message('Insert Failed for District',
+                                                              (QI_DISTRICT %
+                                                               {'state': state, 'house': house, 'did': did,
+                                                                'note': note,
+                                                                'year': year, 'geoData': geodata, 'region': region})))
+
 
 '''
 This function gets all the districts from the OpenStates API
@@ -115,7 +111,7 @@ def get_districts_api(dddb):
             geodata = format_to_string(result['shape'])
             insert_district_db(dddb, state, house, did, note, year, region, geodata)
         except:
-            print("Error connecting to API")
+            logger.exception("Error connecting to API for house district {0}".format(j))
 
     # Get upper chamber districts
     # Missing districts 3, 5, 21
@@ -132,31 +128,18 @@ def get_districts_api(dddb):
             geodata = format_to_string(result['shape'])
             insert_district_db(dddb, state, house, did, note, year, region, geodata)
         except:
-            print("Error connecting to API")
+            logger.exception("Error connecting to API for senate district {0}".format(j))
 
 
 def main():
-    dbinfo = mysql_connection(sys.argv)
-    with MySQLdb.connect(host=dbinfo['host'],
-                         port=dbinfo['port'],
-                         db=dbinfo['db'],
-                         user=dbinfo['user'],
-                         passwd=dbinfo['passwd'],
-                         charset='utf8') as dddb:
-
+    with connect() as dddb:
         get_districts_api(dddb)
 
-        logger.info(__file__ + ' terminated successfully.',
-                    full_msg='Inserted ' + str(D_INSERT) + ' rows in District',
-                    additional_fields={'_affected_rows': 'District:' + str(D_INSERT),
-                                       '_inserted': 'District:' + str(D_INSERT),
-                                       '_state': 'FL'})
-
         LOG = {'tables': [{'state': 'FL', 'name': 'District', 'inserted': D_INSERT, 'updated': 0, 'deleted': 0}]}
+        logger.info(LOG)
         sys.stderr.write(json.dumps(LOG))
 
 
 if __name__ == '__main__':
-    with GrayLogger(GRAY_LOGGER_URL) as _logger:
-        logger = _logger
-        main()
+    logger = create_logger()
+    main()

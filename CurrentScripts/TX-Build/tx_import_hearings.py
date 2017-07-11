@@ -20,15 +20,11 @@ Populates:
     - HearingAgenda (hid, bid, date_created, current_flag)
 """
 
-import MySQLdb
-import sys
-import traceback
-from graylogger.graylogger import GrayLogger
-from Database_Connection import mysql_connection
 from events_API_helper import *
+from Utils.Database_Connection import *
 from Constants.Hearings_Queries import *
-from Constants.General_Constants import *
-from Utils.DatabaseUtils_NR import *
+from Utils.Generic_Utils import *
+
 
 logger = None
 
@@ -54,8 +50,7 @@ def get_comm_cid(committee, dddb):
             return cid
 
     except MySQLdb.Error:
-        logger.warning("Select statement failed.", full_msg=traceback.format_exc(),
-                       additional_fields=create_payload('Committee', (SELECT_COMMITTEE % committee)))
+        logger.exception(format_logger_message("Select statement failed for Committee", (SELECT_COMMITTEE % committee)))
 
 
 '''
@@ -72,8 +67,7 @@ def get_bill_bid(bill, dddb):
             return bid
 
     except MySQLdb:
-        logger.warning("Select statement failed.", full_msg=traceback.format_exc(),
-                       additional_fields=create_payload('Bill', (SELECT_BILL % bill)))
+        logger.exception(format_logger_message("Select statement failed for Bill", (SELECT_BILL % bill)))
 
 
 '''
@@ -92,8 +86,7 @@ def insert_committee_hearings(committees, hid, dddb):
                 CH_INS += dddb.rowcount
 
             except MySQLdb.Error:
-                logger.warning('Insert statement failed', full_msg=traceback.format_exc(),
-                               additional_fields=create_payload('CommitteeHearing', (INSERT_COMMITTEE_HEARING % comm_hearing)))
+                logger.exception(format_logger_message('Insert statement failed for CommitteeHearing', (INSERT_COMMITTEE_HEARING % comm_hearing)))
 
 
 '''
@@ -112,8 +105,7 @@ def insert_hearing_agendas(bills, hid, dddb):
                 HA_INS += dddb.rowcount
 
             except MySQLdb.Error:
-                logger.warning('Insert statement failed', full_msg=traceback.format_exc(),
-                               additional_fields=create_payload('HearingAgenda', (INSERT_HEARING_AGENDA % hearing_agenda)))
+                logger.exception(format_logger_message('Insert statement failed for HearingAgenda', (INSERT_HEARING_AGENDA % hearing_agenda)))
 
 
 '''
@@ -134,46 +126,25 @@ def import_hearings(dddb):
             hid = dddb.lastrowid
 
         except MySQLdb.Error:
-            logger.warning('Insert statement failed', full_msg=traceback.format_exc(),
-                           additional_fields=create_payload('Hearing', (INSERT_HEARING % hearing)))
+            logger.exception(format_logger_message('Insert statement failed for Hearing', (INSERT_HEARING % hearing)))
 
         insert_committee_hearings(hearing['committees'], hid, dddb)
         insert_hearing_agendas(hearing['bills'], hid, dddb)
 
 
 def main():
-    dbinfo = mysql_connection(sys.argv)
-    with MySQLdb.connect(host=dbinfo['host'],
-                         port=dbinfo['port'],
-                         db=dbinfo['db'],
-                         user=dbinfo['user'],
-                         passwd=dbinfo['passwd'],
-                         charset='utf8') as dddb:
+    with connect() as dddb:
 
         import_hearings(dddb)
-
-        logger.info(__file__ + " terminated successfully",
-                    full_msg="Inserted " + str(H_INS) + " rows in Hearing, "
-                             + str(CH_INS) + " rows in CommitteeHearing, "
-                             + str(HA_INS) + " rows in HearingAgenda, and updated "
-                             + str(HA_UPD) + " rows in HearingAgenda",
-                    additional_fields={'_affected_rows': 'Hearing: ' + str(H_INS)
-                                                         + ', CommitteeHearing: ' + str(CH_INS)
-                                                         + ', HearingAgenda: ' + str(HA_INS + HA_UPD),
-                                       '_inserted': 'Hearing: ' + str(H_INS)
-                                                    + ', CommitteeHearing: ' + str(CH_INS)
-                                                    + ', HearingAgenda: ' + str(HA_INS),
-                                       '_updated': 'HearingAgenda: ' + str(HA_UPD),
-                                       '_state': 'TX'})
 
         LOG = {'tables': [{'state': 'TX', 'name': 'Hearing', 'inserted': H_INS, 'updated': 0, 'deleted': 0},
                           {'state': 'TX', 'name': 'CommitteeHearing', 'inserted': CH_INS, 'updated': 0, 'deleted': 0},
                           {'state': 'TX', 'name': 'HearingAgenda', 'inserted': HA_INS, 'updated': HA_UPD,
                            'deleted': 0}]}
+        logger.info(LOG)
         sys.stderr.write(json.dumps(LOG))
 
 
 if __name__ == '__main__':
-    with GrayLogger(GRAY_LOGGER_URL) as _logger:
-        logger = _logger
-        main()
+    logger = create_logger()
+    main()

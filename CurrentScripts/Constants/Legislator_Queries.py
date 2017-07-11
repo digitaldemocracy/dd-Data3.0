@@ -1,8 +1,8 @@
 QS_LEGISLATOR = '''
                 SELECT p.pid
                 FROM Legislator l, Person p
-                WHERE first=%(first)s
-                AND last=%(last)s
+                WHERE first=%(first_name)s
+                AND last=%(last_name)s
                 AND state=%(state)s
                 AND l.pid=p.pid
                 '''
@@ -24,7 +24,7 @@ QI_PERSON = '''
             INSERT INTO Person
               (first,middle,last, source, image)
             VALUES
-              (%(first)s,%(middle)s,%(last)s,%(source)s,%(image)s)
+              (%(first_name)s,%(middle_name)s,%(last_name)s,%(source)s,%(image)s)
             '''
 QI_PERSONSTATE = '''
                 INSERT INTO PersonStateAffiliation

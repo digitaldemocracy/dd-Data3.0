@@ -21,6 +21,7 @@ from Models.Person import *
 from Models.Term import *
 from Models.Legislator import *
 from Constants.General_Constants import *
+from Utils.Generic_MySQL import *
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -80,7 +81,7 @@ def format_legislator(legislator, state):
     return legislator
 
 
-def get_legislators_list(state):
+def get_legislators_list(state, session_year):
     api_url = LEGISLATORS_SEARCH_URL.format(state.lower())
     legislator_json = requests.get(api_url).json()
     legislators = list()
@@ -98,7 +99,7 @@ def get_legislators_list(state):
 
         # Term table data
         term = Term(person = person,
-                    year=YEAR,
+                    year=session_year,
                     house = entry["house"],
                     state = state,
                     district=str(entry["district"]),
