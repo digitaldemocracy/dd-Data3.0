@@ -403,6 +403,7 @@ def get_senate_comm_hearings():
 
     #find number of pages
     agendaPages = soup.find_all(class_="pagination pager")
+    p = []
     for ap in agendaPages:
         p = ap.find_all("li")
     
