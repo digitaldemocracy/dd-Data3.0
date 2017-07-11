@@ -363,11 +363,8 @@ def main():
     with MySQLdb.connect(host='transcription.digitaldemocracy.org',
                          db='capublic',
                          user='monty',
-                         passwd='python'
-                         #host='localhost',
-                         #db='historic_capublic',
-                         #user='root',
-                         #passwd=''
+                         passwd='python',
+                         charset= "utf8"
                          ) as ca_cursor:
         with connect() as dd_cursor:
             get_summary_votes(ca_cursor, dd_cursor)

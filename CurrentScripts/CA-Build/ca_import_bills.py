@@ -130,15 +130,13 @@ def add_bill(dd_cursor, ca_cursor, values):
             #                               '_log_type':'Database'})
             B_INSERT += row
         except MySQLdb.Error:
-            logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-                           additional_fields=create_payload('Bill', (QI_BILL % (values))))
+            logger.exception(format_logger_message('Insert Failed for Bill', (QI_BILL % (values))))
     else:
         try:
             dd_cursor.execute(QU_BILL, (values[3], values[4], values[0], values[3], values[4]))
             B_UPDATE += dd_cursor.rowcount
         except MySQLdb.Error:
-            logger.warning('Update Failed', full_msg=traceback.format_exc(),
-                           additional_fields=create_payload('Bill',
+            logger.exception(format_logger_message('Update Failed for Bill',
                                                             (QU_BILL, (values[3], values[4], values[0], values[3], values[4]))))
 
 
@@ -165,17 +163,9 @@ def add_bill_version(dd_cursor, values):
             row = dd_cursor.rowcount
             if row == 1:
                 values[4] = '' if values[4] is None else values[4]
-                logger.info('Inserted bill ' + values[1] + ' version ' + values[0] + ' ' + values[4],
-                            additional_fields={'_bill_id':values[1],
-                                               '_bill_version':values[0],
-                                               '_subject':values[4],
-                                               '_date':values[2].strftime('%y-%m-%d'),
-                                               '_state':values[3],
-                                               '_log_type':'Database'})
             BV_INSERT += row
         except MySQLdb.Error:
-            logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-                           additional_fields=create_payload('BillVersion',
+            logger.exception(format_logger_message('Insert Failed for BillVersion',
                                                             (QI_BILLVERSION % (values))))
 
 '''
@@ -240,10 +230,6 @@ def main():
                              user='monty',
                              db='capublic',
                              passwd='python',
-                             #host='localhost',
-                             #user='root',
-                             #db='historic_capublic',
-                             #passwd=''
                              charset='utf8') as ca_cursor:
             get_bills(ca_cursor, dd_cursor)
             get_bill_versions(ca_cursor, dd_cursor)

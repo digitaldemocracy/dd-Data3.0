@@ -430,7 +430,7 @@ Returns a list of matches (if found), returns an empty list otherwise.
 def scan_page(url, pattern):
     try:
         html = urllib2.urlopen(url).read()
-        print "Reading from url {0}".format(url)
+        #print "Reading from url {0}".format(url)
         return re.finditer(pattern, html)
     except urllib2.HTTPError as error:
         # Multiple committee membership pages cause exception when opened:
@@ -865,7 +865,7 @@ def update_serveson(cursor, current_pid):
 
 
 def main():
-    with connect as dd:
+    with connect() as dd:
         comm_count = serve_count = 0
         year = datetime.datetime.now().year
         pfinder = Find_Person.FindPerson(dd, 'CA')

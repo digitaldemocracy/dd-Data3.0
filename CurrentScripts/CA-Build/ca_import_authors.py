@@ -1,4 +1,6 @@
-#!/usr/bin/env python27
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 '''
 File: Author_Extract.py
 Author: Daniel Mangin
@@ -69,13 +71,13 @@ QS_COMMITTEEAUTHORS_CHECK = '''SELECT *
                                 AND state = %s'''
 QS_COMMITTEE_GET = '''SELECT cid
                       FROM Committee
-                      WHERE name = %s
+                      WHERE name sounds like %s
                        AND house = %s
                        AND state = %s
                        AND current_flag = 1'''
 QS_COMMITTEE_SHORT_GET = '''SELECT cid
                             FROM Committee
-                            WHERE short_name = %s
+                            WHERE short_name sounds like %s
                              AND house = %s
                              AND state = %s
                              AND current_flag = 1
@@ -182,6 +184,7 @@ Returns the cid of the committee if found. Otherwise, return None.
 def get_committee(dd_cursor, name, house):
     house = house.title()                   # Titlecased for DDDB enum
     name = clean_committee_name(name)       # Clean name for checking
+    name = capublic_format_committee_name(name, house)
 
     dd_cursor.execute(QS_COMMITTEE_GET, (name, house, STATE))
 
@@ -212,14 +215,6 @@ Clean the name of the person and remove/replace weird characters.
 Returns the cleaned name.
 '''
 def clean_name(name):
-    # Replaces all accented o's and a's
-    if "\xc3\x83\xb3" in name:
-        name = name.replace("\xc3\x83\xb3", "o")
-    if "\xc3\x83\xc2\xb3" in name:
-        name = name.replace("\xc3\x83\xc2\xb3", "o")
-    if "\xc3\x83\xc2\xa1" in name:
-        name = name.replace("\xc3\x83\xc2\xa1", "a")
-
 
     if(name == 'Allen Travis'):
         name = 'Travis Allen'
@@ -228,13 +223,8 @@ def clean_name(name):
     if 'Donnell' in name:
         name = "O'Donnell"
 
-    # Removes positions and random unicode ? on Mark Stone's name
     name = name.replace("Vice Chair", "")
     name = name.replace("Chair", "")
-    name = name.replace(chr(194), "")
-    name = name.replace("\xc3\x82", "")
-    name = name.replace("\xc3\xb3", "o")
-    name = name.replace("\xc3\xa1", "a")
     return name
 
 '''
@@ -246,22 +236,27 @@ Find the Person using a combined name
 '''
 def get_person(dd_cursor, filer_naml, house):
     pid = None
+
     filer_naml = clean_name(filer_naml)
     house = house.title()
     error_message = "Multiple matches for the same person: "
     # First try last name.
-    dd_cursor.execute(QS_LEGISLATOR_L, (filer_naml, YEAR, STATE, house))
+    query = QS_LEGISLATOR_L
+
+    dd_cursor.execute(query, (filer_naml, YEAR, STATE, house))
 
     if dd_cursor.rowcount == 1:
         pid = dd_cursor.fetchone()[0]
     elif dd_cursor.rowcount == 0:
         parts = filer_naml.split(' ')
         if len(parts) > 1:
+            query = QS_LEGISLATOR_FL
             dd_cursor.execute(QS_LEGISLATOR_FL, (parts[1:], parts[0], YEAR, STATE, house))
             if dd_cursor.rowcount == 1:
                 pid = dd_cursor.fetchone()[0]
         else:
             filer_naml = '%' + filer_naml + '%'
+            query = QS_LEGISLATOR_LIKE_L
             dd_cursor.execute(QS_LEGISLATOR_LIKE_L, (filer_naml, STATE))
             if(dd_cursor.rowcount == 1):
                 pid = dd_cursor.fetchone()[0]
@@ -269,7 +264,7 @@ def get_person(dd_cursor, filer_naml, house):
         error_message = "Person not found "
     if pid is None and filer_naml not in logged_list:
         logged_list.append(filer_naml)
-        logger.exception(error_message + filer_naml)
+        logger.exception(error_message + filer_naml + "\n" + (query % (filer_naml, YEAR, STATE, house)))
     return pid
 
 '''
@@ -386,12 +381,8 @@ def main():
         with MySQLdb.connect(host='transcription.digitaldemocracy.org',
                              user='monty',
                              db='capublic',
-                             passwd='python'
-                             #host='localhost',
-                             #user='root',
-                             #db='historic_capublic',
-                             #passwd=''
-                             ) as ca_cursor:
+                             passwd='python',
+                             charset='utf8') as ca_cursor:
             get_authors(ca_cursor, dd_cursor)
     LOG = {'tables': [{'state': 'CA', 'name': 'authors', 'inserted':AU_INSERT, 'updated': 0, 'deleted': 0},
                       {'state': 'CA', 'name': 'BillSponsors', 'inserted':BS_INSERT, 'updated': 0, 'deleted': 0},

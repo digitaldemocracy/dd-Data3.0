@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 '''
 File: Action_Extract.py
 Author: Daniel Mangin
@@ -29,8 +30,6 @@ Populates:
 
 import sys
 import json
-import MySQLdb
-import traceback
 from Utils.Generic_Utils import *
 from Utils.Database_Connection import *
 
@@ -112,8 +111,7 @@ def insert_Action(dd_cursor, values):
             INSERTED += dd_cursor.rowcount
             LOG['Action']['inserted'] += dd_cursor.rowcount
         except MySQLdb.Error:
-            logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-                           additional_fields=create_payload('Action', (QI_ACTION % (values[0], values[1], values[2], values[3]))))
+            logger.exception(format_logger_message('Insert Failed for Action', (QI_ACTION % (values[0], values[1], values[2], values[3]))))
     else:
         # Check if text has changed
         dd_cursor.execute(QS_ACTION_TEXT, values)
@@ -124,8 +122,7 @@ def insert_Action(dd_cursor, values):
                 UPDATED += dd_cursor.rowcount
                 LOG['Action']['updated'] += dd_cursor.rowcount
             except MySQLdb.Error:
-                logger.warning('Update Failed', full_msg=traceback.format_exc(),
-                               additional_fields=create_payload('Action',
+                logger.exception(format_logger_message('Update Failed for Action',
                                                                 QU_ACTION_TEXT % (values[2], values[0], values[1], values[3])))
 
 
@@ -150,12 +147,8 @@ def main():
         with MySQLdb.connect(host='transcription.digitaldemocracy.org',
                              user='monty',
                              db='capublic',
-                             passwd='python'
-                             #host='localhost',
-                             #user='root',
-                             #db='historic_capublic',
-                             #passwd=''
-                             ) as ca_cursor:
+                             passwd='python',
+                             charset='utf8') as ca_cursor:
             # Get all of the Actions from capublic
             ca_cursor.execute(QS_BILL_HISTORY_TBL)
 
