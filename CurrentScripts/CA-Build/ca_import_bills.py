@@ -30,14 +30,9 @@ Populates:
   - Bill (bid, type, number, state, status, house, session)
   - BillVersion (vid, bid, date, state, subject, appropriation, substantive_changes)
 '''
-
-import sys
-import traceback
-import MySQLdb
 import json
-
-from Database_Connection import mysql_connection
-from GrayLogger.graylogger import GrayLogger
+import traceback
+from Utils.Generic_Utils import *
 from Utils.Database_Connection import *
 
 reload(sys)
@@ -240,9 +235,7 @@ def get_bill_versions(ca_cursor, dd_cursor):
         add_bill_version(dd_cursor, record)
 
 def main():
-    import sys
-    ddinfo = mysql_connection(sys.argv)
-    with connect("local") as dd_cursor:
+    with connect() as dd_cursor:
         with MySQLdb.connect(host='transcription.digitaldemocracy.org',
                              user='monty',
                              db='capublic',
@@ -254,21 +247,11 @@ def main():
                              charset='utf8') as ca_cursor:
             get_bills(ca_cursor, dd_cursor)
             get_bill_versions(ca_cursor, dd_cursor)
-            logger.info(__file__ + ' terminated successfully.',
-                        full_msg='Inserted ' + str(B_INSERT) + ' rows in Bill and inserted '
-                                 + str(BV_INSERT) + ' rows in BillVersion',
-                        additional_fields={'_affected_rows':'Bill:'+str(B_INSERT+B_UPDATE)+
-                                                            ', BillVersion:'+str(BV_INSERT),
-                                           '_inserted':'Bill:'+str(B_INSERT)+
-                                                       ', BillVersion:'+str(BV_INSERT),
-                                           '_updated':'Bill:'+str(B_UPDATE),
-                                           '_state':'CA',
-                                           '_log_type':'Database'})
             LOG = {'tables': [{'state': 'CA', 'name': 'Bill', 'inserted':B_INSERT, 'updated': B_UPDATE, 'deleted': 0},
                               {'state': 'CA', 'name': 'BillVersion', 'inserted':BV_INSERT, 'updated': 0, 'deleted': 0}]}
             sys.stderr.write(json.dumps(LOG, indent=2))
+            logger.info(LOG)
 
 if __name__ == "__main__":
-    with GrayLogger(API_URL) as _logger:
-        logger = _logger
-        main()
+    logger = create_logger()
+    main()

@@ -21,26 +21,20 @@ Sources:
   - cand_2013.csv
   - cand_2015.csv
 '''
-
-from Database_Connection import mysql_connection
-from datetime import datetime
-import urllib
-import zipfile
 import os
+import csv
+import sys
+import json
+import urllib
+import MySQLdb
+import zipfile
+import traceback
 import subprocess
 import contextlib
-import MySQLdb
-import traceback
-import json
-import urllib2
-import re
-import sys
-import csv
-import mysql.connector
-from pprint import pprint
-from urllib import urlopen
-from GrayLogger.graylogger import GrayLogger
-API_URL = 'http://dw.digitaldemocracy.org:12202/gelf'
+from datetime import datetime
+from Utils.Generic_Utils import *
+from Utils.Database_Connection import *
+
 logger = None
 LOG = {'Contribution': {'inserted': 0}}
 C_INSERT = 0
@@ -263,30 +257,17 @@ def getContributions(file, conn):
 
 def main():
   global zipURL
-  dbinfo = mysql_connection(sys.argv)
-  with MySQLdb.connect(host=dbinfo['host'],
-                         port=dbinfo['port'],
-                         db=dbinfo['db'],
-                         user=dbinfo['user'],
-                         passwd=dbinfo['passwd']) as dd_cursor:
+  with connect() as dd_cursor:
     year = datetime.now().year
     sessionyear = year + 1 if year % 2 == 0 else year
     zipURL = zipURL.format(sessionyear)
     dl_csv()
     getContributions('cand_{0}.csv'.format(sessionyear), dd_cursor)
-    #print 'orgs not found', len(notfound_org)
-    logger.info(__file__ + ' terminated successfully.',
-        full_msg='Inserted ' + str(C_INSERT) + ' rows in Contribution',
-        additional_fields={'_affected_rows':'Contribution'+str(C_INSERT),
-                           '_inserted':'Contribution'+str(C_INSERT),
-                           '_state':'CA',
-                           '_log_type':'Database'})
-    #raise TypeError
 
   LOG = {'tables': [{'state': 'CA', 'name': 'Contribution', 'inserted':C_INSERT, 'updated': 0, 'deleted': 0}]}
   sys.stderr.write(json.dumps(LOG))
+  logger.info(LOG)
 if __name__ == "__main__":
-  with GrayLogger(API_URL) as _logger:
-    logger = _logger
+    logger = create_logger()
     main()
 
