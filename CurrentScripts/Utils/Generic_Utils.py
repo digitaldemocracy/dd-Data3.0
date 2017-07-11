@@ -34,7 +34,7 @@ def create_logger():
     console_handler.setLevel(logging.DEBUG)
 
     file_handler = logging.FileHandler(filename)
-    file_handler.setLevel(logging.DEBUG)
+    file_handler.setLevel(logging.ERROR)
 
     # create formatter
     formatter = logging.Formatter("{\n\"Time\": \"%(asctime)s\","
