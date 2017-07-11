@@ -49,6 +49,9 @@ SELECT_ACTION = '''SELECT * FROM Action
 SELECT_VERSION = '''SELECT * FROM BillVersion
                     WHERE vid = %(vid)s'''
 
+SELECT_VERSION_TEXT = '''SELECT text FROM BillVersion
+                         WHERE vid = %(vid)s'''
+
 # SQL Inserts
 INSERT_BILL = '''INSERT INTO Bill
                  (bid, type, number, billState, house, session, sessionYear, state)
@@ -82,5 +85,4 @@ INSERT_VERSION = '''INSERT INTO BillVersion
                     (%(vid)s, %(bid)s, %(date)s, %(bill_state)s, %(subject)s, %(doc)s, %(state)s)'''
 
 # SQL Updates
-
 UPDATE_VERSION_TEXT = '''UPDATE BillVersion SET text = %(doc)s, date = %(date)s WHERE vid = %(vid)s'''

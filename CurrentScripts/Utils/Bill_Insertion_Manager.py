@@ -21,10 +21,13 @@ Populates:
   - Action
 """
 
+import sys
 import json
 from Generic_MySQL import *
 from Constants.Bills_Queries import *
 
+reload(sys)
+sys.setdefaultencoding('utf8')
 
 class BillInsertionManager(object):
     def __init__(self, dddb, logger, state):
@@ -146,6 +149,35 @@ class BillInsertionManager(object):
                              objType="BillVoteDetail",
                              logger=self.logger)
 
+    def check_version_text(self, version):
+        """
+        Checks if the version text is null
+        :param version: A dictionary returned from a Version object's to_dict() method
+        :return: True if the version text is not null, False otherwise
+        """
+        try:
+            self.dddb.execute(SELECT_VERSION_TEXT, version)
+
+            text = self.dddb.fetchone()[0]
+
+            if text is not None:
+                return True
+            else:
+                return False
+
+        except MySQLdb.Error:
+            self.logger.exception(format_logger_message("Selection failed for BillVersion", (SELECT_VERSION_TEXT % version)))
+
+
+    def update_version_text(self, version):
+        """
+        Updates the text column in the BillVersion table
+        :param version: A dictionary returned from a Version object's to_dict() method
+        :return: True if the update succeeds, false otherwise
+        """
+        return update_entity(self.dddb, UPDATE_VERSION_TEXT, version, "BillVersion", self.logger)
+
+
     '''
     Checks if an Action exists in the database.
     '''
@@ -172,9 +204,13 @@ class BillInsertionManager(object):
                 if not self.insert_bill(bill.to_dict()):
                     return False
 
-            if not (self.add_votes_db(bill.votes)
-                    or self.add_versions_db(bill.versions)
-                    or self.add_actions_db(bill.actions)):
+            if not self.add_votes_db(bill.votes):
+                return False
+
+            if not self.add_versions_db(bill.versions):
+                return False
+
+            if not self.add_actions_db(bill.actions):
                 return False
 
         return True
@@ -220,6 +256,10 @@ class BillInsertionManager(object):
         for version in version_list:
             if not self.is_version_in_db(version.to_dict()):
                 if not self.insert_version(version.to_dict()):
+                    return False
+
+            if not self.check_version_text(version.to_dict()):
+                if not self.update_version_text(version.to_dict()):
                     return False
 
         return True

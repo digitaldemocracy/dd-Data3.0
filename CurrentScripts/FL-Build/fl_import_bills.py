@@ -1,5 +1,6 @@
 #!/usr/bin/env python2.7
 # -*- coding: utf8 -*-
+
 """
 File: fl_import_bills.py
 Author: Andrew Rose
@@ -34,8 +35,10 @@ from Constants.Bills_Queries import *
 from Constants.General_Constants import *
 from Utils.Generic_Utils import *
 
-logger = None
+reload(sys)
+sys.setdefaultencoding('utf8')
 
+logger = None
 
 def get_vote_cid(dddb, vote):
     """
@@ -182,43 +185,38 @@ def scrape_version_date(url):
     return dates
 
 
-'''
-Downloads bill texts stored as PDFs
-'''
 def get_pdf(url, vid):
     """
     Downloads a PDF containing the bill text for a certain bill version
     :param url: A URL to the PDF
     :param vid: The version's VID in our database
     """
-    pdf_name = vid + '.pdf'
+    pdf_name = "bill_PDF/" + vid + '.pdf'
     pdf = requests.get(url)
     f = open(pdf_name, 'wb')
     f.write(pdf.content)
     f.close()
 
 
-'''
-Some bills have their bill text stored as a PDF
-This function downloads these PDFs and converts them to text
-'''
 def read_pdf_text(vid):
     """
     Converts a bill text PDF to a text file and reads the text
     :param vid: The version ID of a bill version whose text to process
     :return: The text of one bill version
     """
-    pdf_name = vid + '.pdf'
+    pdf_name = "bill_PDF/" + vid + ".pdf"
+    text_name = "bill_PDF/" + vid + ".txt"
 
     try:
-        subprocess.call(['../pdftotext', pdf_name])
+        subprocess.call(['../pdftotext', '-enc', 'UTF-8', pdf_name])
 
-        with open('pdf_name', 'r') as f:
+        with open(text_name, 'r') as f:
             doc = f.read()
 
-        return doc
+        return doc.encode('utf-8')
 
     except:
+        logger.exception("Error reading version " + vid + " text")
         return None
 
 
@@ -239,10 +237,9 @@ def format_version(version_list):
             version_text = requests.get(version.url).content
             version.set_text(version_text)
         # This is for when we set up FL bill text properly
-        # else:
-        #     get_pdf(version['url'], version['vid'])
-        #     version['doc'] = read_pdf_text(version['vid'])
-
+        else:
+            get_pdf(version.url, version.vid)
+            version.set_text(read_pdf_text(version.vid))
 
 
 def format_votes(dddb, vote_list):
@@ -277,8 +274,11 @@ def format_bills(dddb):
 def main():
     with connect() as dddb:
         bill_manager = BillInsertionManager(dddb, logger, 'FL')
+        print("Getting bill list...")
         bill_list = format_bills(dddb)
+        print("Starting bill insertion...")
         bill_manager.add_bills_db(bill_list)
+        print("Finished bill insertion")
         bill_manager.log()
 
 
