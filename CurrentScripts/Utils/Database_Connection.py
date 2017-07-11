@@ -58,9 +58,9 @@ def connect(db = None):
         print("Running on Dev DB")
         return MySQLdb.connect(host='dev.digitaldemocracy.org',
                          port=3306,
-                         db='parose_dddb',
-                         user='parose',
-                         passwd='parose221',
+                         db='russo_dddb',
+                         user='awsDB',
+                         passwd='digitaldemocracy789',
                          charset='utf8')
 
 
