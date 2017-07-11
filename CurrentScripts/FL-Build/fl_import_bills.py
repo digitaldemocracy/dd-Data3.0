@@ -277,11 +277,8 @@ def format_bills(dddb):
 def main():
     with connect() as dddb:
         bill_manager = BillInsertionManager(dddb, logger, 'FL')
-        print("Getting bill list...")
         bill_list = format_bills(dddb)
-        print("Starting import...")
         bill_manager.add_bills_db(bill_list)
-        print("Finished import")
         bill_manager.log()
 
 

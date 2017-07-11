@@ -25,16 +25,12 @@ from Utils.Database_Connection import *
 
 def main():
     with connect() as dddb:
-        print("Getting session year...")
         logger = create_logger()
         session_year = get_session_year(dddb, "FL", logger)
         committee_insertion_manager = CommitteeInsertionManager(dddb, "FL", session_year, logger)
         parser = FlCommitteeParser(session_year)
-        print("Getting Committee List...")
         committees = parser.get_committee_list()
-        print("Starting import...")
         committee_insertion_manager.import_committees(committees)
-        print("Import finished")
         committee_insertion_manager.log()
 
 
