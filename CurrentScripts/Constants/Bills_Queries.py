@@ -1,3 +1,16 @@
+# CAPublic Select Queries
+SELECT_CAPUBLIC_BILLS = '''SELECT bill_id, measure_type, measure_num, measure_state,
+                        current_status, current_house, session_num
+                 FROM bill_tbl'''
+SELECT_CAPUBLIC_BILLVERSIONS = '''SELECT bill_version_id, bill_id,
+                                bill_version_action_date, bill_version_action,
+                                subject, appropriation, substantive_changes
+                         FROM bill_version_tbl'''
+SELECT_CAPUBLIC_BILL_TITLE = '''SELECT subject, bill_version_action_date
+                   FROM bill_version_tbl
+                   WHERE bill_id = %s
+                    AND bill_version_action = "Introduced"'''
+
 # SQL Selects
 SELECT_BILL = '''SELECT * FROM Bill
                  WHERE bid = %(bid)s'''
@@ -14,7 +27,7 @@ SELECT_VOTE = '''SELECT VoteId FROM BillVoteSummary
                  AND VoteDate = %(date)s
                  AND VoteDateSeq = %(vote_seq)s'''
 
-SELECT_BVD = '''SELECT * FROM BillVoteDetail
+SELECT_BILL_VOTE_DETAIL = '''SELECT * FROM BillVoteDetail
                 WHERE pid = %(pid)s
                 AND voteId = %(voteId)s'''
 
@@ -54,9 +67,9 @@ SELECT_VERSION_TEXT = '''SELECT text FROM BillVersion
 
 # SQL Inserts
 INSERT_BILL = '''INSERT INTO Bill
-                 (bid, type, number, billState, house, session, sessionYear, state)
+                 (bid, type, number, billState, status, house, session, sessionYear, state)
                  VALUES
-                 (%(bid)s, %(type)s, %(number)s, %(billState)s, %(house)s, %(session)s,
+                 (%(bid)s, %(type)s, %(number)s, %(billState)s, %(status)s, %(house)s, %(session)s,
                  %(session_year)s, %(state)s)'''
 
 INSERT_MOTION = '''INSERT INTO Motion
@@ -64,12 +77,12 @@ INSERT_MOTION = '''INSERT INTO Motion
                    VALUES
                    (%(mid)s, %(motion)s, %(doPass)s)'''
 
-INSERT_BVS = '''INSERT INTO BillVoteSummary
+INSERT_BILL_VOTE_SUMMARY = '''INSERT INTO BillVoteSummary
                 (bid, mid, cid, VoteDate, ayes, naes, abstain, result, VoteDateSeq)
                 VALUES
                 (%(bid)s, %(mid)s, %(cid)s, %(date)s, %(ayes)s, %(naes)s, %(other)s, %(result)s, %(vote_seq)s)'''
 
-INSERT_BVD = '''INSERT INTO BillVoteDetail
+INSERT_BILL_VOTE_DETAIL = '''INSERT INTO BillVoteDetail
                 (pid, voteId, result, state)
                 VALUES
                 (%(pid)s, %(voteId)s, %(voteRes)s, %(state)s)'''
@@ -80,9 +93,13 @@ INSERT_ACTION = '''INSERT INTO Action
                    (%(bid)s, %(date)s, %(text)s, %(seq_num)s)'''
 
 INSERT_VERSION = '''INSERT INTO BillVersion
-                    (vid, bid, date, billState, subject, text, state)
+                    (vid, bid, date, billState, subject, appropriation, substantive_changes,
+                    title, digest, text, state)
                     VALUES
-                    (%(vid)s, %(bid)s, %(date)s, %(bill_state)s, %(subject)s, %(doc)s, %(state)s)'''
+                    (%(vid)s, %(bid)s, %(date)s, %(bill_state)s, %(subject)s, %(appropriation)s,
+                    %(substantive_changes)s, %(title)s, %(digest)s, %(doc)s, %(state)s)'''
 
 # SQL Updates
+UPDATE_BILL_STATUS = '''UPDATE Bill SET status = %(status)s, billState = %(billState)s
+                        WHERE bid = %(bid)s AND (status != %(status)s or billState != %(billState)s)'''
 UPDATE_VERSION_TEXT = '''UPDATE BillVersion SET text = %(doc)s, date = %(date)s WHERE vid = %(vid)s'''
