@@ -35,6 +35,7 @@ Populates:
 import json
 import MySQLdb
 import traceback
+import datetime as dt
 from Utils.Generic_Utils import *
 from Utils.Database_Connection import *
 
@@ -103,7 +104,8 @@ QS_BILLSPONSORROLL_CHECK = '''SELECT *
                               WHERE roll = %s'''
 QS_BILL_VERSION_AUTHORS_TBL = '''SELECT DISTINCT bill_version_id, type, house, name,
                                   contribution, primary_author_flg
-                                 FROM bill_version_authors_tbl'''
+                                 FROM bill_version_authors_tbl
+                                 WHERE trans_update > %(updated_since)s'''
 QS_LEGISLATOR_FL = '''SELECT p.pid, p.last, p.first
                       FROM Person p, Legislator l, Term t
                       WHERE p.pid = l.pid 
@@ -348,7 +350,10 @@ Also, bill authors can be either Legislators or Committees.
 |dd_cursor|: DDDB database cursor
 '''
 def get_authors(ca_cursor, dd_cursor):
-    ca_cursor.execute(QS_BILL_VERSION_AUTHORS_TBL)
+    updated_date = dt.date.today() - dt.timedelta(weeks=1)
+    updated_date = updated_date.strftime('%Y-%m-%d')
+
+    ca_cursor.execute(QS_BILL_VERSION_AUTHORS_TBL, {'updated_since': updated_date})
     rows = ca_cursor.fetchall()
 
     # Iterate over each bill author row in capublic
@@ -379,17 +384,14 @@ def get_authors(ca_cursor, dd_cursor):
 
 def main():
     with connect() as dd_cursor:
-        with MySQLdb.connect(host='transcription.digitaldemocracy.org',
-                             user='monty',
-                             db='capublic',
-                             passwd='python',
-                             charset='utf8') as ca_cursor:
+        with connect_to_capublic() as ca_cursor:
             get_authors(ca_cursor, dd_cursor)
     LOG = {'tables': [{'state': 'CA', 'name': 'authors', 'inserted':AU_INSERT, 'updated': 0, 'deleted': 0},
                       {'state': 'CA', 'name': 'BillSponsors', 'inserted':BS_INSERT, 'updated': 0, 'deleted': 0},
                       {'state': 'CA', 'name': 'CommitteeAuthors', 'inserted':CA_INSERT, 'updated': 0, 'deleted': 0}]}
     sys.stderr.write(json.dumps(LOG))
     logger.info(LOG)
+
 if __name__ == '__main__':
     logger = create_logger()
     main()
