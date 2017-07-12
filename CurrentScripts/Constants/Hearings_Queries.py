@@ -59,3 +59,9 @@ UPDATE_HEARING_AGENDA = '''UPDATE HearingAgenda
                            WHERE hid = %(hid)s
                            AND bid = %(bid)s'''
 
+#Select statement to get the proper information from the capublic database
+CA_PUB_SELECT_ALL_HEARINGS = '''SELECT DISTINCT(committee_hearing_tbl.bill_id), committee_type,
+                        long_description, hearing_date
+                        FROM committee_hearing_tbl JOIN location_code_tbl
+                        ON committee_hearing_tbl.location_code=location_code_tbl.location_code
+                        WHERE hearing_date >= %(date)s'''
