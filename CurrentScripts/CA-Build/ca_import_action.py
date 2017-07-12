@@ -30,6 +30,7 @@ Populates:
 
 import sys
 import json
+import datetime as dt
 from Utils.Generic_Utils import *
 from Utils.Database_Connection import *
 
@@ -47,6 +48,7 @@ QI_ACTION = '''INSERT INTO Action (bid, date, text, seq_num)
 # SELECTS
 QS_BILL_HISTORY_TBL = '''SELECT bill_id, action_date, action, action_sequence
                          FROM bill_history_tbl
+                         WHERE trans_update_dt > %(updated_since)s
                          GROUP BY bill_id, action_sequence'''
 QS_ACTION_CHECK = '''SELECT bid
                      FROM Action
@@ -144,13 +146,11 @@ Loops through all Actions from capublic and adds them as necessary
 '''
 def main():
     with connect() as dd_cursor:
-        with MySQLdb.connect(host='transcription.digitaldemocracy.org',
-                             user='monty',
-                             db='capublic',
-                             passwd='python',
-                             charset='utf8') as ca_cursor:
+        with connect_to_capublic() as ca_cursor:
             # Get all of the Actions from capublic
-            ca_cursor.execute(QS_BILL_HISTORY_TBL)
+            updated_date = dt.date.today() - dt.timedelta(weeks=1)
+            updated_date = updated_date.strftime('%Y-%m-%d')
+            ca_cursor.execute(QS_BILL_HISTORY_TBL, {'updated_since': updated_date})
 
             for record in ca_cursor.fetchall():
                 insert_Action(dd_cursor, list(record))

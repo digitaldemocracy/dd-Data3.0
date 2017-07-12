@@ -1,12 +1,12 @@
 class Vote(object):
     def __init__(self, vote_date, vote_date_seq,
-                 ayes, naes, other, result, motion,
-                 vote_id=None, bid=None, house=None, cid=None):
+                 ayes, naes, other, result, motion=None,
+                 vote_id=None, bid=None, house=None, cid=None, mid=None):
         self.vote_id = vote_id
         self.bid = bid
         self.cid = cid
 
-        self.mid = None
+        self.mid = mid
 
         self.vote_date = vote_date
         self.vote_date_seq = vote_date_seq

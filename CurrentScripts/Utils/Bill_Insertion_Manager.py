@@ -32,11 +32,13 @@ sys.setdefaultencoding('utf8')
 class BillInsertionManager(object):
     def __init__(self, dddb, logger, state):
         self.B_INSERTED = 0
+        self.B_UPDATED = 0
         self.M_INSERTED = 0
         self.BVS_INSERTED = 0
         self.BVD_INSERTED = 0
         self.A_INSERTED = 0
         self.V_INSERTED = 0
+        self.V_UPDATED = 0
 
         self.dddb = dddb
         self.logger = logger
@@ -47,12 +49,12 @@ class BillInsertionManager(object):
         """
         Handles logging. Should be called immediately before the insertion script finishes.
         """
-        LOG = {'tables': [{'state': self.state, 'name': 'Bill', 'inserted': self.B_INSERTED, 'updated': 0, 'deleted': 0},
+        LOG = {'tables': [{'state': self.state, 'name': 'Bill', 'inserted': self.B_INSERTED, 'updated': self.B_UPDATED, 'deleted': 0},
                           {'state': self.state, 'name': 'Motion', 'inserted': self.M_INSERTED, 'updated': 0, 'deleted': 0},
                           {'state': self.state, 'name': 'BillVoteSummary', 'inserted': self.BVS_INSERTED, 'updated': 0, 'deleted': 0},
                           {'state': self.state, 'name': 'BillVoteDetail', 'inserted': self.BVD_INSERTED, 'updated': 0, 'deleted': 0},
                           {'state': self.state, 'name': 'Action', 'inserted': self.A_INSERTED, 'updated': 0, 'deleted': 0},
-                          {'state': self.state, 'name': 'BillVersion', 'inserted': self.V_INSERTED, 'updated': 0, 'deleted': 0}]}
+                          {'state': self.state, 'name': 'BillVersion', 'inserted': self.V_INSERTED, 'updated': self.V_UPDATED, 'deleted': 0}]}
         self.logger.info(LOG)
         sys.stderr.write(json.dumps(LOG))
 
@@ -230,8 +232,11 @@ class BillInsertionManager(object):
             if not self.is_bill_in_db(bill.to_dict()):
                 if not self.insert_bill(bill.to_dict()):
                     return False
+                self.B_INSERTED += 1
             else:
-                self.update_bill_status(bill.to_dict())
+                if self.update_bill_status(bill.to_dict()):
+                    self.B_UPDATED += 1
+
 
             if bill.votes is not None:
                 if not self.add_votes_db(bill.votes):
@@ -252,14 +257,16 @@ class BillInsertionManager(object):
         :return: True if all the inserts succeed, false otherwise
         """
         for vote in vote_list:
-            # Get motion ID or insert new motio
-            mid = self.get_motion_id(vote.motion_dict())
-            if mid is None:
-                if not self.insert_motion(vote.motion_dict()):
-                    return False
+            # If the vote has no motion ID, get motion ID or insert new motion
+            if vote.mid is None:
                 mid = self.get_motion_id(vote.motion_dict())
+                if mid is None:
+                    if not self.insert_motion(vote.motion_dict()):
+                        return False
+                    self.M_INSERTED += 1
+                    mid = self.get_motion_id(vote.motion_dict())
 
-            vote.set_mid(mid)
+                vote.set_mid(mid)
 
             # Get a vote's ID number if it exists
             vote_id = self.get_vote_id(vote.to_dict())
@@ -268,16 +275,30 @@ class BillInsertionManager(object):
             if not vote_id:
                 if not self.insert_bill_vote_summary(vote.to_dict()):
                     return False
+                self.BVS_INSERTED += 1
                 vote_id = self.get_vote_id(vote.to_dict())
 
             vote.set_vote_id(vote_id)
 
             # Insert all the BillVoteDetails associated with a vote
-            for detail in vote.vote_details:
-                detail.set_vote(vote.vote_id)
-                if not self.is_bill_vote_detail_in_db(detail.to_dict()):
-                    if not self.insert_bill_vote_detail(detail.to_dict()):
-                        return False
+            if vote.vote_details is not None:
+                for detail in vote.vote_details:
+                    detail.set_vote(vote.vote_id)
+                self.add_vote_details_db(vote.vote_details)
+
+        return True
+
+    def add_vote_details_db(self, vote_detail_list):
+        """
+        This function handles adding information on a bill's vote details to the database
+        :param vote_detail_list: A list of a bill's vote details
+        :return: True if all the inserts succeed, false otherwise
+        """
+        for detail in vote_detail_list:
+            if not self.is_bill_vote_detail_in_db(detail.to_dict()):
+                if not self.insert_bill_vote_detail(detail.to_dict()):
+                    return False
+                self.BVD_INSERTED += 1
 
         return True
 
@@ -291,9 +312,11 @@ class BillInsertionManager(object):
             if not self.is_version_in_db(version.to_dict()):
                 if not self.insert_version(version.to_dict()):
                     return False
+                self.V_INSERTED += 1
 
             if not self.check_version_text(version.to_dict()):
-                self.update_version_text(version.to_dict())
+                if self.update_version_text(version.to_dict()):
+                    self.V_UPDATED += 1
 
         return True
 
@@ -307,5 +330,6 @@ class BillInsertionManager(object):
             if not self.is_action_in_db(action.to_dict()):
                 if not self.insert_action(action.to_dict()):
                     return False
+                self.A_INSERTED += 1
 
         return True

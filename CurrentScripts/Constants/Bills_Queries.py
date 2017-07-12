@@ -12,6 +12,17 @@ SELECT_CAPUBLIC_BILL_TITLE = '''SELECT subject, bill_version_action_date
                                 FROM bill_version_tbl
                                 WHERE bill_id = %s
                                 AND bill_version_action = "Introduced"'''
+SELECT_CAPUBLIC_VOTE_DETAIL = '''SELECT DISTINCT bill_id, location_code, legislator_name,
+                                 vote_code, motion_id, vote_date_time, vote_date_seq
+                                 FROM bill_detail_vote_tbl
+                                 WHERE trans_update > %(updated_since)s'''
+SELECT_CAPUBLIC_VOTE_SUMMARY = '''SELECT DISTINCT bill_id, location_code, motion_id, ayes, noes,
+                                  abstain, vote_result, vote_date_time, vote_date_seq
+                                  FROM bill_summary_vote_tbl
+                                  WHERE trans_update > %(updated_since)s'''
+SELECT_CAPUBLIC_LOCATION_CODE = '''SELECT description, long_description
+                                   FROM location_code_tbl
+                                   WHERE location_code = %(location_code)s'''
 
 # SQL Selects
 SELECT_BILL = '''SELECT * FROM Bill

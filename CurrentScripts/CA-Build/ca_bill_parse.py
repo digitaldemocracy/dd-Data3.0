@@ -29,6 +29,7 @@ Populates:
 '''
 import json
 import unicodedata
+import datetime as dt
 from lxml import etree
 from Utils.Generic_Utils import *
 from Utils.Database_Connection import *
@@ -41,7 +42,9 @@ STATE = 'CA'
 
 # Queries
 QS_CPUB_BILL_VERSION = '''SELECT bill_version_id, bill_xml
-                          FROM bill_version_tbl'''
+                          FROM bill_version_tbl
+                          WHERE trans_update > %(updated_since)s
+                          '''
 QU_BILL_VERSION = '''UPDATE BillVersion
                      SET title = %s, digest= %s, text = %s, state = %s
                      WHERE vid = %s'''
@@ -113,7 +116,11 @@ def sanitize_xml(xml):
     return xml
 
 def get_bill_versions(ca_cursor):
-    ca_cursor.execute(QS_CPUB_BILL_VERSION)
+    updated_date = dt.date.today() - dt.timedelta(weeks=1)
+    updated_date = updated_date.strftime('%Y-%m-%d')
+
+    ca_cursor.execute(QS_CPUB_BILL_VERSION, {'updated_since': updated_date})
+
     for vid, xml in ca_cursor.fetchall():
         if xml is None:
             continue
@@ -121,6 +128,7 @@ def get_bill_versions(ca_cursor):
 
 def billparse(ca_cursor, dd_cursor):
     global UPDATE
+
     for vid, xml in get_bill_versions(ca_cursor):
         # This line will fail if |xml| is not valid XML.
         try:

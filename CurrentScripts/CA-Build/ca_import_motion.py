@@ -27,6 +27,7 @@ import sys
 import json
 import MySQLdb
 import traceback
+import datetime as dt
 from Utils.Generic_Utils import *
 from Utils.Database_Connection import *
 
@@ -39,7 +40,8 @@ QS_MOTION = '''SELECT mid
                FROM Motion 
                WHERE mid = %(mid)s'''
 QS_CPUB_MOTION = '''SELECT DISTINCT motion_id, motion_text, trans_update
-                    FROM bill_motion_tbl'''
+                    FROM bill_motion_tbl
+                    WHERE trans_update > %(updated_since)s'''
 
 
 # Insert the Motion row into DDDB if none is found
@@ -62,7 +64,9 @@ def get_motions():
                          passwd='python'
                          ) as ca_cursor:
         with connect() as dddb_cursor:
-            ca_cursor.execute(QS_CPUB_MOTION)
+            updated_date = dt.date.today() - dt.timedelta(weeks=1)
+            updated_date = updated_date.strftime('%Y-%m-%d')
+            ca_cursor.execute(QS_CPUB_MOTION, {'updated_since': updated_date})
             for mid, text, update in ca_cursor.fetchall():
                 date = update.strftime('%Y-%m-%d %H:%M:%S')
                 if date:
