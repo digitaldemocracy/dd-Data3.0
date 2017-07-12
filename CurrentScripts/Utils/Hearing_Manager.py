@@ -206,6 +206,7 @@ class Hearings_Manager(object):
 
     def import_hearings(self, hearings, cur_date):
         for hearing in hearings:
+            print("importing")
             hid = self.get_hearing_hid(hearing.hearing_date, hearing.session_year, hearing.house)
             if hid is None:
                 hid = self.insert_hearing(hearing.hearing_date, hearing.state, hearing.session_year)
