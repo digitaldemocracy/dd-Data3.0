@@ -264,7 +264,8 @@ def get_person(dd_cursor, filer_naml, house):
         error_message = "Person not found "
     if pid is None and filer_naml not in logged_list:
         logged_list.append(filer_naml)
-        logger.exception(error_message + filer_naml + "\n" + (query % (filer_naml, YEAR, STATE, house)))
+        logger.exception(error_message + filer_naml + "\n" + query + "\n" + filer_naml + "\n"
+                            + str(YEAR) + "\n" +  STATE + "\n" + house)
     return pid
 
 '''

@@ -63,5 +63,16 @@ def connect(db = None):
                          passwd='digitaldemocracy789',
                          charset='utf8')
 
+def connect_to_capublic():
+    '''
+    Returns a MySQLdb connection to capublic on the transcription server.
+    :return: a MySQLdb connection
+    '''
+    return MySQLdb.connect(host='transcription.digitaldemocracy.org',
+                             user='monty',
+                             db='capublic',
+                             passwd='python',
+                             charset='utf8')
+
 
 
