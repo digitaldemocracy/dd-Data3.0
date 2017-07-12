@@ -1,15 +1,17 @@
 # CAPublic Select Queries
 SELECT_CAPUBLIC_BILLS = '''SELECT bill_id, measure_type, measure_num, measure_state,
-                        current_status, current_house, session_num
-                 FROM bill_tbl'''
+                                  current_status, current_house, session_num
+                           FROM bill_tbl
+                           WHERE trans_update > %(updated_since)s'''
 SELECT_CAPUBLIC_BILLVERSIONS = '''SELECT bill_version_id, bill_id,
-                                bill_version_action_date, bill_version_action,
-                                subject, appropriation, substantive_changes
-                         FROM bill_version_tbl'''
+                                         bill_version_action_date, bill_version_action,
+                                         subject, appropriation, substantive_changes
+                                  FROM bill_version_tbl
+                                  WHERE trans_update > %(updated_since)s'''
 SELECT_CAPUBLIC_BILL_TITLE = '''SELECT subject, bill_version_action_date
-                   FROM bill_version_tbl
-                   WHERE bill_id = %s
-                    AND bill_version_action = "Introduced"'''
+                                FROM bill_version_tbl
+                                WHERE bill_id = %s
+                                AND bill_version_action = "Introduced"'''
 
 # SQL Selects
 SELECT_BILL = '''SELECT * FROM Bill

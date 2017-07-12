@@ -34,6 +34,7 @@ Populates:
 
 import json
 import traceback
+import datetime as dt
 from Models.Bill import *
 from Models.Version import *
 from Constants.Bills_Queries import *
@@ -166,14 +167,15 @@ logger = None
 #                                                             (QI_BILLVERSION % (values))))
 
 
-def get_bills(ca_cursor):
+def get_bills(ca_cursor, updated_date):
     """
-    Gets bills from CAPublic and creates a list of Bill objects
+    Gets bills from CAPublic that have been updated since a given date and creates a list of Bill objects
     :param ca_cursor: A connection object to CAPublic
+    :param updated_date: A date, formatted as YYYY-MM-DD. This function gets all bills updated since this date.
     :return: A list of Bill objects
     """
     bill_list = list()
-    ca_cursor.execute(SELECT_CAPUBLIC_BILLS)
+    ca_cursor.execute(SELECT_CAPUBLIC_BILLS, {'updated_since': updated_date})
 
     for bid, type_, number, state, status, house, session in ca_cursor.fetchall():
         # Session year is taken from bid: Ex: [2015]20160AB1
@@ -193,14 +195,15 @@ def get_bills(ca_cursor):
     return bill_list
 
 
-def get_bill_versions(ca_cursor):
+def get_bill_versions(ca_cursor, updated_date):
     """
-    Gets bill versions from CAPublic and creates a list of Version objects
+    Gets bill versions from CAPublic that have been updated since a given date and creates a list of Version objects
     :param ca_cursor: A connection to the CAPublic database
+    :param updated_date: A date, formatted as YYYY-MM-DD. This function gets all bills updated since this date.
     :return: A list of Version objects
     """
     version_list = list()
-    ca_cursor.execute(SELECT_CAPUBLIC_BILLVERSIONS)
+    ca_cursor.execute(SELECT_CAPUBLIC_BILLVERSIONS, {'updated_since': updated_date})
 
     for record in ca_cursor.fetchall():
         # Change to list for mutability
@@ -225,17 +228,16 @@ def get_bill_versions(ca_cursor):
 
 def main():
     with connect() as dd_cursor:
-        with MySQLdb.connect(host='transcription.digitaldemocracy.org',
-                             user='monty',
-                             db='capublic',
-                             passwd='python',
-                             charset='utf8') as ca_cursor:
+        with connect_to_capublic() as ca_cursor:
             bill_manager = BillInsertionManager(dd_cursor, logger, 'CA')
 
-            bill_list = get_bills(ca_cursor)
+            updated_date = dt.date.today() - dt.timedelta(weeks=1)
+            updated_date = updated_date.strftime('%Y-%m-%d')
+
+            bill_list = get_bills(ca_cursor, updated_date)
             bill_manager.add_bills_db(bill_list)
 
-            version_list = get_bill_versions(ca_cursor)
+            version_list = get_bill_versions(ca_cursor, updated_date)
             bill_manager.add_versions_db(version_list)
 
             bill_manager.log()
