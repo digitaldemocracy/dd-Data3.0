@@ -1,8 +1,14 @@
+#!/usr/bin/env python2.7
+# -*- coding: utf8 -*-
+
 import os
 import re
 import sys
 import logging
 import datetime as dt
+
+reload(sys)
+sys.setdefaultencoding('utf8')
 
 def capublic_format_committee_name(short_name, house):
     if house == 'CX' or house == "Assembly":
