@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-'''
+"""
 File: Author_Extract.py
 Author: Daniel Mangin
 Modified By: Mitch Lane, Mandy Chan, Steven Thon, Eric Roh, Nick Russo
@@ -30,7 +30,7 @@ Populates:
   - authors (pid, bid, vid, contribution)
   - CommitteeAuthors (cid, bid, vid, state)
 
-'''
+"""
 
 import json
 import MySQLdb
@@ -218,7 +218,7 @@ Returns the cleaned name.
 '''
 def clean_name(name):
 
-    if(name == 'Allen Travis'):
+    if name == 'Allen Travis':
         name = 'Travis Allen'
 
     # For O'Donnell
@@ -260,7 +260,7 @@ def get_person(dd_cursor, filer_naml, house):
             filer_naml = '%' + filer_naml + '%'
             query = QS_LEGISLATOR_LIKE_L
             dd_cursor.execute(QS_LEGISLATOR_LIKE_L, (filer_naml, STATE))
-            if(dd_cursor.rowcount == 1):
+            if dd_cursor.rowcount == 1:
                 pid = dd_cursor.fetchone()[0]
     else:
         error_message = "Person not found "
@@ -326,7 +326,7 @@ def add_sponsor(dd_cursor, pid, bid, vid, contribution):
     if dd_cursor.rowcount == 0:
         try:
             dd_cursor.execute(QI_BILLSPONSORROLLS, (contribution,))
-        except MySQLdb.Error as error:
+        except MySQLdb.Error:
             logger.exception(format_logger_message('Insert Failed for BillSponsorRolls',
                                                             (QI_BILLSPONSORROLLS % (contribution,))))
 
@@ -337,7 +337,7 @@ def add_sponsor(dd_cursor, pid, bid, vid, contribution):
             dd_cursor.execute(QI_BILLSPONSORS, (pid, bid, vid, contribution))
             BS_INSERT += dd_cursor.rowcount
             LOG['BillSponsors']['inserted'] += dd_cursor.rowcount
-        except MySQLdb.Error as error:
+        except MySQLdb.Error:
             logger.exception(format_logger_message('Insert Failed for BillSponsors',
                                                             (QI_BILLSPONSORS % (pid, bid, vid, contribution))))
 
