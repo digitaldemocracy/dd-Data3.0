@@ -205,10 +205,10 @@ def read_pdf_text(vid):
     :return: The text of one bill version
     """
     pdf_name = "bill_PDF/" + vid + ".pdf"
-    text_name = "bill_PDF/" + vid + ".txt"
+    text_name = "bill_txt/" + vid + ".txt"
 
     try:
-        subprocess.call(['../pdftotext', '-enc', 'UTF-8', pdf_name])
+        subprocess.call(['../pdftotext', '-enc', 'UTF-8', pdf_name, text_name])
 
         with open(text_name, 'r') as f:
             doc = f.read()
@@ -240,6 +240,7 @@ def format_version(version_list):
         else:
             get_pdf(version.url, version.vid)
             version.set_text(read_pdf_text(version.vid))
+            version.set_text_link(version.url)
 
 
 def format_votes(dddb, vote_list):
@@ -272,13 +273,26 @@ def format_bills(dddb):
 
 
 def main():
-    with connect() as dddb:
+    with connect('live') as dddb:
         bill_manager = BillInsertionManager(dddb, logger, 'FL')
         print("Getting bill list...")
         bill_list = format_bills(dddb)
         print("Starting bill insertion...")
         bill_manager.add_bills_db(bill_list)
         print("Finished bill insertion")
+
+        print("Copying bills to S3")
+        pdf_files = os.listdir('bill_PDF/')
+        for pdf in pdf_files:
+            pdfname = 'bill_PDF/' + pdf
+            # Test copy command
+            # subprocess.call(['cp', pdfname, 's3_bill_PDF/'])
+            # Actual Amazon copy command
+            subprocess.call(['aws', 's3', 'cp', pdfname , 's3://dd-drupal-files/bill/FL/'])
+
+        # Delete bill PDFs
+        subprocess.call('rm -rf bill_PDF/*', shell=True)
+
         bill_manager.log()
 
 

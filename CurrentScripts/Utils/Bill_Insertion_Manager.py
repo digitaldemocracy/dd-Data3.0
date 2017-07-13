@@ -194,13 +194,13 @@ class BillInsertionManager(object):
         except MySQLdb.Error:
             self.logger.exception(format_logger_message("Selection failed for BillVersion", (SELECT_VERSION_TEXT % version)))
 
-    def update_version_text(self, version):
+    def update_version(self, version):
         """
         Updates the text column in the BillVersion table
         :param version: A dictionary returned from a Version object's to_dict method
         :return: True if the update succeeds, false otherwise
         """
-        return update_entity(self.dddb, UPDATE_VERSION_TEXT, version, "BillVersion", self.logger)
+        return update_entity(self.dddb, UPDATE_VERSION, version, "BillVersion", self.logger)
 
     def is_action_in_db(self, action):
         """
@@ -356,9 +356,8 @@ class BillInsertionManager(object):
                     return False
                 self.V_INSERTED += 1
 
-            if not self.check_version_text(version.to_dict()):
-                if self.update_version_text(version.to_dict()):
-                    self.V_UPDATED += 1
+            if self.update_version(version.to_dict()):
+                self.V_UPDATED += 1
 
         return True
 

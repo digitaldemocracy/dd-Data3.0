@@ -131,10 +131,10 @@ INSERT_ACTION = '''INSERT INTO Action
 
 INSERT_VERSION = '''INSERT INTO BillVersion
                     (vid, bid, date, billState, subject, appropriation, substantive_changes,
-                    title, digest, text, state)
+                    title, digest, text, text_url, state)
                     VALUES
                     (%(vid)s, %(bid)s, %(date)s, %(bill_state)s, %(subject)s, %(appropriation)s,
-                    %(substantive_changes)s, %(title)s, %(digest)s, %(doc)s, %(state)s)'''
+                    %(substantive_changes)s, %(title)s, %(digest)s, %(doc)s, %(text_url)s, %(state)s)'''
 
 # SQL Updates
 UPDATE_BILL_STATUS = '''UPDATE Bill
@@ -142,9 +142,9 @@ UPDATE_BILL_STATUS = '''UPDATE Bill
                         WHERE bid = %(bid)s
                         AND (status != %(status)s or billState != %(billState)s)'''
 
-UPDATE_VERSION_TEXT = '''UPDATE BillVersion
-                         SET text = %(doc)s, date = %(date)s
-                         WHERE vid = %(vid)s'''
+UPDATE_VERSION = '''UPDATE BillVersion
+                    SET text = %(doc)s, date = %(date)s, text_link = %(text_link)s
+                    WHERE vid = %(vid)s'''
 
 UPDATE_ACTION_TEXT = '''UPDATE Action
                         SET text = %(text)s

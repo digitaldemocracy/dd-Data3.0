@@ -16,6 +16,7 @@ class Version(object):
 
         self.digest = digest
         self.text = text
+        self.text_link = None
 
         self.appropriation = appropriation
         self.substantive_changes = substantive_changes
@@ -29,6 +30,9 @@ class Version(object):
 
     def set_text(self, text):
         self.text = text
+
+    def set_text_link(self, text_link):
+        self.text_link = text_link
 
     def set_date(self, date):
         self.date = date
@@ -44,4 +48,5 @@ class Version(object):
                 'substantive_changes': self.substantive_changes,
                 'title': self.title,
                 'digest': self.digest,
-                'doc': self.text}
+                'doc': self.text,
+                'text_link': self.text_link}
