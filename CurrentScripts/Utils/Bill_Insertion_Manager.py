@@ -37,6 +37,7 @@ class BillInsertionManager(object):
         self.BVS_INSERTED = 0
         self.BVD_INSERTED = 0
         self.A_INSERTED = 0
+        self.A_UPDATED = 0
         self.V_INSERTED = 0
         self.V_UPDATED = 0
 
@@ -193,7 +194,6 @@ class BillInsertionManager(object):
         except MySQLdb.Error:
             self.logger.exception(format_logger_message("Selection failed for BillVersion", (SELECT_VERSION_TEXT % version)))
 
-
     def update_version_text(self, version):
         """
         Updates the text column in the BillVersion table
@@ -221,6 +221,48 @@ class BillInsertionManager(object):
                              qi_query=INSERT_ACTION,
                              objType="Action",
                              logger=self.logger)
+
+    def check_action_text(self, action):
+        """
+        Checks if an Action we get from our data source has different text
+        from the Action we have in the database
+        :param action: A dictionary containing information on an Action
+        :return: True if the Action has been updated, false otherwise
+        """
+        return is_entity_in_db(self.dddb, SELECT_ACTION_TEXT, action, 'Action', self.logger)
+
+    def check_action_sequence(self, action):
+        """
+        Checks if an Action we get from our data source has a different sequence
+        number from the Action we have in the database
+        :param action: A dictionary containing information on an Action
+        :return: True if the Action has been updated, false otherwise
+        """
+        return is_entity_in_db(self.dddb, SELECT_ACTION_SEQUENCE, action, 'Action', self.logger)
+
+    def update_action(self, action):
+        """
+        Updates an action if it has been changed
+        :param action: A dictionary containing information on an Action
+        :return: The number of rows updated if the update succeeds, false otherwise
+        """
+        updated = 0
+
+        if self.check_action_text(action):
+            text_updated = update_entity(self.dddb, UPDATE_ACTION_TEXT, action, 'Action', self.logger)
+            if not text_updated == False:
+                updated += text_updated
+            else:
+                return False
+
+        if self.check_action_sequence(action):
+            seq_updated = update_entity(self.dddb, UPDATE_ACTION_SEQ, action, 'Action', self.logger)
+            if not seq_updated == False:
+                updated += seq_updated
+            else:
+                return False
+
+        return updated
 
     def add_bills_db(self, bill_list):
         """
@@ -331,5 +373,10 @@ class BillInsertionManager(object):
                 if not self.insert_action(action.to_dict()):
                     return False
                 self.A_INSERTED += 1
+
+            updated = self.update_action(action.to_dict())
+
+            if not updated == False:
+                self.A_UPDATED += updated
 
         return True

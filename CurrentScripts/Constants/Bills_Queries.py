@@ -3,26 +3,36 @@ SELECT_CAPUBLIC_BILLS = '''SELECT bill_id, measure_type, measure_num, measure_st
                                   current_status, current_house, session_num
                            FROM bill_tbl
                            WHERE trans_update > %(updated_since)s'''
+
 SELECT_CAPUBLIC_BILLVERSIONS = '''SELECT bill_version_id, bill_id,
                                          bill_version_action_date, bill_version_action,
                                          subject, appropriation, substantive_changes
                                   FROM bill_version_tbl
                                   WHERE trans_update > %(updated_since)s'''
+
 SELECT_CAPUBLIC_BILL_TITLE = '''SELECT subject, bill_version_action_date
                                 FROM bill_version_tbl
                                 WHERE bill_id = %s
                                 AND bill_version_action = "Introduced"'''
+
 SELECT_CAPUBLIC_VOTE_DETAIL = '''SELECT DISTINCT bill_id, location_code, legislator_name,
                                  vote_code, motion_id, vote_date_time, vote_date_seq
                                  FROM bill_detail_vote_tbl
                                  WHERE trans_update > %(updated_since)s'''
+
 SELECT_CAPUBLIC_VOTE_SUMMARY = '''SELECT DISTINCT bill_id, location_code, motion_id, ayes, noes,
                                   abstain, vote_result, vote_date_time, vote_date_seq
                                   FROM bill_summary_vote_tbl
                                   WHERE trans_update > %(updated_since)s'''
+
 SELECT_CAPUBLIC_LOCATION_CODE = '''SELECT description, long_description
                                    FROM location_code_tbl
                                    WHERE location_code = %(location_code)s'''
+
+SELECT_CAPUBLIC_ACTIONS = '''SELECT bill_id, action_date, action, action_sequence
+                            FROM bill_history_tbl
+                            WHERE trans_update_dt > %(updated_since)s
+                            GROUP BY bill_id, action_sequence'''
 
 # SQL Selects
 SELECT_BILL = '''SELECT * FROM Bill
@@ -72,6 +82,20 @@ SELECT_ACTION = '''SELECT * FROM Action
                    AND date = %(date)s
                    AND seq_num = %(seq_num)s'''
 
+SELECT_ACTION_SEQUENCE = '''SELECT bid
+                            FROM Action
+                            WHERE bid = %(bid)s
+                            AND date = %(date)s
+                            AND text = %(text)s
+                            AND seq_num != %(seq_num)s'''
+
+SELECT_ACTION_TEXT = '''SELECT bid
+                        FROM Action
+                        WHERE bid = %(bid)s
+                        AND date = %(date)s
+                        AND text != %(text)s
+                        AND seq_num = %(seq_num)s'''
+
 SELECT_VERSION = '''SELECT * FROM BillVersion
                     WHERE vid = %(vid)s'''
 
@@ -113,6 +137,23 @@ INSERT_VERSION = '''INSERT INTO BillVersion
                     %(substantive_changes)s, %(title)s, %(digest)s, %(doc)s, %(state)s)'''
 
 # SQL Updates
-UPDATE_BILL_STATUS = '''UPDATE Bill SET status = %(status)s, billState = %(billState)s
-                        WHERE bid = %(bid)s AND (status != %(status)s or billState != %(billState)s)'''
-UPDATE_VERSION_TEXT = '''UPDATE BillVersion SET text = %(doc)s, date = %(date)s WHERE vid = %(vid)s'''
+UPDATE_BILL_STATUS = '''UPDATE Bill
+                        SET status = %(status)s, billState = %(billState)s
+                        WHERE bid = %(bid)s
+                        AND (status != %(status)s or billState != %(billState)s)'''
+
+UPDATE_VERSION_TEXT = '''UPDATE BillVersion
+                         SET text = %(doc)s, date = %(date)s
+                         WHERE vid = %(vid)s'''
+
+UPDATE_ACTION_TEXT = '''UPDATE Action
+                        SET text = %(text)s
+                        WHERE bid = %(bid)s
+                        AND date = %(date)s
+                        AND seq_num = %(seq_num)s'''
+
+UPDATE_ACTION_SEQ = '''UPDATE Action
+                       SET seq_num = %(seq_num)s
+                       WHERE bid = %(bid)s
+                       AND date = %(date)s
+                       AND text = %(text)s'''
