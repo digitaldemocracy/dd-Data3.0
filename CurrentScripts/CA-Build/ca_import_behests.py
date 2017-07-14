@@ -60,7 +60,7 @@ SELECT_STATE = '''SELECT * FROM State WHERE abbrev = %(state)s'''
 INSERT_PAYOR = '''INSERT INTO Payors (name, city, state)
                   VALUES (%(Payor)s, %(PayorCity)s, %(PayorState)s)'''
 INSERT_ORG = '''INSERT INTO Organizations (name, city, stateHeadquartered, source)
-                VALUES (%(Payee)s, %(PayeeCity)s, %(PayeeState)s, ca_import_behests.py')'''
+                VALUES (%(Payee)s, %(PayeeCity)s, %(PayeeState)s, 'ca_import_behests.py')'''
 INSERT_BEHEST = '''INSERT INTO Behests (official, datePaid, payor, amount, payee,
                                         description, purpose, noticeReceived, sessionYear, state)
                    VALUES (%(pid)s, %(DateOfPayment)s, %(prid)s, %(Amount)s, %(oid)s,
@@ -293,7 +293,6 @@ def main():
     with connect() as dddb:
 
         import_behests(dddb)
-
 
         LOG = {'tables': [{'state': 'CA', 'name': 'Behests', 'inserted': BEHEST_INSERTED, 'updated': 0, 'deleted': 0},
                           {'state': 'CA', 'name': 'Payors', 'inserted': PAYOR_INSERTED, 'updated': 0, 'deleted': 0},
