@@ -93,6 +93,8 @@ def get_pid_name(dddb, person):
     :return: The legislator's PID
     """
     mem_name = person['name'].replace('President', '')
+    mem_name = mem_name.replace('Speaker', '')
+    mem_name = mem_name.rstrip('VA')
 
     mem_name = mem_name.split(',')
 
@@ -112,14 +114,14 @@ def get_pid_name(dddb, person):
             dddb.execute(SELECT_LEG_PID_FIRSTNAME, legislator)
 
             if dddb.rowcount != 1:
-                print("Error: PID for " + vote['name'] + " not found")
+                print("Error: PID for " + person['name'] + " not found")
                 print(legislator)
                 return None
             else:
                 return dddb.fetchone()[0]
 
         else:
-            print("Error: PID for " + vote['name'] + " not found")
+            print("Error: PID for " + person['name'] + " not found")
             print(legislator)
             return None
 

@@ -430,10 +430,10 @@ def get_agenda_text(link):
 Gets all House agenda PDFs listed on the Florida website
 '''
 def get_house_agenda(dddb):
-    #html_soup = BeautifulSoup(urllib2.urlopen(HOUSE_SOURCE).read())
+    html_soup = BeautifulSoup(urllib2.urlopen(FL_HEARING_HOUSE_SOURCE).read())
 
-    f = open("fl_house_hearings.txt", "r")
-    html_soup = BeautifulSoup(f.read())
+    #f = open("fl_house_hearings.txt", "r")
+    #html_soup = BeautifulSoup(f.read())
 
     for link in html_soup.find_all('li', class_='calendarlist'):
         doc_link = 'http://www.myfloridahouse.gov' + link.find('a').get('href').strip()

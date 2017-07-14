@@ -103,11 +103,12 @@ class BillInsertionManager(object):
         :param motion: A dictionary containing information on a motion
         :return: True if the insert succeeds, false otherwise
         """
-        self.dddb.execute(SELECT_LAST_MID)
-        mid = self.dddb.fetchone()[0]
-        mid += 1
+        if motion.mid is None:
+            self.dddb.execute(SELECT_LAST_MID)
+            mid = self.dddb.fetchone()[0]
+            mid += 1
 
-        motion['mid'] = mid
+            motion['mid'] = mid
 
         return insert_entity(db_cursor=self.dddb,
                              entity=motion,
@@ -135,22 +136,22 @@ class BillInsertionManager(object):
                              objType="BillVoteSummary",
                              logger=self.logger)
 
-    def is_bill_vote_detail_in_db(self, bvd):
+    def is_bill_vote_detail_in_db(self, vote_detail):
         """
         Checks if a BillVoteDetail exists in the database
-        :param bvd: A dictionary returned by a VoteDetail object's to_dict method
+        :param vote_detail: A dictionary returned by a VoteDetail object's to_dict method
         :return: True if the vote detail is in the database, false otherwise
         """
-        return is_entity_in_db(self.dddb, SELECT_BILL_VOTE_DETAIL, bvd, 'BillVoteDetail', self.logger)
+        return is_entity_in_db(self.dddb, SELECT_BILL_VOTE_DETAIL, vote_detail, 'BillVoteDetail', self.logger)
 
-    def insert_bill_vote_detail(self, bvd):
+    def insert_bill_vote_detail(self, vote_detail):
         """
         Inserts a BillVoteDetail into the database
-        :param bvd: A dictionary returned by a VoteDetail object's to_dict method
+        :param vote_detail: A dictionary returned by a VoteDetail object's to_dict method
         :return: True if the vote detail is in the database, false otherwise
         """
         return insert_entity(db_cursor=self.dddb,
-                             entity=bvd,
+                             entity=vote_detail,
                              qi_query=INSERT_BILL_VOTE_DETAIL,
                              objType="BillVoteDetail",
                              logger=self.logger)
@@ -278,7 +279,6 @@ class BillInsertionManager(object):
             else:
                 if self.update_bill_status(bill.to_dict()):
                     self.B_UPDATED += 1
-
 
             if bill.votes is not None:
                 if not self.add_votes_db(bill.votes):

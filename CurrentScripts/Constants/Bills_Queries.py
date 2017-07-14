@@ -15,6 +15,10 @@ SELECT_CAPUBLIC_BILL_TITLE = '''SELECT subject, bill_version_action_date
                                 WHERE bill_id = %s
                                 AND bill_version_action = "Introduced"'''
 
+SELECT_CAPUBLIC_MOTIONS = '''SELECT DISTINCT motion_id, motion_text, trans_update
+                             FROM bill_motion_tbl
+                             WHERE trans_update > %(updated_since)s'''
+
 SELECT_CAPUBLIC_VOTE_DETAIL = '''SELECT DISTINCT bill_id, location_code, legislator_name,
                                  vote_code, motion_id, vote_date_time, vote_date_seq
                                  FROM bill_detail_vote_tbl
@@ -131,10 +135,10 @@ INSERT_ACTION = '''INSERT INTO Action
 
 INSERT_VERSION = '''INSERT INTO BillVersion
                     (vid, bid, date, billState, subject, appropriation, substantive_changes,
-                    title, digest, text, text_url, state)
+                    title, digest, text, text_link, state)
                     VALUES
                     (%(vid)s, %(bid)s, %(date)s, %(bill_state)s, %(subject)s, %(appropriation)s,
-                    %(substantive_changes)s, %(title)s, %(digest)s, %(doc)s, %(text_url)s, %(state)s)'''
+                    %(substantive_changes)s, %(title)s, %(digest)s, %(doc)s, %(text_link)s, %(state)s)'''
 
 # SQL Updates
 UPDATE_BILL_STATUS = '''UPDATE Bill
