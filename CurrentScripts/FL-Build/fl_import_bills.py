@@ -240,7 +240,9 @@ def format_version(version_list):
         else:
             get_pdf(version.url, version.vid)
             version.set_text(read_pdf_text(version.vid))
-            version.set_text_link(version.url)
+
+            link_name = 'https://s3-us-west-2.amazonaws.com/dd-drupal-files/bill/FL/' + version.vid + '.pdf'
+            version.set_text_link(link_name)
 
 
 def format_votes(dddb, vote_list):
@@ -273,7 +275,7 @@ def format_bills(dddb):
 
 
 def main():
-    with connect('live') as dddb:
+    with connect() as dddb:
         bill_manager = BillInsertionManager(dddb, logger, 'FL')
         print("Getting bill list...")
         bill_list = format_bills(dddb)
@@ -285,13 +287,12 @@ def main():
         pdf_files = os.listdir('bill_PDF/')
         for pdf in pdf_files:
             pdfname = 'bill_PDF/' + pdf
-            # Test copy command
-            # subprocess.call(['cp', pdfname, 's3_bill_PDF/'])
-            # Actual Amazon copy command
             subprocess.call(['aws', 's3', 'cp', pdfname , 's3://dd-drupal-files/bill/FL/'])
 
         # Delete bill PDFs
         subprocess.call('rm -rf bill_PDF/*', shell=True)
+        # Delete text files
+        subprocess.call('rm -rf bill_txt/*', shell=True)
 
         bill_manager.log()
 
