@@ -88,7 +88,6 @@ class BillInsertionManager(object):
         """
         return update_entity(self.dddb, UPDATE_BILL_STATUS, bill, "Bill", self.logger)
 
-
     def get_motion_id(self, motion):
         """
         Checks if a motion exists in the database
@@ -97,24 +96,39 @@ class BillInsertionManager(object):
         """
         return get_entity_id(self.dddb, SELECT_MOTION, motion, 'Motion', self.logger)
 
+    def check_motion(self, motion):
+        """
+        Checks if a motion with a particular MID exists in the database
+        :param motion: A dictionary containing information on a motion
+        :return: True if the motion is in the database, false otherwise
+        """
+        return is_entity_in_db(self.dddb, SELECT_MOTION_MID, motion, 'Motion', self.logger)
+
     def insert_motion(self, motion):
         """
         Inserts a motion into the database
         :param motion: A dictionary containing information on a motion
         :return: True if the insert succeeds, false otherwise
         """
-        if motion.mid is None:
+        if motion['mid'] is None:
             self.dddb.execute(SELECT_LAST_MID)
             mid = self.dddb.fetchone()[0]
             mid += 1
 
             motion['mid'] = mid
 
-        return insert_entity(db_cursor=self.dddb,
-                             entity=motion,
-                             qi_query=INSERT_MOTION,
-                             objType="Motion",
-                             logger=self.logger)
+            return insert_entity(db_cursor=self.dddb,
+                                 entity=motion,
+                                 qi_query=INSERT_MOTION,
+                                 objType="Motion",
+                                 logger=self.logger)
+        else:
+            if not self.check_motion(motion):
+                return insert_entity(db_cursor=self.dddb,
+                                     entity=motion,
+                                     qi_query=INSERT_MOTION,
+                                     objType="Motion",
+                                     logger=self.logger)
 
     def get_vote_id(self, vote):
         """

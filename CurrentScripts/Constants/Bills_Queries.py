@@ -15,7 +15,7 @@ SELECT_CAPUBLIC_BILL_TITLE = '''SELECT subject, bill_version_action_date
                                 WHERE bill_id = %s
                                 AND bill_version_action = "Introduced"'''
 
-SELECT_CAPUBLIC_MOTIONS = '''SELECT DISTINCT motion_id, motion_text, trans_update
+SELECT_CAPUBLIC_MOTION = '''SELECT DISTINCT motion_id, motion_text, trans_update
                              FROM bill_motion_tbl
                              WHERE trans_update > %(updated_since)s'''
 
@@ -45,6 +45,10 @@ SELECT_BILL = '''SELECT * FROM Bill
 SELECT_MOTION = '''SELECT mid FROM Motion
                    WHERE text = %(motion)s
                    AND doPass = %(doPass)s'''
+
+SELECT_MOTION_MID = '''SELECT mid
+                       FROM Motion
+                       WHERE mid = %(mid)s'''
 
 SELECT_LAST_MID = '''SELECT MAX(mid) FROM Motion'''
 
