@@ -316,7 +316,7 @@ class BillInsertionManager(object):
             # If the vote has no motion ID, get motion ID or insert new motion
             if vote.mid is None:
                 mid = self.get_motion_id(vote.motion_dict())
-                if mid is None:
+                if not mid:
                     if not self.insert_motion(vote.motion_dict()):
                         return False
                     self.M_INSERTED += 1

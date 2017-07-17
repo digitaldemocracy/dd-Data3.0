@@ -43,6 +43,11 @@ class Vote(object):
                 'doPass': self.result}
 
     def to_dict(self):
+        if self.result:
+            vote_res = '(PASS)'
+        else:
+            vote_res = '(FAIL)'
+
         return {'bid': self.bid,
                 'mid': self.mid,
                 'cid': self.cid,
@@ -52,7 +57,7 @@ class Vote(object):
                 'naes': self.naes,
                 'other': self.other,
                 'vote_details': self.vote_details,
-                'result': self.result}
+                'result': vote_res}
 
 
 class VoteDetail(object):
