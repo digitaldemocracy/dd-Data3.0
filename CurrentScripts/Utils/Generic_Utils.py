@@ -28,9 +28,14 @@ def format_end_log(subject, full_msg, additional_fields):
            "\n\t\t\t\"Message\": \"" + full_msg + "\""\
            "\n\t\t\t\"Message\": \"" + additional_fields + "\"\n\t\t\t}"
 def create_logger():
+
+    file_name = str(sys.argv[0].split("/")[-1])
+    state = file_name.split("_")[0]
     if not os.path.exists("logs"):
         os.makedirs("logs")
-    filename = "logs/" + str(sys.argv[0].split("/")[-1]) + "_" + str(dt.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")) + ".log"
+    if not os.path.exists("logs/" + state):
+        os.makedirs("logs/" + state)
+    log_loc = "logs/" + state + "/" + file_name + "_" + str(dt.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")) + ".log"
     # create logger
     logger = logging.getLogger("DDDB_Logger")
     logger.setLevel(logging.DEBUG)
@@ -39,7 +44,7 @@ def create_logger():
     console_handler = logging.StreamHandler()
     console_handler.setLevel(logging.DEBUG)
 
-    file_handler = logging.FileHandler(filename)
+    file_handler = logging.FileHandler(log_loc)
     file_handler.setLevel(logging.ERROR)
 
     # create formatter
