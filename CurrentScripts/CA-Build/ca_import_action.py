@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-'''
+
+"""
 File: Action_Extract.py
 Author: Daniel Mangin
 Modified By: Mitch Lane, Mandy Chan, Eric Roh
@@ -26,11 +27,12 @@ Sources:
 
 Populates:
   - Action (bid, date, text)
-'''
+"""
 
 import sys
 import json
 import datetime as dt
+from ca_bill_parser import *
 from Models.Action import *
 from Utils.Generic_Utils import *
 from Utils.Database_Connection import *
@@ -140,30 +142,30 @@ logger = None
 #        LOG['Action']['updated'] += dd_cursor.rowcount
 
 
-def get_action_list(ca_cursor):
-    """
-    Gets actions from CAPublic and formats them into a list
-    :param ca_cursor: A cursor to the CAPublic database
-    :return: A list of Action objects
-    """
-    action_list = list()
-
-    updated_date = dt.date.today() - dt.timedelta(weeks=1)
-    updated_date = updated_date.strftime('%Y-%m-%d')
-
-    ca_cursor.execute(SELECT_CAPUBLIC_ACTIONS, {'updated_since': updated_date})
-
-    for bill_id, action_date, action_text, action_sequence in ca_cursor.fetchall():
-        bid = 'CA_%s' % bill_id
-        action = Action(date=action_date, text=action_text,
-                        seq_num=action_sequence, bid=bid)
-
-        action_list.append(action)
-
-        # insert_Action(dd_cursor, list(record))
-        # update_Action(dd_cursor, list(record))
-
-    return action_list
+# def get_action_list(ca_cursor):
+#     """
+#     Gets actions from CAPublic and formats them into a list
+#     :param ca_cursor: A cursor to the CAPublic database
+#     :return: A list of Action objects
+#     """
+#     action_list = list()
+#
+#     updated_date = dt.date.today() - dt.timedelta(weeks=1)
+#     updated_date = updated_date.strftime('%Y-%m-%d')
+#
+#     ca_cursor.execute(SELECT_CAPUBLIC_ACTIONS, {'updated_since': updated_date})
+#
+#     for bill_id, action_date, action_text, action_sequence in ca_cursor.fetchall():
+#         bid = 'CA_%s' % bill_id
+#         action = Action(date=action_date, text=action_text,
+#                         seq_num=action_sequence, bid=bid)
+#
+#         action_list.append(action)
+#
+#         # insert_Action(dd_cursor, list(record))
+#         # update_Action(dd_cursor, list(record))
+#
+#     return action_list
 
 
 def main():
@@ -172,7 +174,10 @@ def main():
             bill_manager = BillInsertionManager(dd_cursor, logger, 'CA')
 
             # Get all of the Actions from capublic
-            action_list = get_action_list(ca_cursor)
+            updated_date = dt.date.today() - dt.timedelta(weeks=1)
+            updated_date = updated_date.strftime('%Y-%m-%d')
+
+            action_list = get_actions(ca_cursor, updated_date)
 
             bill_manager.add_actions_db(action_list)
 

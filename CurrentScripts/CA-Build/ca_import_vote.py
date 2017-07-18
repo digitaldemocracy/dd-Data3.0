@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf8 -*-
-'''
+
+"""
 File: Vote_Extract.py
 Authored By: Daniel Mangin
 Modified By: Matt Versaggi
@@ -29,8 +30,8 @@ Sources:
 Populates:
   - BillVoteSummary (bid, mid, cid, VoteDate, ayes, naes, abstain, result)
   - BillVoteDetail (pid, voteId, result, state)
+"""
 
-'''
 import sys
 import json
 import MySQLdb
