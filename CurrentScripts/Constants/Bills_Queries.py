@@ -10,6 +10,15 @@ SELECT_CAPUBLIC_BILLVERSIONS = '''SELECT bill_version_id, bill_id,
                                   FROM bill_version_tbl
                                   WHERE trans_update > %(updated_since)s'''
 
+# SELECT_CAPUBLIC_VERSION_XML = '''SELECT bill_version_id, bill_xml
+#                                  FROM bill_version_tbl
+#                                  WHERE trans_update > %(updated_since)s
+#                                  AND bill_version_id = \'20170AB100695AMD\''''
+
+SELECT_CAPUBLIC_VERSION_XML = '''SELECT bill_version_id, bill_xml
+                                 FROM bill_version_tbl
+                                 WHERE trans_update > %(updated_since)s'''
+
 SELECT_CAPUBLIC_BILL_TITLE = '''SELECT subject, bill_version_action_date
                                 FROM bill_version_tbl
                                 WHERE bill_id = %s

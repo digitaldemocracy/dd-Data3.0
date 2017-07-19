@@ -387,9 +387,4 @@ class BillInsertionManager(object):
                     return False
                 self.A_INSERTED += 1
 
-            updated = self.update_action(action.to_dict())
-
-            if not updated == False:
-                self.A_UPDATED += updated
-
         return True
