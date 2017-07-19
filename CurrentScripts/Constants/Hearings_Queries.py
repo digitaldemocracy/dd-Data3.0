@@ -5,6 +5,14 @@ SELECT_COMMITTEE = '''SELECT cid FROM Committee
                       AND session_year = %(session_year)s
                       AND state = %(state)s'''
 
+SELECT_COMMITTEE_SHORT_NAME = '''SELECT cid FROM Committee
+                      WHERE short_name sounds like %(name)s
+                      AND house = %(house)s
+                      AND session_year = %(session_year)s
+                      AND state = %(state)s
+                      AND type = %(type)s'''
+
+
 SELECT_HEARING = '''SELECT hid FROM Hearing
                     WHERE date = %(date)s
                     AND state = %(state)s

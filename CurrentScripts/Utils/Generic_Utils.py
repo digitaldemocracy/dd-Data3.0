@@ -10,8 +10,8 @@ import datetime as dt
 reload(sys)
 sys.setdefaultencoding('utf8')
 
-def capublic_format_committee_name(short_name, house):
-    if house == 'CX' or house == "Assembly":
+def format_committee_name(short_name, house):
+    if house == 'CX' or house.lower() == "assembly":
         return "Assembly Standing Committee on " + short_name
     return "Senate Standing Committee on " + short_name
 
@@ -19,6 +19,10 @@ def capublic_format_house(house):
     if house == "CX":
         return "Assembly"
     return "Senate"
+
+def pdf_to_text_path():
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    return "/".join(dir_path.split("/")[:-1]) + "/pdftotext"
 
 def format_logger_message(subject, sql_statement):
     return "\n\t\t\t{\n\t\t\t\"Subject\": \"" + subject + "\"," \
