@@ -180,15 +180,15 @@ def billparse(ca_cursor, dd_cursor):
         #print(title)
         #print(digest)
 
-        with open('formatted_test.xml', 'w') as f:
-            f.write(body)
+        # with open('formatted_test.xml', 'w') as f:
+        #     f.write(body)
 
-        # try:
-        #     dd_cursor.execute(QU_BILL_VERSION, (title, digest, body, STATE, vid))
-        #     UPDATE += dd_cursor.rowcount
-        # except MySQLdb.Error:
-        #     logger.exception(format_logger_message('Insert Failed for BillVersion',
-        #                                                     (QU_BILL_VERSION % (title, digest, body, STATE, vid))))
+        try:
+            dd_cursor.execute(QU_BILL_VERSION, (title, digest, body, STATE, vid))
+            UPDATE += dd_cursor.rowcount
+        except MySQLdb.Error:
+            logger.exception(format_logger_message('Insert Failed for BillVersion',
+                                                            (QU_BILL_VERSION % (title, digest, body, STATE, vid))))
 
 
 def main():
@@ -198,10 +198,10 @@ def main():
 
             billparse(ca_cursor, dd_cursor)
 
-            #bill_manager.log()
+            bill_manager.log()
 
             #with open("test.xml", 'w') as xmlfile:
-            #xmlfile.write(ca_cursor.fetchone()[1])
+            #   xmlfile.write(ca_cursor.fetchone()[1])
 
 
 if __name__ == "__main__":
