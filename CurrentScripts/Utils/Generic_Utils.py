@@ -10,8 +10,8 @@ import datetime as dt
 reload(sys)
 sys.setdefaultencoding('utf8')
 
-def capublic_format_committee_name(short_name, house):
-    if house == 'CX' or house == "Assembly":
+def format_committee_name(short_name, house):
+    if house == 'CX' or house.lower() == "assembly":
         return "Assembly Standing Committee on " + short_name
     return "Senate Standing Committee on " + short_name
 
@@ -19,6 +19,10 @@ def capublic_format_house(house):
     if house == "CX":
         return "Assembly"
     return "Senate"
+
+def pdf_to_text_path():
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    return "/".join(dir_path.split("/")[:-1]) + "/pdftotext"
 
 def format_logger_message(subject, sql_statement):
     return "\n\t\t\t{\n\t\t\t\"Subject\": \"" + subject + "\"," \
@@ -28,9 +32,14 @@ def format_end_log(subject, full_msg, additional_fields):
            "\n\t\t\t\"Message\": \"" + full_msg + "\""\
            "\n\t\t\t\"Message\": \"" + additional_fields + "\"\n\t\t\t}"
 def create_logger():
+
+    file_name = str(sys.argv[0].split("/")[-1])
+    state = file_name.split("_")[0]
     if not os.path.exists("logs"):
         os.makedirs("logs")
-    filename = "logs/" + str(sys.argv[0].split("/")[-1]) + "_" + str(dt.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")) + ".log"
+    if not os.path.exists("logs/" + state):
+        os.makedirs("logs/" + state)
+    log_loc = "logs/" + state + "/" + file_name + "_" + str(dt.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")) + ".log"
     # create logger
     logger = logging.getLogger("DDDB_Logger")
     logger.setLevel(logging.DEBUG)
@@ -39,7 +48,7 @@ def create_logger():
     console_handler = logging.StreamHandler()
     console_handler.setLevel(logging.DEBUG)
 
-    file_handler = logging.FileHandler(filename)
+    file_handler = logging.FileHandler(log_loc)
     file_handler.setLevel(logging.ERROR)
 
     # create formatter
