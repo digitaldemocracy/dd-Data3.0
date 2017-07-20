@@ -61,7 +61,11 @@ class Hearings_Manager(object):
             self.dddb.execute(SELECT_CHAMBER_HEARING, hearing)
 
             if self.dddb.rowcount == 0:
-                return None
+                self.dddb.execute(SELECT_HEARING, hearing)
+                if self.dddb.rowcount == 0:
+                    return None
+                else:
+                    return self.dddb.fetchone()[0]
             else:
                 return self.dddb.fetchone()[0]
 
@@ -211,10 +215,10 @@ class Hearings_Manager(object):
             if hid is None:
                 hid = self.insert_hearing(hearing.hearing_date, hearing.state, hearing.session_year)
 
-            if not self.is_comm_hearing_in_db(hearing.cid, hid):
+            if hearing.cid is not None and not self.is_comm_hearing_in_db(hearing.cid, hid):
                 self.insert_committee_hearing(hearing.cid, hid)
 
-            if not self.is_hearing_agenda_in_db(hid, hearing.bid, cur_date):
+            if hearing.bid is not None and not self.is_hearing_agenda_in_db(hid, hearing.bid, cur_date):
                 self.insert_hearing_agenda(hid, hearing.bid, cur_date)
 
     '''
