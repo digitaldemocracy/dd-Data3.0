@@ -55,9 +55,9 @@ STATE = 'CA'
 #                           FROM bill_version_tbl
 #                           WHERE trans_update > %(updated_since)s
 #                           '''
-QU_BILL_VERSION = '''UPDATE BillVersion
-                     SET title = %s, digest= %s, text = %s, state = %s
-                     WHERE vid = %s'''
+# QU_BILL_VERSION = '''UPDATE BillVersion
+#                      SET title = %s, digest= %s, text = %s, state = %s
+#                      WHERE vid = %s'''
 
 
 def remove_unmatched_tags(xml):
@@ -142,21 +142,22 @@ def sanitize_xml(xml):
 
 
 def get_bill_versions(ca_cursor):
-    updated_date = dt.date.today() - dt.timedelta(weeks=1)
+    updated_date = dt.date.today() - dt.timedelta(weeks=2)
     updated_date = updated_date.strftime('%Y-%m-%d')
 
     ca_cursor.execute(SELECT_CAPUBLIC_VERSION_XML, {'updated_since': updated_date})
 
-    for vid, xml in ca_cursor.fetchall():
-        if xml is None:
-            continue
-        yield '%s_%s' % (STATE, vid), sanitize_xml(xml)
+    for vid, date, xml in ca_cursor.fetchall():
+        if xml:
+            yield '%s_%s' % (STATE, vid), date, sanitize_xml(xml)
 
 
-def billparse(ca_cursor, dd_cursor):
+def billparse(ca_cursor):
     global UPDATE
 
-    for vid, xml in get_bill_versions(ca_cursor):
+    version_list = list()
+
+    for vid, date, xml in get_bill_versions(ca_cursor):
         # This line will fail if |xml| is not valid XML.
         try:
             xml = unicodedata.normalize('NFKD', xml).encode('ascii', 'ignore')
@@ -177,18 +178,13 @@ def billparse(ca_cursor, dd_cursor):
             # be a caml:Content tag.
             body = extract_caml('Content')
 
-        #print(title)
-        #print(digest)
+        version = Version(vid=vid, state='CA', bill_state=None,
+                          subject=None, date=date,
+                          text=body, title=title, digest=digest)
 
-        # with open('formatted_test.xml', 'w') as f:
-        #     f.write(body)
+        version_list.append(version)
 
-        try:
-            dd_cursor.execute(QU_BILL_VERSION, (title, digest, body, STATE, vid))
-            UPDATE += dd_cursor.rowcount
-        except MySQLdb.Error:
-            logger.exception(format_logger_message('Insert Failed for BillVersion',
-                                                            (QU_BILL_VERSION % (title, digest, body, STATE, vid))))
+    return version_list
 
 
 def main():
@@ -196,30 +192,14 @@ def main():
         with connect_to_capublic() as ca_cursor:
             bill_manager = BillInsertionManager(dd_cursor, logger, 'CA')
 
-            billparse(ca_cursor, dd_cursor)
+            version_list = billparse(ca_cursor)
+
+            for version in version_list:
+                bill_manager.update_version(version.to_dict())
 
             bill_manager.log()
-
-            #with open("test.xml", 'w') as xmlfile:
-            #   xmlfile.write(ca_cursor.fetchone()[1])
 
 
 if __name__ == "__main__":
     logger = create_logger()
     main()
-
-    # with connect() as dd_cursor:
-    #     with MySQLdb.connect(host='transcription.digitaldemocracy.org',
-    #                          user='monty',
-    #                          db='capublic',
-    #                          passwd='python',
-    #                          #host='localhost',
-    #                          #user='root',
-    #                          #db='historic_capublic',
-    #                          #passwd='',
-    #                          charset='utf8') as ca_cursor:
-    #         logger = create_logger()
-    #         billparse(ca_cursor, dd_cursor)
-    # LOG = {'tables': [{'state': 'CA', 'name': 'BillVersion', 'inserted':0 , 'updated': UPDATE, 'deleted': 0}]}
-    # sys.stderr.write(json.dumps(LOG))
-    # logger.info(LOG)

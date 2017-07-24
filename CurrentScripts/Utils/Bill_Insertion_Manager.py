@@ -215,7 +215,12 @@ class BillInsertionManager(object):
         :param version: A dictionary returned from a Version object's to_dict method
         :return: True if the update succeeds, false otherwise
         """
-        return update_entity(self.dddb, UPDATE_VERSION, version, "BillVersion", self.logger)
+        update = update_entity(self.dddb, UPDATE_VERSION, version, "BillVersion", self.logger)
+        if not update == False:
+            self.V_UPDATED += update
+            return True
+        else:
+            return False
 
     def is_action_in_db(self, action):
         """
@@ -370,8 +375,8 @@ class BillInsertionManager(object):
                     return False
                 self.V_INSERTED += 1
 
-            if self.update_version(version.to_dict()):
-                self.V_UPDATED += 1
+            if not self.update_version(version.to_dict()):
+                return False
 
         return True
 

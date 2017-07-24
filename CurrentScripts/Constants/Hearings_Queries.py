@@ -12,11 +12,17 @@ SELECT_COMMITTEE_SHORT_NAME = '''SELECT cid FROM Committee
                       AND state = %(state)s
                       AND type = %(type)s'''
 
+SELECT_BID = '''SELECT bid FROM Bill
+                WHERE type = %(bill_type)s
+                AND number = %(bill_number)s
+                AND house = %(house)s
+                AND state = %(state)s
+                AND sessionYear = %(year)s'''
 
 SELECT_HEARING = '''SELECT hid FROM Hearing
                     WHERE date = %(date)s
                     AND state = %(state)s
-                    AND session_year = %(session_year)s'''
+                    AND session_year = %(year)s'''
 
 SELECT_CHAMBER_HEARING = '''SELECT distinct h.hid FROM Hearing h
                             JOIN CommitteeHearings ch ON h.hid = ch.hid

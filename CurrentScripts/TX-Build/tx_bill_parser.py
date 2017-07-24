@@ -2,7 +2,7 @@
 # -*- coding: utf8 -*-
 
 """
-File: tx_committee_parser.py
+File: tx_bill_parser.py
 Author: Andrew Rose
 Date: 7/10/2017
 Last Updated: 7/10/2017

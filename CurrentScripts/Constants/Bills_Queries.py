@@ -10,12 +10,8 @@ SELECT_CAPUBLIC_BILLVERSIONS = '''SELECT bill_version_id, bill_id,
                                   FROM bill_version_tbl
                                   WHERE trans_update > %(updated_since)s'''
 
-# SELECT_CAPUBLIC_VERSION_XML = '''SELECT bill_version_id, bill_xml
-#                                  FROM bill_version_tbl
-#                                  WHERE trans_update > %(updated_since)s
-#                                  AND bill_version_id = \'20170AB100695AMD\''''
-
-SELECT_CAPUBLIC_VERSION_XML = '''SELECT bill_version_id, bill_xml
+SELECT_CAPUBLIC_VERSION_XML = '''SELECT bill_version_id, bill_version_action_date,
+                                        bill_xml
                                  FROM bill_version_tbl
                                  WHERE trans_update > %(updated_since)s'''
 
@@ -160,7 +156,7 @@ UPDATE_BILL_STATUS = '''UPDATE Bill
                         AND (status != %(status)s or billState != %(billState)s)'''
 
 UPDATE_VERSION = '''UPDATE BillVersion
-                    SET text = %(doc)s, date = %(date)s, text_link = %(text_link)s
+                    SET title = %(title)s, digest = %(digest)s, text = %(doc)s, date = %(date)s, text_link = %(text_link)s
                     WHERE vid = %(vid)s'''
 
 UPDATE_ACTION_TEXT = '''UPDATE Action
