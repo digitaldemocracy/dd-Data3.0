@@ -36,6 +36,153 @@ If he still doesn’t respond, contact your manager.
 
 * pls do not blindly use list comprehension. pls.
 
+# Resources, Where do we get all the data?
+
+* CA
+
+    * Legislators
+
+        * ?
+
+    * Bills
+
+        * capublic Database on transcription server.
+
+            * [http://downloads.leginfo.legislature.ca.gov](http://downloads.leginfo.legislature.ca.gov) 
+
+    * Committees
+
+        * Senate
+
+            * [http://senate.ca.gov/committees](http://senate.ca.gov/committees)
+
+        * Assembly
+
+            * [http://assembly.ca.gov/committees](http://assembly.ca.gov/committees)
+
+    * Hearings
+
+        * capublic Database on transcription server.
+
+            * [http://downloads.leginfo.legislature.ca.gov](http://downloads.leginfo.legislature.ca.gov) 
+
+    * Contributions
+
+        * Maplight
+
+            * [http://maplight.org/data/get/california-money-and-politics-dataset](http://maplight.org/data/get/california-money-and-politics-dataset)
+
+    * Districts
+
+        * OpenStates
+
+            * [https://openstates.org](https://openstates.org) 
+
+    * Lobbyists
+
+        * Cal-Access
+
+            * [http://campaignfinance.cdn.sos.ca.gov/calaccess-documentation.zip](http://campaignfinance.cdn.sos.ca.gov/calaccess-documentation.zip)
+
+            * [http://campaignfinance.cdn.sos.ca.gov/dbwebexport.zip](http://campaignfinance.cdn.sos.ca.gov/dbwebexport.zip) 
+
+* NY
+
+    * Legislators
+
+    * Bills
+
+    * Committees
+
+    * Hearings
+
+    * Contributions
+
+    * Districts
+
+    * Lobbyists
+
+* FL
+
+    * Legislators
+
+        * OpenStates
+
+            * [https://openstates.org](https://openstates.org) 
+
+    * Bills
+
+        * OpenStates
+
+            * [https://openstates.org](https://openstates.org) 
+
+    * Committees
+
+        * OpenStates
+
+            * [https://openstates.org](https://openstates.org) 
+
+    * Hearings
+
+    * Contributions
+
+    * Districts
+
+        * OpenStates
+
+            * [https://openstates.org](https://openstates.org) 
+
+    * Lobbyists
+
+        * Legislative
+
+            * [https://floridalobbyist.gov/reports/llob.txt](https://floridalobbyist.gov/reports/llob.txt) 
+
+        * Executive
+
+            * [https://floridalobbyist.gov/reports/elob.txt](https://floridalobbyist.gov/reports/elob.txt) 
+
+* TX
+
+    * Legislators
+
+        * OpenStates
+
+            * [https://openstates.org](https://openstates.org) 
+
+    * Bills
+
+        * OpenStates
+
+            * [https://openstates.org](https://openstates.org) 
+
+    * Committees
+
+        * OpenStates
+
+            * [https://openstates.org](https://openstates.org) 
+
+    * Hearings
+
+        * Texas Committee RSS Feeds
+
+    * Contributions
+
+        * Maplight?
+
+    * Districts
+
+        * OpenStates
+
+            * [https://openstates.org](https://openstates.org) 
+
+    * Lobbyists
+
+        * ?
+
+
+
+
 # Project Structure
 
 * **Constants (Python Package)**
