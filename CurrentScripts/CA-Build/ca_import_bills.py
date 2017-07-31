@@ -46,23 +46,23 @@ from Utils.Bill_Insertion_Manager import *
 reload(sys)
 sys.setdefaultencoding('utf8')
 
-logger = None
-
 
 def main():
     with connect() as dd_cursor:
         with connect_to_capublic() as ca_cursor:
-            bill_manager = BillInsertionManager(dd_cursor, logger, 'CA')
+            logger = create_logger()
 
-            bill_list = get_bills(ca_cursor)
+            bill_manager = BillInsertionManager(dd_cursor, logger, 'CA')
+            bill_parser = CaBillParser(ca_cursor=ca_cursor)
+
+            bill_list = bill_parser.get_bills()
             bill_manager.add_bills_db(bill_list)
 
-            version_list = get_bill_versions(ca_cursor)
+            version_list = bill_parser.get_bill_versions()
             bill_manager.add_versions_db(version_list)
 
             bill_manager.log()
 
 
 if __name__ == "__main__":
-    logger = create_logger()
     main()

@@ -47,8 +47,9 @@ def main():
     with connect_to_capublic() as ca_cursor:
         with connect() as dddb:
             bill_manager = BillInsertionManager(dddb, logger, 'CA')
+            bill_parser = CaBillParser(ca_cursor)
 
-            motion_list = get_motions(ca_cursor)
+            motion_list = bill_parser.get_motions()
 
             for motion in motion_list:
                 bill_manager.insert_motion(motion)

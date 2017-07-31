@@ -2,46 +2,73 @@
 SELECT_CAPUBLIC_BILLS = '''SELECT bill_id, measure_type, measure_num, measure_state,
                                   current_status, current_house, session_num
                            FROM bill_tbl
-                           WHERE trans_update > %(updated_since)s'''
+                           WHERE trans_update > %(updated_since)s
+                           ORDER BY trans_update'''
+
+SELECT_CAPUBLIC_BILLS_COMPREHENSIVE = '''SELECT bill_id, measure_type, measure_num, measure_state,
+                                                current_status, current_house, session_num
+                                         FROM bill_tbl
+                                         ORDER BY trans_update'''
 
 SELECT_CAPUBLIC_BILLVERSIONS = '''SELECT bill_version_id, bill_id,
                                          bill_version_action_date, bill_version_action,
                                          subject, appropriation, substantive_changes
                                   FROM bill_version_tbl
-                                  WHERE trans_update > %(updated_since)s'''
+                                  WHERE trans_update > %(updated_since)s
+                                  ORDER BY trans_update'''
+
+SELECT_CAPUBLIC_BILLVERSIONS_COMPREHENSIVE = '''SELECT bill_version_id, bill_id,
+                                                       bill_version_action_date, bill_version_action,
+                                                       subject, appropriation, substantive_changes
+                                                FROM bill_version_tbl
+                                                ORDER BY trans_update'''
 
 SELECT_CAPUBLIC_VERSION_XML = '''SELECT bill_version_id, bill_version_action_date,
                                         bill_xml
                                  FROM bill_version_tbl
                                  WHERE trans_update > %(updated_since)s'''
 
-SELECT_CAPUBLIC_BILL_TITLE = '''SELECT subject, bill_version_action_date
-                                FROM bill_version_tbl
-                                WHERE bill_id = %s
-                                AND bill_version_action = "Introduced"'''
+SELECT_CAPUBLIC_VERSION_XML_COMPREHENSIVE = '''SELECT bill_version_id, bill_version_action_date,
+                                                      bill_xml
+                                               FROM bill_version_tbl'''
 
 SELECT_CAPUBLIC_MOTION = '''SELECT DISTINCT motion_id, motion_text, trans_update
-                             FROM bill_motion_tbl
-                             WHERE trans_update > %(updated_since)s'''
+                            FROM bill_motion_tbl
+                            WHERE trans_update > %(updated_since)s'''
+
+SELECT_CAPUBLIC_MOTION_COMPREHENSIVE = '''SELECT DISTINCT motion_id, motion_text, trans_update
+                                          FROM bill_motion_tbl'''
 
 SELECT_CAPUBLIC_VOTE_DETAIL = '''SELECT DISTINCT bill_id, location_code, legislator_name,
                                  vote_code, motion_id, vote_date_time, vote_date_seq
                                  FROM bill_detail_vote_tbl
                                  WHERE trans_update > %(updated_since)s'''
 
+SELECT_CAPUBLIC_VOTE_DETAIL_COMPREHENSIVE = '''SELECT DISTINCT bill_id, location_code, legislator_name,
+                                                               vote_code, motion_id, vote_date_time, vote_date_seq
+                                               FROM bill_detail_vote_tbl'''
+
 SELECT_CAPUBLIC_VOTE_SUMMARY = '''SELECT DISTINCT bill_id, location_code, motion_id, ayes, noes,
                                   abstain, vote_result, vote_date_time, vote_date_seq
                                   FROM bill_summary_vote_tbl
                                   WHERE trans_update > %(updated_since)s'''
+
+SELECT_CAPUBLIC_VOTE_SUMMARY_COMPREHENSIVE = '''SELECT DISTINCT bill_id, location_code, motion_id, ayes, noes,
+                                                                abstain, vote_result, vote_date_time, vote_date_seq
+                                                FROM bill_summary_vote_tbl'''
 
 SELECT_CAPUBLIC_LOCATION_CODE = '''SELECT description, long_description
                                    FROM location_code_tbl
                                    WHERE location_code = %(location_code)s'''
 
 SELECT_CAPUBLIC_ACTIONS = '''SELECT bill_id, action_date, action, action_sequence
-                            FROM bill_history_tbl
-                            WHERE trans_update_dt > %(updated_since)s
-                            GROUP BY bill_id, action_sequence'''
+                             FROM bill_history_tbl
+                             WHERE trans_update_dt > %(updated_since)s
+                             GROUP BY bill_id, action_sequence'''
+
+SELECT_CAPUBLIC_ACTIONS_COMPREHENSIVE = '''SELECT bill_id, action_date, action, action_sequence
+                                           FROM bill_history_tbl
+                                           GROUP BY bill_id, action_sequence'''
 
 # SQL Selects
 SELECT_BILL = '''SELECT * FROM Bill

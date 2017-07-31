@@ -32,8 +32,8 @@ Populates:
 import sys
 import json
 import datetime as dt
-from ca_bill_parser import *
 from Models.Action import *
+from ca_bill_parser import *
 from Utils.Generic_Utils import *
 from Utils.Database_Connection import *
 from Utils.Bill_Insertion_Manager import *
@@ -47,9 +47,10 @@ def main():
     with connect() as dd_cursor:
         with connect_to_capublic() as ca_cursor:
             bill_manager = BillInsertionManager(dd_cursor, logger, 'CA')
+            bill_parser = CaBillParser(ca_cursor)
 
             # Get all of the Actions from capublic
-            action_list = get_actions(ca_cursor)
+            action_list = bill_parser.get_actions()
 
             bill_manager.add_actions_db(action_list)
 

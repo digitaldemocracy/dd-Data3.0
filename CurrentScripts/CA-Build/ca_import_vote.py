@@ -37,6 +37,7 @@ import json
 import MySQLdb
 import traceback
 from Models.Vote import *
+from ca_bill_parser import *
 from Constants.Bills_Queries import *
 from Utils.Generic_Utils import *
 from Utils.Database_Connection import *
@@ -156,118 +157,118 @@ QS_LEGISLATOR_LIKE_L = '''SELECT Person.pid, last, first
                              AND state = %s
                             ORDER BY Person.pid'''
 
-
-'''
-If committee is found, return cid. Otherwise, return None.
-'''
-def find_committee(cursor, name, house):
-    if "Assembly Standing Committee on Water, Parks and Wildlife" == name or \
-                    "Assembly Standing Committee on Public Employees, Retirement and Social Security" == name:
-        name = name.replace(" and", ", and")
-    elif "Assembly Standing Committee on Aging and Long Term Care" == name:
-        name = name.replace("Long Term", "Long-Term")
-
-    cursor.execute(QS_COMMITTEE, {'name':name, 'house':house, 'state':STATE, 'session_year': YEAR })
-    if cursor.rowcount == 1:
-        return cursor.fetchone()[0]
-    elif cursor.rowcount > 1:
-        print("Multiple Committees found")
-    print(QS_COMMITTEE % {'name':name, 'house':house, 'state':STATE, 'session_year': YEAR})
-    sys.stderr.write("WARNING: Unable to find committee {0}\n".format(name))
-    return None
-
-'''
-Parses the committee to find name and house. If committee is found, return cid.
-Otherwise, return None.
-'''
-def get_committee(ca_cursor, dd_cursor, location_code):
-    ca_cursor.execute(SELECT_CAPUBLIC_LOCATION_CODE, {'location_code':location_code})
-    if ca_cursor.rowcount > 0:
-        loc_result = ca_cursor.fetchone()
-        temp_name = loc_result[0]
-        committee_name = loc_result[1]
-
-        committee_name = clean_name(committee_name)
-
-        if 'Asm' in temp_name or 'Assembly' in temp_name:
-            house = 'Assembly'
-        else:
-            house = 'Senate'
-
-        if 'Floor' in committee_name:
-            name = '{0} Floor'.format(house)
-        elif 'Transportation and Infrastructure Development' in committee_name:
-            name = '{0} 1st Extraordinary Session on {1}'.format(house, committee_name)
-        elif 'Public Health and Developmental Services' in committee_name:
-            name = '{0} 2nd Extraordinary Session on {1}'.format(house, committee_name)
-        elif 'Finance' in committee_name and house == 'Assembly':
-            if "Banking" in committee_name:
-                name = 'Assembly Standing Committee on Banking and Finance'
-            else:
-                name = 'Assembly 1st Extraordinary Session on Finance'
-        else:
-            name = '{0} Standing Committee on {1}'.format(house, committee_name)
-    else:
-        print("Cant find " + location_code)
-    return find_committee(dd_cursor, name, house)
-
-'''
-Handles all instances of reformatting and cleaning specific legislator and
-committee names.
-'''
-def clean_name(name):
-    # Replaces all accented o's and a's
-    if "\xc3\xb3" in name:
-        name = name.replace("\xc3\xb3", "o")
-    if "\xc3\xa1" in name:
-        name = name.replace("\xc3\xa1", "a")
-    if name == 'Allen Travis':
-        name = 'Travis Allen'
-    # For O'Donnell
-    if 'Donnell' in name:
-        name = "O'Donnell"
-    # Removes positions and random unicode ? on Mark Stone's name
-    name = name.replace("Vice Chair", "")
-    name = name.replace("Chair", "")
-    #name = name.replace(chr(194), "")
-    return name
-
-'''
-Find the Person using a combined name
-|dd_cursor|: DDDB database cursor
-|filer_naml|: Name of person
-|house|: House (Senate/Assembly)
-'''
-def get_person(dd_cursor, filer_naml, loc_code):
-    pid = None
-    filer_naml = clean_name(filer_naml)
-    error_message = "Multiple matches for the same person: "
-    # First try last name.
-    house = "Senate"
-    if "CX" == loc_code[:2] or "AF" == loc_code[:2]:
-        house = "Assembly"
-    dd_cursor.execute(QS_LEGISLATOR_L, (filer_naml, YEAR, STATE, house))
-
-    if dd_cursor.rowcount == 1:
-        pid = dd_cursor.fetchone()[0]
-    elif dd_cursor.rowcount == 0:
-        parts = filer_naml.split(' ')
-        if len(parts) > 1:
-            dd_cursor.execute(QS_LEGISLATOR_FL, (parts[1:], parts[0], YEAR, STATE, house))
-            if dd_cursor.rowcount == 1:
-                pid = dd_cursor.fetchone()[0]
-        else:
-            filer_naml = '%' + filer_naml + '%'
-            dd_cursor.execute(QS_LEGISLATOR_LIKE_L, (filer_naml, STATE))
-            if dd_cursor.rowcount == 1:
-                pid = dd_cursor.fetchone()[0]
-    else:
-        print("Person not found: " + filer_naml)
-        error_message = "Person not found "
-    if pid is None and filer_naml not in logged_list:
-        logged_list.append(filer_naml)
-        logger.exception(error_message + filer_naml)
-    return pid
+#
+# '''
+# If committee is found, return cid. Otherwise, return None.
+# '''
+# def find_committee(cursor, name, house):
+#     if "Assembly Standing Committee on Water, Parks and Wildlife" == name or \
+#                     "Assembly Standing Committee on Public Employees, Retirement and Social Security" == name:
+#         name = name.replace(" and", ", and")
+#     elif "Assembly Standing Committee on Aging and Long Term Care" == name:
+#         name = name.replace("Long Term", "Long-Term")
+#
+#     cursor.execute(QS_COMMITTEE, {'name':name, 'house':house, 'state':STATE, 'session_year': YEAR })
+#     if cursor.rowcount == 1:
+#         return cursor.fetchone()[0]
+#     elif cursor.rowcount > 1:
+#         print("Multiple Committees found")
+#     print(QS_COMMITTEE % {'name':name, 'house':house, 'state':STATE, 'session_year': YEAR})
+#     sys.stderr.write("WARNING: Unable to find committee {0}\n".format(name))
+#     return None
+#
+# '''
+# Parses the committee to find name and house. If committee is found, return cid.
+# Otherwise, return None.
+# '''
+# def get_committee(ca_cursor, dd_cursor, location_code):
+#     ca_cursor.execute(SELECT_CAPUBLIC_LOCATION_CODE, {'location_code':location_code})
+#     if ca_cursor.rowcount > 0:
+#         loc_result = ca_cursor.fetchone()
+#         temp_name = loc_result[0]
+#         committee_name = loc_result[1]
+#
+#         committee_name = clean_name(committee_name)
+#
+#         if 'Asm' in temp_name or 'Assembly' in temp_name:
+#             house = 'Assembly'
+#         else:
+#             house = 'Senate'
+#
+#         if 'Floor' in committee_name:
+#             name = '{0} Floor'.format(house)
+#         elif 'Transportation and Infrastructure Development' in committee_name:
+#             name = '{0} 1st Extraordinary Session on {1}'.format(house, committee_name)
+#         elif 'Public Health and Developmental Services' in committee_name:
+#             name = '{0} 2nd Extraordinary Session on {1}'.format(house, committee_name)
+#         elif 'Finance' in committee_name and house == 'Assembly':
+#             if "Banking" in committee_name:
+#                 name = 'Assembly Standing Committee on Banking and Finance'
+#             else:
+#                 name = 'Assembly 1st Extraordinary Session on Finance'
+#         else:
+#             name = '{0} Standing Committee on {1}'.format(house, committee_name)
+#     else:
+#         print("Cant find " + location_code)
+#     return find_committee(dd_cursor, name, house)
+#
+# '''
+# Handles all instances of reformatting and cleaning specific legislator and
+# committee names.
+# '''
+# def clean_name(name):
+#     # Replaces all accented o's and a's
+#     if "\xc3\xb3" in name:
+#         name = name.replace("\xc3\xb3", "o")
+#     if "\xc3\xa1" in name:
+#         name = name.replace("\xc3\xa1", "a")
+#     if name == 'Allen Travis':
+#         name = 'Travis Allen'
+#     # For O'Donnell
+#     if 'Donnell' in name:
+#         name = "O'Donnell"
+#     # Removes positions and random unicode ? on Mark Stone's name
+#     name = name.replace("Vice Chair", "")
+#     name = name.replace("Chair", "")
+#     #name = name.replace(chr(194), "")
+#     return name
+#
+# '''
+# Find the Person using a combined name
+# |dd_cursor|: DDDB database cursor
+# |filer_naml|: Name of person
+# |house|: House (Senate/Assembly)
+# '''
+# def get_person(dd_cursor, filer_naml, loc_code):
+#     pid = None
+#     filer_naml = clean_name(filer_naml)
+#     error_message = "Multiple matches for the same person: "
+#     # First try last name.
+#     house = "Senate"
+#     if "CX" == loc_code[:2] or "AF" == loc_code[:2]:
+#         house = "Assembly"
+#     dd_cursor.execute(QS_LEGISLATOR_L, (filer_naml, YEAR, STATE, house))
+#
+#     if dd_cursor.rowcount == 1:
+#         pid = dd_cursor.fetchone()[0]
+#     elif dd_cursor.rowcount == 0:
+#         parts = filer_naml.split(' ')
+#         if len(parts) > 1:
+#             dd_cursor.execute(QS_LEGISLATOR_FL, (parts[1:], parts[0], YEAR, STATE, house))
+#             if dd_cursor.rowcount == 1:
+#                 pid = dd_cursor.fetchone()[0]
+#         else:
+#             filer_naml = '%' + filer_naml + '%'
+#             dd_cursor.execute(QS_LEGISLATOR_LIKE_L, (filer_naml, STATE))
+#             if dd_cursor.rowcount == 1:
+#                 pid = dd_cursor.fetchone()[0]
+#     else:
+#         print("Person not found: " + filer_naml)
+#         error_message = "Person not found "
+#     if pid is None and filer_naml not in logged_list:
+#         logged_list.append(filer_naml)
+#         logger.exception(error_message + filer_naml)
+#     return pid
 
 # '''
 # If Bill Vote Summary is found, return vote id. Otherwise, return None.
@@ -312,98 +313,93 @@ def get_person(dd_cursor, filer_naml, loc_code):
 #         except MySQLdb.Error:
 #             logger.exception(format_logger_message('Insert Failed for BillVoteDetail',
 #                                                    (QI_DETAIL % (pid, voteId, result, STATE))))
-
-
-def get_summary_votes(ca_cursor, dd_cursor, updated_date):
-    """
-    Gets bill vote summaries and formats them into a list
-    :param ca_cursor: A cursor to the CAPublic database
-    :param dd_cursor: A cursor to the DDDB
-    :return: A list of Vote objects
-    """
-    vote_list = list()
-
-    print('Getting Summaries')
-    ca_cursor.execute(SELECT_CAPUBLIC_VOTE_SUMMARY, {'updated_since': updated_date})
-    rows = ca_cursor.fetchall()
-    for bid, loc_code, mid, ayes, noes, abstain, result, vote_date, seq in rows:
-        cid = get_committee(ca_cursor, dd_cursor, loc_code)
-        bid = '%s_%s' % (STATE, bid)
-
-        vote = Vote(vote_date=vote_date, vote_date_seq=seq,
-                    ayes=ayes, naes=noes, other=abstain, result=result,
-                    bid=bid, cid=cid, mid=mid)
-
-        vote_list.append(vote)
-
-        # if cid is not None:
-        #     insert_bill_vote_summary(dd_cursor, bid, mid, cid, vote_date, ayes, noes, abstain, result, seq)
-        # elif cid is None and loc_code not in logged_list:
-        #     logged_list.append(loc_code)
-        #     logger.exception('Committee not found ' + str(loc_code))
-
-    return vote_list
-
-
-def get_detail_votes(ca_cursor, dd_cursor, bill_manager, updated_date):
-    """
-    Gets bill vote details and formats them into a list
-    :param ca_cursor: A cursor to the CAPublic database
-    :param dd_cursor: A cursor to the DDDB
-    :param bill_manager: A BillInsertionManager object
-    :return: A list of VoteDetail objects
-    """
-    vote_detail_list = list()
-
-    ca_cursor.execute(SELECT_CAPUBLIC_VOTE_DETAIL, {'updated_since': updated_date})
-    rows = ca_cursor.fetchall()
-    counter = 0
-
-    for bid, loc_code, legislator, vote_code, mid, trans_update, seq in rows:
-        bid = '%s_%s' % (STATE, bid)
-        date = trans_update.strftime('%Y-%m-%d')
-        pid = get_person(dd_cursor, legislator, loc_code)
-        vote_id = bill_manager.get_vote_id({'bid': bid, 'mid': mid,
-                                           'date': date, 'vote_seq': seq})
-        result = vote_code
-
-        vote_detail = VoteDetail(state=STATE, result=result,
-                                 vote=vote_id, pid=pid)
-
-        vote_detail_list.append(vote_detail)
-
-        # if vote_id is not None and pid is not None:
-        #     insert_bill_vote_detail(dd_cursor, pid, vote_id, result)
-        # elif vote_id is None and (bid, mid) not in logged_list:
-        #     counter += 1
-        #     logged_list.append((bid, mid))
-        #     logger.exception('Vote ID not found' + bid +
-        #                      ' mid: ' + str(mid) + ' not found')
-        # elif pid is None and legislator not in logged_list:
-        #     logged_list.append(legislator)
-        #     logger.exception('Person not found ' + legislator)
-
-    return vote_detail_list
+#
+#
+# def get_summary_votes(ca_cursor, dd_cursor, updated_date):
+#     """
+#     Gets bill vote summaries and formats them into a list
+#     :param ca_cursor: A cursor to the CAPublic database
+#     :param dd_cursor: A cursor to the DDDB
+#     :return: A list of Vote objects
+#     """
+#     vote_list = list()
+#
+#     print('Getting Summaries')
+#     ca_cursor.execute(SELECT_CAPUBLIC_VOTE_SUMMARY, {'updated_since': updated_date})
+#     rows = ca_cursor.fetchall()
+#     for bid, loc_code, mid, ayes, noes, abstain, result, vote_date, seq in rows:
+#         cid = get_committee(ca_cursor, dd_cursor, loc_code)
+#         bid = '%s_%s' % (STATE, bid)
+#
+#         vote = Vote(vote_date=vote_date, vote_date_seq=seq,
+#                     ayes=ayes, naes=noes, other=abstain, result=result,
+#                     bid=bid, cid=cid, mid=mid)
+#
+#         vote_list.append(vote)
+#
+#         # if cid is not None:
+#         #     insert_bill_vote_summary(dd_cursor, bid, mid, cid, vote_date, ayes, noes, abstain, result, seq)
+#         # elif cid is None and loc_code not in logged_list:
+#         #     logged_list.append(loc_code)
+#         #     logger.exception('Committee not found ' + str(loc_code))
+#
+#     return vote_list
+#
+#
+# def get_detail_votes(ca_cursor, dd_cursor, bill_manager, updated_date):
+#     """
+#     Gets bill vote details and formats them into a list
+#     :param ca_cursor: A cursor to the CAPublic database
+#     :param dd_cursor: A cursor to the DDDB
+#     :param bill_manager: A BillInsertionManager object
+#     :return: A list of VoteDetail objects
+#     """
+#     vote_detail_list = list()
+#
+#     ca_cursor.execute(SELECT_CAPUBLIC_VOTE_DETAIL, {'updated_since': updated_date})
+#     rows = ca_cursor.fetchall()
+#     counter = 0
+#
+#     for bid, loc_code, legislator, vote_code, mid, trans_update, seq in rows:
+#         bid = '%s_%s' % (STATE, bid)
+#         date = trans_update.strftime('%Y-%m-%d')
+#         pid = get_person(dd_cursor, legislator, loc_code)
+#         vote_id = bill_manager.get_vote_id({'bid': bid, 'mid': mid,
+#                                            'date': date, 'vote_seq': seq})
+#         result = vote_code
+#
+#         vote_detail = VoteDetail(state=STATE, result=result,
+#                                  vote=vote_id, pid=pid)
+#
+#         vote_detail_list.append(vote_detail)
+#
+#         # if vote_id is not None and pid is not None:
+#         #     insert_bill_vote_detail(dd_cursor, pid, vote_id, result)
+#         # elif vote_id is None and (bid, mid) not in logged_list:
+#         #     counter += 1
+#         #     logged_list.append((bid, mid))
+#         #     logger.exception('Vote ID not found' + bid +
+#         #                      ' mid: ' + str(mid) + ' not found')
+#         # elif pid is None and legislator not in logged_list:
+#         #     logged_list.append(legislator)
+#         #     logger.exception('Person not found ' + legislator)
+#
+#     return vote_detail_list
 
 
 def main():
     with connect_to_capublic() as ca_cursor:
         with connect() as dd_cursor:
             bill_manager = BillInsertionManager(dd_cursor, logger, 'CA')
+            bill_parser = CaBillParser(ca_cursor, dddb=dd_cursor)
 
-            updated_date = dt.date.today() - dt.timedelta(weeks=1)
-            updated_date = updated_date.strftime('%Y-%m-%d')
-
-            vote_list = get_summary_votes(ca_cursor, dd_cursor, updated_date)
+            vote_list = bill_parser.get_summary_votes(dd_cursor, logger)
             bill_manager.add_votes_db(vote_list)
 
-            vote_detail_list = get_detail_votes(ca_cursor, dd_cursor, bill_manager, updated_date)
+            vote_detail_list = bill_parser.get_detail_votes(dd_cursor, bill_manager, logger)
             bill_manager.add_vote_details_db(vote_detail_list)
 
-    LOG = {'tables': [{'state': 'CA', 'name': 'BillVoteSummary', 'inserted':S_INSERT, 'updated': 0, 'deleted': 0},
-                      {'state': 'CA', 'name': 'BillVoteDetail', 'inserted':D_INSERT, 'updated': 0, 'deleted': 0}]}
-    sys.stderr.write(json.dumps(LOG))
-    logger.info(LOG)
+            bill_manager.log()
 
 
 if __name__ == "__main__":

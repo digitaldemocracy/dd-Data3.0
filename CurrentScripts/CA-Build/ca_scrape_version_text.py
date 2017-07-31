@@ -142,10 +142,19 @@ def sanitize_xml(xml):
 
 
 def get_bill_versions(ca_cursor):
+    # if dt.date.today().weekday() == 1:
+    #     comprehensive = True
+    #     updated_date = dt.date.today()
+    # else:
+    comprehensive = False
     updated_date = dt.date.today() - dt.timedelta(weeks=2)
     updated_date = updated_date.strftime('%Y-%m-%d')
 
-    ca_cursor.execute(SELECT_CAPUBLIC_VERSION_XML, {'updated_since': updated_date})
+    if comprehensive:
+        print("Comprehensive")
+        ca_cursor.execute(SELECT_CAPUBLIC_VERSION_XML_COMPREHENSIVE)
+    else:
+        ca_cursor.execute(SELECT_CAPUBLIC_VERSION_XML, {'updated_since': updated_date})
 
     for vid, date, xml in ca_cursor.fetchall():
         if xml:
@@ -161,7 +170,7 @@ def billparse(ca_cursor):
         # This line will fail if |xml| is not valid XML.
         try:
             xml = unicodedata.normalize('NFKD', xml).encode('ascii', 'ignore')
-            root = etree.fromstring(xml)
+            #root = etree.fromstring(xml)
         except:
             raise
 
