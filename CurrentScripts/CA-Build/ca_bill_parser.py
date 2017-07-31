@@ -61,11 +61,10 @@ class CaBillParser(object):
     def __init__(self, ca_cursor, dddb=None):
         # Used by CAPublic select queries.
         # We only get rows from the database that have been updated since this date
-        # if dt.date.today().weekday() == 0:
-        #     self.comprehensive_flag = 1
-        # else:
-        #     self.comprehensive_flag = 0
-        self.comprehensive_flag = 0
+        if dt.date.today().weekday() == 6:
+            self.comprehensive_flag = 1
+        else:
+            self.comprehensive_flag = 0
 
         self.updated_date = dt.date.today() - dt.timedelta(weeks=2)
         self.updated_date = self.updated_date.strftime('%Y-%m-%d')
@@ -156,7 +155,6 @@ class CaBillParser(object):
             else:
                 house = 'Senate'
 
-            print(committee_name)
             if 'Floor' in committee_name:
                 name = '{0} Floor'.format(house)
             elif 'Transportation and Infrastructure Development' in committee_name:
@@ -264,8 +262,6 @@ class CaBillParser(object):
         for bid, loc_code, mid, ayes, noes, abstain, result, vote_date, seq in rows:
             cid = self.get_committee(dd_cursor, loc_code, logger)
             bid = '%s_%s' % (STATE, bid)
-
-            print((bid, loc_code, mid, vote_date, seq))
 
             vote = Vote(vote_date=vote_date, vote_date_seq=seq,
                         ayes=ayes, naes=noes, other=abstain, result=result,

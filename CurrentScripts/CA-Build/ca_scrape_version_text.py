@@ -142,13 +142,13 @@ def sanitize_xml(xml):
 
 
 def get_bill_versions(ca_cursor):
-    # if dt.date.today().weekday() == 1:
-    #     comprehensive = True
-    #     updated_date = dt.date.today()
-    # else:
-    comprehensive = False
-    updated_date = dt.date.today() - dt.timedelta(weeks=2)
-    updated_date = updated_date.strftime('%Y-%m-%d')
+    if dt.date.today().weekday() == 6:
+        comprehensive = True
+        updated_date = dt.date.today()
+    else:
+        comprehensive = False
+        updated_date = dt.date.today() - dt.timedelta(weeks=1)
+        updated_date = updated_date.strftime('%Y-%m-%d')
 
     if comprehensive:
         print("Comprehensive")
