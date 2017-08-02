@@ -292,9 +292,9 @@ def main():
             subprocess.call(['aws', 's3', 'cp', pdfname , 's3://dd-drupal-files/bill/FL/'])
 
         # Delete bill PDFs
-        subprocess.call('rm -rf bill_PDF/*', shell=True)
+        subprocess.call('rm -rf bill_PDF/*.pdf', shell=True)
         # Delete text files
-        subprocess.call('rm -rf bill_txt/*', shell=True)
+        subprocess.call('rm -rf bill_txt/*.txt', shell=True)
 
         bill_manager.log()
 
