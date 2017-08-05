@@ -29,13 +29,13 @@ I_O = 0  # org insert counter
 I_C = 0  # contribution insert counter
 
 
-'''
-Parse eid from text file
-
-The text file contains URLs to the FollowTheMoney page for each winner
-of a state legislative election
-'''
 def get_candidates(filename):
+    """
+        Gets a list of FollowTheMoney entity IDs from a file containing links to candidate
+        profile pages on FollowTheMoney
+        :param filename: The name of the file containing candidate info
+        :return: A list of the candidate eids
+        """
     s = set()
     f = open(filename)
     for line in f.readlines():
@@ -45,10 +45,12 @@ def get_candidates(filename):
     return s
 
 
-'''
-Given FollowTheMoney's eid, scrape the candidate's name from the website
-'''
 def get_name(eid):
+    """
+    Scrapes a candidate's name from their FollowTheMoney profile
+    :param eid: The candidate's entity ID
+    :return: A tuple containing the candidates first and last names
+    """
     candidate_url = "https://www.followthemoney.org/entity-details?eid="
     candidate_url += eid
 
@@ -90,12 +92,14 @@ def get_name(eid):
     return first, last
 
 
-'''
-A few people have names that still don't work with
-the pattern matching being done in the get_pid query.
-This function fixes that.
-'''
 def special_names(first, last):
+    """
+    Fixes the names for candidates whose names are different
+    in FollowTheMoney and our database
+    :param first: A candidate's first name
+    :param last: A candidate's last name
+    :return: A tuple containing the fixed first and last names
+    """
     if last == 'PIGMAN':
         first = 'CARY'
     if last == 'CUMMINGS':
@@ -108,10 +112,14 @@ def special_names(first, last):
     return first, last
 
 
-'''
-Get pid from db
-'''
 def get_pid(cursor, first, last):
+    """
+    Gets a candidate's PID in our database given their name
+    :param cursor: A connection to the DDDB
+    :param first: The candidate's first name
+    :param last: The candidate's last name
+    :return: A PID from our database
+    """
     result = None
     first = "%" + first[:3] + "%"
     last = "%" + last + "%"
@@ -127,10 +135,15 @@ def get_pid(cursor, first, last):
     return result
 
 
-'''
-Get house membership from pid and sessionyear
-'''
 def get_house(cursor, pid, session_year, state):
+    """
+    Gets the legislative house a candidate belongs to
+    :param cursor: A connection to the DDDB
+    :param pid: A person's PID
+    :param session_year: The session year the candidate is serving in office
+    :param state: The state the candidate serves in
+    :return: The name of the candidate's legislative house
+    """
     result = None
     try:
         cursor.execute(S_TERM, (pid, session_year, state))
@@ -143,19 +156,25 @@ def get_house(cursor, pid, session_year, state):
     return result
 
 
-'''
-Get contribution records from api
-'''
 def get_records(url):
+    """
+    Gets a JSON-formatted list of contribution records for a candidate
+    from FollowTheMoney's API
+    :param url: A URL containing an API query for FollowTheMoney's API
+    :return: A JSON-formatted list of contribution records
+    """
     page = requests.get(url)
     result = page.json()
     return result['records']
 
 
-'''
-Get oid from db
-'''
 def get_oid(cursor, name):
+    """
+    Gets an Organization's OID given its name
+    :param cursor: A connection to the database
+    :param name: An organization's name
+    :return: The organization's OID if one exists
+    """
     result = None
     try:
         cursor.execute(S_ORGANIZATION, (name,))
@@ -168,10 +187,13 @@ def get_oid(cursor, name):
     return result
 
 
-'''
-If the contributing organization is not in the DB, insert it
-'''
 def insert_org(cursor, name, state):
+    """
+    Inserts an organization into the database
+    :param cursor: A connection to the database
+    :param name: The organization's name
+    :param state: The state the organization is active in
+    """
     global I_O
     try:
         cursor.execute(I_ORGANIZATION, (name, state))
@@ -181,10 +203,22 @@ def insert_org(cursor, name, state):
         logger.exception(format_logger_message('Insert Failed for Organization', (I_ORGANIZATION % (name, state))))
 
 
-'''
-Get id from Contribution table
-'''
 def get_con_id(cursor, con_id, pid, year, date, house, donor_name, donor_org, amount, state, oid):
+    """
+    Gets a contribution ID from the database
+    :param cursor: A connection to the database
+    :param con_id: The contribution's ID
+    :param pid: The PID of the candidate being contributed to
+    :param year: The year the contribution was made
+    :param date: The date the contribution was made
+    :param house: The legislative house the candidate was running for
+    :param donor_name: The name of the donor of the contribution
+    :param donor_org: The name of the donor's organization
+    :param amount: The amount contributed
+    :param state: The state the legislator ran in
+    :param oid: The donor organization's OID
+    :return: A contribution ID
+    """
     result = None
     try:
         cursor.execute(S_CONTRIBUTION, (con_id, pid, year, date, house, donor_name, donor_org, amount, state, oid))
@@ -198,10 +232,21 @@ def get_con_id(cursor, con_id, pid, year, date, house, donor_name, donor_org, am
     return result
 
 
-'''
-If the contribution is not in the DB, insert it
-'''
 def insert_contribution(cursor, con_id, pid, year, date, house, donor_name, donor_org, amount, state, oid):
+    """
+    Inserts a contribution ID to the database
+    :param cursor: A connection to the database
+    :param con_id: The contribution's ID
+    :param pid: The PID of the candidate being contributed to
+    :param year: The year the contribution was made
+    :param date: The date the contribution was made
+    :param house: The legislative house the candidate was running for
+    :param donor_name: The name of the donor of the contribution
+    :param donor_org: The name of the donor's organization
+    :param amount: The amount contributed
+    :param state: The state the legislator ran in
+    :param oid: The donor organization's OID
+    """
     global I_C
     try:
         if get_con_id(cursor, con_id, pid, year, date, house, donor_name, donor_org, amount, state, oid) is None:
