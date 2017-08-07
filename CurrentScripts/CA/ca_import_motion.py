@@ -39,24 +39,21 @@ from Utils.Database_Connection import *
 from Utils.Bill_Insertion_Manager import *
 from Constants.Bills_Queries import *
 
-logger = None
-INSERTED = 0
-
 
 def main():
-    with connect_to_capublic() as ca_cursor:
-        with connect() as dddb:
-            bill_manager = BillInsertionManager(dddb, logger, 'CA')
-            bill_parser = CaBillParser(ca_cursor)
+    with connect() as dddb:
+        logger = create_logger()
 
-            motion_list = bill_parser.get_motions()
+        bill_manager = BillInsertionManager(dddb, logger, 'CA')
+        bill_parser = CaBillParser()
 
-            for motion in motion_list:
-                bill_manager.insert_motion(motion)
+        motion_list = bill_parser.get_motions()
 
-            bill_manager.log()
+        for motion in motion_list:
+            bill_manager.insert_motion(motion)
+
+        bill_manager.log()
 
 
 if __name__ == "__main__":
-    logger = create_logger()
     main()

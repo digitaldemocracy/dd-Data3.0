@@ -40,23 +40,20 @@ from Utils.Bill_Insertion_Manager import *
 from Constants.Bills_Queries import *
 
 
-logger = None
-
-
 def main():
     with connect() as dd_cursor:
-        with connect_to_capublic() as ca_cursor:
-            bill_manager = BillInsertionManager(dd_cursor, logger, 'CA')
-            bill_parser = CaBillParser(ca_cursor)
+        logger = create_logger()
 
-            # Get all of the Actions from capublic
-            action_list = bill_parser.get_actions()
+        bill_manager = BillInsertionManager(dd_cursor, logger, 'CA')
+        bill_parser = CaBillParser()
 
-            bill_manager.add_actions_db(action_list)
+        # Get all of the Actions from capublic
+        action_list = bill_parser.get_actions()
 
-            bill_manager.log()
+        bill_manager.add_actions_db(action_list)
+
+        bill_manager.log()
 
 
 if __name__ == "__main__":
-    logger = create_logger()
     main()

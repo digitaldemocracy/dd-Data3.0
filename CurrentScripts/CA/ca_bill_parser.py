@@ -1,12 +1,14 @@
 #!/usr/bin/env python2.7
 # -*- coding: utf8 -*-
 
+import MySQLdb
 import datetime as dt
 from Models.Bill import *
 from Models.Version import *
 from Models.Action import *
 from Models.Vote import *
 from Utils.Generic_MySQL import *
+from Utils.Database_Connection import *
 from Constants.Bills_Queries import *
 
 STATE = 'CA'
@@ -19,7 +21,7 @@ QS_LOCATION_CODE = '''SELECT description, long_description
 
 QS_COMMITTEE = '''SELECT cid
                   FROM Committee
-                  WHERE name = %(name)s
+                  WHERE name SOUNDS LIKE %(name)s
                    AND house = %(house)s
                    AND state = %(state)s
                    AND session_year = %(session_year)s'''
@@ -58,7 +60,7 @@ TODO: make updated_date dependent on day of week - on Sunday, it should get all 
     Also, remove all old code
 """
 class CaBillParser(object):
-    def __init__(self, ca_cursor, dddb=None):
+    def __init__(self, logger = None):
         # Used by CAPublic select queries.
         # We only get rows from the database that have been updated since this date
         if dt.date.today().weekday() == 6:
@@ -66,11 +68,16 @@ class CaBillParser(object):
         else:
             self.comprehensive_flag = 0
 
-        self.updated_date = dt.date.today() - dt.timedelta(weeks=2)
+        self.updated_date = dt.date.today() - dt.timedelta(weeks=3)
         self.updated_date = self.updated_date.strftime('%Y-%m-%d')
 
-        self.ca_cursor = ca_cursor
-        self.dddb = dddb
+        ca_connect = connect_to_capublic()
+        self.ca_cursor = ca_connect.cursor()
+
+        dddb_connect = connect()
+        self.dddb = dddb_connect.cursor()
+
+        self.logger = logger
 
     def get_bills(self):
         """
@@ -102,53 +109,37 @@ class CaBillParser(object):
 
         return bill_list
 
-    """
-    TODO: remove old code from this method
-    """
-    def find_committee(self, cursor, name, house, logger):
+    def find_committee(self, name, house):
         """
         Gets a committee's CID from our database
-        :param cursor: A cursor to the DDDB
         :param name: The committee's name
         :param house: The committee's house, eg. Senate or Assembly
-        :param logger: A logger object to handle error messages
         :return: The committee's CID if one is found, otherwise None
         """
-        if "Assembly Standing Committee on Water, Parks and Wildlife" == name or \
-                        "Assembly Standing Committee on Public Employees, Retirement and Social Security" == name:
-            name = name.replace(" and", ", and")
-        elif "Assembly Standing Committee on Aging and Long Term Care" == name:
-            name = name.replace("Long Term", "Long-Term")
+        session_year = get_session_year(self.dddb, STATE, self.logger)
+        committee = {'name': name, 'house': house, 'state': STATE, 'session_year': session_year}
 
-        session_year = get_session_year(cursor, STATE, logger)
+        cid = get_entity_id(self.dddb, QS_COMMITTEE, committee, 'Committee', self.logger)
 
-        self.dddb.execute(QS_COMMITTEE, {'name':name, 'house':house, 'state':STATE, 'session_year': session_year})
-        if self.dddb.rowcount == 1:
-            return self.dddb.fetchone()[0]
-        elif self.dddb.rowcount > 1:
-            print("Multiple Committees found")
-        print(QS_COMMITTEE % {'name':name, 'house':house, 'state':STATE, 'session_year': session_year})
-        sys.stderr.write("WARNING: Unable to find committee {0}\n".format(name))
-        return None
+        if not cid:
+            return None
+        else:
+            return cid
 
-    """
-    TODO: Refactor this
-    """
-    def get_committee(self, dd_cursor, location_code, logger):
+    def get_committee_name(self, location_code):
         """
         Parses a committee from a CAPublic location code to get its name and house
-        :param dd_cursor: A cursor to the DDDB
         :param location_code: A location code from CAPublic
-        :param logger: A logger object to handle error messages
         :return: The committee's CID if one is found, otherwise None
         """
         self.ca_cursor.execute(SELECT_CAPUBLIC_LOCATION_CODE, {'location_code':location_code})
+
         if self.ca_cursor.rowcount > 0:
             loc_result = self.ca_cursor.fetchone()
             temp_name = loc_result[0]
             committee_name = loc_result[1]
 
-            committee_name = self.clean_name(committee_name)
+            #committee_name = self.clean_name(committee_name)
 
             if 'Asm' in temp_name or 'Assembly' in temp_name:
                 house = 'Assembly'
@@ -157,97 +148,53 @@ class CaBillParser(object):
 
             if 'Floor' in committee_name:
                 name = '{0} Floor'.format(house)
-            elif 'Transportation and Infrastructure Development' in committee_name:
-                name = '{0} 1st Extraordinary Session on {1}'.format(house, committee_name)
-            elif 'Public Health and Developmental Services' in committee_name:
-                name = '{0} 2nd Extraordinary Session on {1}'.format(house, committee_name)
-            elif 'Finance' in committee_name and house == 'Assembly':
-                if "Banking" in committee_name:
-                    name = 'Assembly Standing Committee on Banking and Finance'
-                else:
-                    name = 'Assembly 1st Extraordinary Session on Finance'
             else:
                 name = '{0} Standing Committee on {1}'.format(house, committee_name)
         else:
             print("Cant find " + location_code)
-        return self.find_committee(dd_cursor, name, house, logger)
+            return None
+
+        return name, house
 
     """
-    TODO: Refactor this. Maybe remove it completely?
+    TODO: Refactor this/replace with unified find_legislator function
     """
-    def clean_name(self, name):
-        """
-        Cleans legislator and committee names
-        :param name: The name to be cleaned
-        :return: The cleaned name
-        """
-        # Replaces all accented o's and a's
-        if "\xc3\xb3" in name:
-            name = name.replace("\xc3\xb3", "o")
-        if "\xc3\xa1" in name:
-            name = name.replace("\xc3\xa1", "a")
-        if name == 'Allen Travis':
-            name = 'Travis Allen'
-        # For O'Donnell
-        if 'Donnell' in name:
-            name = "O'Donnell"
-        # Removes positions and random unicode ? on Mark Stone's name
-        name = name.replace("Vice Chair", "")
-        name = name.replace("Chair", "")
-        #name = name.replace(chr(194), "")
-        return name
-
-    """
-    TODO: Refactor this
-    """
-    def get_person(self, dd_cursor, filer_naml, loc_code, logger):
+    def get_person(self, filer_naml, loc_code):
         """
         Gets a person's PID from our database using the information given by CAPublic
-        :param dd_cursor: A cursor to the DDDB
         :param filer_naml: A legislator's name, obtained from CAPublic
         :param loc_code: A location code, obtained from CAPublic
-        :param logger: A logger object to handle error messages
         :return: The person's PID if a person is found, none otherwise
         """
-        pid = None
-        filer_naml = self.clean_name(filer_naml)
-        error_message = "Multiple matches for the same person: "
 
-        session_year = get_session_year(dd_cursor, STATE, logger)
+        session_year = get_session_year(self.dddb, STATE, self.logger)
 
         # First try last name.
         house = "Senate"
         if "CX" == loc_code[:2] or "AF" == loc_code[:2]:
             house = "Assembly"
-        dd_cursor.execute(QS_LEGISLATOR_L, (filer_naml, session_year, STATE, house))
 
-        if dd_cursor.rowcount == 1:
-            pid = dd_cursor.fetchone()[0]
-        elif dd_cursor.rowcount == 0:
+        pid = get_entity_id(self.dddb, QS_LEGISLATOR_L, (filer_naml, session_year, STATE, house), 'Person', self.logger)
+
+        if not pid:
             parts = filer_naml.split(' ')
             if len(parts) > 1:
-                dd_cursor.execute(QS_LEGISLATOR_FL, (parts[1:], parts[0], session_year, STATE, house))
-                if dd_cursor.rowcount == 1:
-                    pid = dd_cursor.fetchone()[0]
+                pid = get_entity_id(self.dddb, QS_LEGISLATOR_FL, (parts[1:], parts[0], session_year, STATE, house), 'Person',
+                                    self.logger)
             else:
                 filer_naml = '%' + filer_naml + '%'
-                dd_cursor.execute(QS_LEGISLATOR_LIKE_L, (filer_naml, STATE))
-                if dd_cursor.rowcount == 1:
-                    pid = dd_cursor.fetchone()[0]
-        else:
-            print("Person not found: " + filer_naml)
-            error_message = "Person not found "
-        if pid is None and filer_naml not in logged_list:
-            logged_list.append(filer_naml)
-            logger.exception(error_message + filer_naml)
+                pid = get_entity_id(self.dddb, QS_LEGISLATOR_LIKE_L, (filer_naml, STATE), 'Person', self.logger)
+
+        if not pid:
+            print('Person not found: ' + filer_naml)
+            return None
+
         return pid
 
 
-    def get_summary_votes(self, dd_cursor, logger):
+    def get_summary_votes(self):
         """
         Gets bill vote summaries and formats them into a list
-        :param dd_cursor: A cursor to the DDDB
-        :param logger: A logger object to handle error messages
         :return: A list of Vote objects
         """
         vote_list = list()
@@ -260,8 +207,10 @@ class CaBillParser(object):
 
         rows = self.ca_cursor.fetchall()
         for bid, loc_code, mid, ayes, noes, abstain, result, vote_date, seq in rows:
-            cid = self.get_committee(dd_cursor, loc_code, logger)
+            committee_name = self.get_committee_name(loc_code)
+            cid = self.find_committee(committee_name[0], committee_name[1])
             bid = '%s_%s' % (STATE, bid)
+            vote_date = vote_date.strftime('%Y-%m-%d %H:%M:%S')
 
             vote = Vote(vote_date=vote_date, vote_date_seq=seq,
                         ayes=ayes, naes=noes, other=abstain, result=result,
@@ -272,12 +221,10 @@ class CaBillParser(object):
         return vote_list
 
 
-    def get_detail_votes(self, dd_cursor, bill_manager, logger):
+    def get_detail_votes(self, bill_manager):
         """
         Gets bill vote details and formats them into a list
-        :param dd_cursor: A cursor to the DDDB
         :param bill_manager: A BillInsertionManager object
-        :param logger: A logger object to handle error messages
         :return: A list of VoteDetail objects
         """
         vote_detail_list = list()
@@ -290,12 +237,17 @@ class CaBillParser(object):
 
         rows = self.ca_cursor.fetchall()
 
-        for bid, loc_code, legislator, vote_code, mid, trans_update, seq in rows:
+        for bid, loc_code, legislator, vote_code, mid, vote_date, seq in rows:
             bid = '%s_%s' % (STATE, bid)
-            date = trans_update.strftime('%Y-%m-%d')
-            pid = self.get_person(dd_cursor, legislator, loc_code, logger)
-            vote_id = bill_manager.get_vote_id({'bid': bid, 'mid': mid,
-                                               'date': date, 'vote_seq': seq})
+            date = vote_date.strftime('%Y-%m-%d %H:%M:%S')
+            pid = self.get_person(legislator, loc_code)
+            vote = {'bid': bid, 'mid': mid, 'date': date, 'vote_seq': seq}
+            vote_id = bill_manager.get_vote_id(vote)
+
+            if not vote_id:
+                print(vote)
+                return []
+
             result = vote_code
 
             vote_detail = VoteDetail(state=STATE, result=result,
