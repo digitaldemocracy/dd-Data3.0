@@ -13,14 +13,13 @@ Description:
 Source:
   -OpenStates API
 """
-
-import requests
-import json
 import re
+import json
+import requests
 import datetime as dt
 from Models.Committee import *
+from Utils.Generic_Utils import *
 from Models.CommitteeMember import *
-from Constants.General_Constants import *
 
 class CommitteeOpenStateParser(object):
     def __init__(self, state, session_year, upper_chamber_name, lower_chamber_name):
@@ -43,60 +42,6 @@ class CommitteeOpenStateParser(object):
         :return:
         A list of Committee model objects for inserting into the database.
         '''
-        # api_url = self.COMMITTEE_SEARCH_URL.format(self.state.lower())
-        # metadata_url = self.STATE_METADATA_URL.format(self.state.lower())
-        #
-        # committee_json = requests.get(api_url).json()
-        # metadata = requests.get(metadata_url).json()
-        #
-        # comm_list = list()
-        # for entry in committee_json:
-        #     if self.is_committee_current(entry['updated_at']):
-        #         openstates_comm_id = entry['id']
-        #         state = self.state.upper()
-        #
-        #         if entry['chamber'] == 'joint':
-        #             house = 'Joint'
-        #         else:
-        #             house = metadata['chambers'][entry['chamber']]['name']
-        #
-        #         if 'select' in entry['committee'].lower():
-        #             type = 'Select'
-        #             short_name = ','.join(entry['committee'].split(',')[:-1])
-        #             name = house + ' ' + type + ' Committee on ' + short_name
-        #         elif 's/c' in entry['committee'].lower():
-        #             type = 'Subcommittee'
-        #             committee_name = re.match(r'^(.*?)-.*?S/C (.*)$', entry['committee'])
-        #
-        #             if committee_name:
-        #                 if committee_name.group(2)[:2] == 'on':
-        #                     short_name = committee_name.group(2).replace('on', '', 1).strip()
-        #                 else:
-        #                     short_name = committee_name.group(2).strip()
-        #
-        #                 name = house + ' ' + type + ' on ' + short_name
-        #
-        #             else:
-        #                 print("Error matching RE for: " + entry['committee'])
-        #
-        #         else:
-        #             type = 'Standing'
-        #             short_name = entry['committee']
-        #             name = house + ' ' + type + ' Committee on ' + short_name
-        #
-        #         if name and house and type and short_name and openstates_comm_id:
-        #             comm_list.append(Committee(name=name,
-        #                                        house=house,
-        #                                        type=type,
-        #                                        short_name=short_name,
-        #                                        state=state,
-        #                                        alt_id=openstates_comm_id,
-        #                                        session_year=self.session_year,
-        #                                        members=self.get_committee_membership(openstates_comm_id)))
-        #         else:
-        #             print("Error committee not created properly.")
-        # comm_list += self.create_floor_committees()
-        # return comm_list
         raise ValueError("Override this method.")
 
     def get_committee_membership(self, comm_alt_id):
@@ -125,7 +70,7 @@ class CommitteeOpenStateParser(object):
             else:
                 position = 'Member'
 
-            member_list.append(CommitteeMember(name = name,
+            member_list.append(CommitteeMember(name = clean_name(name),
                                                state= self.state,
                                                alt_id = openstates_leg_id,
                                                position = position,

@@ -30,18 +30,15 @@ Notes:
       - http://apro.assembly.ca.gov/membersstaff
       - http://smup.senate.ca.gov/
 '''
-import re
-import sys
-import time
+import datetime
 import json
 import urllib2
-import MySQLdb
-import datetime
-import traceback
-import Find_Person
+
 from bs4 import BeautifulSoup
-from Utils.Generic_Utils import *
+
+import Find_Person
 from Utils.Database_Connection import *
+from Utils.Generic_Utils import *
 
 logger = None
 

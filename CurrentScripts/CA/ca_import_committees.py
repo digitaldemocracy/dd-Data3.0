@@ -14,15 +14,11 @@ from Utils.Committee_Insertion_Manager import CommitteeInsertionManager
 def main():
     with connect() as dddb:
         logger = create_logger()
-        print("Getting session year...")
         session_year = get_session_year(dddb, "CA", logger)
         committee_insertion_manager = CommitteeInsertionManager(dddb, "CA", session_year, logger)
         parser = CaCommitteeParser(session_year)
-        print("Getting Committee List...")
         committees = parser.get_committee_list()
-        print("Starting import...")
         committee_insertion_manager.import_committees(committees)
-        print("Import finished")
         committee_insertion_manager.log()
 
 

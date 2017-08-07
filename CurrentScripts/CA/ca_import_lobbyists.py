@@ -26,16 +26,14 @@ Populates:
   - LobbyistDirectEmployment (pid, lobbyist_employer, rpt_date, ls_beg_yr, ls_end_yr)
   - LobbyingContracts (filer_id, lobbyist_employer, rpt_date, ls_beg_yr, ls_end_yr)
 '''
-import re
 import csv
 import json
-import MySQLdb
-import traceback
-from clean_name import clean_name
-import refactored_Person_Name_Fix
-from Utils.Generic_Utils import *
-from Utils.Database_Connection import *
+
 import refactored_Lobbying_Firm_Name_Fix
+import refactored_Person_Name_Fix
+from Utils.Database_Connection import *
+from Utils.Generic_Utils import *
+from clean_name import clean_name
 
 logger = None
 

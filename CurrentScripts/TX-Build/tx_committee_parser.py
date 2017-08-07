@@ -1,6 +1,5 @@
 #!/usr/bin/env python2.7
 # -*- coding: utf8 -*-
-
 """
 File: fl_committee_parser.py
 Author: Andrew Rose

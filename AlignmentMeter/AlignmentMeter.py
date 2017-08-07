@@ -546,7 +546,7 @@ def add_table_indices(cnxn):
     """Just adds the proper indices to CombinedAlignmentScores"""
     c = cnxn.cursor()
     s = """alter table CombinedAlignmentScores
-        add dr_id int unique AUTO_INCREMENT"""
+        add dr_id int NOT NULL unique AUTO_INCREMENT"""
     c.execute(s)
     s = """alter table CombinedAlignmentScores
       add INDEX pid_idx (pid),

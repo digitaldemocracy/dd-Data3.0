@@ -1,8 +1,12 @@
+import sys
 from Generic_Utils import *
 from Database_Connection import *
 from Constants.Committee_Queries import SELECT_SESSION_YEAR
 
 
+reload(sys)
+
+sys.setdefaultencoding('utf-8')
 
 '''
 Generic SQL insertion function
@@ -15,7 +19,7 @@ def insert_row(db_cursor, query, entity, objType, logger):
         db_cursor.execute(query)
         num_inserted = db_cursor.rowcount
         row_id = db_cursor.lastrowid
-    except MySQLdb.Error:
+    except:
         logger.exception(format_logger_message('Insert Failed for ' + objType, (query%entity)))
 
     return num_inserted, row_id
@@ -44,7 +48,7 @@ def insert_entity(db_cursor, entity, qi_query, objType, logger):
     try:
         db_cursor.execute(qi_query, entity)
         return int(db_cursor.lastrowid)
-    except MySQLdb.Error:
+    except:
         logger.exception(format_logger_message('Insert Failed for ' + objType, (qi_query%entity)))
 
     return False
@@ -55,7 +59,7 @@ def get_entity_id(db_cursor, query, entity, objType, logger):
         db_cursor.execute(query, entity)
         if db_cursor.rowcount == 1:
             return db_cursor.fetchone()[0]
-    except MySQLdb.Error:
+    except:
         logger.exception(format_logger_message('ID Retrieval Failed for ' + objType, (query%entity)))
 
 
@@ -66,7 +70,7 @@ def get_all(db_cursor, query, entity, objType, logger):
         db_cursor.execute(query, entity)
 
         return db_cursor.fetchall()
-    except MySQLdb.Error:
+    except:
         logger.exception(format_logger_message('Failed Selecting All for ' + objType, (query%entity)))
 
 
@@ -78,7 +82,7 @@ def update_entity(db_cursor, query, entity, objType, logger):
     try:
         db_cursor.execute(query, entity)
         return db_cursor.rowcount
-    except MySQLdb.Error:
+    except:
         logger.exception(format_logger_message('Update Failed for ' + objType, (query%entity)))
 
     return False

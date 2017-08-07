@@ -147,7 +147,7 @@ def get_pid(dddb, person):
 
             if dddb.rowcount == 0:
                 print("Error: Person not found with Alt ID " + str(alt_id['alt_id']) + ", checking member name")
-                return get_pid_name(dddb, vote)
+                return get_pid_name(dddb, person)
             else:
                 return dddb.fetchone()[0]
 
@@ -295,7 +295,6 @@ def main():
         subprocess.call('rm -rf bill_PDF/*.pdf', shell=True)
         # Delete text files
         subprocess.call('rm -rf bill_txt/*.txt', shell=True)
-
         bill_manager.log()
 
 

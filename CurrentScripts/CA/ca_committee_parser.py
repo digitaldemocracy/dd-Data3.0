@@ -7,9 +7,9 @@ Purpose: Web scrapes assembly and senate websites to get committee names and com
 import re
 import sys
 import urllib2
-import pprint as pp
 from bs4 import BeautifulSoup
 from Models.Committee import *
+from Utils.Generic_Utils import *
 from Models.CommitteeMember import *
 from Utils.Generic_Utils import format_committee_name
 
@@ -36,7 +36,7 @@ class CaCommitteeParser(object):
             link = house_link.replace("/committees", link.strip())
         return link.strip().rstrip("/")
 
-    def get_name(self, member_info):
+    def remove_position(self, member_info):
         '''
         Removes to the position and alternate indicators in the members name
         :param member_info: the raw text from the html tag
@@ -56,7 +56,10 @@ class CaCommitteeParser(object):
             .replace(", Republican Alternate", "") \
             .replace("(D)", "") \
             .replace("(R)", "") \
-            .replace("Contact", "").strip()
+            .replace("Contact", "") \
+            .replace("Senator", "") \
+            .replace("Assembly Member", "") \
+            .strip()
 
     def get_district(self, member_link, member_info):
         '''
@@ -96,14 +99,16 @@ class CaCommitteeParser(object):
         else:
             return "Member"
 
-    def remove_house_from_name(self, name):
+    def format_name(self, name):
         '''
-        Removes the house title from a legislators name.
-        ex Senator Andres Iniesta --> Andres Iniesta
+        Removes the house title and other items from a legislators name.
+        ex Senator Andres Iniesta [pdf] --> Andres Iniesta
         :param name: The name of the legislator with their title.
         :return: The name of the legislator without their title.
         '''
-        return self.get_name(name.replace("Senator ", "").replace("Assembly Member", ""))
+        return clean_name(self.remove_position(name.replace("[pdf]", "") \
+                                         .replace(u"\xa0", u" ") \
+                                         .strip()))
 
     def get_members(self, committee_link, type, house):
         '''
@@ -119,17 +124,21 @@ class CaCommitteeParser(object):
         members_formatted = list()
         members_raw = htmlSoup.find_all("a", text=re.compile(r'(Senator .*)|(Assembly Member.*)'))
         for member in members_raw:
-            name = self.remove_house_from_name(member.text)
-            position = self.get_position(member.text)
-            houseAndDistrict = self.get_district(member['href'], member.text)
-            cm = CommitteeMember(name=name,
-                                 position=position,
-                                 state=self.state,
-                                 session_year=self.session_year,
-                                 current_flag=1,
-                                 house=houseAndDistrict[0],
-                                 district=houseAndDistrict[1])
-            members_formatted.append(cm)
+
+            # Senator Harris and Senator Feinstein have [pdf] in there name.
+            if "[pdf]" not in member.text.lower():
+                name = self.format_name(member.text)
+                position = self.get_position(member.text)
+                houseAndDistrict = self.get_district(member['href'], member.text)
+
+                cm = CommitteeMember(name=name,
+                                     position=position,
+                                     state=self.state,
+                                     session_year=self.session_year,
+                                     current_flag=1,
+                                     house=houseAndDistrict[0],
+                                     district=houseAndDistrict[1])
+                members_formatted.append(cm)
 
         return members_formatted
 
@@ -174,7 +183,6 @@ class CaCommitteeParser(object):
         return "Joint" if type.lower() == "joint" else house.title()
 
     def format_committee_type(self, name, section):
-        print(name)
         if "sub" in name.lower():
             if "budget" in name.lower():
                 return "Budget Subcommittee"
@@ -202,7 +210,6 @@ class CaCommitteeParser(object):
             elif row.a is not None:
                 link = self.format_link(row.a["href"], host)
                 committee_type = self.format_committee_type(row.a.text, committee_type_section)
-                print(row.a.text)
                 short_name = row.a.text.split(" on ")[1].strip() if "Joint Committee on" in row.a.text \
                                                                     or "sub" in committee_type.lower() \
                                                                     or "Special Committee on" in row.a.text \
@@ -219,11 +226,9 @@ class CaCommitteeParser(object):
                                       state=self.state,
                                       session_year=self.session_year,
                                       members=self.get_members(link, committee_type, house))
-                pprint = pp.PrettyPrinter(indent=4)
-
-                pprint.pprint(committee.__dict__)
 
                 committee_list.append(committee)
+
         return committee_list
 
     def get_committee_list(self):

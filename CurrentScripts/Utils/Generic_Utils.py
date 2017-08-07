@@ -7,13 +7,16 @@ import sys
 import logging
 import datetime as dt
 
-reload(sys)
-sys.setdefaultencoding('utf8')
+# reload(sys)
+# sys.setdefaultencoding('utf8')
 
-def format_committee_name(short_name, house):
-    if house == 'CX' or house.lower() == "assembly":
-        return "Assembly Standing Committee on " + short_name
-    return "Senate Standing Committee on " + short_name
+def format_committee_name(short_name, house, type, parent = None):
+    house_formatted = "Assembly" if house == "CX" or house.lower() == "assembly" else "Senate"
+    if "sub" in type.lower():
+        return house_formatted + " " + parent + " " + short_name
+    elif "joint" in type.lower() or "special" in type.lower():
+        return short_name
+    return house_formatted + " " + type + " Committee on " + short_name
 
 def capublic_format_house(house):
     if house == "CX":
@@ -27,10 +30,12 @@ def pdf_to_text_path():
 def format_logger_message(subject, sql_statement):
     return "\n\t\t\t{\n\t\t\t\"Subject\": \"" + subject + "\"," \
            "\n\t\t\t\"SQL\": \"" + sql_statement + "\"\n\t\t\t}"
+
 def format_end_log(subject, full_msg, additional_fields):
     return "\n\t\t\t{\n\t\t\t\"Subject\": \"" + subject + "\"," \
            "\n\t\t\t\"Message\": \"" + full_msg + "\""\
            "\n\t\t\t\"Message\": \"" + additional_fields + "\"\n\t\t\t}"
+
 def create_logger():
 
     file_name = str(sys.argv[0].split("/")[-1])
@@ -81,7 +86,8 @@ Inputs:
                  This optional parameter should contain a dictionary mapping the incorrect names to the correct names
 '''
 def clean_name(name, problem_names={}):
-    suffixes = ['Jr.', 'Sr.', 'III', 'II', 'IV']
+    suffixes = ['Jr.', 'Sr.', 'III', 'II', 'IV', "P.h.D.", "O.D.", "M.D.", "PhD."]
+    titles = ['Dr.', 'Rev.', 'Mr.', 'Mrs.', 'Officer', 'Chief', 'Sheriff', 'Cpt.']
 
     person = dict()
 
@@ -102,11 +108,24 @@ def clean_name(name, problem_names={}):
             person['suffix'] = suffix
             name = name.replace(suffix, '')
 
+    person['title'] = ''
+    for title in titles:
+        if title in name:
+            person['title'] = title
+            name = name.replace(title, '')
+
     # For names formatted "First Last, Suffix", remove the trailing comma
     name = name.strip().strip(',')
 
     # Split the name on the comma for names formatted as "Last, First"
     split_name = [word.strip() for word in name.split(',')]
+
+    # Check if a person has a nickname in quotes, eg. Wengay "Newt" Newton
+    person['nickname'] = ''
+    nickname = re.search(r'".*?"', name)
+    if nickname is not None:
+        person['nickname'] = nickname.group(0)
+        name.replace("\"" + nickname.group(0) + "\"", "")
 
     # This branch is taken if the name was formatted "Last, First"
     if len(split_name) > 1:
@@ -128,12 +147,7 @@ def clean_name(name, problem_names={}):
             person['last'] = space_split[-1]
             person['first'] = ' '.join([word.strip() for word in space_split[:-1]])
 
-    # Check if a person has a nickname in quotes, eg. Wengay "Newt" Newton
-    person['nickname'] = ''
-    nickname = re.search(r'".*?"', person['first'])
-    if nickname is not None:
-        person['nickname'] = nickname.group(0)
-        person['first'] = person['first'].replace(nickname.group(0), '')
+
 
     person['first'] = person['first'].strip()
 
@@ -144,4 +158,11 @@ def clean_name(name, problem_names={}):
         person['first'] = given_names[0]
         person['middle'] = ''.join([word.strip() for word in given_names[1:]])
 
+    person['like_name'] = person['first'] + "%" + person['last']
+    person['like_last_name'] = "%" + person['last']
+    person['like_first_name'] = person['first'] + "%"
+    person['like_nick_name'] = person['nickname'] + "%" + person['last']
+
     return person
+
+

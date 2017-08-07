@@ -14,24 +14,24 @@ class TestCaCommitteeParser(TestCase):
                          "ca.senate.gov/supercom")
 
     def test_get_name_position(self):
-        self.assertEqual(self.parser.get_name(" Bob Smith (Co Chair) "), "Bob Smith")
-        self.assertEqual(self.parser.get_name(" Bob Smith (Chair) "), "Bob Smith")
-        self.assertEqual(self.parser.get_name(" Bob Smith (Vice Chair) "), "Bob Smith")
+        self.assertEqual(self.parser.remove_position(" Bob Smith (Co Chair) "), "Bob Smith")
+        self.assertEqual(self.parser.remove_position(" Bob Smith (Chair) "), "Bob Smith")
+        self.assertEqual(self.parser.remove_position(" Bob Smith (Vice Chair) "), "Bob Smith")
 
     def test_get_name_dem_alt(self):
-        self.assertEqual(self.parser.get_name(" Bob Smith (Dem. Alternate) "), "Bob Smith")
-        self.assertEqual(self.parser.get_name(" Bob Smith, (Democratic Alternate) "), "Bob Smith")
-        self.assertEqual(self.parser.get_name(" Bob Smith, Dem. Alternate "), "Bob Smith")
-        self.assertEqual(self.parser.get_name(" Bob Smith, Democratic Alternate "), "Bob Smith")
+        self.assertEqual(self.parser.remove_position(" Bob Smith (Dem. Alternate) "), "Bob Smith")
+        self.assertEqual(self.parser.remove_position(" Bob Smith, (Democratic Alternate) "), "Bob Smith")
+        self.assertEqual(self.parser.remove_position(" Bob Smith, Dem. Alternate "), "Bob Smith")
+        self.assertEqual(self.parser.remove_position(" Bob Smith, Democratic Alternate "), "Bob Smith")
 
     def test_get_name_rep_alt(self):
-        self.assertEqual(self.parser.get_name(" Bob Smith (Rep. Alternate) "), "Bob Smith")
-        self.assertEqual(self.parser.get_name(" Bob Smith, (Republican Alternate) "), "Bob Smith")
-        self.assertEqual(self.parser.get_name(" Bob Smith, Rep. Alternate "), "Bob Smith")
-        self.assertEqual(self.parser.get_name(" Bob Smith, Republican Alternate "), "Bob Smith")
+        self.assertEqual(self.parser.remove_position(" Bob Smith (Rep. Alternate) "), "Bob Smith")
+        self.assertEqual(self.parser.remove_position(" Bob Smith, (Republican Alternate) "), "Bob Smith")
+        self.assertEqual(self.parser.remove_position(" Bob Smith, Rep. Alternate "), "Bob Smith")
+        self.assertEqual(self.parser.remove_position(" Bob Smith, Republican Alternate "), "Bob Smith")
 
     def test_get_name_contact_info(self):
-        self.assertEqual(self.parser.get_name(" Contact Bob Smith "), "Bob Smith")
+        self.assertEqual(self.parser.remove_position(" Contact Bob Smith "), "Bob Smith")
 
 
     def test_get_district(self):
@@ -56,8 +56,8 @@ class TestCaCommitteeParser(TestCase):
 
 
     def test_remove_house_from_name(self):
-        self.assertEqual(self.parser.remove_house_from_name("Senator Paul Pogba"), "Paul Pogba")
-        self.assertEqual(self.parser.remove_house_from_name("Assembly Member Phil Jones"), "Phil Jones")
+        self.assertEqual(self.parser.format_name("Senator Paul Pogba"), "Paul Pogba")
+        self.assertEqual(self.parser.format_name("Assembly Member Phil Jones"), "Phil Jones")
 
     def test_format_house(self):
         self.assertEqual(self.parser.format_house("Subcommittee", "Assembly"), "Assembly")
