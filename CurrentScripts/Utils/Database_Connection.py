@@ -37,32 +37,33 @@ def connect(db = None):
     :param override_flag: override_flag forces the scripted to run on the live server
     :return: a MySQLdb connection to the specified database
     '''
-    # if socket.gethostbyname(socket.gethostname()) == "172.31.37.21" or db == "force" or \
-    #       (db == "live" and raw_input("Are you sure you want this script on the live database? (y/n) ").lower() == "y"):
-    #     countdown("live")
-    #     return MySQLdb.connect(host='dddb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-    #                      port=3306,
-    #                      db='DDDB2016Aug',
-    #                      user='awsDB',
-    #                      passwd='digitaldemocracy789',
-    #                      charset='utf8')
-    # else:
-    #elif db == "local":
-        #countdown("local")
-    return MySQLdb.connect(host='localhost',
-                    port=3306,
-                    db='DDDB2016Aug',
-                    user='root',
-                    passwd='',
-                    charset='utf8')
-    # else:
-    #     print("Running on Dev DB")
-    #     return MySQLdb.connect(host='dev.digitaldemocracy.org',
-    #                      port=3306,
-    #                      db='parose_dddb',
-    #                      user='awsDB',
-    #                      passwd='digitaldemocracy789',
-    #                      charset='utf8')
+    if socket.gethostbyname(socket.gethostname()) == "172.31.37.21" or db == "force" or \
+            (db == "live" and raw_input(
+                "Are you sure you want this script on the live database? (y/n) ").lower() == "y"):
+        countdown("live")
+        return MySQLdb.connect(host='dddb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+                               port=3306,
+                               db='DDDB2016Aug',
+                               user='awsDB',
+                               passwd='digitaldemocracy789',
+                               charset='utf8')
+    elif db == "local":
+        countdown("local")
+        return MySQLdb.connect(host='localhost',
+                               port=3306,
+                               db='DDDB2016Aug',
+                               user='root',
+                               passwd='',
+                               charset='utf8')
+    else:
+        print("Running on Dev DB")
+        return MySQLdb.connect(host='dev.digitaldemocracy.org',
+                               port=3306,
+                               db='russo_dddb',
+                               user='awsDB',
+                               passwd='digitaldemocracy789',
+                               charset='utf8')
+
 
 def connect_to_capublic():
     '''
