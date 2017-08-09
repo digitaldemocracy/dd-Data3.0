@@ -193,7 +193,7 @@ def get_bill_bid(bill, date, dddb):
 
         if dddb.rowcount == 0:
             logger.exception("ERROR: Bill not found")
-            print(SELECT_BILL%bill_info)
+            # print(SELECT_BILL%bill_info)
             # exit()
 
         else:
@@ -279,9 +279,9 @@ def insert_committee_hearing(cid, hid, dddb):
     comm_hearing = {'cid': cid, 'hid': hid}
 
     try:
-        if cid == None:
-            print(traceback.format_stack())
-            exit()
+        # if cid == None:
+        #     print(traceback.format_stack())
+        #     exit()
         dddb.execute(INSERT_COMMITTEE_HEARING, comm_hearing)
         CH_INS += dddb.rowcount
 
@@ -318,7 +318,7 @@ def import_house_agendas(f, dddb):
     posted_date = None
 
     for line in f:
-        print(line)
+        # print(line)
         if 'MEETINGS' in line:
             h_flag = 1
             # print(line)
@@ -356,10 +356,10 @@ def import_house_agendas(f, dddb):
                             hid = insert_hearing(date, dddb)
 
                         committee = get_comm_cid(comm.group(0), 'House', date, dddb)
-                        if committee == None:
-                            print("here")
-                            print(comm)
-                            exit()
+                        # if committee == None:
+                        #     print("here")
+                        #     print(comm)
+                        #     exit()
                         if not is_comm_hearing_in_db(committee, hid, dddb):
                             insert_committee_hearing(committee, hid, dddb)
 
@@ -378,7 +378,7 @@ def import_senate_agendas(f, dddb):
     hid = None
 
     for line in f:
-        print(line)
+        # print(line)
         d_match = re.search(r'^([a-zA-Z]+),\s([a-zA-Z]+)\s([0-9]{1,2}),\s([0-9]{4})', line)
 
         if h_flag == 0 and d_match:
@@ -430,7 +430,7 @@ def get_agenda_text(link):
     f = open("calendar.pdf", "wb")
     f.write(response.content)
     f.close()
-    print(pdf_to_text_path())
+    # print(pdf_to_text_path())
     test = pdf_to_text_path()
     subprocess.call([test, "calendar.pdf"])
 
