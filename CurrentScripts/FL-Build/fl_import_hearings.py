@@ -457,7 +457,7 @@ def get_house_agenda(dddb):
 Gets all Senate agenda PDFs listed on the Florida website
 '''
 def get_senate_agenda(dddb):
-    html_soup = BeautifulSoup(urllib2.urlopen(FL_HEARING_SENATE_SOURCE).read())
+    html_soup = BeautifulSoup(urllib2.urlopen(FL_HEARING_SENATE_SOURCE).read(), "lxml")
 
     for link in html_soup.find('div', class_='grid-33').find_all('li'):
         doc_link = 'https://www.flsenate.gov' + link.find('a').get('href').strip()
