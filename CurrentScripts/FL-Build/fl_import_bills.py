@@ -22,19 +22,16 @@ Populates:
     - BillVersion
 """
 
-import MySQLdb
-import subprocess
-import sys
-import urllib2
 import os
+import sys
 import glob
-from bs4 import BeautifulSoup
-from Utils.Database_Connection import *
+import urllib2
+import subprocess
 from fl_bill_parser import *
-from Utils.Bill_Insertion_Manager import *
-from Constants.Bills_Queries import *
-from Constants.General_Constants import *
+from bs4 import BeautifulSoup
 from Utils.Generic_Utils import *
+from Utils.Database_Connection import *
+from Utils.Bill_Insertion_Manager import *
 
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -234,7 +231,7 @@ def format_version(version_list):
         try:
             version.set_date(ver_dates[version.bill_state])
         except:
-            #print("Error getting version date for bill " + version.bid)
+            logger.exception("Error getting version date for bill " + version.bid)
 
         if version.doctype == 'text/html':
             version_text = requests.get(version.url).content
