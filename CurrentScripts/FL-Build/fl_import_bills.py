@@ -27,6 +27,7 @@ import subprocess
 import sys
 import urllib2
 import os
+import glob
 from bs4 import BeautifulSoup
 from Utils.Database_Connection import *
 from fl_bill_parser import *
@@ -77,7 +78,7 @@ def get_vote_cid(dddb, vote):
         dddb.execute(SELECT_COMMITTEE, comm_info)
 
         if dddb.rowcount == 0:
-            print("Error - Committee selection failed: " + comm_info['name'])
+            #print("Error - Committee selection failed: " + comm_info['name'])
             return None
         else:
             return dddb.fetchone()[0]
@@ -114,15 +115,15 @@ def get_pid_name(dddb, person):
             dddb.execute(SELECT_LEG_PID_FIRSTNAME, legislator)
 
             if dddb.rowcount != 1:
-                print("Error: PID for " + person['name'] + " not found")
-                print(legislator)
+                #print("Error: PID for " + person['name'] + " not found")
+                #print(legislator)
                 return None
             else:
                 return dddb.fetchone()[0]
 
         else:
-            print("Error: PID for " + person['name'] + " not found")
-            print(legislator)
+            #print("Error: PID for " + person['name'] + " not found")
+            #print(legislator)
             return None
 
     except MySQLdb.Error:
@@ -146,7 +147,7 @@ def get_pid(dddb, person):
             dddb.execute(SELECT_PID, alt_id)
 
             if dddb.rowcount == 0:
-                print("Error: Person not found with Alt ID " + str(alt_id['alt_id']) + ", checking member name")
+                #print("Error: Person not found with Alt ID " + str(alt_id['alt_id']) + ", checking member name")
                 return get_pid_name(dddb, person)
             else:
                 return dddb.fetchone()[0]
@@ -170,7 +171,7 @@ def scrape_version_date(url):
     try:
         html_soup = BeautifulSoup(urllib2.urlopen(url), 'lxml')
     except:
-        print("Error connecting to " + url)
+        #print("Error connecting to " + url)
         return dates
 
     table = html_soup.find('div', id='tabBodyBillText').find('table', class_='tbl')
@@ -193,7 +194,7 @@ def get_pdf(url, vid):
     :param url: A URL to the PDF
     :param vid: The version's VID in our database
     """
-    pdf_name = "bill_PDF/" + vid + '.pdf'
+    pdf_name = format_absolute_path("FL-Build/bill_PDF/") + vid + '.pdf'
     pdf = requests.get(url)
     f = open(pdf_name, 'wb')
     f.write(pdf.content)
@@ -206,8 +207,8 @@ def read_pdf_text(vid):
     :param vid: The version ID of a bill version whose text to process
     :return: The text of one bill version
     """
-    pdf_name = "bill_PDF/" + vid + ".pdf"
-    text_name = "bill_txt/" + vid + ".txt"
+    pdf_name = format_absolute_path("FL-Build/bill_PDF/") + vid + ".pdf"
+    text_name = format_absolute_path("FL-Build/bill_txt/") + vid + ".txt"
 
     try:
         subprocess.call(['../pdftotext', '-enc', 'UTF-8', pdf_name, text_name])
@@ -233,7 +234,7 @@ def format_version(version_list):
         try:
             version.set_date(ver_dates[version.bill_state])
         except:
-            print("Error getting version date for bill " + version.bid)
+            #print("Error getting version date for bill " + version.bid)
 
         if version.doctype == 'text/html':
             version_text = requests.get(version.url).content
@@ -279,22 +280,25 @@ def format_bills(dddb):
 def main():
     with connect() as dddb:
         bill_manager = BillInsertionManager(dddb, logger, 'FL')
-        print("Getting bill list...")
+        #print("Getting bill list...")
         bill_list = format_bills(dddb)
-        print("Starting bill insertion...")
+        #print("Starting bill insertion...")
         bill_manager.add_bills_db(bill_list)
-        print("Finished bill insertion")
+        #print("Finished bill insertion")
 
-        print("Copying bills to S3")
-        pdf_files = os.listdir('bill_PDF/')
+        #print("Copying bills to S3")
+        pdf_files = glob.glob(format_absolute_path('FL-Build/bill_PDF/*.pdf'))
         for pdf in pdf_files:
-            pdfname = 'bill_PDF/' + pdf
-            subprocess.call(['aws', 's3', 'cp', pdfname , 's3://dd-drupal-files/bill/FL/'])
+            subprocess.call(['aws', 's3', 'cp', pdf, 's3://dd-drupal-files/bill/FL/'])
 
         # Delete bill PDFs
-        subprocess.call('rm -rf bill_PDF/*.pdf', shell=True)
+        del_bill_pdfs = 'rm -rf ' + format_absolute_path('FL-Build/bill_PDF/') + '*.pdf'
+
+        subprocess.call(del_bill_pdfs, shell=True)
         # Delete text files
-        subprocess.call('rm -rf bill_txt/*.txt', shell=True)
+        del_bill_txts = 'rm -rf ' + format_absolute_path('FL-Build/bill_txt/') + '*.txt'
+
+        subprocess.call(del_bill_txts, shell=True)
         bill_manager.log()
 
 

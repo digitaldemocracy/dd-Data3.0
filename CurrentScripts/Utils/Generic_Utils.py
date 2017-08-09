@@ -27,6 +27,20 @@ def pdf_to_text_path():
     dir_path = os.path.dirname(os.path.realpath(__file__))
     return "/".join(dir_path.split("/")[:-1]) + "/pdftotext"
 
+def format_absolute_path(relative_path):
+    """
+    Turns a relative path (starting from the CurrentScripts directory) into an absolute path
+    by prepending an environment variable containing the location of a user's CurrentScripts directory
+    :param relative_path: The relative path of a file or directory, in relation to the CurrentScripts directory
+    :return: The absolute path of a file or directory
+    """
+    script_path = os.environ['SCRIPTPATH']
+
+    absolute_path = script_path + relative_path
+
+    return absolute_path
+
+
 def format_logger_message(subject, sql_statement):
     return "\n\t\t\t{\n\t\t\t\"Subject\": \"" + subject + "\"," \
            "\n\t\t\t\"SQL\": \"" + sql_statement + "\"\n\t\t\t}"
