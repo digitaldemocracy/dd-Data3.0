@@ -1,12 +1,15 @@
 class Legislator(object):
-    def __init__(self, person, term, state,
+    def __init__(self, name, image, source, alt_ids,
                  capitol_phone, capitol_fax, website_url, room_number, email,
+                 state, year, house, district, party, start, current_term,
+                 end = None, caucus = None, pid = None,
                  description = None, twitter_handle = None,
                  email_form_link = None, OfficialBio = None):
 
-        self.person = person
-        self.term = term
-        self.state = state
+        self.set_person_attributes(name, image, source, state, alt_ids, pid)
+
+        self.set_term_attributes(year, house, state, district, party, start, current_term, end, caucus)
+
 
         self.capitol_phone = capitol_phone
         self.capitol_fax = capitol_fax
@@ -19,25 +22,42 @@ class Legislator(object):
         self.email_form_link = email_form_link
         self.official_bio = OfficialBio
 
+    def set_name(self, name):
+        self.name = name
 
-    def set_pid(self, pid):
-        self.person.set_pid(pid)
+        parts = [name["first"],
+                 name["nickname"],
+                 name["middle"],
+                 name["last"],
+                 name["suffix"]]
+        parts = [part for part in parts if part]
+        self.alternate_name = (" ".join(parts)).strip()
+        self.first = name["first"] + (" \"" + name["nickname"] + "\"" if name["nickname"] else "")
+        self.middle = name["middle"]
+        self.last = name["last"]
+        self.like_name = name["like_name"]
+        self.like_last_name = name["like_last_name"]
+        self.like_first_name = name["like_first_name"]
+        self.like_nick_name = name["like_nick_name"]
+        self.title = name["title"]
+        self.suffix = name["suffix"]
 
-    def to_dict(self):
-        return {
-                "pid": self.person.pid,
-                "capitol_phone": self.capitol_phone,
-                "capitol_fax": self.capitol_fax,
-                "website_url": self.website_url,
-                "room_number": self.room_number,
-                "email": self.email,
-                "description": self.description,
-                "twitter_handle": self.twitter_handle,
-                "email_form_link": self.email_form_link,
-                "OfficialBio": self.official_bio}
+    def set_person_attributes(self, name, image, source, state, alt_ids, pid = None):
+        self.set_name(name)
+        self.image = image
+        self.source = source
+        self.state = state
+        self.alt_ids = alt_ids
+        self.current_alt_id = None
+        self.pid = pid
 
-    def person_dict(self):
-        return self.person.__dict__
-
-    def term_dict(self):
-        return self.term.__dict__
+    def set_term_attributes(self, year, house, state, district, party, start, current_term, end = None, caucus = None):
+        self.year = year
+        self.district = district
+        self.house = house
+        self.party = party
+        self.current_term = current_term
+        self.start = start
+        self.end = end
+        self.state = state
+        self.caucus = caucus

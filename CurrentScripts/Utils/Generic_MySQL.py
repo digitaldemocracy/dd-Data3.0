@@ -1,6 +1,7 @@
 import sys
-from Generic_Utils import *
-from Database_Connection import *
+import MySQLdb
+from Constants.Find_Person_Queries import *
+from Generic_Utils import format_logger_message
 from Constants.Committee_Queries import SELECT_SESSION_YEAR
 
 
@@ -19,7 +20,7 @@ def insert_row(db_cursor, query, entity, objType, logger):
         db_cursor.execute(query)
         num_inserted = db_cursor.rowcount
         row_id = db_cursor.lastrowid
-    except:
+    except MySQLdb.Error:
         logger.exception(format_logger_message('Insert Failed for ' + objType, (query%entity)))
 
     return num_inserted, row_id
@@ -34,7 +35,7 @@ def is_entity_in_db(db_cursor, query, entity, objType, logger):
         query = db_cursor.fetchone()
         if query is not None:
             return query[0]
-    except:
+    except MySQLdb.Error:
         logger.exception(format_logger_message('Check Failed for ' + objType, (query%entity)))
 
     return False
@@ -48,7 +49,7 @@ def insert_entity(db_cursor, entity, qi_query, objType, logger):
     try:
         db_cursor.execute(qi_query, entity)
         return int(db_cursor.lastrowid)
-    except:
+    except MySQLdb.Error:
         logger.exception(format_logger_message('Insert Failed for ' + objType, (qi_query%entity)))
 
     return False
@@ -59,8 +60,16 @@ def get_entity_id(db_cursor, query, entity, objType, logger):
         db_cursor.execute(query, entity)
         if db_cursor.rowcount == 1:
             return db_cursor.fetchone()[0]
-    except:
+    except MySQLdb.Error:
         logger.exception(format_logger_message('ID Retrieval Failed for ' + objType, (query%entity)))
+
+def get_entity(db_cursor, query, entity, objType, logger):
+    try:
+        db_cursor.execute(query, entity)
+        if db_cursor.rowcount == 1:
+            return db_cursor.fetchone()
+    except MySQLdb.Error:
+        logger.exception(format_logger_message('ID Retrieval Failed for ' + objType, (query % entity)))
 
 
     return False
@@ -70,7 +79,7 @@ def get_all(db_cursor, query, entity, objType, logger):
         db_cursor.execute(query, entity)
 
         return db_cursor.fetchall()
-    except:
+    except MySQLdb.Error:
         logger.exception(format_logger_message('Failed Selecting All for ' + objType, (query%entity)))
 
 
@@ -94,3 +103,62 @@ def get_session_year(db_cursor, state, logger):
                                 entity=entity,
                                 objType="Session for State",
                                 logger=logger)
+
+def get_pid(dddb, logger, person, source_link=None):
+    '''
+    Given a committee member, use the given fields to find the pid.
+    Cases:
+            1. OpenStates does not provide an altId or an incorrect altId.'
+            2. Information is scraped from CA committee websites.
+    :param person: A CommitteeMember model object and the committee they belong to.
+    :param source_link: A link to the source of the data
+    :return: A pid if the CommitteeMember was found, false otherwise.
+    '''
+    if person.district:
+        query = SELECT_LEG_WITH_HOUSE_DISTRICT
+    elif person.house:
+        query = SELECT_LEG_WITH_HOUSE
+    else:
+       query = SELECT_LEG_FIRSTLAST
+
+    pid_year_tuple = get_entity(db_cursor=dddb,
+                                    entity=person.__dict__,
+                                    query=query,
+                                    objType="Get PID",
+                                    logger=logger)
+    if not pid_year_tuple:
+        if person.district:
+            query = SELECT_LEG_WITH_HOUSE_DISTRICT_LASTNAME
+        elif person.house:
+            query = SELECT_LEG_WITH_HOUSE_LASTNAME
+        else:
+            query = SELECT_LEG_LASTNAME
+
+        pid_year_tuple = get_entity(db_cursor=dddb,
+                            entity=person.__dict__,
+                            query=query,
+                            objType="Get Pid",
+                            logger=logger)
+        if pid_year_tuple:
+            vals = {"pid" : pid_year_tuple[0], "name" : person.alternate_name, "source" : source_link}
+            insert_entity(db_cursor=dddb,
+                           entity=vals,
+                           qi_query=INSERT_ALTERNATE_NAME,
+                           objType="Alternate Name",
+                           logger=logger)
+        else:
+            if person.district:
+                pid_year_tuple = get_entity(db_cursor=dddb,
+                                    entity=person.__dict__,
+                                    query=SELECT_LEG_WITH_HOUSE_DISTRICT_NO_NAME,
+                                    objType="Get pid",
+                                    logger=logger)
+                if pid_year_tuple:
+                    logger.exception("Legislature found without name: " + str(person.__dict__))
+                    vals = {"pid": pid_year_tuple[0], "name": person.alternate_name, "source": source_link}
+                    insert_entity(db_cursor=dddb,
+                                  entity=vals,
+                                  qi_query=INSERT_ALTERNATE_NAME,
+                                  objType="Alternate Name",
+                                  logger=logger)
+    return pid_year_tuple

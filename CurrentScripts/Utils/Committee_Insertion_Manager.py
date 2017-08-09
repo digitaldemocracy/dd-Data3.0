@@ -66,59 +66,6 @@ class CommitteeInsertionManager(object):
                              logger=self.logger)
 
 
-    def get_pid(self, committee_member, committee):
-        '''
-        Given a committee member, use the given fields to find the pid.
-        Cases:
-                1. OpenStates does not provide an altId or an incorrect altId.'
-                2. Information is scraped from CA committee websites.
-        :param committee_member: A CommitteeMember model object and the committee they belong to.
-        :param committee: A Committee model object
-        :return: A pid if the CommitteeMember was found, false otherwise.
-        '''
-        if committee_member.district:
-            query = SELECT_LEG_WITH_HOUSE_DISTRICT
-        elif committee_member.house:
-            query = SELECT_LEG_WITH_HOUSE
-        else:
-           query = SELECT_LEG_FIRSTLAST
-
-        pid = get_entity_id(db_cursor=self.dddb,
-                      entity=committee_member.__dict__,
-                      query=query,
-                      objType="Committee Member",
-                      logger=self.logger)
-        if not pid:
-            if committee_member.district:
-                query = SELECT_LEG_WITH_HOUSE_DISTRICT_LASTNAME
-            elif committee_member.house:
-                query = SELECT_LEG_WITH_HOUSE_LASTNAME
-            else:
-                query = SELECT_LEG_LASTNAME
-
-            pid = get_entity_id(db_cursor=self.dddb,
-                                   entity=committee_member.__dict__,
-                                   query=query,
-                                   objType="Committee Member",
-                                   logger=self.logger)
-            if pid:
-                vals = {"pid" : pid, "name" : committee_member.alternate_name, "source" : committee.link}
-                insert_entity(db_cursor=self.dddb,
-                               entity=vals,
-                               qi_query=INSERT_ALTERNATE_NAME,
-                               objType="Alternate Name",
-                               logger=self.logger)
-            else:
-                if committee_member.district:
-                    pid = get_entity_id(db_cursor=self.dddb,
-                                           entity=committee_member.__dict__,
-                                           query=SELECT_LEG_WITH_HOUSE_DISTRICT_NO_NAME,
-                                           objType="Committee Member",
-                                           logger=self.logger)
-                    if pid:
-                        self.logger.exception("Legislature found without name: " + str(committee_member.__dict__))
-        return pid
-
 
     def set_pid(self, committee):
         '''
@@ -132,12 +79,16 @@ class CommitteeInsertionManager(object):
             pid = False
             if member.pid is None:
                 if member.alt_id is None:
-                    pid = self.get_pid(member, committee)
+                    pid_year_tuple = get_pid(self.dddb, self.logger, member, committee.link)
+                    if pid_year_tuple:
+                        pid = pid_year_tuple[0]
                 else:
                     try:
                         self.dddb.execute(SELECT_PID, member.__dict__)
                         if self.dddb.rowcount == 0:
-                            pid = self.get_pid(member, committee)
+                            pid_year_tuple = get_pid(self.dddb, self.logger, member, committee.link)
+                            if pid_year_tuple:
+                                pid = pid_year_tuple[0]
                         else:
                             pid = self.dddb.fetchone()[0]
 
@@ -287,7 +238,7 @@ class CommitteeInsertionManager(object):
                 new_members = self.get_new_members(committee, committee_members_in_database)
 
                 for old_member in old_members:
-                    self.update_serves_on(old_member, committee)
+                    self.update_serves_on(old_member)
 
                 for new_member in new_members:
                     self.insert_servesOn(new_member,committee)

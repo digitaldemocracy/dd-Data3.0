@@ -1,6 +1,5 @@
 #!/usr/bin/env python2.7
 # -*- coding: utf8 -*-
-
 import os
 import re
 import sys
@@ -14,8 +13,13 @@ def format_committee_name(short_name, house, type, parent = None):
     house_formatted = "Assembly" if house == "CX" or house.lower() == "assembly" else "Senate"
     if "sub" in type.lower():
         return house_formatted + " " + parent + " " + short_name
-    elif "joint" in type.lower() or "special" in type.lower():
+    elif "legislative" in short_name.lower() and "joint" in type.lower() and "committee" not in short_name.lower():
+        return short_name + " Committee"
+    elif "joint" in type.lower():
         return short_name
+    elif "other" in type.lower():
+        return house_formatted + " Committee on " + short_name
+
     return house_formatted + " " + type + " Committee on " + short_name
 
 def capublic_format_house(house):
@@ -37,8 +41,9 @@ def format_end_log(subject, full_msg, additional_fields):
            "\n\t\t\t\"Message\": \"" + additional_fields + "\"\n\t\t\t}"
 
 def create_logger():
-
     file_name = str(sys.argv[0].split("/")[-1])
+
+
     state = file_name.split("_")[0]
     if not os.path.exists("logs"):
         os.makedirs("logs")
@@ -49,13 +54,6 @@ def create_logger():
     logger = logging.getLogger("DDDB_Logger")
     logger.setLevel(logging.DEBUG)
 
-    # create console handler and set level to debug
-    console_handler = logging.StreamHandler()
-    console_handler.setLevel(logging.DEBUG)
-
-    file_handler = logging.FileHandler(log_loc)
-    file_handler.setLevel(logging.ERROR)
-
     # create formatter
     formatter = logging.Formatter("{\n\"Time\": \"%(asctime)s\","
                                   "\n\"File\": \"%(filename)s\","
@@ -63,12 +61,15 @@ def create_logger():
                                   "\n\"Type\": \"%(levelname)s\","
                                   "\n\t\"Message\": %(message)s\n}")
 
-    # # add formatter to ch
-    console_handler.setFormatter(formatter)
-    file_handler.setFormatter(formatter)
+    if len(sys.argv) == 1:
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(logging.DEBUG)
+        console_handler.setFormatter(formatter)
+        logger.addHandler(console_handler)
 
-    # add ch to logger
-    logger.addHandler(console_handler)
+    file_handler = logging.FileHandler(log_loc)
+    file_handler.setLevel(logging.ERROR)
+    file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
 
     return logger
@@ -91,7 +92,7 @@ def clean_name(name, problem_names={}):
 
     person = dict()
 
-    name = name.strip()
+    name = name.strip("\n").strip().strip("\t")
 
     # If the name matches one of the provided problem names, replace it with the correct name
     for key in problem_names.keys():
@@ -117,15 +118,19 @@ def clean_name(name, problem_names={}):
     # For names formatted "First Last, Suffix", remove the trailing comma
     name = name.strip().strip(',')
 
-    # Split the name on the comma for names formatted as "Last, First"
-    split_name = [word.strip() for word in name.split(',')]
-
     # Check if a person has a nickname in quotes, eg. Wengay "Newt" Newton
     person['nickname'] = ''
-    nickname = re.search(r'".*?"', name)
-    if nickname is not None:
-        person['nickname'] = nickname.group(0)
-        name.replace("\"" + nickname.group(0) + "\"", "")
+    if "\"" in name:
+        nickname = re.findall(r'"(.*?)"', name)
+    else:
+        nickname = re.findall(r'\(([^)]*)\)', name)
+    if len(nickname):
+        person['nickname'] = nickname[0]
+        name = name.replace("\"" + nickname[0] + "\"", "") \
+                   .replace("(" + nickname[0] + ")","").strip()
+
+    # Split the name on the comma for names formatted as "Last, First"
+    split_name = [word.strip() for word in name.split(',')]
 
     # This branch is taken if the name was formatted "Last, First"
     if len(split_name) > 1:
@@ -148,7 +153,6 @@ def clean_name(name, problem_names={}):
             person['first'] = ' '.join([word.strip() for word in space_split[:-1]])
 
 
-
     person['first'] = person['first'].strip()
 
     # Finally, check to see if the person has middle names
@@ -156,13 +160,15 @@ def clean_name(name, problem_names={}):
     person['middle'] = ''
     if len(given_names) > 1:
         person['first'] = given_names[0]
-        person['middle'] = ''.join([word.strip() for word in given_names[1:]])
-
-    person['like_name'] = person['first'] + "%" + person['last']
+        person['middle'] = ' '.join([word.strip() for word in given_names[1:]])
+    person['like_name'] = (person['first'] + "%" + person['last'] + " " + person['suffix']).strip()
     person['like_last_name'] = "%" + person['last']
     person['like_first_name'] = person['first'] + "%"
-    person['like_nick_name'] = person['nickname'] + "%" + person['last']
+    person['like_nick_name'] = (person['nickname'] + "%" + person['last'] + " " + person['suffix']).strip()
 
+    for field in person:
+        if person[field] == '':
+            person[field] = None
+        else:
+            person[field] = person[field].strip()
     return person
-
-

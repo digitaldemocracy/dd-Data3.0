@@ -8,10 +8,27 @@ class Person(object):
     '''
     Constructor
     '''
-    def __init__(self, first, last, middle, image, source, state, alt_id, pid = None):
-        self.first_name = first
-        self.last_name = last
-        self.middle_name = middle
+    def __init__(self, name, image, source, state, alt_id, pid = None):
+        self.name = name
+        parts = [name["first"],
+                 name["nickname"],
+                 name["middle"],
+                 name["last"],
+                 name["suffix"]]
+        parts = [part for part in parts if part]
+        self.alternate_name = (" ".join(parts)).strip()
+        self.first = name["first"] + ( " \"" + name["nickname"] + "\"" if name["nickname"] else "")
+        self.middle = name["middle"]
+        self.last = name["last"]
+        self.like_name = name["like_name"]
+        self.like_last_name = name["like_last_name"]
+        self.like_first_name = name["like_first_name"]
+        self.like_nick_name = name["like_nick_name"]
+        self.title = name["title"]
+        self.suffix = name["suffix"]
+        self.house = None
+        self.district = None
+
         self.image = image
         self.source = source
         self.state = state
@@ -20,34 +37,10 @@ class Person(object):
 
 
     '''
-    set_pid
-    Used to set pid of person
-    '''
-    def set_pid(self, pid):
-        self.pid = pid
-
-
-    '''
-    person_state_alliation_dict
+    person_state_affiliation_dict
     Returns a dictionary with the pid and state of the person.
     Used for inserting into person state affiliation.
     '''
-    def person_state_affliation_dict(self):
+    def person_state_affiliation_dict(self):
         return {"pid": self.pid,
                 "state": self.state}
-
-
-    '''
-    to_dict
-    Returns a dictionary representation for the object.
-    This is useful for MySQLdb insertions.
-    '''
-    def to_dict(self):
-        return {"first": self.first_name,
-                "last": self.last_name,
-                "middle": self.middle_name,
-                "image": self.image,
-                "source": self.source,
-                "state": self.state,
-                "alt_id": self.alt_id}
-

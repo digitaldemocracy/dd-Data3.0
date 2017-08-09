@@ -211,16 +211,16 @@ class CaCommitteeParser(object):
                 link = self.format_link(row.a["href"], host)
                 committee_type = self.format_committee_type(row.a.text, committee_type_section)
                 short_name = row.a.text.split(" on ")[1].strip() if "Joint Committee on" in row.a.text \
-                                                                    or "sub" in committee_type.lower() \
-                                                                    or "Special Committee on" in row.a.text \
-                                                                    else row.a.text
+                                                                                      or "sub" in committee_type.lower() \
+                                                                                      or "Special Committee on" in row.a.text \
+                                                                                      else row.a.text
                 full_name = format_committee_name(row.a.text,
                                                   house,
                                                   committee_type,
                                                   sub_committee_parent if "sub" in committee_type.lower() else None)
                 committee = Committee(type=committee_type,
                                       name=full_name,
-                                      short_name=short_name,
+                                      short_name=short_name.strip("the").strip(),
                                       link=link,
                                       house=self.format_house(committee_type, house),
                                       state=self.state,

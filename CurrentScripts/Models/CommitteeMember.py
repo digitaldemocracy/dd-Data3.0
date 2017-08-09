@@ -21,9 +21,14 @@ class CommitteeMember(object):
                 or (pid and session_year and state) \
                 or (name and session_year and state and position and current_flag and house):
             if name:
-                self.name = name
-                self.alternate_name = " ".join([name["first"], name["nickname"], name["middle"], name["last"]])
-                self.first = name["first"]
+                parts = [name["first"],
+                         name["nickname"],
+                         name["middle"],
+                         name["last"],
+                         name["suffix"]]
+                parts = [part for part in parts if part]
+                self.alternate_name = (" ".join(parts)).strip()
+                self.first = name["first"] + (" \"" + name["nickname"] + "\"" if name["nickname"] else "")
                 self.middle = name["middle"]
                 self.last = name["last"]
                 self.like_name = name["like_name"]

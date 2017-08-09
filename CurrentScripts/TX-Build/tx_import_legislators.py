@@ -21,18 +21,21 @@ Populates:
   - AltId (pid, altId)
   - PersonStateAffiliation (pid, state)
 '''
-
-from legislators_API_helper import *
-from Utils.Legislator_Insertion_Manager import *
-from Utils.Database_Connection import *
-from Utils.Generic_Utils import *
+from Utils.Generic_Utils import create_logger
+from Utils.Database_Connection import connect
+from Utils.Generic_MySQL import get_session_year
+from Utils.Legislator_Insertion_Manager import LegislatorInsertionManager
+from OpenStatesParsers.legislators_openstates_parser import LegislatorOpenStateParser
 
 if __name__ == "__main__":
     with connect() as dddb:
         logger = create_logger()
+        # print(logger.exception("Asdf"))
+        # exit()
         session_year = get_session_year(dddb, "TX", logger)
-        leg_manager = LegislatorInsertionManager(dddb, logger, "TX")
-        legislators = get_legislators_list("TX", session_year)
+        parser = LegislatorOpenStateParser("TX", session_year)
+        leg_manager = LegislatorInsertionManager(dddb, logger, "TX", session_year)
+        legislators = parser.get_legislators_list()
         leg_manager.add_legislators_db(legislators)
         leg_manager.log()
 
