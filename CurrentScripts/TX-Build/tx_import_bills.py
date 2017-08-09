@@ -25,7 +25,9 @@ Populates:
 import urllib2
 from tx_bill_parser import *
 from Utils.Bill_Insertion_Manager import *
-from Constants.Bills_Queries import *
+from Utils.Generic_Utils import create_logger
+from Utils.Database_Connection import connect
+
 
 logger = None
 

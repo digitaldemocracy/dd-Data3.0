@@ -69,7 +69,6 @@ SELECT_LEG_LASTNAME = '''SELECT a.pid, t.year
                             AND t.current_term = 1
                             AND a.name like %(like_last_name)s
                             GROUP BY a.pid
-                            GROUP BY a.pid
                             '''
 
 
