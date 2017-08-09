@@ -40,13 +40,14 @@ def connect(db = None):
     if socket.gethostbyname(socket.gethostname()) == "172.31.37.21" or db == "force" or \
             (db == "live" and raw_input(
                 "Are you sure you want this script on the live database? (y/n) ").lower() == "y"):
-        countdown("live")
+        if len(sys.argv) == 1:
+            countdown("live")
         return MySQLdb.connect(host='dddb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-                               port=3306,
-                               db='DDDB2016Aug',
-                               user='awsDB',
-                               passwd='digitaldemocracy789',
-                               charset='utf8')
+                                   port=3306,
+                                   db='DDDB2016Aug',
+                                   user='awsDB',
+                                   passwd='digitaldemocracy789',
+                                   charset='utf8')
     elif db == "local":
         countdown("local")
         return MySQLdb.connect(host='localhost',

@@ -75,11 +75,11 @@ def create_logger():
                                   "\n\"Type\": \"%(levelname)s\","
                                   "\n\t\"Message\": %(message)s\n}")
 
-    if len(sys.argv) == 1:
-        console_handler = logging.StreamHandler()
-        console_handler.setLevel(logging.warning)
-        console_handler.setFormatter(formatter)
-        logger.addHandler(console_handler)
+    #if len(sys.argv) == 1:
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.ERROR)
+    console_handler.setFormatter(formatter)
+    logger.addHandler(console_handler)
 
     file_handler = logging.FileHandler(log_loc)
     file_handler.setLevel(logging.ERROR)
