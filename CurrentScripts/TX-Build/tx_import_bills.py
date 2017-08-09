@@ -44,7 +44,7 @@ def get_pid_name(dddb, person):
         dddb.execute(SELECT_LEG_PID, legislator)
 
         if dddb.rowcount != 1:
-            print("Error: PID for " + mem_name + " not found")
+            #print("Error: PID for " + mem_name + " not found")
             return None
         else:
             return dddb.fetchone()[0]
@@ -91,7 +91,7 @@ def format_version(version_list):
                 doc += read_text
         except urllib2.URLError:
             doc = None
-            print('URL error with version ' + version.vid)
+            #print('URL error with version ' + version.vid)
 
         version.set_text(doc)
 
@@ -141,11 +141,11 @@ def format_bills(dddb):
 def main():
     with connect() as dddb:
         bill_manager = BillInsertionManager(dddb, logger, 'TX')
-        print("Getting bill list...")
+        #print("Getting bill list...")
         bill_list = format_bills(dddb)
-        print("Starting import...")
+        #print("Starting import...")
         bill_manager.add_bills_db(bill_list)
-        print("Finished import")
+        #print("Finished import")
         bill_manager.log()
 
 

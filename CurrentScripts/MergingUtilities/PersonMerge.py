@@ -9,6 +9,7 @@ import sys
 # SQL Selects
 sel_leg = '''select * from Legislator where pid = %(pid)s'''
 sel_term = '''select * from Term where pid = %(bad_pid)s'''
+sel_good_term = '''select * from Term where pid = %(good_pid)s'''
 sel_legstaff = '''select * from LegislativeStaff where pid = %(bad_pid)s'''
 sel_leganalyst = '''select * from LegAnalystOffice where pid = %(bad_pid)s'''
 sel_state_agency_rep = '''select * from StateAgencyRep where pid = %(bad_pid)s'''
@@ -106,6 +107,7 @@ up_lobbyist = '''update Lobbyist set filer_id = %(filer_id)s where pid = %(pid)s
 up_knownclients = '''update KnownClients set pid = %(good_pid)s where pid = %(bad_pid)s'''
 up_legoffice_staff = '''update LegOfficePersonnel set staff_member = %(good_pid)s where staff_member = %(bad_pid)s'''
 up_alignmentscores = '''update AlignmentScoresExtraInfo set pid = %(good_pid)s where pid = %(bad_pid)s'''
+up_altid = '''update AlternateId set pid = %(good_pid)s where pid = %(bad_pid)s'''
 
 
 # SQL Deletes
@@ -147,8 +149,11 @@ def check_terms(dddb, leg):
             if dddb.rowcount == 0:
                 dddb.execute(insert_legislator, leg)
 
-            dddb.execute(insert_term, leg)
-            print("Inserted " + str(dddb.rowcount) + " rows in Term")
+            dddb.execute(sel_good_term, leg)
+
+            if dddb.rowcount == 0:
+                dddb.execute(insert_term, leg)
+                print("Inserted " + str(dddb.rowcount) + " rows in Term")
 
             dddb.execute(up_legoffice, leg)
             print("Updated " + str(dddb.rowcount) + " rows in LegOfficePersonnel")
@@ -429,6 +434,8 @@ def update_legislator(dddb, leg):
         dddb.execute(up_legstaffreps, leg)
         print("Updated " + str(dddb.rowcount) + " rows in LegislativeStaffRepresentation")
 
+        dddb.execute(up_altid, leg)
+
         dddb.execute(up_alignmentscores, leg)
 
         dddb.execute(del_legislator, leg)
@@ -496,7 +503,7 @@ def main():
     #print('Good PID: ' + str(person['good_pid']))
     #print('Bad PID: ' + str(person['bad_pid']))
 
-    #with MySQLdb.connect(host='dev.digitaldemocracy.org',
+    # with MySQLdb.connect(host='dev.digitaldemocracy.org',
     #                     port=3306,
     #                     db='parose_dddb',
     #                     user='parose',

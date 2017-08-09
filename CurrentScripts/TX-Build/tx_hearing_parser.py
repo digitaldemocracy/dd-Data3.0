@@ -157,10 +157,10 @@ class TxHearingParser(object):
             titles = item.find_all('title')
 
             for title in titles:
-                print(title.string)
+                #print(title.string)
                 url = title.find_next_sibling('guid').string
                 url_list.append(url)
-                print(url)
+                #print(url)
 
         hearing_list = list()
         for url in url_list:

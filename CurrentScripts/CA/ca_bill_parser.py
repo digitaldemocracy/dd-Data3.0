@@ -87,7 +87,7 @@ class CaBillParser(object):
         bill_list = list()
 
         if self.comprehensive_flag:
-            print("Comprehensive")
+            #print("Comprehensive")
             self.ca_cursor.execute(SELECT_CAPUBLIC_BILLS_COMPREHENSIVE)
         else:
             self.ca_cursor.execute(SELECT_CAPUBLIC_BILLS, {'updated_since': self.updated_date})
@@ -151,7 +151,7 @@ class CaBillParser(object):
             else:
                 name = '{0} Standing Committee on {1}'.format(house, committee_name)
         else:
-            print("Cant find " + location_code)
+            #print("Cant find " + location_code)
             return None
 
         return name, house
@@ -186,7 +186,7 @@ class CaBillParser(object):
                 pid = get_entity_id(self.dddb, QS_LEGISLATOR_LIKE_L, (filer_naml, STATE), 'Person', self.logger)
 
         if not pid:
-            print('Person not found: ' + filer_naml)
+            #print('Person not found: ' + filer_naml)
             return None
 
         return pid
@@ -200,7 +200,7 @@ class CaBillParser(object):
         vote_list = list()
 
         if self.comprehensive_flag:
-            print("Comprehensive")
+            #print("Comprehensive")
             self.ca_cursor.execute(SELECT_CAPUBLIC_VOTE_SUMMARY_COMPREHENSIVE)
         else:
             self.ca_cursor.execute(SELECT_CAPUBLIC_VOTE_SUMMARY, {'updated_since': self.updated_date})
@@ -230,7 +230,7 @@ class CaBillParser(object):
         vote_detail_list = list()
 
         if self.comprehensive_flag:
-            print("Comprehensive")
+            #print("Comprehensive")
             self.ca_cursor.execute(SELECT_CAPUBLIC_VOTE_DETAIL_COMPREHENSIVE)
         else:
             self.ca_cursor.execute(SELECT_CAPUBLIC_VOTE_DETAIL, {'updated_since': self.updated_date})
@@ -245,7 +245,7 @@ class CaBillParser(object):
             vote_id = bill_manager.get_vote_id(vote)
 
             if not vote_id:
-                print(vote)
+                #print(vote)
                 return []
 
             result = vote_code
@@ -266,7 +266,7 @@ class CaBillParser(object):
         motion_list = list()
 
         if self.comprehensive_flag == 1:
-            print("Comprehensive")
+            #print("Comprehensive")
             self.ca_cursor.execute(SELECT_CAPUBLIC_MOTION_COMPREHENSIVE)
         else:
             self.ca_cursor.execute(SELECT_CAPUBLIC_MOTION, {'updated_since': self.updated_date})
@@ -296,7 +296,7 @@ class CaBillParser(object):
         version_list = list()
 
         if self.comprehensive_flag:
-            print("Comprehensive")
+            #print("Comprehensive")
             self.ca_cursor.execute(SELECT_CAPUBLIC_BILLVERSIONS_COMPREHENSIVE)
         else:
             self.ca_cursor.execute(SELECT_CAPUBLIC_BILLVERSIONS, {'updated_since': self.updated_date})
@@ -330,7 +330,7 @@ class CaBillParser(object):
         action_list = list()
 
         if self.comprehensive_flag:
-            print("Comprehensive")
+            #print("Comprehensive")
             self.ca_cursor.execute(SELECT_CAPUBLIC_ACTIONS_COMPREHENSIVE)
         else:
             self.ca_cursor.execute(SELECT_CAPUBLIC_ACTIONS, {'updated_since': self.updated_date})
