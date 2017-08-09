@@ -151,7 +151,7 @@ def get_bill_versions(ca_cursor):
         updated_date = updated_date.strftime('%Y-%m-%d')
 
     if comprehensive:
-        print("Comprehensive")
+        #print("Comprehensive")
         ca_cursor.execute(SELECT_CAPUBLIC_VERSION_XML_COMPREHENSIVE)
     else:
         ca_cursor.execute(SELECT_CAPUBLIC_VERSION_XML, {'updated_since': updated_date})
