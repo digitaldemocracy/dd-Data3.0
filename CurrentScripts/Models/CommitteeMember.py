@@ -11,7 +11,6 @@ Description:
     - CommitteeMember model object. Standardized representation of a Committee Member.
     - Used for ServesOn.
 """
-#from nameparser import *
 
 class CommitteeMember(object):
     def __init__(self, name=None, session_year=None, state=None, position="Member", alt_id=None,
