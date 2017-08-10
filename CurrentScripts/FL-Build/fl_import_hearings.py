@@ -2,10 +2,10 @@
 # -*- coding: utf8 -*-
 
 """
-File: fl_import_hearings.ppy
+File: fl_import_hearings.py
 Author: Andrew Rose
 Date: 4/6/2017
-Last Updated: 4/24/2017
+Last Updated: 8/10/2017
 
 IMPORTANT NOTE: For this script to work, the program Xpdf (specifically the pdftotext component)
 MUST be installed on the server
