@@ -208,7 +208,7 @@ def read_pdf_text(vid):
     text_name = format_absolute_path("FL-Build/bill_txt/") + vid + ".txt"
 
     try:
-        subprocess.call(['../pdftotext', '-enc', 'UTF-8', pdf_name, text_name])
+        subprocess.call([format_absolute_path('pdftotext'), '-enc', 'UTF-8', pdf_name, text_name])
 
         with open(text_name, 'r') as f:
             doc = f.read()
