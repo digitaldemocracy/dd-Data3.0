@@ -62,6 +62,7 @@ def get_entity_id(db_cursor, query, entity, objType, logger):
             return db_cursor.fetchone()[0]
     except MySQLdb.Error:
         logger.exception(format_logger_message('ID Retrieval Failed for ' + objType, (query%entity)))
+    return False
 
 def get_entity(db_cursor, query, entity, objType, logger):
     try:
@@ -70,19 +71,14 @@ def get_entity(db_cursor, query, entity, objType, logger):
             return db_cursor.fetchone()
     except MySQLdb.Error:
         logger.exception(format_logger_message('ID Retrieval Failed for ' + objType, (query % entity)))
-
-
     return False
 
 def get_all(db_cursor, query, entity, objType, logger):
     try:
         db_cursor.execute(query, entity)
-
         return db_cursor.fetchall()
     except MySQLdb.Error:
         logger.exception(format_logger_message('Failed Selecting All for ' + objType, (query%entity)))
-
-
     return False
 '''
 Generic SQL update function

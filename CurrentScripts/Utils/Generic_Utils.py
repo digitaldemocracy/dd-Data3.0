@@ -38,9 +38,12 @@ def format_absolute_path(relative_path):
     :param relative_path: The relative path of a file or directory, in relation to the CurrentScripts directory
     :return: The absolute path of a file or directory
     """
-    script_path = os.environ['SCRIPTPATH']
+    script_path = os.environ['SCRIPTPATH'].strip("/")
+    relative_path = relative_path.strip("/")
 
-    absolute_path = script_path + relative_path
+
+
+    absolute_path = "/" + script_path  + "/" + relative_path
 
     return absolute_path
 
