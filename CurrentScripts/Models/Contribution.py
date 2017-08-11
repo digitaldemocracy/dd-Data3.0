@@ -1,7 +1,8 @@
 class Contribution(object):
     def __init__(self, first_name, last_name, donor_name, amount,
                  state, date, year,
-                 pid=None, house=None, donor_org=None, oid=None):
+                 pid=None, house=None, donor_org=None, oid=None, district=None,
+                 contribution_id=None):
         self.first_name = first_name
         self.last_name = last_name
 
@@ -15,11 +16,12 @@ class Contribution(object):
 
         self.pid = pid
         self.house = house
+        self.district = district
 
         self.donor_org = donor_org
         self.oid = oid
 
-        self.contribution_id = None
+        self.contribution_id = contribution_id
 
     def set_pid(self, pid):
         self.pid = pid
