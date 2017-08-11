@@ -31,7 +31,8 @@ class FlCommitteeParser(CommitteeOpenStateParser):
 
         comm_list = list()
         for entry in committee_json:
-            if self.is_committee_current(entry['updated_at']):
+            if self.is_committee_current(entry['updated_at']) or (entry['chamber'] == 'joint'
+                                                                  and 'Subcommittee' not in entry['committee']):
                 openStates_comm_id = entry['id']
 
                 if entry['chamber'] == 'joint':
@@ -39,9 +40,8 @@ class FlCommitteeParser(CommitteeOpenStateParser):
                 else:
                     house = metadata['chambers'][entry['chamber']]['name']
 
-
                 if entry['subcommittee'] is not None:
-                    type = 'Subcommittee'
+                    committee_type = 'Subcommittee'
                     name = house + ' ' + entry['committee']
 
                     if 'Subcommittee on the' in entry['subcommittee']:
@@ -54,23 +54,35 @@ class FlCommitteeParser(CommitteeOpenStateParser):
                         name = name.strip() + ' Subcommittee on ' + entry[
                             'subcommittee'].replace('Subcommittee', '').strip()
                         short_name = entry['subcommittee'].replace('Subcommittee', '').strip()
+
+                #TODO: Add case for Joint Select/Subcommittees committees (bc apparently Florida has those, wtf)
+
                 elif 'Joint' in entry['committee']:
-                    short_name = entry['committee'].replace('Committee', '', 1).strip()
-                    type = 'Joint'
+                    if ' Select ' in entry['committee']:
+                        short_name = entry['committee'].replace('Joint Select Committee on', '', 1).strip()
+                        committee_type = 'Joint Select'
+                    elif 'Subcommittee' in entry['committee']:
+                        short_name = entry['committee'].replace('Joint Subcommittee on', '', 1).strip()
+                        committee_type = 'Joint Subcommittee'
+                    else:
+                        short_name = entry['committee'].replace('Joint Committee on', '', 1).strip()
+                        short_name = short_name.replace('Committee', '', 1).strip()
+                        committee_type = 'Joint'
                     name = entry['committee']
+
                 elif 'Select' in entry['committee']:
                     short_name = entry['committee'].replace('Select Committee on', '', 1).strip()
-                    type = 'Select'
+                    committee_type = 'Select'
                     name = house + ' ' + entry['committee']
                 else:
                     short_name = entry['committee'].replace('Committee', '', 1).strip()
-                    type = 'Standing'
-                    name = house + ' ' + type + ' Committee on ' + short_name
+                    committee_type = 'Standing'
+                    name = house + ' ' + committee_type + ' Committee on ' + short_name
 
-                if name and house and type and short_name and openStates_comm_id:
+                if name and house and committee_type and short_name and openStates_comm_id:
                     comm_list.append(Committee(name=name,
                                                house=house,
-                                               type=type,
+                                               type=committee_type,
                                                short_name=short_name,
                                                state=self.state,
                                                alt_id=openStates_comm_id,
@@ -80,7 +92,6 @@ class FlCommitteeParser(CommitteeOpenStateParser):
                     print("Error committee not created properly.")
 
         return comm_list
-
 
 #
 # '''

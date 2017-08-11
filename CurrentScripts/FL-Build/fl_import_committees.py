@@ -30,6 +30,7 @@ def main():
         committee_insertion_manager = CommitteeInsertionManager(dddb, "FL", session_year, logger)
         parser = FlCommitteeParser(session_year)
         committees = parser.get_committee_list()
+
         committee_insertion_manager.import_committees(committees)
         committee_insertion_manager.log()
 
