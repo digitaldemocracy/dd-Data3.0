@@ -19,8 +19,12 @@ Populates:
   - AltId (pid, altId)
   - PersonStateAffiliation (pid, state)
 '''
+import os
 import sys
 import json
+import glob
+import subprocess
+from Utils.Generic_Utils import format_absolute_path
 from Constants.Legislator_Queries import *
 from Generic_MySQL import is_entity_in_db, \
                           get_entity_id, \
@@ -46,6 +50,11 @@ class LegislatorInsertionManager(object):
         self.PERSON_STATE_INSERT = 0
         self.ALTERNATE_ID_INSERT = 0
         self.ALTERNATE_NAME_INSERT = 0
+        self.PICTURE_UPLOADED = 0
+        self.directory = format_absolute_path(self.state + "_ProfilePics/")
+        if not os.path.exists(self.directory):
+            os.makedirs(self.directory)
+
 
 
 
@@ -230,6 +239,31 @@ class LegislatorInsertionManager(object):
                                query=SELECT_NOT_CURRENT_LEGISLATOR,
                                objType="Term Update",
                                logger=self.logger)
+    def download_profile_pic(self, legislator):
+        if legislator.image and len(legislator.image.strip()) > 0:
+            filename, file_extension = os.path.splitext(legislator.image)
+            print(filename)
+            print(file_extension)
+            print(self.directory + str(legislator.pid))
+            call = "curl " + legislator.image + " --create-dirs -o " + self.directory + "/" + str(legislator.pid) + file_extension
+            print(call)
+            subprocess.call([
+                "curl", legislator.image, "--create-dirs", "-o", self.directory + "/" + str(legislator.pid) + file_extension
+            ], shell=False)
+            #subprocess.call(call)
+
+
+    def upload_profile_pic(self):
+        print("Copying bills to S3")
+        profile_pics = glob.glob(self.directory + "/*")
+        for pic in profile_pics:
+            subprocess.call(['aws', 's3', 'cp', pic, 's3://dd-drupal-files/images/'])
+
+        # # Delete bill PDFs
+        # del_bill_pdfs = 'rm -rf ' + format_absolute_path('FL-Build/bill_PDF/') + '*.pdf'
+        #
+        # subprocess.call(del_bill_pdfs, shell=True)
+        # return 1
 
 
     def add_legislators_db(self, legislator_list):
@@ -250,6 +284,9 @@ class LegislatorInsertionManager(object):
 
                 # This is only used when naming formats change.
                 #self.update_person(legislator)
+                #self.download_profile_pic(legislator)
+                #self.upload_profile_pic()
+                #exit()
                 self.insert_alt_id(legislator)
 
                 # If term is current but there is a new session year. Used for re-election.
