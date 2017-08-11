@@ -37,14 +37,10 @@ def main():
         hearing_parser = TxHearingParser(dddb, logger)
         hearing_manager = Hearings_Manager(dddb, 'TX')
 
-        print("Getting senate hearings")
         senate_hearings = hearing_parser.get_calendar_hearings('senate')
-        print("Inserting senate hearings")
         hearing_manager.import_hearings(senate_hearings, dt.datetime.today().date())
 
-        print("Getting house hearings")
         house_hearings = hearing_parser.get_calendar_hearings('house')
-        print("Inserting house hearings")
         hearing_manager.import_hearings(house_hearings, dt.datetime.today().date())
 
         hearing_manager.log()

@@ -80,10 +80,11 @@ class TxHearingParser(object):
 
         span = html_soup.find_all('span')
         for tag in span:
-            try:
-                date = dt.datetime.strptime(tag.string, "%B %d, %Y")
-            except ValueError:
-                continue
+            if tag.string is not None:
+                try:
+                    date = dt.datetime.strptime(tag.string, "%B %d, %Y")
+                except ValueError:
+                    continue
 
         if date is None:
             return list()
