@@ -95,7 +95,7 @@ http://www.followthemoney.org/entity-details?eid=6511618&default=candidate
 http://www.followthemoney.org/entity-details?eid=6640359&default=candidate
 http://www.followthemoney.org/entity-details?eid=26157927&default=candidate
 http://www.followthemoney.org/entity-details?eid=26157930&default=candidate
-http://www.followthemoney.org/entity-details?eid=42546396&default=candidate
+http://www.followthemoney.org/entity-details?eid=6587394&default=candidate
 http://www.followthemoney.org/entity-details?eid=13789989&default=candidate
 http://www.followthemoney.org/entity-details?eid=13013083&default=candidate
 http://www.followthemoney.org/entity-details?eid=6640412&default=candidate

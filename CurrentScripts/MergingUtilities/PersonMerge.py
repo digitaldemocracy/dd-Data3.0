@@ -4,7 +4,7 @@
 import MySQLdb
 import traceback
 import sys
-
+from Utils.Database_Connection import *
 
 # SQL Selects
 sel_leg = '''select * from Legislator where pid = %(pid)s'''
@@ -50,6 +50,12 @@ sel_unique_sarepreps = '''select * from StateAgencyRepRepresentation
                           and did = %(did)s
                           and hid = %(hid)s'''
 sel_serves_on = '''select * from servesOn where pid = %(bad_pid)s and cid in (select cid from servesOn where pid = %(good_pid)s)'''
+sel_billsponsors = '''select pid, bid, vid, contribution from BillSponsors where pid = %(bad_pid)s'''
+sel_unique_billsponsors = '''select * from BillSponsors
+                             where pid = %(pid)s
+                             and bid = %(bid)s
+                             and vid = %(vid)s
+                             and contribution = %(contribution)s'''
 
 
 # SQL Inserts
@@ -78,6 +84,8 @@ insert_serves_on = '''insert into servesOn (pid, year, house, cid, state, positi
                       select %(good_pid)s, year, house, cid, state, position, current_flag
                       from servesOn where pid = %(bad_pid)s
                       and cid not in (select cid from servesOn where pid = %(good_pid)s)'''
+insert_billsponsor = '''insert into BillSponsors (pid, bid, vid, contribution)
+                        (%(pid)s, %(bid)s, %(vid)s, %(contribution)s)'''
 
 
 # SQL Updates
@@ -137,6 +145,11 @@ del_lobbydirectemployment = '''delete from LobbyistDirectEmployment where pid = 
 del_sarepreps = '''delete from StateAgencyRepRepresentation where pid = %(pid)s
                    and hid = %(hid)s
                    and did = %(did)s'''
+del_billsponsors = '''delete from BillSponsors
+                      where pid = %(pid)s
+                      and bid = %(bid)s
+                      and vid = %(vid)s
+                      and contribution = %(contribution)s'''
 
 
 def check_terms(dddb, leg):
@@ -419,6 +432,18 @@ def update_legislator(dddb, leg):
         dddb.execute(up_legoffice, leg)
         print("Updated " + str(dddb.rowcount) + " rows in LegOfficePersonnel")
 
+        dddb.execute(sel_billsponsors, leg)
+        result = dddb.fetchall()
+
+        for row in result:
+            bill_sponsor = {'pid': leg['good_pid'], 'bid': row[1], 'vid': row[2], 'contribution': row[3]}
+
+            dddb.execute(sel_unique_billsponsors, bill_sponsor)
+
+            if dddb.rowcount != 0:
+                dddb.execute(del_billsponsors, {'pid': leg['bad_pid'], 'bid': bill_sponsor['bid'],
+                                                'vid': bill_sponsor['vid'], 'contribution': bill_sponsor['contribution']})
+
         dddb.execute(up_billsponsors, leg)
         print("Updated " + str(dddb.rowcount) + " rows in BillSponsors")
 
@@ -500,21 +525,8 @@ def main():
         if flag[0] == '-':
             flags.append(flag[1:])
 
-    #print('Good PID: ' + str(person['good_pid']))
-    #print('Bad PID: ' + str(person['bad_pid']))
 
-    # with MySQLdb.connect(host='dev.digitaldemocracy.org',
-    #                     port=3306,
-    #                     db='parose_dddb',
-    #                     user='parose',
-    #                     passwd='parose221',
-    #                     charset='utf8') as dddb:
-    with MySQLdb.connect(host='dddb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-                         port=3306,
-                         db='DDDB2016Aug',
-                         user='awsDB',
-                         passwd='digitaldemocracy789',
-                         charset='utf8') as dddb:
+    with connect() as dddb:
         if 'a' in flags:
             merge_gp(dddb, person)
             merge_lobbyist(dddb, person)
