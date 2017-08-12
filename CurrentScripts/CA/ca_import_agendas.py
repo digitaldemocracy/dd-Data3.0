@@ -1,10 +1,8 @@
-#!/usr/bin/env python
-
+#!/usr/bin/env python2.7
+# -*- coding: utf8 -*-
 '''
-File: ca_agenda.py
-Author: Sam Lakes
-Date Created: July 27th, 2016
-Last Modified: August 24th, 2016
+File: ca_import_agenda.py
+Author: Nick Russo
 Description:
 - Grabs the California Legislative Agendas for database population
 Sources:
@@ -14,16 +12,6 @@ Sources:
 from ca_hearing_parser import *
 from Utils.Hearing_Manager import *
 from Utils.Database_Connection import *
-
-logger = None
-
-# Global counters
-H_INS = 0  # Hearings inserted
-CH_INS = 0  # CommitteeHearings inserted
-HA_INS = 0  # HearingAgenda inserted
-HA_UPD = 0  # HearingAgenda updated
-
-
 
 
 
@@ -43,5 +31,4 @@ def main():
             hearing_manager.log()
 
 if __name__ == '__main__':
-    logger = create_logger()
     main()
