@@ -10,10 +10,12 @@ Description:
 - Meant to help prevent accidental insertions into the live database.
 """
 from __future__ import print_function
+
+import os
 import sys
-import MySQLdb
 import time
 import socket
+import MySQLdb
 
 def countdown(db):
     '''
@@ -42,12 +44,12 @@ def connect(db = None):
                 "Are you sure you want this script on the live database? (y/n) ").lower() == "y"):
         if len(sys.argv) == 1:
             countdown("live")
-        return MySQLdb.connect(host='dddb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-                                   port=3306,
-                                   db='DDDB2016Aug',
-                                   user='awsDB',
-                                   passwd='digitaldemocracy789',
-                                   charset='utf8')
+            return MySQLdb.connect(host='dddb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+                                       port=3306,
+                                       db='DDDB2016Aug',
+                                       user='dbMaster',
+                                       passwd=os.environ["DBMASTERPASSWORD"],
+                                       charset='utf8')
     elif db == "local":
         countdown("local")
         return MySQLdb.connect(host='localhost',
@@ -60,9 +62,9 @@ def connect(db = None):
         print("Running on Dev DB")
         return MySQLdb.connect(host='dev.digitaldemocracy.org',
                                port=3306,
-                               db='russo_dddb',
-                               user='awsDB',
-                               passwd='digitaldemocracy789',
+                               db='DDDB2016Aug',
+                               user='dbMaster',
+                               passwd=os.environ["DBMASTERPASSWORD"],
                                charset='utf8')
 
 
@@ -74,7 +76,7 @@ def connect_to_capublic():
     return MySQLdb.connect(host='transcription.digitaldemocracy.org',
                              user='monty',
                              db='capublic',
-                             passwd='python',
+                             passwd=os.environ["TRANSCRIPTIONMONTYPASSWORD"],
                              charset='utf8')
 
 
