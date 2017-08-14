@@ -12,8 +12,8 @@ CONN_INFO = {'host': 'dddb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
              'port': 3306,
              'db': 'DDDB2016Aug',
              # 'db': 'AndrewTest',
-             'user': 'awsDB',
-             'passwd': 'digitaldemocracy789'}
+             'user': 'dbMaster',
+             'passwd': os.environ['DBMASTERPASSWORD']}
 
 BILL_PREPEND = 'CA_'
 
