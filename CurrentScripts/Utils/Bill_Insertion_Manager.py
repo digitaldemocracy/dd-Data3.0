@@ -130,6 +130,14 @@ class BillInsertionManager(object):
                                      objType="Motion",
                                      logger=self.logger)
 
+    def import_motions(self, motion_list):
+        """
+        Inserts a list of motion dictionaries into the database.
+        :param motion_list:
+        """
+        for motion in motion_list:
+            self.insert_motion(motion)
+
     def get_vote_id(self, vote):
         """
         Gets the VoteId of a BillVoteSummary in the database
