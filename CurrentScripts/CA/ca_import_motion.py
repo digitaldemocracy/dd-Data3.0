@@ -49,8 +49,7 @@ def main():
 
         motion_list = bill_parser.get_motions()
 
-        for motion in motion_list:
-            bill_manager.insert_motion(motion)
+        bill_manager.import_motions(motion_list)
 
         bill_manager.log()
 
