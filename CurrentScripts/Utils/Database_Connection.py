@@ -44,20 +44,20 @@ def connect(db = None):
                 "Are you sure you want this script on the live database? (y/n) ").lower() == "y"):
         if len(sys.argv) == 1:
             countdown("live")
-            return MySQLdb.connect(host='dddb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-                                       port=3306,
-                                       db='DDDB2016Aug',
-                                       user='dbMaster',
-                                       passwd=os.environ["DBMASTERPASSWORD"],
-                                       charset='utf8')
+        return MySQLdb.connect(host='dddb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+                                   port=3306,
+                                   db='DDDB2016Aug',
+                                   user='dbMaster',
+                                   passwd=os.environ["DBMASTERPASSWORD"],
+                                   charset='utf8')
     elif db == "local":
         countdown("local")
-        return MySQLdb.connect(host='localhost',
-                               port=3306,
-                               db='DDDB2016Aug',
-                               user='root',
-                               passwd='',
-                               charset='utf8')
+        return MySQLdb.connect(host='dddb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+                           port=3306,
+                           db='DDDB2016Aug',
+                           user='dbMaster',
+                           passwd=os.environ["DBMASTERPASSWORD"],
+                           charset='utf8')
     else:
         print("Running on Dev DB")
         return MySQLdb.connect(host='dev.digitaldemocracy.org',
