@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import numpy as np
 import pymysql
@@ -9,8 +10,8 @@ CONN_INFO = {'host': 'dddb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
              'port': 3306,
              # 'db': 'AndrewTest',
              'db': 'DDDB2016Aug',
-             'user': 'awsDB',
-             'passwd': 'digitaldemocracy789'}
+             'user': 'dbMaster',
+             'passwd': os.environ['DBMASTERPASSWORD']}
 
 PCKL_DIR = 'PickledObjects/'
 
