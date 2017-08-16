@@ -52,11 +52,11 @@ def connect(db = None):
                                    charset='utf8')
     elif db == "local":
         countdown("local")
-        return MySQLdb.connect(host='dddb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+        return MySQLdb.connect(host='localhost',
                            port=3306,
                            db='DDDB2016Aug',
-                           user='dbMaster',
-                           passwd=os.environ["DBMASTERPASSWORD"],
+                           user='root',
+                           passwd='',
                            charset='utf8')
     else:
         print("Running on Dev DB")
