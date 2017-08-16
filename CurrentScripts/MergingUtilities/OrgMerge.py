@@ -230,7 +230,7 @@ def add_org_concept(dddb, org):
         print(traceback.format_exc())
 
 
-def merge_org_concept(dddb, org, hide):
+def merge_org_concept(dddb, org, is_org_concept=False, hide=True):
     """
     Adds an OrgConceptAffiliation for the specified bad_oid
     Then, it sets the display_flag of the bad_oid's row in the Organizations
@@ -240,17 +240,23 @@ def merge_org_concept(dddb, org, hide):
     :param hide: If this parameter is set to True, bad_oid's display_flag is set to False
     """
     try:
-        dddb.execute(sel_org_concept, org)
-        concept_oid = dddb.fetchone()[0]
+        if is_org_concept:
+            concept_oid = org['good_oid']
+        else:
+            dddb.execute(sel_org_concept, org)
+            concept_oid = dddb.fetchone()[0]
 
         dddb.execute(insert_org_concept_affiliation, {'new_oid': concept_oid,
                                                       'old_oid': org['bad_oid'],
                                                       'is_subchapter': org['is_subchapter']})
 
+        print("Inserted " + str(dddb.rowcount) + " rows into OrgConceptAffiliation")
+
         if hide:
             dddb.execute(update_organization, org)
+            print("Updated " + str(dddb.rowcount) + " rows in Organizations")
 
-    except:
+    except MySQLdb.Error:
         print(traceback.format_exc())
 
 
@@ -275,19 +281,38 @@ def delete_org(dddb, org):
         print(traceback.format_exc())
 
 
-# def connect():
-#     return MySQLdb.connect(host='dev.digitaldemocracy.org',
-#                            port=3306,
-#                            db='parose_dddb',
-#                            user='parose',
-#                            passwd='parose221',
-#                            charset='utf8')
-#     # return MySQLdb.connect(host='dddb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-#     #                      port=3306,
-#     #                      db='DDDB2016Aug',
-#     #                      user='awsDB',
-#     #                      passwd='digitaldemocracy789',
-#     #                      charset='utf8')
+def get_org_names(dddb, org, is_org_concept):
+    try:
+        if is_org_concept:
+            dddb.execute(sel_org_concept_name, {'oid': org['good_oid']})
+
+            if dddb.rowcount >= 1:
+                good_org_name = dddb.fetchone()[0]
+            else:
+                print("The specified good oid is not a valid OrgConcept oid. Exiting.")
+                exit()
+        else:
+            dddb.execute(sel_org_name, {'oid': org['good_oid']})
+
+            if dddb.rowcount >= 1:
+                good_org_name = dddb.fetchone()[0]
+            else:
+                print("The specified good oid is not a valid oid. Exiting.")
+                exit()
+
+        dddb.execute(sel_org_name, {'oid': org['bad_oid']})
+
+        if dddb.rowcount >= 1:
+            bad_org_name = dddb.fetchone()[0]
+        else:
+            print("The specified bad oid is not a valid oid. Exiting.")
+            exit()
+
+        return {'good_name': good_org_name, 'bad_name': bad_org_name}
+
+    except MySQLdb.Error:
+        print(traceback.format_exc())
+        exit()
 
 
 def main():
@@ -317,30 +342,38 @@ def main():
     if args.subchapter:
         org['is_subchapter'] = True
 
-    if not args.force:
-        if args.orgConcept:
-            print("An OrgConceptAffiliation will be added between the organization " + str(org['bad_oid'])
-                  + " and OrgConcept " + str(org['good_oid']))
-            if args.subchapter:
-                print("Organization " + str(org['bad_oid']) + " is a subchapter of " + str(org['good_oid']))
-        elif args.orgConceptHide:
-            print("An OrgConceptAffiliation will be added between the organization " + str(org['bad_oid'])
-                  + " and OrgConcept " + str(org['good_oid']) + ", then the organization will be hidden.")
-            if args.subchapter:
-                print("Organization " + str(org['bad_oid']) + " is a subchapter of " + str(org['good_oid']))
-        else:
-            print("About to merge org " + str(org["bad_oid"]) + " into org " + str(org['good_oid']))
-            if args.concept:
-                print("A new OrgConcept for " + org['concept'] + " will also be created and"
-                                                                 " OrgConceptAffiliations for both orgs will be added")
-            if args.subchapter:
-                print("Organization " + str(org['bad_oid']) + " is a subchapter of " + str(org['good_oid']))
+    with connect('force') as dddb:
+        if not args.force:
+            org_names = get_org_names(dddb, org, args.orgConcept)
 
-            if args.delete:
-                print("Organization " + str(org['bad_oid']) + " will be PERMANENTLY DELETED")
+            if args.orgConcept:
+                print("An OrgConceptAffiliation will be added between the organization " + str(org['bad_oid'])
+                      + ":" + org_names['bad_name'] + " and OrgConcept " + str(org['good_oid'])
+                      + ":" + org_names['good_name'])
+                if args.subchapter:
+                    print("Organization " + str(org['bad_oid'])+":"+org_names['bad_oid']
+                          + " is a subchapter of " + str(org['good_oid'])+":"+org_names['good_oid'])
+            elif args.orgConceptHide:
+                print("An OrgConceptAffiliation will be added between the organization "
+                      + str(org['bad_oid'])+":"+org_names['bad_oid'] + " and OrgConcept "
+                      + str(org['good_oid'])+":"+org_names['good_oid'] + ", then the organization will be hidden.")
+                if args.subchapter:
+                    print("Organization " + str(org['bad_oid']) + ":" + org_names['bad_oid']
+                          + " is a subchapter of " + str(org['good_oid']) + ":" + org_names['good_oid'])
+            else:
+                print("About to merge org " + str(org["bad_oid"])+":"+org_names['bad_oid']
+                      + " into org " + str(org['good_oid'])+":"+org_names['good_oid'])
+                if args.concept:
+                    print("A new OrgConcept for " + org['concept'] + " will also be created and"
+                                                                     " OrgConceptAffiliations for both orgs will be added")
+                if args.subchapter:
+                    print("Organization " + str(org['bad_oid'])+":"+org_names['bad_name']
+                          + " is a subchapter of " + str(org['good_oid'])+":"+org_names['good_name'])
 
-    if args.force or raw_input("Confirm that you want to merge the given orgs using the specified options (y/n)\n").lower() == 'y':
-        with connect() as dddb:
+                if args.delete:
+                    print("Organization " + str(org['bad_oid'])+":"+org_names['bad_name'] + " will be PERMANENTLY DELETED")
+
+        if args.force or raw_input("Confirm that you want to merge the given orgs using the specified options (y/n)\n").lower() == 'y':
             if args.concept:
                 print("Adding OrgConcept, then merging org info")
                 add_org_concept(dddb, org)
@@ -351,10 +384,10 @@ def main():
                     delete_org(dddb, org)
             elif args.orgConcept:
                 print("Merging org into OrgConcept")
-                merge_org_concept(dddb, org, hide=False)
+                merge_org_concept(dddb, org, is_org_concept=True, hide=False)
             elif args.orgConceptHide:
                 print("Merging org into OrgConcept, then hiding bad_oid")
-                merge_org_concept(dddb, org, hide=True)
+                merge_org_concept(dddb, org, is_org_concept=True, hide=True)
             else:
                 print("Merging org info")
                 merge_org(dddb, org)
@@ -362,9 +395,12 @@ def main():
                 if args.delete:
                     print("Deleting org")
                     delete_org(dddb, org)
-    else:
-        print('Exiting')
-        exit()
+
+            print("Done.")
+
+        else:
+            print('Exiting')
+            exit()
 
 
 if __name__ == '__main__':
