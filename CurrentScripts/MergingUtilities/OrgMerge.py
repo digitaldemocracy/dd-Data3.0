@@ -342,7 +342,7 @@ def main():
     if args.subchapter:
         org['is_subchapter'] = True
 
-    with connect('force') as dddb:
+    with connect() as dddb:
         if not args.force:
             org_names = get_org_names(dddb, org, args.orgConcept)
 
