@@ -1,26 +1,25 @@
 #!/usr/bin/env python
-'''
+"""
 File: ny_import_committees.py
 Author: John Alkire
 Date: 12/16/2015
 Description:
 - Imports NY committees by scraping assembly webpage
 - Fills Committee and servesOn
-- Currently configured to test DB
-'''
+"""
 
 import json
 import sys
-from Database_Connection import mysql_connection
 import traceback
-from lxml import html
 import requests
 import MySQLdb
-from graylogger.graylogger import GrayLogger
 import datetime as dt
+from lxml import html
 from time import strftime
+from Utils.Generic_Utils import *
+from Utils.Database_Connection import connect
 
-GRAY_URL = 'http://dw.digitaldemocracy.org:12202/gelf'
+
 logger = None
 C_INSERTED = 0
 CN_INSERTED = 0
@@ -135,8 +134,7 @@ def is_comm_name_in_db(comm, dddb):
         if query is None:
             return False
     except MySQLdb.Error:
-        logger.warning("Select query failed", full_msg= traceback.format_exc(),
-                       additional_fields=create_payload("CommitteeNames", (select_committee_name % comm)))
+        logger.exception(format_logger_message('Select failed for CommitteeNames', (select_committee_name % comm)))
 
 
 def is_comm_in_db(comm, dddb):
@@ -148,8 +146,8 @@ def is_comm_in_db(comm, dddb):
         if query is None:
             return False
     except:
-        logger.warning("Select query failed", full_msg=traceback.format_exc(),
-                       additional_fields=create_payload("Committee", (select_committee % comm)))
+        logger.exception(format_logger_message('Select failed for Committee', (select_committee % comm)))
+
     return query
 
 
@@ -161,8 +159,7 @@ def is_serveson_in_db(member, dddb):
         if query is None:
             return False
     except:
-        logger.warning("Select query failed", full_msg=traceback.format_exc(),
-                       additional_fields=create_payload("servesOn", (select_serveson % member)))
+        logger.exception(format_logger_message('Select failed for servesOn', (select_serveson % member)))
 
     return True
 
@@ -276,9 +273,8 @@ def get_past_members(committee, dddb):
                 mem['state'] = STATE
                 update_members.append(mem)
     except:
-        logger.warning("Select query failed", full_msg=traceback.format_exc(),
-                       additional_fields=create_payload("servesOn",
-                                                        (select_current_members % {'house': committee['house'],
+        logger.exception(format_logger_message('Select failed for servesOn', (select_current_members %
+                                                                                  {'house': committee['house'],
                                                                                    'cid': committee['cid'],
                                                                                    'state': committee['state'],
                                                                                    'year': committee['session_year']})))
@@ -301,8 +297,8 @@ def add_committees_db(dddb):
                                                      'state': committee['state']})
                 CN_INSERTED += dddb.rowcount
             except MySQLdb.Error:
-                logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-                               additional_fields=create_payload('Committee', (insert_committee_name % committee)))
+                logger.exception(format_logger_message('Insert failed for CommitteeNames',
+                                                       (insert_committee_name % committee)))
 
         get_cid = is_comm_in_db(committee, dddb)
 
@@ -315,8 +311,8 @@ def add_committees_db(dddb):
                                                 'session_year': committee['session_year']})
                 C_INSERTED += dddb.rowcount
             except MySQLdb.Error:
-                logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-                               additional_fields=create_payload('Committee', (insert_committee % committee)))
+
+                logger.exception(format_logger_message('Insert failed for servesOn', (insert_committee % committee)))
 
             committee['cid'] = get_last_cid_db(dddb)
         else:
@@ -336,8 +332,8 @@ def add_committees_db(dddb):
                             dddb.execute(insert_serveson, member)
                             S_INSERTED += dddb.rowcount
                         except MySQLdb.Error:
-                            logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-                                           additional_fields=create_payload('servesOn', (insert_serveson % member)))
+                            logger.exception(format_logger_message('Insert failed for servesOn', (insert_serveson % member)))
+
                         y = y + 1
 
             updatedMems = get_past_members(committee, dddb)
@@ -348,8 +344,7 @@ def add_committees_db(dddb):
                         dddb.execute(update_serveson, member)
                         S_UPDATED += dddb.rowcount
                     except MySQLdb.Error:
-                        logger.warning('Update Failed', full_msg=traceback.format_exc())
-                        # print "Inserted %d committees and %d members" % (count, y)
+                        logger.exception(format_logger_message('Update failed for servesOn', (update_serveson % member)))
 
 
 def get_pid_db(person, dddb):
@@ -363,31 +358,15 @@ def get_pid_db(person, dddb):
 
 
 def main():
-    ddinfo = mysql_connection(sys.argv)
-    with MySQLdb.connect(host=ddinfo['host'],
-                         user=ddinfo['user'],
-                         db=ddinfo['db'],
-                         port=ddinfo['port'],
-                         passwd=ddinfo['passwd']) as dddb:
+    with connect() as dddb:
         add_committees_db(dddb)
-        logger.info(__file__ + ' terminated successfully.',
-                    full_msg='Inserted ' + str(C_INSERTED) + ' rows in Committee and inserted '
-                             + str(S_INSERTED) + ' rows in servesOn',
-                    additional_fields={'_affected_rows': 'Committee:' + str(C_INSERTED) +
-                                                         ', servesOn:' + str(S_INSERTED + S_UPDATED) +
-                                                         ', CommitteeNames: ' + str(CN_INSERTED),
-                                       '_inserted': 'Committee:' + str(C_INSERTED) +
-                                                    ', servesOn:' + str(S_INSERTED) +
-                                                    ', CommitteeNames: ' + str(CN_INSERTED),
-                                       '_updated': 'servesOn:' + str(S_UPDATED),
-                                       '_state': 'NY'})
 
     LOG = {'tables': [{'state': 'NY', 'name': 'Committee', 'inserted':C_INSERTED, 'updated': 0, 'deleted': 0},
-      {'state': 'NY', 'name': 'servesOn:', 'inserted':S_INSERTED, 'updated': S_UPDATED, 'deleted': S_DELETE},
+      {'state': 'NY', 'name': 'servesOn:', 'inserted':S_INSERTED, 'updated': S_UPDATED, 'deleted': 0},
       {'state': 'NY', 'name': 'CommitteeNames', 'inserted':CN_INSERTED, 'updated': 0, 'deleted': 0}]}
     sys.stderr.write(json.dumps(LOG))
+    logger.info(LOG)
 
 if __name__ == '__main__':
-    with GrayLogger(GRAY_URL) as _logger:
-        logger = _logger
-        main()
+    logger = create_logger()
+    main()
