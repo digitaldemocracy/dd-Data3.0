@@ -45,7 +45,8 @@ SELECT_CONTRIBUTION_ID = '''SELECT * FROM Contribution
 
 SELECT_ORGANIZATION = '''SELECT oid
                     FROM Organizations
-                    WHERE name like %(name)s'''
+                    WHERE name like %(name)s
+                    OR name SOUNDS LIKE %(name)s'''
 
 INSERT_ORGANIZATION = '''INSERT INTO Organizations
                     (name, stateHeadquartered, source)

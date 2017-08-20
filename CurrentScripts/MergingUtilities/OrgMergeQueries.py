@@ -1,5 +1,7 @@
 # Queries for merging organization data
 # SQL Selects
+sel_org_name = '''select name from Organizations where oid = %(oid)s'''
+sel_org_concept_name = '''select name from OrgConcept where oid = %(oid)s'''
 sel_lobbyemployer = '''select filer_id from LobbyistEmployer where oid = %(oid)s'''
 sel_all_clients = '''select pid, assoc_name, oid, year, state from KnownClients where oid = %(bad_oid)s'''
 sel_unique_clients = '''select * from KnownClients
@@ -40,6 +42,7 @@ sel_unique_orgalignment = '''select * from OrgAlignments
                              and hid = %(hid)s
                              and alignment = %(alignment)s
                              and analysis_flag = %(analysis_flag)s'''
+
 # SQL Inserts
 ins_lobbyemployer = '''insert into LobbyistEmployer (oid, coalition, state)
                        select %(good_oid)s, coalition, state from LobbyistEmployer
@@ -101,8 +104,11 @@ del_org = '''delete from Organizations where oid = %(bad_oid)s'''
 sel_org_concept = '''select new_oid, old_oid from OrgConceptAffiliation where old_oid = %(bad_oid)s'''
 sel_good_org_concept = '''select new_oid, old_oid from OrgConceptAffiliation where old_oid = %(good_oid)s'''
 select_org_concept_id = '''select min(oid) from OrgConcept'''
+#update_organization = '''update Organizations set display_flag = 0 where oid = %(bad_oid)s'''
 update_organization = '''update Organizations set display_flag = 0 where oid = %(bad_oid)s'''
 insert_org_concept = '''insert into OrgConcept (oid, name, meter_flag)
                         values (%(good_oid)s, %(name)s, 0)'''
-insert_org_concept_affiliation = '''insert into OrgConceptAffiliation (new_oid, old_oid, is_subchapter)
-                                    VALUES (%(new_oid)s, %(old_oid)s, %(is_subchapter)s)'''
+# insert_org_concept_affiliation = '''insert into OrgConceptAffiliation (new_oid, old_oid, is_subchapter)
+#                                     VALUES (%(new_oid)s, %(old_oid)s, %(is_subchapter)s)'''
+insert_org_concept_affiliation = '''insert into OrgConceptAffiliation (new_oid, old_oid)
+                                    VALUES (%(new_oid)s, %(old_oid)s)'''

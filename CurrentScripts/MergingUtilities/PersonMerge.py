@@ -1,12 +1,14 @@
 #!/usr/bin/env python2.7
 # -*- coding: utf8 -*-
 
-import MySQLdb
-import traceback
 import sys
+import MySQLdb
+import argparse
+import traceback
 from Utils.Database_Connection import *
 
 # SQL Selects
+sel_person_name = '''select concat(first, ' ', last) from Person where pid = %(pid)s'''
 sel_leg = '''select * from Legislator where pid = %(pid)s'''
 sel_term = '''select * from Term where pid = %(bad_pid)s'''
 sel_good_term = '''select * from Term where pid = %(good_pid)s'''
@@ -56,7 +58,8 @@ sel_unique_billsponsors = '''select * from BillSponsors
                              and bid = %(bid)s
                              and vid = %(vid)s
                              and contribution = %(contribution)s'''
-
+sel_alt_names = '''select pid, name from AlternateNames where pid = %(bad_pid)s'''
+sel_unique_alt_name = '''select * from AlternateNames where pid = %(pid)s and name = %(name)s'''
 
 # SQL Inserts
 insert_term = '''insert into Term
@@ -116,7 +119,7 @@ up_knownclients = '''update KnownClients set pid = %(good_pid)s where pid = %(ba
 up_legoffice_staff = '''update LegOfficePersonnel set staff_member = %(good_pid)s where staff_member = %(bad_pid)s'''
 up_alignmentscores = '''update AlignmentScoresExtraInfo set pid = %(good_pid)s where pid = %(bad_pid)s'''
 up_altid = '''update AlternateId set pid = %(good_pid)s where pid = %(bad_pid)s'''
-
+up_alt_names = '''update AlternateNames set pid = %(good_pid)s where pid = %(bad_pid)s'''
 
 # SQL Deletes
 del_serves_on = '''delete from servesOn where pid = %(bad_pid)s'''
@@ -150,6 +153,7 @@ del_billsponsors = '''delete from BillSponsors
                       and bid = %(bid)s
                       and vid = %(vid)s
                       and contribution = %(contribution)s'''
+del_alt_name = '''delete from AlternateNames where pid = %(pid)s and name = %(name)s'''
 
 
 def check_terms(dddb, leg):
@@ -463,6 +467,19 @@ def update_legislator(dddb, leg):
 
         dddb.execute(up_alignmentscores, leg)
 
+        dddb.execute(sel_alt_names, leg)
+        result = dddb.fetchall()
+
+        for row in result:
+            alt_name = {'pid': leg['good_pid'], 'name': row[1]}
+
+            dddb.execute(sel_unique_alt_name, alt_name)
+
+            if dddb.rowcount != 0:
+                dddb.execute(del_alt_name, {'pid': leg['bad_pid'], 'name': alt_name['name']})
+
+        dddb.execute(up_alt_names, leg)
+
         dddb.execute(del_legislator, leg)
         print("Deleted " + str(dddb.rowcount) + " rows in Legislator")
 
@@ -487,47 +504,51 @@ def delete_person(dddb, leg):
         exit(1)
 
 
+def get_person_names(dddb, person):
+    try:
+        dddb.execute(sel_person_name, {'pid': person['good_pid']})
+
+        if dddb.rowcount >= 1:
+            good_name = dddb.fetchone()[0]
+        else:
+            print("Specified good pid does not specify a valid Person. Exiting.")
+            exit()
+
+        dddb.execute(sel_person_name, {'pid': person['bad_pid']})
+
+        if dddb.rowcount >= 1:
+            bad_name = dddb.fetchone()[0]
+        else:
+            print("Specified bad pid does not specify a valid Person. Exiting.")
+            exit()
+
+        return {'good_name': good_name, 'bad_name': bad_name}
+
+    except MySQLdb.Error:
+        print(traceback.format_exc())
+
+
 def main():
-    if len(sys.argv) < 2: 
-        print("Usage: python LegMerge.py good_pid bad_pid -flags")
-        print("To see a list of flags: python LegMerge.py -help")
-        return
-    elif sys.argv[1] == '--help':
-        print("Usage: python LegMerge.py good_pid bad_pid -flags")
-        print("Flags:")
-        print('-a: Merges all classifications and deletes bad_pid.')
-        print('-gp: Merges GeneralPublic rows.')
-        print('-lo: Merges Lobbyist classifications')
-        print('-ls: Merges LegislativeStaff classifications.')
-        print('-sa: Merges StateAgencyRep classifications.')
-        print('-sc: Merges StateConstOfficeRep classifications.')
-        print('-l: Merges Legislator classifications.')
-        print('-u: Merges Utterances.')
-        print('-d: Deletes bad_pid. Will not work without another flag specified.')
-        return
-    elif len(sys.argv) < 4:
-        print("Usage: python LegMerge.py good_pid bad_pid -flags")
-        print("To see a list of flags: python LegMerge.py -help")
-        return
+    arg_parser = argparse.ArgumentParser(description='Merges two people')
 
-    person = dict()
-    person['good_pid'] = sys.argv[1]
-    person['bad_pid'] = sys.argv[2]
+    arg_parser.add_argument('good_pid', help='The pid of the original person', type=int)
+    arg_parser.add_argument('bad_pid', help='The pid of the person to be merged', type=int)
 
-    if not person['good_pid'].isdigit() or not person['bad_pid'].isdigit():
-        print("Usage: python LegMerge.py good_pid bad_pid -flags")
-        print("To see a list of flags: python LegMerge.py -help")
-        return
+    arg_parser.add_argument('-f', '--force', help='Runs the script without first asking the user to confirm the merge',
+                            action='store_true')
 
-    flags = list()
+    args = arg_parser.parse_args()
 
-    for flag in sys.argv[2:]:
-        if flag[0] == '-':
-            flags.append(flag[1:])
-
+    person = {'good_pid': args.good_pid, 'bad_pid': args.bad_pid}
 
     with connect() as dddb:
-        if 'a' in flags:
+        person_names = get_person_names(dddb, person)
+
+        print_string = "About to merge person " + str(person['bad_pid'])+":"+person_names['bad_name']
+        print_string += " into person " + str(person['good_pid'])+":"+person_names['good_name']
+        print_string += "\nAre you sure you want to do this? (y/n)\n"
+
+        if args.force or raw_input(print_string).lower() == 'y':
             merge_gp(dddb, person)
             merge_lobbyist(dddb, person)
             merge_legstaff(dddb, person)
@@ -538,22 +559,8 @@ def main():
             merge_utterances(dddb, person)
             delete_person(dddb, person)
         else:
-            if 'gp' in flags:
-                merge_gp(dddb, person)
-            if 'lo' in flags:
-                merge_lobbyist(dddb, person)
-            if 'ls' in flags:
-                merge_legstaff(dddb, person)
-            if 'sa' in flags:
-                merge_state_agency(dddb, person)
-            if 'sc' in flags:
-                merge_state_const_office(dddb, person)
-            if 'l' in flags:
-                merge_legislator(dddb, person)
-            if 'u' in flags:
-                merge_utterances(dddb, person)
-            if 'd' in flags and len(flags) > 1:
-                delete_person(dddb, person)
+            print("Exiting.")
+            exit()
 
 
 if __name__ == '__main__':

@@ -12,13 +12,13 @@
 
 import json
 import sys
-from Database_Connection import mysql_connection
 import requests
 import MySQLdb
 import traceback
-from graylogger.graylogger import GrayLogger
 from datetime import datetime
-GRAY_URL = 'http://dw.digitaldemocracy.org:12202/gelf'
+from Utils.Generic_Utils import *
+from Utils.Database_Connection import connect
+
 logger = None
 INSERTED = 0
 
@@ -38,12 +38,6 @@ API_URL += "limit=1000&key=31kNDZZMhlEjCOV8zkBG1crgWAGxwDIS&offset={3}&"
 STATE = 'NY'                 
 BILL_API_INCREMENT = 1000
 
-def create_payload(table, sqlstmt):                                             
-    return {
-        '_table': table,
-        '_sqlstmt': sqlstmt,
-        '_state': 'NY'
-    }
 
 #calls NY Senate API and returns a tuple with the list of results and the total number of results                        
 def call_senate_api(restCall, house, offset, resolution):
@@ -128,8 +122,7 @@ def insert_actions_db(bill, dddb):
                 dddb.execute(insert_action, act)
                 INSERTED += dddb.rowcount
             except MySQLdb.Error:
-                logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-                additional_fields=create_payload('Action',(insert_action%act)))
+                logger.exception(format_logger_message('Insert failed for Action', (insert_action % act)))
 
 #function to loop over all bills and insert bill actions        
 def add_bill_actions_db(dddb):
@@ -141,27 +134,15 @@ def add_bill_actions_db(dddb):
     for bill in bills:
         insert_actions_db(bill, dddb)
 
-    print "Inserted %d actions" % INSERTED
 
 def main():
-  dd_info = mysql_connection(sys.argv)
-  with MySQLdb.connect(host=dd_info['host'],
-                        user=dd_info['user'],
-                        db=dd_info['db'],
-                        port=dd_info['port'],
-                        passwd=dd_info['passwd'],
-                        charset='utf8') as dddb:
+  with connect() as dddb:
     add_bill_actions_db(dddb)      
-    logger.info(__file__ + ' terminated successfully.', 
-                full_msg='inserted ' + str(INSERTED) + ' rows in Action',
-                additional_fields={'_affected_rows':'Action:'+str(INSERTED),
-                                   '_inserted':'Action:'+str(INSERTED),
-                                   '_state':'NY'})
-   
+
   LOG = {'tables': [{'state': 'NY', 'name': 'Action', 'inserted':INSERTED, 'updated': 0, 'deleted': 0}]}
   sys.stderr.write(json.dumps(LOG))
+  logger.info(LOG)
 
 if __name__ == '__main__':
-    with GrayLogger(GRAY_URL) as _logger:
-        logger = _logger
-        main()
+    logger = create_logger()
+    main()
