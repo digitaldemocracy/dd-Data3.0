@@ -237,6 +237,8 @@ def merge_org_concept(dddb, org, is_org_concept=False, hide=True):
     table to False, hiding it on the site
     :param dddb: A connection to the DDDB
     :param org: A dictionary containing a good_oid and a bad_oid
+    :param is_org_concept: If this parameter is set to True, good_id contains the ID of an OrgConcept instead
+                           of an Organization's OID.
     :param hide: If this parameter is set to True, bad_oid's display_flag is set to False
     """
     try:
@@ -244,6 +246,9 @@ def merge_org_concept(dddb, org, is_org_concept=False, hide=True):
             concept_oid = org['good_oid']
         else:
             dddb.execute(sel_org_concept, org)
+            if dddb.rowcount == 0:
+                return
+
             concept_oid = dddb.fetchone()[0]
 
         dddb.execute(insert_org_concept_affiliation, {'new_oid': concept_oid,
@@ -342,7 +347,7 @@ def main():
     if args.subchapter:
         org['is_subchapter'] = True
 
-    with connect() as dddb:
+    with connect('live') as dddb:
         if not args.force:
             org_names = get_org_names(dddb, org, args.orgConcept)
 
@@ -351,18 +356,18 @@ def main():
                       + ":" + org_names['bad_name'] + " and OrgConcept " + str(org['good_oid'])
                       + ":" + org_names['good_name'])
                 if args.subchapter:
-                    print("Organization " + str(org['bad_oid'])+":"+org_names['bad_oid']
-                          + " is a subchapter of " + str(org['good_oid'])+":"+org_names['good_oid'])
+                    print("Organization " + str(org['bad_oid'])+":"+org_names['bad_name']
+                          + " is a subchapter of " + str(org['good_oid'])+":"+org_names['good_name'])
             elif args.orgConceptHide:
                 print("An OrgConceptAffiliation will be added between the organization "
-                      + str(org['bad_oid'])+":"+org_names['bad_oid'] + " and OrgConcept "
-                      + str(org['good_oid'])+":"+org_names['good_oid'] + ", then the organization will be hidden.")
+                      + str(org['bad_oid'])+":"+org_names['bad_name'] + " and OrgConcept "
+                      + str(org['good_oid'])+":"+org_names['good_name'] + ", then the organization will be hidden.")
                 if args.subchapter:
-                    print("Organization " + str(org['bad_oid']) + ":" + org_names['bad_oid']
-                          + " is a subchapter of " + str(org['good_oid']) + ":" + org_names['good_oid'])
+                    print("Organization " + str(org['bad_oid']) + ":" + org_names['bad_name']
+                          + " is a subchapter of " + str(org['good_oid']) + ":" + org_names['good_name'])
             else:
-                print("About to merge org " + str(org["bad_oid"])+":"+org_names['bad_oid']
-                      + " into org " + str(org['good_oid'])+":"+org_names['good_oid'])
+                print("About to merge org " + str(org["bad_oid"])+":"+org_names['bad_name']
+                      + " into org " + str(org['good_oid'])+":"+org_names['good_name'])
                 if args.concept:
                     print("A new OrgConcept for " + org['concept'] + " will also be created and"
                                                                      " OrgConceptAffiliations for both orgs will be added")
