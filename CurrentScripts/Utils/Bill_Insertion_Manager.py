@@ -383,10 +383,11 @@ class BillInsertionManager(object):
                     return False
                 self.V_INSERTED += 1
 
-            updated = self.update_version(version.to_dict())
+            if version.text is not None:
+                updated = self.update_version(version.to_dict())
 
-            if updated:
-                self.V_UPDATED += 1
+                if updated:
+                    self.V_UPDATED += 1
 
         return True
 

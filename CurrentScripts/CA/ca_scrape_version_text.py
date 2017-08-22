@@ -116,10 +116,10 @@ def sanitize_xml(xml):
     # Bad strings present in the xml, along with their corresponding
     # replacements.
     replacement_patterns = [
-        (r'&lt;', '<'),   # Specific case 1.
-        (r'&lt;', '</'), # Specific case 2.
-        (r'&quot;', '"'),
-        (r'<<', '<')
+        ('&lt;', '<'),   # Specific case 1.
+        ('&lt;', '</'), # Specific case 2.
+        ('&quot;', '"'),
+        ('<<', '<')
     ]
 
     for pat, repl in replacement_patterns:
@@ -142,13 +142,14 @@ def sanitize_xml(xml):
 
 
 def get_bill_versions(ca_cursor):
-    if dt.date.today().weekday() == 6:
-        comprehensive = True
-        updated_date = dt.date.today()
-    else:
-        comprehensive = False
-        updated_date = dt.date.today() - dt.timedelta(weeks=1)
-        updated_date = updated_date.strftime('%Y-%m-%d')
+    # if dt.date.today().weekday() == 6:
+    comprehensive = True
+    updated_date = dt.date.today()
+    # else:
+    #     comprehensive = False
+    #     updated_date = dt.date.today() - dt.timedelta(weeks=1)
+    #     updated_date = updated_date.strftime('%Y-%m-%d')
+
 
     if comprehensive:
         #print("Comprehensive")
@@ -156,10 +157,21 @@ def get_bill_versions(ca_cursor):
     else:
         ca_cursor.execute(SELECT_CAPUBLIC_VERSION_XML, {'updated_since': updated_date})
 
-    for vid, xml in ca_cursor.fetchall():
+    row = ca_cursor.fetchone()
+    while row is not None:
+        vid = row[0]
+        xml = row[2]
+        
         if xml is None:
+            row = ca_cursor.fetchone()
             continue
         yield '%s_%s' % (STATE, vid), sanitize_xml(xml)
+        row = ca_cursor.fetchone()
+
+    # for vid, xml in ca_cursor.fetchall():
+    #     if xml is None:
+    #         continue
+    #     yield '%s_%s' % (STATE, vid), sanitize_xml(xml)
 
 
 def billparse(ca_cursor, dd_cursor):
