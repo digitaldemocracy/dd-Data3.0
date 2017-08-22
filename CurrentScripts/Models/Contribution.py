@@ -1,7 +1,7 @@
 class Contribution(object):
     def __init__(self, first_name, last_name, donor_name, amount,
                  state, date, year,
-                 pid=None, house=None, donor_org=None, oid=None, district=None,
+                 pid=None, house=None, donor_org=None, oid=None, sector=None, district=None,
                  contribution_id=None):
         self.first_name = first_name
         self.last_name = last_name
@@ -20,6 +20,7 @@ class Contribution(object):
 
         self.donor_org = donor_org
         self.oid = oid
+        self.donor_category = sector
 
         self.contribution_id = contribution_id
 

@@ -26,6 +26,7 @@ from Constants.Contribution_Queries import *
 class ContributionInsertionManager(object):
     def __init__(self, dddb, logger, state):
         self.CONTRIBUTIONS_INSERTED = 0
+        self.CONTRIBUTIONS_UPDATED = 0
         self.ORGANIZATIONS_INSERTED = 0
 
         self.dddb = dddb
@@ -36,8 +37,10 @@ class ContributionInsertionManager(object):
         """
         Handles logging. Should be called immediately before the insertion script finishes.
         """
-        LOG = {'tables': [{'state': self.state, 'name': 'Organizations', 'inserted': self.ORGANIZATIONS_INSERTED, 'updated': 0, 'deleted': 0},
-                          {'state': self.state, 'name': 'Contribution', 'inserted': self.CONTRIBUTIONS_INSERTED, 'updated': 0, 'deleted': 0},
+        LOG = {'tables': [{'state': self.state, 'name': 'Organizations', 'inserted': self.ORGANIZATIONS_INSERTED,
+                           'updated': 0, 'deleted': 0},
+                          {'state': self.state, 'name': 'Contribution', 'inserted': self.CONTRIBUTIONS_INSERTED,
+                           'updated': self.CONTRIBUTIONS_UPDATED, 'deleted': 0},
                           ]}
         self.logger.info(LOG)
         sys.stderr.write(json.dumps(LOG))
@@ -137,6 +140,20 @@ class ContributionInsertionManager(object):
             self.CONTRIBUTIONS_INSERTED += 1
             return True
 
+    def update_donor_category(self, contribution):
+        """
+        Updates a contribution's doncr_category if it has changed
+        :param contribution: A dictionary containing information on a contribution
+        """
+        updated = update_entity(self.dddb, UPDATE_CONTRIBUTION_DONOR_CATEGORY, contribution,
+                                'Contribution', self.logger)
+
+        if updated is False:
+            return False
+        else:
+            self.CONTRIBUTIONS_UPDATED += 1
+            return True
+
     def insert_contributions_db(self, contribution_list):
         """
         This function handles inserting a list contributions into the database
@@ -176,5 +193,8 @@ class ContributionInsertionManager(object):
 
                 if not self.insert_contribution(contribution.__dict__):
                     return False
+
+            if not self.update_donor_category(contribution.__dict__):
+                return False
 
         return True

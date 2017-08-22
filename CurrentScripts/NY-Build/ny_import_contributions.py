@@ -15,17 +15,8 @@ Tables affected:
  - Contribution
 """
 
-import re
-import sys
-import time
-import json
-import MySQLdb
-import requests
-import traceback
-from datetime import datetime
-from bs4 import BeautifulSoup
 from Utils.Generic_Utils import *
-#from Utils.Generic_MySQL import *
+from Utils.Generic_MySQL import *
 from Utils.Database_Connection import *
 from Utils.Contribution_Insertion_Manager import ContributionInsertionManager
 from OpenStatesParsers.contributions_parser import ContributionParser
