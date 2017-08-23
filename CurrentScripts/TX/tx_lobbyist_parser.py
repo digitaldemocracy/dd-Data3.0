@@ -67,8 +67,8 @@ class TxLobbyistParser(object):
 
         self.business_endings = ["llc", "pc", "inc.", "l.p."]
 
-
-        print(self.LOBBYIST_FILE_DIRECTORY)
+        self.lobbyists_no_client = pd.read_csv("lobbyist.csv").drop_duplicates()
+        self.lobbyists_no_client.rename(columns={'\ufeffFilerID': 'FilerID'}, inplace=True)
 
     def download_files(self):
         """
@@ -410,8 +410,6 @@ class TxLobbyistParser(object):
         :return: a list of lobbyist objects.
         '''
         self.download_files()
-        self.lobbyists_no_client = pd.read_csv("lobbyist.csv").drop_duplicates()
-        self.lobbyists_no_client.rename(columns={'\ufeffFilerID': 'FilerID'}, inplace=True)
 
         df = pd.read_csv(self.TODAYS_LOBBYIST_CSV)
         df.drop_duplicates(subset=["Filer Name", "Client Name"], inplace=True)
