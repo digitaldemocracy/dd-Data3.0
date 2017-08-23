@@ -69,7 +69,7 @@ from Term where pid = %(bad_pid)s'''
 insert_legstaff = '''insert into LegislativeStaff (pid, state)
                      select %(good_pid)s, state from LegislativeStaff where pid = %(bad_pid)s'''
 insert_leganalyst = '''insert into LegAnalystOffice (pid, state)
-                       select %(good_pid)s, state from LegislativeStaff where pid = %(bad_pid)s'''
+                       select %(good_pid)s, state from LegAnalystOffice where pid = %(bad_pid)s'''
 insert_state_agency_rep = '''insert into StateAgencyRep (pid, state)
                              select %(good_pid)s, state from StateAgencyRep where pid = %(bad_pid)s'''
 insert_state_const_office_rep = '''insert into StateConstOfficeRep (pid, state)
@@ -101,6 +101,7 @@ up_contribution = '''update Contribution set pid = %(good_pid)s where pid = %(ba
 up_gift = '''update Gift set pid = %(good_pid)s where pid = %(bad_pid)s'''
 up_behests = '''update Behests set official = %(good_pid)s where official = %(bad_pid)s'''
 up_legoffice = '''update LegOfficePersonnel set legislator = %(good_pid)s where legislator = %(bad_pid)s'''
+up_officepersonnel = '''update OfficePersonnel set staff_member = %(good_pid)s where staff_member = %(bad_pid)s'''
 up_billsponsors = '''update BillSponsors set pid = %(good_pid)s where pid = %(bad_pid)s'''
 up_billvotedetail = '''update BillVoteDetail set pid = %(good_pid)s where pid = %(bad_pid)s'''
 up_legstaffgift_staff = '''update LegStaffGifts set staff_member = %(good_pid)s where staff_member = %(bad_pid)s'''
@@ -184,6 +185,44 @@ def check_terms(dddb, leg):
 
 def merge_lobbyist(dddb, leg):
     try:
+        # Check for existing LobbyistEmployment rows
+        dddb.execute(sel_lobbyist_employments, leg)
+        result = dddb.fetchall()
+
+        for row in result:
+            le = {'pid': leg['good_pid'], 'sender_id': row[1], 'rpt_date': row[2],
+                  'ls_end_yr': row[4], 'state': row[5]}
+
+            dddb.execute(sel_unique_lobbyemployment, le)
+
+            if dddb.rowcount != 0:
+                dddb.execute(del_lobbyemployment,
+                             {'pid': leg['bad_pid'], 'sender_id': le['sender_id'],
+                              'rpt_date': le['rpt_date'], 'ls_end_yr': le['ls_end_yr'],
+                              'state': le['state']})
+
+        dddb.execute(up_lobbyemployment, leg)
+        print("Updated " + str(dddb.rowcount) + " rows in LobbyistEmployment")
+
+        # Check for existing LobbyistDirectEmployment rows
+        dddb.execute(sel_lobbyist_direct_employments, leg)
+        result = dddb.fetchall()
+
+        for row in result:
+            lde = {'pid': leg['good_pid'], 'lobbyist_employer': row[1], 'rpt_date': row[2],
+                   'ls_end_yr': row[3], 'state': row[4]}
+
+            dddb.execute(sel_unique_lobbydirectemployment, lde)
+
+            if dddb.rowcount != 0:
+                dddb.execute(del_lobbydirectemployment,
+                             {'pid': leg['bad_pid'], 'lobbyist_employer': lde['lobbyist_employer'],
+                              'rpt_date': lde['rpt_date'], 'ls_end_yr': lde['ls_end_yr'],
+                              'state': lde['state']})
+
+        dddb.execute(up_lobbydirectemployment, leg)
+        print("Updated " + str(dddb.rowcount) + " rows in LobbyistDirectEmployment")
+
         dddb.execute(sel_filer_id, leg)
 
         if dddb.rowcount > 0:
@@ -195,44 +234,6 @@ def merge_lobbyist(dddb, leg):
             if good_lobbyist == 0:
                 dddb.execute(insert_lobbyist, leg)
                 print("Inserted " + str(dddb.rowcount) + " rows in Lobbyist")
-
-            # Check for existing LobbyistEmployment rows
-            dddb.execute(sel_lobbyist_employments, leg)
-            result = dddb.fetchall()
-
-            for row in result:
-                le = {'pid': leg['good_pid'], 'sender_id': row[1], 'rpt_date': row[2],
-                       'ls_end_yr': row[4], 'state': row[5]}
-                print(le)
-                dddb.execute(sel_unique_lobbyemployment, le)
-
-                if dddb.rowcount != 0:
-                    print("Delete: " + str(le))
-                    dddb.execute(del_lobbyemployment,
-                                 {'pid': leg['bad_pid'], 'sender_id': le['sender_id'],
-                                  'rpt_date': le['rpt_date'], 'ls_end_yr': le['ls_end_yr'],
-                                  'state': le['state']})
-
-            dddb.execute(up_lobbyemployment, leg)
-            print("Updated " + str(dddb.rowcount) + " rows in LobbyistEmployment")
-
-            # Check for existing LobbyistDirectEmployment rows
-            dddb.execute(sel_lobbyist_direct_employments, leg)
-            result = dddb.fetchall()
-
-            for row in result:
-                lde = {'pid': leg['good_pid'], 'lobbyist_employer': row[1], 'rpt_date': row[2],
-                       'ls_end_yr': row[3], 'state': row[4]}
-
-                dddb.execute(sel_unique_lobbydirectemployment, lde)
-
-                if dddb.rowcount != 0:
-                    dddb.execute(del_lobbydirectemployment, {'pid': leg['bad_pid'], 'lobbyist_employer': lde['lobbyist_employer'],
-                                                       'rpt_date': lde['rpt_date'], 'ls_end_yr': lde['ls_end_yr'],
-                                                       'state': lde['state']})
-
-            dddb.execute(up_lobbydirectemployment, leg)
-            print("Updated " + str(dddb.rowcount) + " rows in LobbyistDirectEmployment")
 
             dddb.execute(up_lobbyistreps, leg)
             print("Updated " + str(dddb.rowcount) + " rows in LobbyistRepresentation")
@@ -289,6 +290,10 @@ def merge_legstaff(dddb, leg):
             print("Updated " + str(dddb.rowcount) + " rows in LegStaffGifts")
 
             dddb.execute(up_legoffice_staff, leg)
+            print("Updated " + str(dddb.rowcount) + " rows in LegOfficePersonnel")
+
+            dddb.execute(up_officepersonnel, leg)
+            print("Updated " + str(dddb.rowcount) + " rows in OfficePersonnel")
 
             dddb.execute(del_legstaff, leg)
             print("Deleted " + str(dddb.rowcount) + " rows in LegislativeStaff")
@@ -534,7 +539,7 @@ def main():
     arg_parser.add_argument('good_pid', help='The pid of the original person', type=int)
     arg_parser.add_argument('bad_pid', help='The pid of the person to be merged', type=int)
 
-    arg_parser.add_argument('-f', '--force', help='Runs the script without first asking the user to confirm the merge',
+    arg_parser.add_argument('-f', '--force', help='Bypasses the confirmation prompt before executing the program. Not recommended.',
                             action='store_true')
 
     args = arg_parser.parse_args()
