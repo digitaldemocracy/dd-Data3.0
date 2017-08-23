@@ -46,6 +46,7 @@ from Utils.Generic_Utils import *
 from Utils.Generic_MySQL import *
 from Constants.Lobbyist_Queries import *
 from Constants.General_Constants import *
+from Utils.Database_Connection import connect
 
 logger = None
 

@@ -41,9 +41,10 @@ def is_entity_in_db(db_cursor, query, entity, objType, logger):
     return False
 
 def insert_entity_with_check(db_cursor, entity, qs_query, qi_query, objType, logger):
-    if not is_entity_in_db(db_cursor, qs_query, entity, objType, logger):
+    result = is_entity_in_db(db_cursor, qs_query, entity, objType, logger)
+    if not result:
         return insert_entity(db_cursor, entity, qi_query, objType, logger)
-    return False
+    return result
 
 def insert_entity(db_cursor, entity, qi_query, objType, logger):
     try:
