@@ -24,6 +24,7 @@ from Utils.Database_Connection import connect
 
 logger = None
 P_INSERT = 0
+PSA_INSERT = 0
 L_INSERT = 0
 T_INSERT = 0
 T_UPDATE = 0
@@ -32,6 +33,11 @@ insert_person = '''INSERT INTO Person
                 (last, first, image, source)
                 VALUES
                 (%(last)s, %(first)s, %(image)s, "ny_import_legislators.py");'''
+
+insert_person_state_affiliation = '''INSERT INTO PersonStateAffiliation
+                                     (pid, state)
+                                     VALUES
+                                     (%(pid)s, 'NY')'''
 
 insert_legislator = '''INSERT INTO Legislator
                 (pid, state)
@@ -50,7 +56,12 @@ WHERE year = %s
  AND current_term = 1
  AND state = 'NY'
 '''
-select_legislator = '''SELECT p.pid 
+
+select_person_state_affiliation = '''select * from PersonStateAffiliation
+                                     where state = 'NY'
+                                     and pid = %(pid)s'''
+
+select_legislator = '''SELECT p.pid
                        FROM Person p, Legislator l
                        WHERE first = %(first)s 
                         AND last = %(last)s 
@@ -173,6 +184,22 @@ def call_senate_api(restCall, house, offset):
     return out["result"]["items"]
 
 
+def is_person_state_affiliation_in_db(senator, dddb):
+    try:
+        dddb.execute(select_person_state_affiliation, senator)
+
+        query = dddb.fetchone()
+
+        if query is None:
+            return False
+
+    except:
+        logger.exception(format_logger_message('Select failed in PersonStateAffiliation', (select_person_state_affiliation % senator)))
+        return False
+
+    return query[0]
+
+
 # checks if Legislator + Person is in database.
 # If it is, return its PID. Otherwise, return false
 def is_leg_in_db(senator, dddb):
@@ -245,7 +272,7 @@ def get_senators_api():
 # adds to Person and Legislator if they are not already filled
 # and adds to Term if it is not already filled
 def add_senator_db(senator, dddb):
-    global P_INSERT, L_INSERT, T_INSERT
+    global P_INSERT, PSA_INSERT, L_INSERT, T_INSERT
     date = datetime.now().strftime('%Y-%m-%d')
     pid = is_leg_in_db(senator, dddb)
     ret = False
@@ -261,12 +288,26 @@ def add_senator_db(senator, dddb):
         pid = dddb.lastrowid
         senator['pid'] = pid
         try:
+            dddb.execute(insert_person_state_affiliation, senator)
+            PSA_INSERT += dddb.rowcount
+        except MySQLdb.Error:
+            logger.exception(format_logger_message('Insert failed for PersonStateAffiliation'), (insert_person_state_affiliation % senator))
+
+        try:
             dddb.execute(insert_legislator, senator)
             L_INSERT += dddb.rowcount
         except MySQLdb.Error:
             logger.exception(format_logger_message('Insert failed for Legislator', (insert_legislator % senator)))
 
         ret = True
+
+    if is_person_state_affiliation_in_db(senator, dddb) is False:
+        try:
+            dddb.execute(insert_person_state_affiliation, senator)
+            PSA_INSERT += dddb.rowcount
+        except MySQLdb.Error:
+            logger.exception(format_logger_message('Insert failed for PersonStateAffiliation'), (insert_person_state_affiliation % senator))
+
 
     if is_term_in_db(senator, dddb) is False:
         # print insert_term % senator
@@ -321,8 +362,9 @@ def main():
         add_senators_db(dddb)
 
     LOG = {'tables': [{'state': 'NY', 'name': 'Person', 'inserted': P_INSERT, 'updated': 0, 'deleted': 0},
+                      {'state': 'NY', 'name': 'PersonStateAffiliation', 'inserted': PSA_INSERT, 'updated': 0, 'deleted': 0},
                       {'state': 'NY', 'name': 'Legislator', 'inserted': L_INSERT, 'updated': 0, 'deleted': 0},
-                      {'state': 'NY', 'name': 'Term', 'inserted': T_INSERT, 'updated': T_UPDATE, 'deleted': 0}]}
+                      {'state': 'NY', 'name': 'Term', 'inserted': T_INSERT, 'updated': T_UPDATE, 'deleted': 0},]}
     sys.stderr.write(json.dumps(LOG))
     logger.info(LOG)
 

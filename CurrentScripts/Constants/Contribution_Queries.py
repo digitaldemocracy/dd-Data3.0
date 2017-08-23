@@ -53,7 +53,11 @@ INSERT_ORGANIZATION = '''INSERT INTO Organizations
                     VALUES (%(name)s, %(state)s, 'Contributions')'''
 
 INSERT_CONTRIBUTION = '''INSERT INTO Contribution
-                    (id, pid, year, date, house, donorName, donorOrg, amount, state, oid)
+                    (id, pid, year, date, house, donorName, donorOrg, donorCategory, amount, state, oid)
                     VALUES
                     (%(contribution_id)s, %(pid)s, %(year)s, %(date)s, %(house)s, %(donor_name)s, %(donor_org)s,
-                     %(amount)s, %(state)s, %(oid)s)'''
+                     %(donor_category)s, %(amount)s, %(state)s, %(oid)s)'''
+
+UPDATE_CONTRIBUTION_DONOR_CATEGORY = '''UPDATE Contribution
+                                        SET donorCategory = %(donor_category)s
+                                        WHERE id = %(contribution_id)s'''

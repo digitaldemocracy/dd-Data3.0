@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.7
 # -*- coding: utf8 -*-
 
 """
@@ -117,9 +117,10 @@ class ContributionParser(object):
                 contributor_type = record['Type_of_Contributor']['Type_of_Contributor']
                 contributor = record['Contributor']['Contributor']
                 amount = record['Amount']['Amount']
+                sector = record['Broad_Sector']['Broad_Sector']
 
                 # some donations apparently dont have dates
-                if str(date) == '' or str(date) == '0000-00-00' or date < '1970-01-01':
+                if str(date) == '' or str(date) == '0000-00-00' or date < '1970-01-01' or date > str(datetime.now().date()):
                     date = None
                     year = None
                 else:
@@ -140,7 +141,7 @@ class ContributionParser(object):
                     donor_name = donor_org = contributor
 
                 contribution = Contribution(first_name=first, last_name=last, donor_name=donor_name,
-                                            donor_org=donor_org, amount=amount, state=self.state, date=date, year=year)
+                                            donor_org=donor_org, sector=sector, amount=amount, state=self.state, date=date, year=year)
 
                 contribution_list.append(contribution)
 
