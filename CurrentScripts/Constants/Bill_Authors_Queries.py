@@ -1,7 +1,18 @@
+SELECT_ALL_BIDS = '''SELECT bid, type, number, house FROM Bill
+                     WHERE state = %(state)s
+                     AND sessionYear = %(session_year)s
+                     AND session = %(session)s'''
+
+SELECT_ALL_VIDS = '''SELECT vid FROM BillVersion
+                     WHERE bid = %(bid)s'''
+
 SELECT_ALL_BILL_VERSION_AUTHORS = '''SELECT bill_version_id, type, house, name,
                                           contribution, primary_author_flg
                                          FROM bill_version_authors_tbl
                                          WHERE trans_update > %(updated_since)s'''
+
+SELECT_PID_LEGISLATOR_ALT_ID = '''SELECT pid FROM AlternateId
+                                  WHERE alt_id = %(alt_id)s'''
 
 SELECT_PID_LEGISLATOR_LAST_NAME = '''SELECT p.pid
                                      FROM Person p, Legislator l, Term t

@@ -23,19 +23,29 @@ class BillAuthorInsertionManager(object):
         """
         Handles logging. Should be called immediately before the insertion script finishes.
         """
-        LOG = {'tables': [{'state': 'CA', 'name': 'authors', 'inserted': self.AUTHOR_INSERTS, 'updated': 0, 'deleted': 0},
-                          {'state': 'CA', 'name': 'BillSponsors', 'inserted': self.BILL_SPONSOR_INSERTS, 'updated': 0, 'deleted': 0},
-                          {'state': 'CA', 'name': 'CommitteeAuthors', 'inserted': self.COMMITTEE_AUTHOR_INSERTS, 'updated': 0,
+        LOG = {'tables': [{'state': self.state, 'name': 'authors', 'inserted': self.AUTHOR_INSERTS, 'updated': 0, 'deleted': 0},
+                          {'state': self.state, 'name': 'BillSponsors', 'inserted': self.BILL_SPONSOR_INSERTS, 'updated': 0, 'deleted': 0},
+                          {'state': self.state, 'name': 'CommitteeAuthors', 'inserted': self.COMMITTEE_AUTHOR_INSERTS, 'updated': 0,
                            'deleted': 0}]}
         self.logger.info(LOG)
         sys.stderr.write(json.dumps(LOG))
 
     def get_person(self, bill_author):
-        pid = get_entity_id(db_cursor=self.dddb,
-                            entity=bill_author.__dict__,
-                            query=SELECT_PID_LEGISLATOR_LAST_NAME,
-                            objType="Person",
-                            logger=self.logger)
+        pid = None
+
+        if bill_author.alt_id is not None:
+            pid = get_entity_id(db_cursor=self.dddb,
+                                entity=bill_author.__dict__,
+                                query=SELECT_PID_LEGISLATOR_ALT_ID,
+                                objType="Person",
+                                logger=self.logger)
+
+        if not pid:
+            pid = get_entity_id(db_cursor=self.dddb,
+                                entity=bill_author.__dict__,
+                                query=SELECT_PID_LEGISLATOR_LAST_NAME,
+                                objType="Person",
+                                logger=self.logger)
         if not pid:
             pid = get_entity_id(db_cursor=self.dddb,
                                   entity=bill_author.__dict__,
@@ -116,7 +126,9 @@ class BillAuthorInsertionManager(object):
 
     def import_bill_authors(self, bill_authors):
         for bill_author in bill_authors:
-            bill_author.bid = self.get_bid(bill_author)
+            print(bill_author.__dict__)
+            if not bill_author.bid:
+                bill_author.bid = self.get_bid(bill_author)
             if bill_author.bid:
                 if bill_author.author_type == "Legislator":
                     bill_author.pid = self.get_person(bill_author)
