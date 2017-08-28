@@ -52,18 +52,18 @@ class BillAuthorInsertionManager(object):
                                   query=SELECT_PID_LEGISLATOR_FULL_NAME,
                                   objType="Person",
                                   logger=self.logger)
-            if not pid:
-                pid = get_entity_id(db_cursor=self.dddb,
-                                    entity=bill_author.__dict__,
-                                    query=SELECT_PID_LEGISLATOR_LAST_NAME_NO_HOUSE,
-                                    objType="Person",
-                                    logger=self.logger)
-                if not pid:
-                    pid = get_entity_id(db_cursor=self.dddb,
-                                        entity=bill_author.__dict__,
-                                        query=SELECT_PID_LEGISLATOR_FULL_NAME_NO_HOUSE,
-                                        objType="Person",
-                                        logger=self.logger)
+        if not pid:
+            pid = get_entity_id(db_cursor=self.dddb,
+                                entity=bill_author.__dict__,
+                                query=SELECT_PID_LEGISLATOR_LAST_NAME_NO_HOUSE,
+                                objType="Person",
+                                logger=self.logger)
+        if not pid:
+            pid = get_entity_id(db_cursor=self.dddb,
+                                entity=bill_author.__dict__,
+                                query=SELECT_PID_LEGISLATOR_FULL_NAME_NO_HOUSE,
+                                objType="Person",
+                                logger=self.logger)
         return pid
 
     def get_bid(self, bill_author):
@@ -94,6 +94,7 @@ class BillAuthorInsertionManager(object):
         if result:
             self.BILL_SPONSOR_ROLL_INSERTS += 1
         return result
+
     def insert_author(self, bill_author):
         result = insert_entity_with_check(db_cursor=self.dddb,
                                          entity=bill_author.__dict__,
@@ -105,13 +106,45 @@ class BillAuthorInsertionManager(object):
             self.AUTHOR_INSERTS += 1
         return result
 
-
     def get_cid(self, bill_author):
-        return get_entity_id(db_cursor=self.dddb,
+        cid = get_entity_id(db_cursor=self.dddb,
                                entity=bill_author.__dict__,
                                query=SELECT_CID_COMMITTEE,
                                objType="Committee",
                                logger=self.logger)
+
+        if not cid:
+            cid = get_entity_id(db_cursor=self.dddb,
+                               entity=bill_author.__dict__,
+                               query=SELECT_CID_COMMITTEE_SHORT_NAME,
+                               objType="Committee",
+                               logger=self.logger)
+
+        if not cid:
+            cid = get_entity_id(db_cursor=self.dddb,
+                               entity=bill_author.__dict__,
+                               query=SELECT_CID_COMMITTEE_LIKE_SHORT_NAME,
+                               objType="Committee",
+                               logger=self.logger)
+
+        if not cid:
+            bill_author.name = bill_author.committee_name.replace(' and ', ' & ').strip()
+            cid = get_entity_id(db_cursor=self.dddb,
+                               entity=bill_author.__dict__,
+                               query=SELECT_CID_COMMITTEE_LIKE_SHORT_NAME,
+                               objType="Committee",
+                               logger=self.logger)
+
+        if not cid:
+            bill_author.name = bill_author.committee_name.replace(' & ', ' and ').strip()
+            cid = get_entity_id(db_cursor=self.dddb,
+                               entity=bill_author.__dict__,
+                               query=SELECT_CID_COMMITTEE_LIKE_SHORT_NAME,
+                               objType="Committee",
+                               logger=self.logger)
+
+        return cid
+
 
     def insert_committee_author(self, bill_author):
         result = insert_entity_with_check(db_cursor=self.dddb,
@@ -126,7 +159,6 @@ class BillAuthorInsertionManager(object):
 
     def import_bill_authors(self, bill_authors):
         for bill_author in bill_authors:
-            print(bill_author.__dict__)
             if not bill_author.bid:
                 bill_author.bid = self.get_bid(bill_author)
             if bill_author.bid:
@@ -140,6 +172,11 @@ class BillAuthorInsertionManager(object):
                             self.insert_author(bill_author)
                     else:
                         self.logger.exception("Person not found\n" + str(bill_author.__dict__))
+                        bill_author.cid = self.get_cid(bill_author)
+                        if bill_author.cid:
+                            self.insert_committee_author(bill_author)
+                        else:
+                            self.logger.exception("Committee not found\n" + str(bill_author.__dict__))
                 else:
                     bill_author.cid = self.get_cid(bill_author)
                     if bill_author.cid:

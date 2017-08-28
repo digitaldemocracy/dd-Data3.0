@@ -34,6 +34,15 @@ class AuthorOpenStatesParser(object):
 
         self.dddb = dddb
 
+    def format_committee_name(self, name):
+        name = name.replace('Select Committee on', '').strip()
+        name = name.replace('Subcommittee', '').strip()
+        name = name.replace('Committee', '', 1).strip()
+
+        name = name
+
+        return name
+
     def get_bill_sponsors(self, session, bill_id):
         api_url = self.BILL_API_URL.format(self.state, session, bill_id)
 
@@ -57,10 +66,12 @@ class AuthorOpenStatesParser(object):
             bill_versions = self.dddb.fetchall()
 
             for sponsor in bill_sponsors:
-                if 'committee_id' in sponsor:
+                if 'committee_id' in sponsor and sponsor['committee_id'] is not None:
                     author_type = 'Committee'
+                    name = self.format_committee_name(sponsor['name'])
                 else:
                     author_type = 'Legislator'
+                    name = sponsor['name']
 
                 if sponsor['type'].lower() == 'primary':
                     contribution = 'Lead Author'
@@ -70,7 +81,7 @@ class AuthorOpenStatesParser(object):
                     is_primary_author = 'N'
 
                 for vid in bill_versions:
-                    bill_author = BillAuthor(name=sponsor['name'], session_year=session_year,
+                    bill_author = BillAuthor(name=name, session_year=session_year,
                                              state=self.state, bill_version_id=vid[0].split('_')[1],
                                              author_type=author_type, contribution=contribution,
                                              house=bill[3], is_primary_author=is_primary_author,

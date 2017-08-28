@@ -98,7 +98,19 @@ SELECT_CID_COMMITTEE = '''SELECT cid
                           AND state = %(state)s
                           AND current_flag = 1'''
 
+SELECT_CID_COMMITTEE_SHORT_NAME = '''SELECT cid
+                          FROM Committee
+                          WHERE short_name sounds like %(committee_name)s
+                          AND house = %(house)s
+                          AND state = %(state)s
+                          AND current_flag = 1'''
 
+SELECT_CID_COMMITTEE_LIKE_SHORT_NAME = '''SELECT cid
+                                          FROM Committee
+                                          WHERE short_name like %(committee_like_name)s
+                                          AND house = %(house)s
+                                          AND state = %(state)s
+                                          AND current_flag = 1'''
 
 SELECT_CID_COMMITTEE_AUTHOR = '''SELECT cid
                                  FROM CommitteeAuthors

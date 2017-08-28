@@ -15,6 +15,7 @@ class BillAuthor(object):
     def __init__(self, name, session_year, state, bill_version_id, author_type, contribution, house, is_primary_author,
                  alt_id=None, bid=None):
         self.committee_name = name
+        self.committee_like_name = '%' + name.strip() + '%'
         self.last_name = name
         self.like_full_name = name.replace(" ", "%", 1)
         self.session_year = session_year
