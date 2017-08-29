@@ -12,8 +12,10 @@ Description:
 """
 
 class BillAuthor(object):
-    def __init__(self, name, session_year, state, bill_version_id, author_type, contribution, house, is_primary_author):
+    def __init__(self, name, session_year, state, bill_version_id, author_type, contribution, house, is_primary_author,
+                 alt_id=None, bid=None):
         self.committee_name = name
+        self.committee_like_name = '%' + name.strip() + '%'
         self.last_name = name
         self.like_full_name = name.replace(" ", "%", 1)
         self.session_year = session_year
@@ -24,6 +26,6 @@ class BillAuthor(object):
         self.house = house.title()
         self.is_primary_author = True if "Y" == is_primary_author else False
         self.pid = None
-        self.bid = None
+        self.bid = bid
         self.cid = None
-
+        self.alt_id = alt_id
