@@ -1985,9 +1985,11 @@ CREATE TABLE IF NOT EXISTS NewspaperToDistrict (
    FOREIGN KEY (district_id) REFERENCES District(dr_id)
 )  ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS TT_TaskWorkedTimestamp (
+CREATE TABLE IF NOT EXISTS TT_TaskLog (
   id    INTEGER AUTO_INCREMENT,
   tid INTEGER,
+  uid INTEGER,
+  operation ENUM('create','edit','delete','revert'),
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
   PRIMARY KEY (id),
   FOREIGN KEY (tid) REFERENCES TT_Task(tid)
