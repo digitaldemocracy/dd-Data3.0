@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import itertools
 from datetime import datetime
+import os
 
 
 CONN_INFO = {
@@ -12,9 +13,9 @@ CONN_INFO = {
              # 'db': 'andrew_dddb',
              'db': 'DDDB2016Aug',
              # 'user': 'root',
-             'user': 'awsDB',
+             'user': 'dbMaster',
              # 'passwd': 'Macymo%12'
-             'passwd': 'D1d2d3b4'
+             'passwd': os.environ['DBMASTERPASSWORD']
              }
 
 def get_passing_votes(cnxn):
