@@ -405,3 +405,14 @@ CREATE TABLE AlignmentScoresData (
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+
+-- Holds Bipartisanship scores. We have a script that calculates these from out voting data. They
+-- only exist for CA legislators
+CREATE TABLE BipartisanshipScores(
+  pid int,
+  score double,
+  no_abstain_votes bool,
+  no_resolutions bool,
+  no_unanimous bool,
+  session_year enum('2015', '2017', 'All'),
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
