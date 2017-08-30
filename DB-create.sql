@@ -662,6 +662,7 @@ CREATE TABLE IF NOT EXISTS Video (
   srtFlag TINYINT(1) DEFAULT 0,
   state VARCHAR(2),
   source ENUM("YouTube", "Local", "Other"),
+  rank TINYINT(1) DEFAULT 0,
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
   lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
 
@@ -1872,6 +1873,11 @@ CREATE TABLE IF NOT EXISTS TT_Videos (
   house VARCHAR(255),
   status ENUM('downloading','downloaded','download failed','skipped','queued','cutting','cut','cutting failed','approved','tasked','deleted','tasking','tasking failed','archived'),
   hid INT(11),
+  uniqueUrl VARCHAR(255),
+  house VARCHAR(255),
+  m3ug TINYINT(1) DEFAULT 0,
+  doVFT TINYINT(1) DEFAULT 0,
+  priority TINYINT(1) DEFAULT 2,
   glacierId VARCHAR(255),
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
   lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
@@ -1947,6 +1953,7 @@ CREATE TABLE IF NOT EXISTS City (
    state VARCHAR(2) NOT NULL,
    lat  decimal(10,8),
    lon  decimal(11,8),
+   type ENUM('City', 'Town', 'CDP', 'Neighborhood', 'Community') DEFAULT 'City',
    FOREIGN KEY (county_id) REFERENCES County(county_id),
    FOREIGN KEY (state) REFERENCES State(abbrev)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -1954,8 +1961,18 @@ CREATE TABLE IF NOT EXISTS City (
 CREATE TABLE IF NOT EXISTS Newspaper (
    news_id INTEGER AUTO_INCREMENT PRIMARY KEY,
    name VARCHAR(255) NOT NULL,
-   state VARCHAR(2) NOT NULL DEFAULT '',
+   state VARCHAR(2) NOT NULL,
    city_id INTEGER NOT NULL,
+   zip_code VARCHAR(10),
+   home_page_url VARCHAR(255),
+   email VARCHAR(255),
+   media_type VARCHAR(255),
+   topic VARCHAR(255),
+   facebook VARCHAR(255),
+   twitter VARCHAR(255),
+   address_line1 VARCHAR(255),
+   address_line2 VARCHAR(255),
+   phone VARCHAR(255),
    FOREIGN KEY (city_id) REFERENCES City(city_id),
    FOREIGN KEY (state) REFERENCES State(abbrev)
 )  ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -1967,6 +1984,16 @@ CREATE TABLE IF NOT EXISTS NewspaperToDistrict (
    FOREIGN KEY (news_id) REFERENCES Newspaper(news_id),
    FOREIGN KEY (district_id) REFERENCES District(dr_id)
 )  ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS TT_TaskLog (
+  id    INTEGER AUTO_INCREMENT,
+  tid INTEGER,
+  uid INTEGER,
+  operation ENUM('create','edit','delete','revert'),
+  lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+  PRIMARY KEY (id),
+  FOREIGN KEY (tid) REFERENCES TT_Task(tid)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE OR REPLACE VIEW TT_currentCuts
 AS SELECT * FROM TT_Cuts

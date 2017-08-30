@@ -9,6 +9,7 @@ Description:
 - Function that makes a connection to the current database
 - Script is called by other scripts making connection to MySQL database
 '''
+import os
 import MySQLdb
 
 QS_DBINFO = '''SELECT * FROM DBConnection
@@ -19,10 +20,10 @@ def mysql_connection(args):
   if len(args) == 1:
     return {'host':'dddb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
             'port':3306,
-            'db':'EricTest',
-            #'db':'DDDB2016Aug',
-            'user':'awsDB',
-            'passwd':'digitaldemocracy789'}
+            #'db':'EricTest',
+            'db':'DDDB2016Aug',
+            'user':'dbMaster',
+            'passwd': os.environ["DBMASTERPASSWORD"]}
   else:
     with MySQLdb.connect(host='localhost',
                          db='OverlordDB',

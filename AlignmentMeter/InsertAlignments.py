@@ -13,7 +13,7 @@ CONN_INFO = {'host': 'dddb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
              'db': 'DDDB2016Aug',
              # 'db': 'AndrewTest',
              'user': 'dbMaster',
-             'passwd': 'BalmerPeak'}
+             'passwd': os.environ['DBMASTERPASSWORD']}
 
 BILL_PREPEND = 'CA_'
 
@@ -72,9 +72,9 @@ def get_oid(cursor, org_df, org_name):
         oid_out = matched_rows.iloc[0]['oid']
     else:
         stmt = """INSERT INTO Organizations
-                  (name, analysis_flag)
+                  (name, analysis_flag, source)
                   VALUES
-                  ("%s", True)"""
+                  ("%s", True, "Alignment Meter")"""
         cursor.execute(stmt % org_name)
         oid_out = cursor.lastrowid
         org_df.loc[len(org_df.index)] = [oid_out, org_name]

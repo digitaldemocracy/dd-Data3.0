@@ -1,0 +1,11 @@
+insert into StateConstOffice (name, state) values ("Attorney General's Office", "FL") "FL");
+insert into StateConstOffice (name, state) values ("Chief Financial Officers' Office", "FL");
+insert into StateConstOffice (name, state) values ("Governor's Office", "FL");
+insert into StateConstOffice (name, state) values ("Lieutenant Governor's Office", "FL");
+insert into StateConstOffice (name, state) values ("Secretary of State's Office", "FL");
+insert into StateConstOffice (name, state) values ("Commissioner of Agriculture's Office", "FL");
+insert into StateConstOffice (name, state) values ("Commissioner of Education's Office", "FL");
+insert into StateConstOffice (name, state) values ("Commissioner of Insurance Regulation's Office", "FL");
+insert into StateConstOffice (name, state) values ("Executive Director of the Department of Economic Opportunity's Office", "FL");
+insert into StateConstOffice (name, state) values ("Public Service Commission's Office", "FL");
+insert into StateConstOffice (name, state) values ("Secretary of Environmental Protection's Office", "FL");
