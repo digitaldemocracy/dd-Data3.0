@@ -84,10 +84,10 @@ def merge_org_alignment(dddb, org):
 
             if dddb.rowcount != 0:
                 dddb.execute(del_unique_orgalignment, {'oid': org['bad_oid'], 'bid': row[1], 'hid': row[2],
-                                                       'alignment': row[3], 'analysis_flag': row[4]})
+                                                      'alignment': row[3], 'analysis_flag': row[4]})
                 print("Deleted " + str(dddb.rowcount) + " rows in OrgAlignment")
 
-        dddb.execute(up_genpub, org)
+        dddb.execute(up_orgalignment, org)
         print("Updated " + str(dddb.rowcount) + " rows in OrgAlignment")
 
     except MySQLdb.Error:
