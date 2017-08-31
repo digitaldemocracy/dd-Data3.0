@@ -11,7 +11,7 @@ CONN_INFO = {'host': 'dddb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
              # 'db': 'AndrewTest',
              'db': 'DDDB2016Aug',
              'user': 'dbMaster',
-             'passwd': os.environ['DBMASTERPASSWORD']}
+             'passwd': os.environ['DBMASTERPASSWORD']'}
 
 PCKL_DIR = 'PickledObjects/'
 
@@ -461,7 +461,11 @@ def make_concept_alignments(org_alignments_df, cnxn):
 def make_data_table(org_alignments_df, leg_votes_df):
     """Organizes votes and org positions in such a way that it is easily downloaded an viewed by a third
         party. Drops your data in mysql"""
-    df = org_alignments_df.merge(leg_votes_df, on=['bid'], suffixes=['_leg', '_org'])
+    org_alignments_df.rename(columns={'date': 'date_org'}, inplace=True)
+    leg_votes_df.rename(columns={'date': 'date_leg'}, inplace=True)
+
+    data = pd.concat([org_alignments_df, leg_votes_df])
+
     cols_dict = {'bid': 'bill',
                  'alignment': 'org_alignment',
                  'date_leg': 'leg_vote_date',
@@ -475,9 +479,21 @@ def make_data_table(org_alignments_df, leg_votes_df):
                  'unanimous': 'unanimous',
                  'abstain_vote': 'abstain_vote',
                  'resolution': 'resolution'}
-    df = df[list(cols_dict.keys())].rename(columns=cols_dict)
+    data = data[list(cols_dict.keys())].rename(columns=cols_dict)
 
-    return df
+    data['leg_vote_date'] = pd.to_datetime(data['leg_vote_date'])
+    data['date_of_org_alignment'] = pd.to_datetime(data['date_of_org_alignment'])
+
+    data.sort_values(by=['bill', 'date_of_org_alignment', 'leg_vote_date'], inplace=True)
+
+    data['single_date'] = data.apply(lambda row: (row['date_of_org_alignment']
+                                                  if pd.notnull(row['date_of_org_alignment'])
+                                                  else row['leg_vote_date']),
+                                     axis=1)
+
+    data.sort_values(['bill', 'single_date'], inplace=True)
+
+    return data
 
 
 def get_positions(g):
@@ -676,6 +692,7 @@ def main():
     org_alignments_df = org_alignments_df.drop_duplicates(['oid', 'bid', 'date'])
 
     filters = ['unanimous', 'abstain_vote', 'resolution']
+
     df = create_all_scores(leg_votes_all_df, org_alignments_df, filters)
     # This is a separate function because I sort of just ran out of steam at the end and this was easier
     df = add_term_info(df, term_df)
