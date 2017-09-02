@@ -12,6 +12,12 @@ SELECT_COMMITTEE_SHORT_NAME = '''SELECT cid FROM Committee
                       AND state = %(state)s
                       AND type = %(type)s'''
 
+SELECT_COMMITTEE_SHORT_NAME_NO_TYPE = '''SELECT cid FROM Committee
+                      WHERE short_name sounds like %(name)s
+                      AND house = %(house)s
+                      AND session_year = %(session_year)s
+                      AND state = %(state)s'''
+
 SELECT_BID = '''SELECT bid FROM Bill
                 WHERE type = %(bill_type)s
                 AND number = %(bill_number)s
