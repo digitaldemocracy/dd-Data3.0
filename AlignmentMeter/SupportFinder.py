@@ -15,6 +15,8 @@ def cleanOrgs(orgs):
     reVerified = r'\(Verified.+\)'
     reDateHearing = r'\Date of Hearing'
     reNumIndividuals = r'Numerous Individuals'
+    reOneIndividual = r'one individual'
+    reAuthor = r'Authors?'
 
     output = []
 
@@ -34,7 +36,9 @@ def cleanOrgs(orgs):
             and not re.search(reNoOpposition, org) \
             and not re.search(reVerified, org) \
             and not re.search(reDateHearing, org) \
-            and not re.search(reNumIndividuals, org):
+            and not re.search(reNumIndividuals, org) \
+            and not re.search(reOneIndividual, org, re.IGNORECASE) \
+            and not re.match(reAuthor, org.strip(), re.IGNORECASE):
 
             # catches the case of a / dividing two orgs
             split = org.split("/")
@@ -86,7 +90,7 @@ def writeOutput(input_orgs, out_file):
         with open(out_file, 'w') as output:
             first = True
             for org in output_orgs:
-                org = unidecode.unidecode(org).lower()
+                org = unidecode.unidecode(org).lower().title()
                 if first:
                     first = False
                     output.write('"{}"'.format(org))
@@ -97,8 +101,27 @@ def writeOutput(input_orgs, out_file):
 
 """Scrapes one possible output of bill analysis. Writes support and opposition to csvs"""
 def scrapeCase1(analysis, supportOut, opposeOut):
-    regex = r'(SUPPORT\s*/\s*OPPOSITION)(.*)'
+    regex = (r'(Sponsor:?\s+)(.*?)'
+             r'(Support:?\s+)(.*?)'
+             r'((Opposition|Oppose):?\s*)'
+             r'(.*)(Analysis|-- END)')
+
     match = re.search(regex, analysis, re.DOTALL)
+
+    sponsor = match.group(2)
+    support = match.group(4)
+    opposition = match.group(7)
+
+    support = sponsor + '\n' + support
+
+    writeOutput(support, supportOut)
+    writeOutput(opposition, opposeOut)
+
+
+"""Scrapes one possible output of bill analysis. Writes support and opposition to csvs"""
+def scrapeCase2(analysis, supportOut, opposeOut):
+    regex = r'(SUPPORT\s*/\s*OPPOSITION)(.*)'
+    match = re.search(regex, analysis, re.DOTALL|re.IGNORECASE)
 
     section = match.group(2)
     regex = (r'([^\S\n]*Support\s*)(\n[^\S\n]*.*?)'
@@ -120,41 +143,14 @@ def scrapeCase1(analysis, supportOut, opposeOut):
 
 
 """Scrapes one possible output of bill analysis. Writes support and opposition to csvs"""
-def scrapeCase2(analysis, supportOut, opposeOut):
-    regex = (r"(\n\s*|</u>\s)(SUPPORT|Support)[:\n\s](.*?)"
-    r"(OPPOSITION|Oppose)[:\n](.*?\n)\s*(\S.*?)\n\n")
-
-    # regex = (r"\n\s*(SUPPORT|Support)[:\n](.*?)")
-    # regex = (r"\n\s*SUPPORT")
-
-    match = re.search(regex, analysis, re.DOTALL|re.M)
-
-    # print match.group()
-
-
-    support = match.group(3)
-    firstOpp = match.group(5)
-    # print firstOpp
-    # checks to see if your first match says None
-    # we want to stop if this is the case
-    if re.match(r'None', firstOpp.strip(), re.I):
-        opposition = '';
-    else:
-        opposition = firstOpp + match.group(6)
-
-    writeOutput(support, supportOut)
-    writeOutput(opposition, opposeOut)
-
-
-"""Scrapes one possible output of bill analysis. Writes support and opposition to csvs"""
 def scrapeCase3(analysis, supportOut, opposeOut):
     regex = r'(SUPPORT\s*AND\s*OPPOSITION)(.*)'
-    match = re.search(regex, analysis, re.DOTALL)
+    match = re.search(regex, analysis, re.DOTALL|re.IGNORECASE)
 
     section = match.group(2)
     regex = (r'(Support:\s*)(.*?)'
-        r'((Opposition|Oppose):\s*)'
-        r'(.*)(Analysis|-- END)')
+             r'((Opposition|Oppose):\s*)'
+             r'(.*)(Analysis|-- END)')
     # r'(.*?)((\n[^\S\n]*\n[^\S\n]*)')
 
     match = re.search(regex, section, re.DOTALL)
@@ -165,7 +161,38 @@ def scrapeCase3(analysis, supportOut, opposeOut):
     writeOutput(support, supportOut)
     writeOutput(opposition, opposeOut)
 
-"""Actually does the scraping of a bill analyiss. Returns tuple indicating which case was scraped"""
+
+"""Scrapes one possible output of bill analysis. Writes support and opposition to csvs"""
+def scrapeCase4(analysis, supportOut, opposeOut):
+    regex = (r"(\n\s*|</u>\s)(SUPPORT|Support)[:\n\s](.*?)\n+"
+             r"(OPPOSITION|Oppose):?\s+(.*?)\n+(-- end|analysis)")
+
+    match = re.search(regex, analysis, re.DOTALL | re.M | re.IGNORECASE)
+
+    # print match.group()
+
+    support = match.group(3)
+    opposition = match.group(5)
+
+    writeOutput(support, supportOut)
+    writeOutput(opposition, opposeOut)
+
+
+"""Scrapes one possible output of bill analysis. Writes support and opposition to csvs"""
+def scrapeCase5(analysis, supportOut, opposeOut):
+    regex = (r"\n\t*(Support)[:\n\s](.*?)"
+             r"(OPPOSITION|Oppose):?\s+(.*?)(\n{3,}|\Z)")
+
+    match = re.search(regex, analysis, re.DOTALL | re.M | re.IGNORECASE)
+
+    support = match.group(2)
+    opposition = match.group(4)
+
+    writeOutput(support, supportOut)
+    writeOutput(opposition, opposeOut)
+
+
+"""Actually does the scraping of a bill analysis. Returns tuple indicating which case was scraped"""
 def BillScrape(text, supportOut, opposeOut):
     # Add or remove these based on whether you're running on Windows or Unix
     text = text.replace('\r\n', '\n')
@@ -179,6 +206,9 @@ def BillScrape(text, supportOut, opposeOut):
     case_1 = 0
     case_2 = 0
     case_3 = 0
+    case_4 = 0
+    case_5 = 0
+
     try:
         scrapeCase1(text, supportOut, opposeOut)
         # print("Case 1")
@@ -186,22 +216,30 @@ def BillScrape(text, supportOut, opposeOut):
     # This means that the regex couldn't match anything
     except AttributeError:
         try:
-            scrapeCase3(text,
-                supportOut, opposeOut)
+            scrapeCase2(text, supportOut, opposeOut)
             # print("Case 3")
-            case_3 += 1
+            case_2 += 1
 
         except AttributeError:
             try:
-                scrapeCase2(text,
-                    supportOut, opposeOut)
+                scrapeCase3(text, supportOut, opposeOut)
                 # print("Case 2")
-                case_2 += 1
+                case_3 += 1
             except AttributeError:
-                # print("No test cases")
-                num_empty += 1
+                try:
+                    scrapeCase4(text, supportOut, opposeOut)
+                    # print("Case 4")
+                    case_4 += 1
+                except AttributeError:
+                    try:
+                        scrapeCase5(text, supportOut, opposeOut)
+                        # print("Case 5)
+                        case_5 += 1
+                    except AttributeError:
+                        # print("No test cases")
+                        num_empty += 1
 
-    return case_1, case_2, case_3, num_empty
+    return case_1, case_2, case_3, case_4, case_5, num_empty
 
 
 

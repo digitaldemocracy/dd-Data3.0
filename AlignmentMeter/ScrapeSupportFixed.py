@@ -64,9 +64,15 @@ def scrape_lob(doc_name, data):
 
     except IndexError as e:
         # counting the number of files with this specific error
-        out = [0, 0, 0, 0, 1]
+        out = [0, 0, 0, 0, 0, 0, 1]
 
-    return pd.Series(out, index=['case_1', 'case_2', 'case_3', 'empty', 'no_tbl_info'])
+    return pd.Series(out, index=['case_1',
+                                 'case_2',
+                                 'case_3',
+                                 'case_4',
+                                 'case_5',
+                                 'empty',
+                                 'no_tbl_info'])
 
 
 def main():
@@ -99,6 +105,8 @@ def main():
     counts = pd.Series({'case_1': 0,
                         'case_2': 0,
                         'case_3': 0,
+                        'case_4': 0,
+                        'case_5': 0,
                         'empty': 0,
                         'no_tbl_info': 0})
     for doc_name in docs:
@@ -107,7 +115,7 @@ def main():
         count = scrape_lob(doc_name, data)
         counts += count
 
-    print('Counts:', counts)
+    print('Counts:\n', counts)
 
 if __name__ == '__main__':
     main()

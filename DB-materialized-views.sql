@@ -267,7 +267,29 @@ CREATE TABLE KnownClients (
   INDEX state_idx (state)
 );
 
-/* The following tables are used by the AlignmentMeter */
+CREATE TABLE AllPassingVotes (
+  pid          INT,
+  bid          VARCHAR(23),
+  voteId       INT,
+  mid          INT,
+  cid          INT,
+  VoteDate     DATETIME,
+  vote_outcome VARCHAR(20),
+  leg_vote     VARCHAR(20),
+  house        VARCHAR(200),
+  type         VARCHAR(100),
+  session_year INT,
+  unanimous    INT,
+  resolution   INT,
+  abstain_vote INT,
+  party        ENUM ('Republican', 'Democrat', 'Other')
+
+);
+
+/***********************************************************************************************************************
+ The following tables are used by the AlignmentMeter
+************************************************************************************************************************
+  */
 
 CREATE TABLE BillAlignmentScoresMiguel (
   aligned_votes int,
@@ -415,4 +437,34 @@ CREATE TABLE BipartisanshipScores(
   no_resolutions bool,
   no_unanimous bool,
   session_year enum('2015', '2017', 'All'),
+
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+/**********************************************************************************************************************
+ The following tables are used for the analytical queries we have. These might be more logically compressed into one
+ table.
+ ***********************************************************************************************************************
+ */
+
+CREATE TABLE LegVoteStats (
+  pid     INT,
+  aye_pct FLOAT,
+  noe_pct FLOAT,
+  abs_pct FLOAT,
+
+  PRIMARY KEY (pid)
+)
+  ENGINE = InnoDB
+  DEFAULT CHARSET = latin1;
+
+CREATE TABLE LegVoteStatsCom (
+  pid     INT,
+  cid     INT,
+  aye_pct FLOAT,
+  noe_pct FLOAT,
+  abs_pct FLOAT,
+
+  PRIMARY KEY (pid, cid)
+)
+  ENGINE = InnoDB
+  DEFAULT CHARSET = latin1;
