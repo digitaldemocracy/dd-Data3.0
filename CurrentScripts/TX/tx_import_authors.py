@@ -30,7 +30,7 @@ logger = None
 def main():
     with connect() as dddb:
         author_manager = BillAuthorInsertionManager(dddb, 'TX', logger)
-        author_parser = AuthorOpenStatesParser('TX', dddb)
+        author_parser = AuthorOpenStatesParser('TX', dddb, logger)
 
         author_list = author_parser.build_author_list(2017, '85', 0)
         author_list_special_session = author_parser.build_author_list(2017, '851', 1)
