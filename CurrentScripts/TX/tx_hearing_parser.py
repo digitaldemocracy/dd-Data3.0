@@ -75,6 +75,15 @@ class TxHearingParser(object):
             return None
 
     def build_hearing_list(self, committee_cid, date, bill_list, house):
+        """
+        Takes information on hearings and builds a list of Hearing model objects
+        for insertion into the database
+        :param committee_cid: The CID of the committee where the hearing takes place
+        :param date: A Python Date object for the date the hearing occurs
+        :param bill_list: A list of bill names (eg. "SB 1") being discussed at the hearing
+        :param house: The legislative house the hearing takes place
+        :return: A list of Hearing model objects
+        """
         session_year = date.year
         if date.year % 2 == 1:
             session_year -= 1
@@ -93,6 +102,12 @@ class TxHearingParser(object):
         return hearing_list
 
     def scrape_senate_webpage_committee_name(self, meeting_html):
+        """
+        Uses BeautifulSoup to parse a committee's name from Senate meeting notices
+        in the case that using REGEX doesn't work
+        :param meeting_html: A URL to an HTML document for a Senate meeting notice
+        :return: A committee's name
+        """
         body_tag = meeting_html.find_all('div')
         if body_tag is not None:
             body_tag = body_tag[0].find_all('p')
@@ -109,16 +124,12 @@ class TxHearingParser(object):
         return committee_name
 
     def scrape_senate_webpage_hearing_date(self, meeting_html):
-        # date_tag = meeting_html.find_all('div')
-        # if date_tag is not None:
-        #     date_tag = date_tag[0].find_all('p')
-        #
-        #     hearing_date = date_tag[4].contents[0].contents[0]
-        #     hearing_date = hearing_date.replace('\r', '').replace('\n', ' ').strip()
-        #     hearing_date = dt.datetime.strptime(hearing_date, '%A, %B %d, %Y')
-        #     print(hearing_date)
-        #
-        # else:
+        """
+        Uses BeautifulSoup to parse the hearing date from Senate meeting notices
+        in the case that using REGEX doesn't work
+        :param meeting_html: A URL to an HTML document for a Senate meeting notice
+        :return: A hearing date
+        """
         try:
             date_tag = meeting_html.find_all('table')[1].find_all('p')
             try:
@@ -163,7 +174,6 @@ class TxHearingParser(object):
                     hearing_date = hearing_date.replace('\r', '').replace('\n', ' ').strip()
                     hearing_date = dt.datetime.strptime(hearing_date, '%A, %B %d, %Y')
 
-
         return hearing_date
 
     def scrape_senate_meeting_notice(self, url):
@@ -195,64 +205,6 @@ class TxHearingParser(object):
                 hearing_date = dt.datetime.strptime(hearing_date, '%H:%M %p, %A, %B %d, %Y')
             except ValueError:
                 hearing_date = self.scrape_senate_webpage_hearing_date(meeting_html)
-
-        # if committee_name is None or hearing_date is None:
-        #     body_tag = meeting_html.find_all('div')
-        #     if body_tag is not None:
-        #         body_tag = body_tag[0].find_all('p')
-        #
-        #         committee_name = body_tag[2].contents[0].contents[0]
-        #         committee_name = committee_name.replace('COMMITTEE:', '').strip()
-        #         print(committee_name)
-        #
-        #         date_tag = body_tag
-        #
-        #         hearing_date = date_tag[4].contents[0].contents[0]
-        #         hearing_date = hearing_date.replace('\r', '').replace('\n', ' ').strip()
-        #         hearing_date = dt.datetime.strptime(hearing_date, '%A, %B %d, %Y')
-        #         print(hearing_date)
-        #
-        #     else:
-        #         body_tag = meeting_html.find_all('table')[1].find_all('p')
-        #
-        #         committee_name = body_tag[0].contents[0]
-        #         committee_name = committee_name.replace('COMMITTEE:', '').strip()
-        #         print(committee_name)
-        #
-        #         date_tag = body_tag
-        #         try:
-        #             hearing_date = date_tag[1].contents[0]
-        #             if 'adjourn' in hearing_date.lower():
-        #                 hearing_date = date_tag[1].contents[2]
-        #                 hearing_date = hearing_date.replace('\r', '').replace('\n', ' ').strip()
-        #                 hearing_date = dt.datetime.strptime(hearing_date, '%B %d, %Y')
-        #                 print(hearing_date)
-        #             else:
-        #                 hearing_date = hearing_date.replace('TIME', '').strip().replace('& DATE:', '').strip()
-        #                 hearing_date = dt.datetime.strptime(hearing_date, '%H:%M %p, %A, %B %d, %Y')
-        #                 print(hearing_date)
-        #         except:
-        #             try:
-        #                 hearing_date = date_tag[1].contents[2]
-        #                 hearing_date = hearing_date.replace('TIME', '').strip().replace('& DATE:', '').strip()
-        #                 hearing_date = dt.datetime.strptime(hearing_date, '%A, %B %d, %Y')
-        #                 print(hearing_date)
-        #             except:
-        #                 hearing_date = date_tag[2].contents[0]
-        #                 if 'adjourn' in hearing_date.lower():
-        #                     hearing_date = date_tag[2].contents[2]
-        #                     hearing_date = hearing_date.replace('\r', '').replace('\n', ' ').strip()
-        #                     hearing_date = dt.datetime.strptime(hearing_date, '%A, %B %d, %Y')
-        #                     print(hearing_date)
-        #                 else:
-        #                     hearing_date = hearing_date.replace('TIME', '').strip().replace('& DATE:', '').strip()
-        #                     hearing_date = dt.datetime.strptime(hearing_date, '%H:%M %p, %A, %B %d, %Y')
-        #                     print(hearing_date)
-        # else:
-        #     committee_name = committee_name.group(1).strip()
-        #
-        #     hearing_date = hearing_date.group(1).replace('TIME', '').strip().replace('& DATE:', '').strip()
-        #     hearing_date = dt.datetime.strptime(hearing_date, '%H:%M %p, %A, %B %d, %Y')
 
         committee_cid = self.get_committee_cid(committee_name, 'Senate', hearing_date)
 
@@ -289,7 +241,6 @@ class TxHearingParser(object):
         committee_name = meeting_html.find('b').find('span').contents[0]
         committee_name = committee_name.replace('The', '').strip()
         committee_name = committee_name.replace('House Committee on', '', 1).strip()
-
 
         paragraphs = meeting_html.find_all('p')
         try:
