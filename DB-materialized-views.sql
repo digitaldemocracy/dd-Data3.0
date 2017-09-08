@@ -448,11 +448,12 @@ CREATE TABLE BipartisanshipScores(
 
 CREATE TABLE LegVoteStats (
   pid     INT,
+  session_year YEAR,
   aye_pct FLOAT,
   noe_pct FLOAT,
   abs_pct FLOAT,
 
-  PRIMARY KEY (pid)
+  PRIMARY KEY (pid, session_year)
 )
   ENGINE = InnoDB
   DEFAULT CHARSET = latin1;
@@ -460,11 +461,53 @@ CREATE TABLE LegVoteStats (
 CREATE TABLE LegVoteStatsCom (
   pid     INT,
   cid     INT,
+  session_year YEAR,
   aye_pct FLOAT,
   noe_pct FLOAT,
   abs_pct FLOAT,
 
-  PRIMARY KEY (pid, cid)
+  PRIMARY KEY (pid, cid, session_year)
 )
   ENGINE = InnoDB
   DEFAULT CHARSET = latin1;
+
+CREATE TABLE IF NOT EXISTS Coauthors_analyt (
+  pid                      INT,
+  session_year             YEAR,
+  total_coauthors          INT, -- number of OTHER legs who were coauthors on this leg's bills
+  same_party_coauthors     INT,
+  diff_party_coauthors     INT,
+  total_coauthorships      INT, -- number of bills THIS leg was a coauthor on
+  same_party_coauthorships INT,
+  diff_party_coauthorships INT,
+
+  PRIMARY KEY (pid, session_year),
+  FOREIGN KEY (pid) REFERENCES Person (pid)
+)
+  ENGINE = InnoDB
+  DEFAULT CHARSET = utf8;
+
+CREATE TABLE LegParticipationVerbal (
+  pid               DOUBLE NOT NULL,
+  session_year      INT,
+  leg_word_count    DOUBLE,
+  leg_time_in_hours DOUBLE,
+  avg_word_count    DOUBLE,
+  avg_time_in_hours DOUBLE,
+  PRIMARY KEY (pid, session_year),
+)
+  ENGINE = InnoDB
+  DEFAULT CHARSET = latin1
+
+CREATE TABLE LegParticipationVerbalCom (
+  pid               DOUBLE NOT NULL,
+  cid               INT,
+  session_year      INT,
+  leg_word_count    DOUBLE,
+  leg_time_in_hours DOUBLE,
+  avg_word_count    DOUBLE,
+  avg_time_in_hours DOUBLE,
+  PRIMARY KEY (pid, session_year, cid)
+)
+  ENGINE = InnoDB
+  DEFAULT CHARSET = latin1

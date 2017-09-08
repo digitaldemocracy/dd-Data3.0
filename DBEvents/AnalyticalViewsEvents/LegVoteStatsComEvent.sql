@@ -32,9 +32,10 @@ DO
       SELECT
         pid,
         cid,
+        session_year,
         count(*) AS count
       FROM AllPassingVotes
-      GROUP BY pid, cid;
+      GROUP BY pid, cid, session_year;
 
 
     CREATE OR REPLACE VIEW AyeCounts
@@ -42,10 +43,11 @@ DO
       SELECT
         pid,
         cid,
+        session_year,
         count(*) AS count
       FROM AllPassingVotes
       WHERE leg_vote = 'AYE'
-      GROUP BY pid, cid;
+      GROUP BY pid, cid, session_year;
 
 
     CREATE OR REPLACE VIEW NoeCounts
@@ -53,10 +55,11 @@ DO
       SELECT
         pid,
         cid,
+        session_year,
         count(*) AS count
       FROM AllPassingVotes
       WHERE leg_vote = 'NOE'
-      GROUP BY pid, cid;
+      GROUP BY pid, cid, session_year;
 
 
     CREATE OR REPLACE VIEW AbsCounts
@@ -64,18 +67,20 @@ DO
       SELECT
         pid,
         cid,
+        session_year,
         count(*) AS count
       FROM AllPassingVotes
       WHERE leg_vote = 'ABS'
-      GROUP BY pid, cid;
+      GROUP BY pid, cid, session_year;
 
 
-    DROP TABLE IF EXISTS LegVoteStats;
-    CREATE TABLE LegVoteStats
+    DROP TABLE IF EXISTS LegVoteStatsCom_analyt;
+    CREATE TABLE LegVoteStatsCom_analyt
     AS
       SELECT
         t.pid,
         t.cid,
+        t.session_year,
         ifnull(a.count / t.count, 0)  AS aye_pct,
         ifnull(n.count / t.count, 0)  AS noe_pct,
         ifnull(ab.count / t.count, 0) AS abs_pct
@@ -91,8 +96,8 @@ DO
              AND t.cid = ab.cid;
 
 
-    ALTER TABLE LegVoteStats
-      ADD KEY (pid, cid);
+    ALTER TABLE LegVoteStatsCom_analyt
+      ADD KEY (pid, cid, session_year);
 
 
     DROP VIEW IF EXISTS TotalCounts;
