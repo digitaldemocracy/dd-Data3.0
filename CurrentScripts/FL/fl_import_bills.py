@@ -191,7 +191,7 @@ def get_pdf(url, vid):
     :param url: A URL to the PDF
     :param vid: The version's VID in our database
     """
-    pdf_name = format_absolute_path("FL-Build/bill_PDF/") + vid + '.pdf'
+    pdf_name = format_absolute_path("FL/bill_PDF/") + vid + '.pdf'
     pdf = requests.get(url)
     f = open(pdf_name, 'wb')
     f.write(pdf.content)
@@ -204,8 +204,8 @@ def read_pdf_text(vid):
     :param vid: The version ID of a bill version whose text to process
     :return: The text of one bill version
     """
-    pdf_name = format_absolute_path("FL-Build/bill_PDF/") + vid + ".pdf"
-    text_name = format_absolute_path("FL-Build/bill_txt/") + vid + ".txt"
+    pdf_name = format_absolute_path("FL/bill_PDF/") + vid + ".pdf"
+    text_name = format_absolute_path("FL/bill_txt/") + vid + ".txt"
 
     try:
         subprocess.call([format_absolute_path('pdftotext'), '-enc', 'UTF-8', pdf_name, text_name])
@@ -284,16 +284,16 @@ def main():
         #print("Finished bill insertion")
 
         #print("Copying bills to S3")
-        pdf_files = glob.glob(format_absolute_path('FL-Build/bill_PDF/*.pdf'))
+        pdf_files = glob.glob(format_absolute_path('FL/bill_PDF/*.pdf'))
         for pdf in pdf_files:
             subprocess.call(['aws', 's3', 'cp', pdf, 's3://dd-drupal-files/bill/FL/'])
 
         # Delete bill PDFs
-        del_bill_pdfs = 'rm -rf ' + format_absolute_path('FL-Build/bill_PDF/') + '*.pdf'
+        del_bill_pdfs = 'rm -rf ' + format_absolute_path('FL/bill_PDF/') + '*.pdf'
 
         subprocess.call(del_bill_pdfs, shell=True)
         # Delete text files
-        del_bill_txts = 'rm -rf ' + format_absolute_path('FL-Build/bill_txt/') + '*.txt'
+        del_bill_txts = 'rm -rf ' + format_absolute_path('FL/bill_txt/') + '*.txt'
 
         subprocess.call(del_bill_txts, shell=True)
         bill_manager.log()
