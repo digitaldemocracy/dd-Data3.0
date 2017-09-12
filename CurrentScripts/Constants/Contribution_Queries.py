@@ -43,7 +43,7 @@ SELECT_CONTRIBUTION = '''SELECT id
 SELECT_CONTRIBUTION_ID = '''SELECT * FROM Contribution
                        WHERE id = %(id)s'''
 
-SELECT_ORGANIZATION = '''SELECT oid
+SELECT_ORGANIZATION = '''SELECT min(oid)
                     FROM Organizations
                     WHERE name like %(name)s
                     OR name SOUNDS LIKE %(name)s'''

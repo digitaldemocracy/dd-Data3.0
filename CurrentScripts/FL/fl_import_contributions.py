@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.7
 # -*- coding: utf8 -*-
 
 """
@@ -25,11 +25,13 @@ logger = None
 
 def main():
     with connect() as dddb:
-        contribution_parser = ContributionParser('FL', candidates_file='FL-Build/fl_candidates.txt')
+        contribution_parser = ContributionParser('FL')
         contribution_manager = ContributionInsertionManager(dddb, logger, 'FL')
 
-        contribution_list = contribution_parser.parse_followthemoney_contributions()
+        contribution_list = contribution_parser.get_contribution_list(2016)
+        #contribution_list = contribution_parser.parse_all_contributions(2016)
 
+        print("Inserting data")
         contribution_manager.insert_contributions_db(contribution_list)
         contribution_manager.log()
 
