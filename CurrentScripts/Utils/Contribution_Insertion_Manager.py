@@ -88,13 +88,14 @@ class ContributionInsertionManager(object):
         else:
             return False
 
-    def get_oid(self, name):
+    def get_oid(self, name, state):
         """
         Gets an Organization's OID given its name
         :param name: An organization's name
+        :param state: The state the organization is headquartered in
         :return: The organization's OID if one exists
         """
-        org = {'name': '%'+name+'%'}
+        org = {'name': '%'+name+'%', 'state': state}
 
         oid = get_entity_id(self.dddb, SELECT_ORGANIZATION, org, 'Organization', self.logger)
 
@@ -183,7 +184,7 @@ class ContributionInsertionManager(object):
 
             if not self.is_contribution_in_db(contribution.__dict__):
                 if contribution.donor_org is not None:
-                    oid = self.get_oid(contribution.donor_org)
+                    oid = self.get_oid(contribution.donor_org, contribution.state)
                     if oid is None:
                         oid = self.insert_org(contribution.donor_org)
                         if not oid:

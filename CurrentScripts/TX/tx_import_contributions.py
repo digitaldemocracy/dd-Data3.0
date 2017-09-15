@@ -23,10 +23,11 @@ logger = None
 
 def main():
     with connect() as dddb:
-        contribution_parser = ContributionParser('TX', candidates_file='TX-Build/tx_candidates.txt')
+        contribution_parser = ContributionParser('TX')
         contribution_manager = ContributionInsertionManager(dddb, logger, 'TX')
 
-        contribution_list = contribution_parser.parse_followthemoney_contributions()
+        contribution_list = contribution_parser.get_contribution_list(2016)
+        #contribution_list = contribution_parser.parse_all_contributions(2016)
 
         contribution_manager.insert_contributions_db(contribution_list)
         contribution_manager.log()
