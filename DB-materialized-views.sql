@@ -497,7 +497,7 @@ CREATE TABLE LegParticipationVerbal (
   PRIMARY KEY (pid, session_year),
 )
   ENGINE = InnoDB
-  DEFAULT CHARSET = latin1
+  DEFAULT CHARSET = latin1;
 
 CREATE TABLE LegParticipationVerbalCom (
   pid               DOUBLE NOT NULL,
@@ -510,4 +510,19 @@ CREATE TABLE LegParticipationVerbalCom (
   PRIMARY KEY (pid, session_year, cid)
 )
   ENGINE = InnoDB
-  DEFAULT CHARSET = latin1
+  DEFAULT CHARSET = latin1;
+
+
+CREATE TABLE IF NOT EXISTS LegislativeSuccessRates_analyt (
+  pid           INT,
+  session_year  YEAR,
+  num_authored  INT, -- Total number of bills authored by legislator in the given session
+  num_chaptered INT, -- Of the bills authored, how many were chaptered
+  num_vetoed    INT, -- Of the bills authored, how many were vetoed
+
+  PRIMARY KEY (pid, session_year),
+  FOREIGN KEY (pid) REFERENCES Person (pid)
+)
+  ENGINE = INNODB
+  CHARACTER SET utf8
+  COLLATE utf8_general_ci;
