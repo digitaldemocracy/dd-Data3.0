@@ -1985,6 +1985,9 @@ CREATE TABLE IF NOT EXISTS NewspaperToDistrict (
    FOREIGN KEY (district_id) REFERENCES District(dr_id)
 )  ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+/*
+ Log editors' activites on tasks on Transcription Tool
+*/
 CREATE TABLE IF NOT EXISTS TT_TaskLog (
   id    INTEGER AUTO_INCREMENT,
   tid INTEGER,
@@ -1993,6 +1996,18 @@ CREATE TABLE IF NOT EXISTS TT_TaskLog (
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
   PRIMARY KEY (id),
   FOREIGN KEY (tid) REFERENCES TT_Task(tid)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+/*
+ Designate Committee Secretary to be used per state on Transcription Tool
+*/
+CREATE TABLE IF NOT EXISTS TT_CommitteeSecretary (
+  pid INTEGER NOT NULL,
+  state VARCHAR(2) NOT NULL,
+  lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+  PRIMARY KEY (pid),
+  FOREIGN KEY (pid) REFERENCES Person(pid),
+  FOREIGN KEY (state) REFERENCES State(abbrev)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE OR REPLACE VIEW TT_currentCuts
