@@ -18,11 +18,13 @@ DO
 
     DROP VIEW IF EXISTS TotalCounts;
     DROP VIEW IF EXISTS AyeCounts;
+    DROP VIEW IF EXISTS NoeCounts;
     DROP VIEW IF EXISTS AbsCounts;
     DROP VIEW IF EXISTS AllPasssingVotesDup;
 
     DROP TABLE IF EXISTS TotalCounts;
     DROP TABLE IF EXISTS AyeCounts;
+    DROP TABLE IF EXISTS NoeCounts;
     DROP TABLE IF EXISTS AbsCounts;
     DROP TABLE IF EXISTS AllPasssingVotesDup;
 
@@ -114,6 +116,7 @@ DO
     DROP TABLE IF EXISTS AllPassingVotesDup;
     DROP VIEW IF EXISTS TotalCounts;
     DROP VIEW IF EXISTS AyeCounts;
+    DROP VIEW IF EXISTS NoeCounts;
     DROP VIEW IF EXISTS AbsCounts;
 
   END |
