@@ -446,7 +446,7 @@ CREATE TABLE BipartisanshipScores(
  ***********************************************************************************************************************
  */
 
-CREATE TABLE LegVoteStats (
+CREATE TABLE LegVoteStats_analyt (
   pid     INT,
   session_year YEAR,
   aye_pct FLOAT,
@@ -458,7 +458,7 @@ CREATE TABLE LegVoteStats (
   ENGINE = InnoDB
   DEFAULT CHARSET = latin1;
 
-CREATE TABLE LegVoteStatsCom (
+CREATE TABLE LegVoteStatsCom_analyt (
   pid     INT,
   cid     INT,
   session_year YEAR,

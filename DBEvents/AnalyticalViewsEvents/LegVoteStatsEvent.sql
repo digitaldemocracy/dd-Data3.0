@@ -19,10 +19,25 @@ DO
     DROP VIEW IF EXISTS TotalCounts;
     DROP VIEW IF EXISTS AyeCounts;
     DROP VIEW IF EXISTS AbsCounts;
+    DROP View IF EXISTS AllPasssingVotesDup;
 
     DROP TABLE IF EXISTS TotalCounts;
     DROP TABLE IF EXISTS AyeCounts;
     DROP TABLE IF EXISTS AbsCounts;
+    DROP TABLE IF EXISTS AllPasssingVotesDup;
+
+    -- Doubles up every row so thre is also an all category
+    DROP TABLE IF EXISTS AllPassingVotesDup;
+    CREATE TABLE AllPassingVotesDup
+      AS
+    select pid, session_year, leg_vote
+    from AllPassingVotes
+    union all
+    select pid, 'All' as session_year, leg_vote
+    from AllPassingVotes;
+
+    ALTER TABLE AllPassingVotesDup
+      add KEY (pid, session_year, leg_vote);
 
     -- All votes  with "do pass" in the motion text
     CREATE OR REPLACE VIEW TotalCounts
@@ -31,7 +46,7 @@ DO
         pid,
         session_year,
         count(*) AS count
-      FROM AllPassingVotes
+      FROM AllPassingVotesDup
       GROUP BY pid, session_year;
 
 
@@ -41,7 +56,7 @@ DO
         pid,
         session_year,
         count(*) AS count
-      FROM AllPassingVotes
+      FROM AllPassingVotesDup
       WHERE leg_vote = 'AYE'
       GROUP BY pid, session_year;
 
@@ -52,7 +67,7 @@ DO
         pid,
         session_year,
         count(*) AS count
-      FROM AllPassingVotes
+      FROM AllPassingVotesDup
       WHERE leg_vote = 'NOE'
       GROUP BY pid, session_year;
 
@@ -63,7 +78,7 @@ DO
         pid,
         session_year,
         count(*) AS count
-      FROM AllPassingVotes
+      FROM AllPassingVotesDup
       WHERE leg_vote = 'ABS'
       GROUP BY pid, session_year;
 
@@ -90,6 +105,7 @@ DO
       ADD KEY (pid, session_year);
 
 
+    drop table if exists AllPassingVotesDup;
     DROP VIEW IF EXISTS TotalCounts;
     DROP VIEW IF EXISTS AyeCounts;
     DROP VIEW IF EXISTS AbsCounts;
