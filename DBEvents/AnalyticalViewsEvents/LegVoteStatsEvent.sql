@@ -19,7 +19,7 @@ DO
     DROP VIEW IF EXISTS TotalCounts;
     DROP VIEW IF EXISTS AyeCounts;
     DROP VIEW IF EXISTS AbsCounts;
-    DROP View IF EXISTS AllPasssingVotesDup;
+    DROP VIEW IF EXISTS AllPasssingVotesDup;
 
     DROP TABLE IF EXISTS TotalCounts;
     DROP TABLE IF EXISTS AyeCounts;
@@ -29,15 +29,21 @@ DO
     -- Doubles up every row so thre is also an all category
     DROP TABLE IF EXISTS AllPassingVotesDup;
     CREATE TABLE AllPassingVotesDup
-      AS
-    select pid, session_year, leg_vote
-    from AllPassingVotes
-    union all
-    select pid, 'All' as session_year, leg_vote
-    from AllPassingVotes;
+    AS
+      SELECT
+        pid,
+        session_year,
+        leg_vote
+      FROM AllPassingVotes
+      UNION ALL
+      SELECT
+        pid,
+        'All' AS session_year,
+        leg_vote
+      FROM AllPassingVotes;
 
     ALTER TABLE AllPassingVotesDup
-      add KEY (pid, session_year, leg_vote);
+      ADD KEY (pid, session_year, leg_vote);
 
     -- All votes  with "do pass" in the motion text
     CREATE OR REPLACE VIEW TotalCounts
@@ -94,18 +100,18 @@ DO
         ifnull(ab.count / t.count, 0) AS abs_pct
       FROM TotalCounts t
         LEFT JOIN AyeCounts a
-          ON t.pid = a.pid and t.session_year = a.session_year
+          ON t.pid = a.pid AND t.session_year = a.session_year
         LEFT JOIN NoeCounts n
-          ON t.pid = n.pid and t.session_year = n.session_year
+          ON t.pid = n.pid AND t.session_year = n.session_year
         LEFT JOIN AbsCounts ab
-          ON t.pid = ab.pid and t.session_year = ab.session_year;
+          ON t.pid = ab.pid AND t.session_year = ab.session_year;
 
 
     ALTER TABLE LegVoteStats_analyt
       ADD KEY (pid, session_year);
 
 
-    drop table if exists AllPassingVotesDup;
+    DROP TABLE IF EXISTS AllPassingVotesDup;
     DROP VIEW IF EXISTS TotalCounts;
     DROP VIEW IF EXISTS AyeCounts;
     DROP VIEW IF EXISTS AbsCounts;
