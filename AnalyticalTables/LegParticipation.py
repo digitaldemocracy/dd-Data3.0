@@ -174,14 +174,14 @@ def main():
     verb_df = calc_verbal_participation(df, by_leg_key)
     verb_df_com = calc_verbal_participation(df_com, by_com_key)
 
-    write_tbl(verb_df, conn, 'LegParticipationVerbal', by_leg_key)
-    write_tbl(verb_df_com, conn, 'LegParticipationVerbalCom', by_com_key)
+    write_tbl(verb_df, conn, 'LegParticipationVerbal_analyt', by_leg_key)
+    write_tbl(verb_df_com, conn, 'LegParticipationVerbalCom_analyt', by_com_key)
 
     stmt_df = calc_avg_statement_len(df, by_leg_key)
     stmt_df_com = calc_avg_statement_len(df_com, by_com_key)
 
-    write_tbl(stmt_df, conn, 'LegParticipationStmtLen', by_leg_key)
-    write_tbl(stmt_df_com, conn, 'LegParticipationStmtLenCom', by_com_key)
+    write_tbl(stmt_df, conn, 'LegParticipationStmtLen_analyt', by_leg_key)
+    write_tbl(stmt_df_com, conn, 'LegParticipationStmtLenCom_analyt', by_com_key)
 
     conn.close()
 

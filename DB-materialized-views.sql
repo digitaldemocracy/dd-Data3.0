@@ -487,7 +487,7 @@ CREATE TABLE IF NOT EXISTS Coauthors_analyt (
   ENGINE = InnoDB
   DEFAULT CHARSET = utf8;
 
-CREATE TABLE LegParticipationVerbal (
+CREATE TABLE LegParticipationVerbal_analyt (
   pid               DOUBLE NOT NULL,
   session_year      INT,
   leg_word_count    DOUBLE,
@@ -499,7 +499,7 @@ CREATE TABLE LegParticipationVerbal (
   ENGINE = InnoDB
   DEFAULT CHARSET = latin1;
 
-CREATE TABLE LegParticipationVerbalCom (
+CREATE TABLE LegParticipationVerbalCom_analyt (
   pid               DOUBLE NOT NULL,
   cid               INT,
   session_year      INT,
