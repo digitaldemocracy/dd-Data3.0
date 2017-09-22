@@ -446,7 +446,7 @@ CREATE TABLE BipartisanshipScores(
  ***********************************************************************************************************************
  */
 
-CREATE TABLE LegVoteStats (
+CREATE TABLE LegVoteStats_analyt (
   pid     INT,
   session_year YEAR,
   aye_pct FLOAT,
@@ -458,7 +458,7 @@ CREATE TABLE LegVoteStats (
   ENGINE = InnoDB
   DEFAULT CHARSET = latin1;
 
-CREATE TABLE LegVoteStatsCom (
+CREATE TABLE LegVoteStatsCom_analyt (
   pid     INT,
   cid     INT,
   session_year YEAR,
@@ -487,7 +487,7 @@ CREATE TABLE IF NOT EXISTS Coauthors_analyt (
   ENGINE = InnoDB
   DEFAULT CHARSET = utf8;
 
-CREATE TABLE LegParticipationVerbal (
+CREATE TABLE LegParticipationVerbal_analyt (
   pid               DOUBLE NOT NULL,
   session_year      INT,
   leg_word_count    DOUBLE,
@@ -499,7 +499,7 @@ CREATE TABLE LegParticipationVerbal (
   ENGINE = InnoDB
   DEFAULT CHARSET = latin1;
 
-CREATE TABLE LegParticipationVerbalCom (
+CREATE TABLE LegParticipationVerbalCom_analyt (
   pid               DOUBLE NOT NULL,
   cid               INT,
   session_year      INT,

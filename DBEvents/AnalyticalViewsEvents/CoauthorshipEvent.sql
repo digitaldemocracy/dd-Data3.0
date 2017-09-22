@@ -118,16 +118,36 @@ DO
       SELECT
         t.pid,
         t.session_year,
-        t.count,
-        s.count,
-        d.count
+        t.count as total_coauthors,
+        s.count as same_party_coauthors,
+        d.count as diff_party_coauthors,
+        th.count as total_coauthorships,
+        sh.count as same_party_coauthorships,
+        dh.count as diff_party_coauthorships
       FROM TotalCoauthors t
         JOIN SamePartyCoauthors s
           ON t.pid = s.pid
              AND t.session_year = s.session_year
         JOIN DiffPartyCoauthors d
           ON t.pid = d.pid
-             AND t.session_year = d.session_year;
+             AND t.session_year = d.session_year
+        JOIN TotalCoauthorship th
+          ON t.pid = th.co_pid
+             AND t.session_year = th.session_year
+        JOIN SamePartyCoauthorship sh
+          ON t.pid = sh.co_pid
+             AND t.session_year = sh.session_year
+        JOIN DiffPartyCoauthorship dh
+          ON t.pid = dh.co_pid
+             AND t.session_year = dh.session_year;
+
+    drop view if exists BillCoauthors;
+    drop view if exists TotalCoauthors;
+    drop view if exists SamePartyCoauthors;
+    drop view if exists DiffPartyCoauthors;
+    drop view if exists TotalCoauthorship;
+    drop view if exists SamePartyCoauthorship;
+    drop view if exists DiffPartyCoauthorship;
 
   END |
 
