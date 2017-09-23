@@ -34,14 +34,16 @@ logger = None
 
 def main():
     with connect() as dddb:
+        cur_date = dt.datetime.now().strftime('%Y-%m-%d')
+
         hearing_parser = TxHearingParser(dddb, logger)
         hearing_manager = Hearings_Manager(dddb, 'TX')
 
         senate_hearings = hearing_parser.scrape_committee_meeting_list('Senate')
-        hearing_manager.import_hearings(senate_hearings, dt.datetime.today().date())
+        hearing_manager.import_hearings(senate_hearings, cur_date)
 
         house_hearings = hearing_parser.scrape_committee_meeting_list('House')
-        hearing_manager.import_hearings(house_hearings, dt.datetime.today().date())
+        hearing_manager.import_hearings(house_hearings, cur_date)
 
         hearing_manager.log()
 
