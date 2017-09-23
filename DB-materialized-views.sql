@@ -267,7 +267,29 @@ CREATE TABLE KnownClients (
   INDEX state_idx (state)
 );
 
-/* The following tables are used by the AlignmentMeter */
+CREATE TABLE AllPassingVotes (
+  pid          INT,
+  bid          VARCHAR(23),
+  voteId       INT,
+  mid          INT,
+  cid          INT,
+  VoteDate     DATETIME,
+  vote_outcome VARCHAR(20),
+  leg_vote     VARCHAR(20),
+  house        VARCHAR(200),
+  type         VARCHAR(100),
+  session_year INT,
+  unanimous    INT,
+  resolution   INT,
+  abstain_vote INT,
+  party        ENUM ('Republican', 'Democrat', 'Other')
+
+);
+
+/***********************************************************************************************************************
+ The following tables are used by the AlignmentMeter
+************************************************************************************************************************
+  */
 
 CREATE TABLE BillAlignmentScoresMiguel (
   aligned_votes int,
@@ -415,4 +437,92 @@ CREATE TABLE BipartisanshipScores(
   no_resolutions bool,
   no_unanimous bool,
   session_year enum('2015', '2017', 'All'),
+
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+/**********************************************************************************************************************
+ The following tables are used for the analytical queries we have. These might be more logically compressed into one
+ table.
+ ***********************************************************************************************************************
+ */
+
+CREATE TABLE LegVoteStats_analyt (
+  pid     INT,
+  session_year YEAR,
+  aye_pct FLOAT,
+  noe_pct FLOAT,
+  abs_pct FLOAT,
+
+  PRIMARY KEY (pid, session_year)
+)
+  ENGINE = InnoDB
+  DEFAULT CHARSET = latin1;
+
+CREATE TABLE LegVoteStatsCom_analyt (
+  pid     INT,
+  cid     INT,
+  session_year YEAR,
+  aye_pct FLOAT,
+  noe_pct FLOAT,
+  abs_pct FLOAT,
+
+  PRIMARY KEY (pid, cid, session_year)
+)
+  ENGINE = InnoDB
+  DEFAULT CHARSET = latin1;
+
+CREATE TABLE IF NOT EXISTS Coauthors_analyt (
+  pid                      INT,
+  session_year             YEAR,
+  total_coauthors          INT, -- number of OTHER legs who were coauthors on this leg's bills
+  same_party_coauthors     INT,
+  diff_party_coauthors     INT,
+  total_coauthorships      INT, -- number of bills THIS leg was a coauthor on
+  same_party_coauthorships INT,
+  diff_party_coauthorships INT,
+
+  PRIMARY KEY (pid, session_year),
+  FOREIGN KEY (pid) REFERENCES Person (pid)
+)
+  ENGINE = InnoDB
+  DEFAULT CHARSET = utf8;
+
+CREATE TABLE LegParticipationVerbal_analyt (
+  pid               DOUBLE NOT NULL,
+  session_year      INT,
+  leg_word_count    DOUBLE,
+  leg_time_in_hours DOUBLE,
+  avg_word_count    DOUBLE,
+  avg_time_in_hours DOUBLE,
+  PRIMARY KEY (pid, session_year),
+)
+  ENGINE = InnoDB
+  DEFAULT CHARSET = latin1;
+
+CREATE TABLE LegParticipationVerbalCom_analyt (
+  pid               DOUBLE NOT NULL,
+  cid               INT,
+  session_year      INT,
+  leg_word_count    DOUBLE,
+  leg_time_in_hours DOUBLE,
+  avg_word_count    DOUBLE,
+  avg_time_in_hours DOUBLE,
+  PRIMARY KEY (pid, session_year, cid)
+)
+  ENGINE = InnoDB
+  DEFAULT CHARSET = latin1;
+
+
+CREATE TABLE IF NOT EXISTS LegislativeSuccessRates_analyt (
+  pid           INT,
+  session_year  YEAR,
+  num_authored  INT, -- Total number of bills authored by legislator in the given session
+  num_chaptered INT, -- Of the bills authored, how many were chaptered
+  num_vetoed    INT, -- Of the bills authored, how many were vetoed
+
+  PRIMARY KEY (pid, session_year),
+  FOREIGN KEY (pid) REFERENCES Person (pid)
+)
+  ENGINE = INNODB
+  CHARACTER SET utf8
+  COLLATE utf8_general_ci;

@@ -14,18 +14,16 @@ DO
     DROP TABLE IF EXISTS NumRange;
     CREATE TABLE NumRange
     AS
-      SELECT
-        SEQ.SeqValue
+      SELECT SEQ.SeqValue
       FROM
         (
-          SELECT
-            (THOUSANDS.SeqValue +
-             HUNDREDS.SeqValue +
-             TENS.SeqValue +
-             ONES.SeqValue) SeqValue
+          SELECT (THOUSANDS.SeqValue +
+                  HUNDREDS.SeqValue +
+                  TENS.SeqValue +
+                  ONES.SeqValue) SeqValue
           FROM
             (
-              SELECT 0  SeqValue
+              SELECT 0 SeqValue
               UNION ALL
               SELECT 1 SeqValue
               UNION ALL
@@ -113,43 +111,56 @@ DO
             ) THOUSANDS
         ) SEQ;
 
-    alter table NumRange
-        add index seq_idx (SeqValue);
+    ALTER TABLE NumRange
+      ADD INDEX seq_idx (SeqValue);
 
     CREATE OR REPLACE VIEW LabeledLeg
     AS
-      SELECT p.pid,
-        p.first, p.middle, p.last,
+      SELECT
+        p.pid,
+        p.first,
+        p.middle,
+        p.last,
         "Legislator" AS PersonType,
         l.state
       FROM Person p
-      JOIN Legislator l
-      ON p.pid = l.pid;
+        JOIN Legislator l
+          ON p.pid = l.pid;
 
     -- Currently Term doesn't have values for start and end and this is fucking you
     CREATE OR REPLACE VIEW SplitTerm
-      AS
-    SELECT t1.pid, t1.year as session_year, YEAR(t1.start) as specific_year
-    FROM Term t1
-    UNION
-    SELECT t2.pid, t2.year as session_year, IFNULL(YEAR(t2.end), year(curdate())) as specific_year
-    FROM Term t2;
+    AS
+      SELECT
+        t1.pid,
+        t1.year        AS session_year,
+        YEAR(t1.start) AS specific_year
+      FROM Term t1
+      UNION
+      SELECT
+        t2.pid,
+        t2.year                               AS session_year,
+        IFNULL(YEAR(t2.end), year(curdate())) AS specific_year
+      FROM Term t2;
 
-    drop table if EXISTS LabeledLegFull;
-    create table LabeledLegFull
-      AS
-    SELECT l.*,
-      st.specific_year,
-      st.session_year
-    FROM LabeledLeg l
-      JOIN SplitTerm st
-      ON l.pid = st.pid;
+    DROP TABLE IF EXISTS LabeledLegFull;
+    CREATE TABLE LabeledLegFull
+    AS
+      SELECT
+        l.*,
+        st.specific_year,
+        st.session_year
+      FROM LabeledLeg l
+        JOIN SplitTerm st
+          ON l.pid = st.pid;
 
-    drop table if exists LabeledLobbyist;
+    DROP TABLE IF EXISTS LabeledLobbyist;
     CREATE OR REPLACE VIEW LabeledLobbyist
     AS
-      SELECT DISTINCT p.pid,
-        p.first, p.middle, p.last,
+      SELECT DISTINCT
+        p.pid,
+        p.first,
+        p.middle,
+        p.last,
         "Lobbyist" AS PersonType,
         l.state
       FROM Person p
@@ -185,388 +196,507 @@ DO
           ON lr.hid = h.hid;
 
 
-    drop table if exists LabeledLobFull;
-    create table LabeledLobFull
+    DROP TABLE IF EXISTS LabeledLobFull;
+    CREATE TABLE LabeledLobFull
     AS
-      SELECT distinct l.*,
+      SELECT DISTINCT
+        l.*,
         lt.specific_year,
         lt.session_year
       FROM LabeledLobbyist l
         JOIN LobTerms lt
           ON l.pid = lt.pid;
 
-    drop table if exists LabeledGenPubFull;
-    CREATE table LabeledGenPubFull
+    DROP TABLE IF EXISTS LabeledGenPubFull;
+    CREATE TABLE LabeledGenPubFull
     AS
-      SELECT DISTINCT p.pid,
-        p.first, p.middle, p.last,
-        "General Public" AS PersonType,
-        year(h.date) AS specific_year,
+      SELECT DISTINCT
+        p.pid,
+        p.first,
+        p.middle,
+        p.last,
+        "General Public"                                         AS PersonType,
+        year(h.date)                                             AS specific_year,
         IF(YEAR(h.date) % 2 = 1, YEAR(h.date), YEAR(h.date) - 1) AS session_year,
         gp.state
       FROM Person p
         JOIN GeneralPublic gp
           ON p.pid = gp.pid
         JOIN Hearing h
-        ON gp.hid = h.hid;
+          ON gp.hid = h.hid;
 
-    drop table if exists LabeledLAOFull;
-    CREATE table LabeledLAOFull
+    DROP TABLE IF EXISTS LabeledLAOFull;
+    CREATE TABLE LabeledLAOFull
     AS
-      SELECT distinct p.pid,
-        p.first, p.middle, p.last,
-        "Legislative Analyst Office" AS PersonType,
-        year(h.date) AS specific_year,
+      SELECT DISTINCT
+        p.pid,
+        p.first,
+        p.middle,
+        p.last,
+        "Legislative Analyst Office"                             AS PersonType,
+        year(h.date)                                             AS specific_year,
         IF(YEAR(h.date) % 2 = 1, YEAR(h.date), YEAR(h.date) - 1) AS session_year,
         lao.state
       FROM Person p
-      JOIN LegAnalystOffice lao
-      ON p.pid = lao.pid
-      JOIN LegAnalystOfficeRepresentation laor
-      ON lao.pid = laor.pid
-      JOIN Hearing h
-      ON laor.hid = h.hid;
+        JOIN LegAnalystOffice lao
+          ON p.pid = lao.pid
+        JOIN LegAnalystOfficeRepresentation laor
+          ON lao.pid = laor.pid
+        JOIN Hearing h
+          ON laor.hid = h.hid;
 
 
-    drop table if exists LabeledStateConstFull;
-    CREATE table LabeledStateConstFull
+    DROP TABLE IF EXISTS LabeledStateConstFull;
+    CREATE TABLE LabeledStateConstFull
     AS
-      SELECT distinct p.pid,
-        p.first, p.middle, p.last,
-        "State Constitutional Office" AS PersonType,
-        YEAR(h.date) AS specific_year,
+      SELECT DISTINCT
+        p.pid,
+        p.first,
+        p.middle,
+        p.last,
+        "State Constitutional Office"                            AS PersonType,
+        YEAR(h.date)                                             AS specific_year,
         IF(YEAR(h.date) % 2 = 1, YEAR(h.date), YEAR(h.date) - 1) AS session_year,
         sa.state
       FROM Person p
-      JOIN StateConstOfficeRep sa
-      ON p.pid = sa.pid
-      JOIN StateConstOfficeRepRepresentation sar
-      ON sa.pid = sar.pid
-      JOIN Hearing h
-      ON sar.hid = h.hid;
+        JOIN StateConstOfficeRep sa
+          ON p.pid = sa.pid
+        JOIN StateConstOfficeRepRepresentation sar
+          ON sa.pid = sar.pid
+        JOIN Hearing h
+          ON sar.hid = h.hid;
 
 
-    drop table if exists LabeledStateAgencyFull;
-    CREATE table LabeledStateAgencyFull
+    DROP TABLE IF EXISTS LabeledStateAgencyFull;
+    CREATE TABLE LabeledStateAgencyFull
     AS
-      SELECT distinct p.pid,
-        p.first, p.middle, p.last,
-        "State Agency Representative" AS PersonType,
-        YEAR(h.date) AS specific_year,
+      SELECT DISTINCT
+        p.pid,
+        p.first,
+        p.middle,
+        p.last,
+        "State Agency Representative"                            AS PersonType,
+        YEAR(h.date)                                             AS specific_year,
         IF(YEAR(h.date) % 2 = 1, YEAR(h.date), YEAR(h.date) - 1) AS session_year,
         sa.state
       FROM Person p
-      JOIN StateAgencyRep sa
-      ON p.pid = sa.pid
-      JOIN StateAgencyRepRepresentation sar
-      ON sa.pid = sar.pid
-      JOIN Hearing h
-      ON sar.hid = h.hid;
+        JOIN StateAgencyRep sa
+          ON p.pid = sa.pid
+        JOIN StateAgencyRepRepresentation sar
+          ON sa.pid = sar.pid
+        JOIN Hearing h
+          ON sar.hid = h.hid;
 
     CREATE OR REPLACE VIEW LabeledLegStaff
     AS
-      SELECT p.pid,
-        p.first, p.middle, p.last,
+      SELECT
+        p.pid,
+        p.first,
+        p.middle,
+        p.last,
         "Legislative Staff" AS PersonType,
         sa.state
       FROM Person p
-      JOIN LegislativeStaff sa
-      ON p.pid = sa.pid;
+        JOIN LegislativeStaff sa
+          ON p.pid = sa.pid;
 
-    drop table if exists SplitTermLop;
-    CREATE table SplitTermLop
+    DROP TABLE IF EXISTS SplitTermLop;
+    CREATE TABLE SplitTermLop
     AS
-      SELECT t1.staff_member as pid,
-        year(t1.start_date) as specific_year,
-        t1.term_year as session_year
+      SELECT
+        t1.staff_member     AS pid,
+        year(t1.start_date) AS specific_year,
+        t1.term_year        AS session_year
       FROM LegOfficePersonnel t1
       UNION
-      SELECT t2.staff_member as pid, IFNULL(YEAR(t2.end_date), year(curdate())) as specific_year,
-        t2.term_year as session_year
+      SELECT
+        t2.staff_member                            AS pid,
+        IFNULL(YEAR(t2.end_date), year(curdate())) AS specific_year,
+        t2.term_year                               AS session_year
       FROM LegOfficePersonnel t2;
 
-    alter table SplitTermLop
-        add UNIQUE (pid, specific_year, session_year);
+    ALTER TABLE SplitTermLop
+      ADD UNIQUE (pid, specific_year, session_year);
 
-    drop table if exists SplitTermOp;
+    DROP TABLE IF EXISTS SplitTermOp;
     CREATE TABLE SplitTermOp
     AS
-      SELECT distinct t1.staff_member as pid,
+      SELECT DISTINCT
+        t1.staff_member                                       AS pid,
         nr.SeqValue                                           AS specific_year,
         IF(nr.SeqValue % 2 = 1, nr.SeqValue, nr.SeqValue - 1) AS session_year
       FROM OfficePersonnel t1
         JOIN NumRange nr
           ON year(t1.start_date) <= nr.SeqValue
              AND (year(t1.end_date) >= nr.SeqValue OR
-                  ((t1.end_date is null) and (nr.SeqValue <= year(curdate()))));
+                  ((t1.end_date IS NULL) AND (nr.SeqValue <= year(curdate()))));
 
-    alter table SplitTermOp
-      add UNIQUE (pid, specific_year, session_year);
+    ALTER TABLE SplitTermOp
+      ADD UNIQUE (pid, specific_year, session_year);
 
     CREATE OR REPLACE VIEW SplitTermCS
     AS
-      SELECT t1.pid, t1.session_year as session_year, YEAR(t1.start_date) as specific_year
+      SELECT
+        t1.pid,
+        t1.session_year     AS session_year,
+        YEAR(t1.start_date) AS specific_year
       FROM ConsultantServesOn t1
       UNION
-      SELECT t2.pid, t2.session_year as session_year, IFNULL(YEAR(t2.end_date), year(curdate())) as specific_year
+      SELECT
+        t2.pid,
+        t2.session_year                            AS session_year,
+        IFNULL(YEAR(t2.end_date), year(curdate())) AS specific_year
       FROM ConsultantServesOn t2;
 
-    drop table if exists LegStaffTerms;
+    DROP TABLE IF EXISTS LegStaffTerms;
     CREATE TABLE LegStaffTerms
     AS
-      SELECT pid, specific_year, session_year
+      SELECT
+        pid,
+        specific_year,
+        session_year
       FROM SplitTermLop
       UNION
-      SELECT pid, specific_year, session_year
+      SELECT
+        pid,
+        specific_year,
+        session_year
       FROM SplitTermOp
       UNION
-      SELECT pid, specific_year, session_year
+      SELECT
+        pid,
+        specific_year,
+        session_year
       FROM SplitTermCS
       UNION
-      SELECT lr.pid,
-        year(h.date) AS specific_year,
+      SELECT
+        lr.pid,
+        year(h.date)                                             AS specific_year,
         IF(YEAR(h.date) % 2 = 1, YEAR(h.date), YEAR(h.date) - 1) AS session_year
       FROM LegislativeStaffRepresentation lr
         JOIN Hearing h
           ON lr.hid = h.hid;
 
-    alter table LegStaffTerms
-        add index pid_idx (pid);
+    ALTER TABLE LegStaffTerms
+      ADD INDEX pid_idx (pid);
 
-    drop table if exists LabeledLegStaffFull;
-    CREATE table LabeledLegStaffFull
-      AS
-      SELECT distinct ls.*, t.specific_year, t.session_year
+    DROP TABLE IF EXISTS LabeledLegStaffFull;
+    CREATE TABLE LabeledLegStaffFull
+    AS
+      SELECT DISTINCT
+        ls.*,
+        t.specific_year,
+        t.session_year
       FROM LabeledLegStaff ls
-      JOIN LegStaffTerms t
-      ON ls.pid = t.pid;
+        JOIN LegStaffTerms t
+          ON ls.pid = t.pid;
 
-    drop table if exists AllPeeps;
+    DROP TABLE IF EXISTS AllPeeps;
     CREATE TABLE AllPeeps
     AS
-      SELECT pid, first, middle, last, PersonType, specific_year, session_year, state
+      SELECT
+        pid,
+        first,
+        middle,
+        last,
+        PersonType,
+        specific_year,
+        session_year,
+        state
       FROM LabeledGenPubFull
-      UNION all
-      SELECT pid, first, middle, last, PersonType, specific_year, session_year, state
+      UNION ALL
+      SELECT
+        pid,
+        first,
+        middle,
+        last,
+        PersonType,
+        specific_year,
+        session_year,
+        state
       FROM LabeledLAOFull
-      UNION all
-      SELECT pid, first, middle, last, PersonType, specific_year, session_year, state
+      UNION ALL
+      SELECT
+        pid,
+        first,
+        middle,
+        last,
+        PersonType,
+        specific_year,
+        session_year,
+        state
       FROM LabeledLegStaffFull
-      UNION all
-      SELECT pid, first, middle, last, PersonType, specific_year, session_year, state
+      UNION ALL
+      SELECT
+        pid,
+        first,
+        middle,
+        last,
+        PersonType,
+        specific_year,
+        session_year,
+        state
       FROM LabeledStateConstFull
-      UNION all
-      SELECT pid, first, middle, last, PersonType, specific_year, session_year, state
+      UNION ALL
+      SELECT
+        pid,
+        first,
+        middle,
+        last,
+        PersonType,
+        specific_year,
+        session_year,
+        state
       FROM LabeledStateAgencyFull
-      UNION all
-      SELECT pid, first, middle, last, PersonType, specific_year, session_year, state
+      UNION ALL
+      SELECT
+        pid,
+        first,
+        middle,
+        last,
+        PersonType,
+        specific_year,
+        session_year,
+        state
       FROM LabeledLobFull
-      UNION all
-      SELECT pid, first, middle, last, PersonType, specific_year, session_year, state
+      UNION ALL
+      SELECT
+        pid,
+        first,
+        middle,
+        last,
+        PersonType,
+        specific_year,
+        session_year,
+        state
       FROM LabeledLegFull;
 
-    alter table AllPeeps
-        add INDEX pid_idx (pid);
+    ALTER TABLE AllPeeps
+      ADD INDEX pid_idx (pid);
 
-    DROP table if EXISTS UnlabeledPeople;
+    DROP TABLE IF EXISTS UnlabeledPeople;
     CREATE TABLE UnlabeledPeople
-      AS
-      SELECT DISTINCT u.pid,
+    AS
+      SELECT DISTINCT
+        u.pid,
         p.first,
         p.middle,
         p.last,
-        'Unlabeled' AS PersonType,
-        YEAR(h.date) AS specific_year,
+        'Unlabeled'                                              AS PersonType,
+        YEAR(h.date)                                             AS specific_year,
         IF(YEAR(h.date) % 2 = 1, YEAR(h.date), YEAR(h.date) - 1) AS session_year,
         v.state
       FROM currentUtterance u
         JOIN Person p
           ON u.pid = p.pid
         JOIN Video v
-        ON u.vid = v.vid
+          ON u.vid = v.vid
         JOIN Hearing h
-        ON v.hid = h.hid
+          ON v.hid = h.hid
         LEFT JOIN AllPeeps ap
-        ON ap.pid = p.pid
+          ON ap.pid = p.pid
       WHERE ap.pid IS NULL;
 
-    drop table if exists PersonClassificationsTmp;
+    DROP TABLE IF EXISTS PersonClassificationsTmp;
     CREATE TABLE PersonClassificationsTmp
-      AS
-      SELECT *, False as is_current
+    AS
+      SELECT
+        *,
+        FALSE AS is_current
       FROM AllPeeps
       WHERE specific_year > 1980
-      UNION all
-      SELECT *, False as is_current
+      UNION ALL
+      SELECT
+        *,
+        FALSE AS is_current
       FROM UnlabeledPeople
       WHERE specific_year > 1980;
 
-    alter table PersonClassificationsTmp
-      add index pk_idx (pid, PersonType, specific_year, state);
+    ALTER TABLE PersonClassificationsTmp
+      ADD INDEX pk_idx (pid, PersonType, specific_year, state);
 
-    create table if not exists PersonClassifications (
-      pid INTEGER,
-      first VARCHAR(255),
-      middle VARCHAR(255),
-      last VARCHAR (255),
-      PersonType VARCHAR(255),
-      specific_year YEAR,
-      session_year YEAR,
-      state VARCHAR(2),
-      is_current BOOL DEFAULT FALSE,
-      lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+    CREATE TABLE IF NOT EXISTS PersonClassifications (
+      pid            INTEGER,
+      first          VARCHAR(255),
+      middle         VARCHAR(255),
+      last           VARCHAR(255),
+      PersonType     VARCHAR(255),
+      specific_year  YEAR,
+      session_year   YEAR,
+      state          VARCHAR(2),
+      is_current     BOOL           DEFAULT FALSE,
+      lastTouched    TIMESTAMP      DEFAULT NOW() ON UPDATE NOW(),
       lastTouched_ts INT(11) AS ((to_seconds(`lastTouched`) - to_seconds('1970-01-01'))),
-      dr_id INTEGER UNIQUE AUTO_INCREMENT,
+      dr_id          INTEGER UNIQUE AUTO_INCREMENT,
 
       PRIMARY KEY (pid, PersonType, specific_year, state),
-      FOREIGN KEY (pid) REFERENCES Person(pid),
-      FOREIGN KEY (state) REFERENCES State(abbrev),
+      FOREIGN KEY (pid) REFERENCES Person (pid),
+      FOREIGN KEY (state) REFERENCES State (abbrev),
 
       INDEX session_year_idx (session_year),
       INDEX specific_year_idx (specific_year),
       INDEX pid_idx (pid),
-      index person_type_idx (PersonType),
-      index state_idx (state),
-      index is_current_idx (is_current)
+      INDEX person_type_idx (PersonType),
+      INDEX state_idx (state),
+      INDEX is_current_idx (is_current)
     )
       ENGINE = INNODB
-      CHARACTER SET utf8 COLLATE utf8_general_ci;
+      CHARACTER SET utf8
+      COLLATE utf8_general_ci;
 
-    insert into PersonClassifications
+    INSERT INTO PersonClassifications
     (pid, first, middle, last, PersonType, specific_year, session_year, state)
-    select tmp.pid, tmp.first, tmp.middle, tmp.last,
-      tmp.PersonType, tmp.specific_year, tmp.session_year, tmp.state
-    from PersonClassificationsTmp tmp
-      left join PersonClassifications og
-      on tmp.pid = og.pid
-        and tmp.PersonType = og.PersonType
-        and tmp.specific_year = og.specific_year
-        and tmp.session_year = og.session_year
-    where og.pid is null and tmp.state is not null;
+      SELECT
+        tmp.pid,
+        tmp.first,
+        tmp.middle,
+        tmp.last,
+        tmp.PersonType,
+        tmp.specific_year,
+        tmp.session_year,
+        tmp.state
+      FROM PersonClassificationsTmp tmp
+        LEFT JOIN PersonClassifications og
+          ON tmp.pid = og.pid
+             AND tmp.PersonType = og.PersonType
+             AND tmp.specific_year = og.specific_year
+             AND tmp.session_year = og.session_year
+      WHERE og.pid IS NULL AND tmp.state IS NOT NULL;
 
-    delete pc
-    from PersonClassifications pc
-      left join PersonClassificationsTmp tmp
-      on pc.pid = tmp.pid and pc.PersonType = tmp.PersonType
-        and pc.specific_year = tmp.specific_year and tmp.session_year = pc.session_year
-    where tmp.pid is null;
+    DELETE pc
+    FROM PersonClassifications pc
+      LEFT JOIN PersonClassificationsTmp tmp
+        ON pc.pid = tmp.pid AND pc.PersonType = tmp.PersonType
+           AND pc.specific_year = tmp.specific_year AND tmp.session_year = pc.session_year
+    WHERE tmp.pid IS NULL;
 
-    delete pc1 from PersonClassifications pc1
-      join PersonClassifications pc2
-        on pc1.pid = pc2.pid
-           and pc1.session_year = pc2.session_year
-           and pc1.PersonType != pc2.PersonType
-    where pc2.PersonType = 'Legislator';
+    DELETE pc1 FROM PersonClassifications pc1
+      JOIN PersonClassifications pc2
+        ON pc1.pid = pc2.pid
+           AND pc1.session_year = pc2.session_year
+           AND pc1.PersonType != pc2.PersonType
+    WHERE pc2.PersonType = 'Legislator';
 
 
-    drop table if exists LatestClass;
-    create temporary table LatestClass
-      as
-      select pid, max(specific_year) as recent_year
-      from PersonClassifications
-      group by pid;
+    DROP TABLE IF EXISTS LatestClass;
+    CREATE TEMPORARY TABLE LatestClass
+    AS
+      SELECT
+        pid,
+        max(specific_year) AS recent_year
+      FROM PersonClassifications
+      GROUP BY pid;
 
-    alter table LatestClass
-        add INdex pid_idx (pid);
+    ALTER TABLE LatestClass
+      ADD INDEX pid_idx (pid);
 
-    drop table if exists CurrentClassLegs;
-    create temporary table CurrentClassLegs
-    as
-      select c.pid, recent_year
-      from LatestClass c
-        join Term t
-          on c.pid = t.pid
-      where t.current_term = 1;
+    DROP TABLE IF EXISTS CurrentClassLegs;
+    CREATE TEMPORARY TABLE CurrentClassLegs
+    AS
+      SELECT
+        c.pid,
+        recent_year
+      FROM LatestClass c
+        JOIN Term t
+          ON c.pid = t.pid
+      WHERE t.current_term = 1;
 
-    alter table CurrentClassLegs
-      add INdex pid_idx (pid);
+    ALTER TABLE CurrentClassLegs
+      ADD INDEX pid_idx (pid);
 
-    update PersonClassifications p
-        join CurrentClassLegs c
-        on p.pid = c.pid
-          and p.specific_year = c.recent_year
-        set is_current = True
-        where p.PersonType = 'Legislator';
+    UPDATE PersonClassifications p
+      JOIN CurrentClassLegs c
+        ON p.pid = c.pid
+           AND p.specific_year = c.recent_year
+    SET is_current = TRUE
+    WHERE p.PersonType = 'Legislator';
 
-    update PersonClassifications p
-      left join CurrentClassLegs c
-        on p.pid = c.pid
-           and p.specific_year = c.recent_year
-    set is_current = False
-    where p.PersonType = 'Legislator' and c.pid is null;
+    UPDATE PersonClassifications p
+      LEFT JOIN CurrentClassLegs c
+        ON p.pid = c.pid
+           AND p.specific_year = c.recent_year
+    SET is_current = FALSE
+    WHERE p.PersonType = 'Legislator' AND c.pid IS NULL;
 
-    drop table if exists CurrentClassUtter;
-    create temporary table CurrentClassUtter
-      as
-      select distinct pid, session_year
-      from currentUtterance u
-        join Video v
-          on u.vid = v.vid
-        join Hearing h
-          on v.hid = h.hid
-      where session_year = 2017;
+    DROP TABLE IF EXISTS CurrentClassUtter;
+    CREATE TEMPORARY TABLE CurrentClassUtter
+    AS
+      SELECT DISTINCT
+        pid,
+        session_year
+      FROM currentUtterance u
+        JOIN Video v
+          ON u.vid = v.vid
+        JOIN Hearing h
+          ON v.hid = h.hid
+      WHERE session_year = 2017;
 
-    update PersonClassifications p
-      join CurrentClassUtter c
-        on p.pid = c.pid
-           and p.session_year = c.session_year
-    set is_current = True
-    where p.PersonType != 'Legislator';
+    UPDATE PersonClassifications p
+      JOIN CurrentClassUtter c
+        ON p.pid = c.pid
+           AND p.session_year = c.session_year
+    SET is_current = TRUE
+    WHERE p.PersonType != 'Legislator';
 
-    update PersonClassifications p
-      left join CurrentClassUtter c
-        on p.pid = c.pid
-           and p.session_year = c.session_year
-    set is_current = False
-    where p.PersonType != 'Legislator' and c.pid is null;
+    UPDATE PersonClassifications p
+      LEFT JOIN CurrentClassUtter c
+        ON p.pid = c.pid
+           AND p.session_year = c.session_year
+    SET is_current = FALSE
+    WHERE p.PersonType != 'Legislator' AND c.pid IS NULL;
 
-    create view FormerLegs
-      as
-    select pid, state, sum(is_current)
-    from PersonClassifications
-    where PersonType = 'Legislator'
-    group by pid, state
-    having sum(is_current) = 0;
+    CREATE OR REPLACE VIEW FormerLegs
+    AS
+      SELECT
+        pid,
+        state,
+        sum(is_current)
+      FROM PersonClassifications
+      WHERE PersonType = 'Legislator'
+      GROUP BY pid, state
+      HAVING sum(is_current) = 0;
 
-    insert into PersonClassifications
+    INSERT INTO PersonClassifications
     (pid, PersonType, specific_year, session_year, is_current, state)
-    select pid,
-      'Former Legislator' as PersonType,
-      year(curdate()) as specific_year,
-      if(year(curdate()) % 2 = 0, year(curdate()) - 1, year(curdate())) as session_year,
-      1 as is_current,
-      state
-    from FormerLegs;
+      SELECT
+        pid,
+        'Former Legislator'                                               AS PersonType,
+        year(curdate())                                                   AS specific_year,
+        if(year(curdate()) % 2 = 0, year(curdate()) - 1, year(curdate())) AS session_year,
+        1                                                                 AS is_current,
+        state
+      FROM FormerLegs;
 
-    drop table if EXISTS NumRange;
-    drop table if EXISTS CurrentClassUtter;
-    drop table if EXISTS CurrentClassLegs;
+    DROP TABLE IF EXISTS NumRange;
+    DROP TABLE IF EXISTS CurrentClassUtter;
+    DROP TABLE IF EXISTS CurrentClassLegs;
 
-    DROP VIEW if exists LabeledLeg;
-    DROP VIEW if exists SplitTerm;
-    DROP VIEW if exists LabeledLegFull;
+    DROP VIEW IF EXISTS LabeledLeg;
+    DROP VIEW IF EXISTS SplitTerm;
+    DROP VIEW IF EXISTS LabeledLegFull;
 
-    DROP VIEW if exists LabeledLobbyist;
-    DROP VIEW if exists LobTerms;
-    DROP table if exists LabeledLobFull;
+    DROP VIEW IF EXISTS LabeledLobbyist;
+    DROP VIEW IF EXISTS LobTerms;
+    DROP TABLE IF EXISTS LabeledLobFull;
 
-    DROP table if exists LabeledGenPubFull;
-    DROP table if exists LabeledLAOFull;
-    DROP table if exists LabeledStateConstFull;
-    DROP table if exists LabeledStateAgencyFull;
+    DROP VIEW IF EXISTS FormerLegs;
 
-    DROP VIEW if exists LabeledLegStaff;
-    DROP VIEW if exists SplitTermLop;
-    DROP VIEW if exists SplitTermOp;
-    DROP VIEW if exists SplitTermCS;
-    DROP table if exists LegStaffTerms;
-    DROP table if exists LabeledLegStaffFull;
+    DROP TABLE IF EXISTS LabeledGenPubFull;
+    DROP TABLE IF EXISTS LabeledLAOFull;
+    DROP TABLE IF EXISTS LabeledStateConstFull;
+    DROP TABLE IF EXISTS LabeledStateAgencyFull;
 
-    DROP TABLE if exists AllPeeps;
-    DROP table if exists UnlabeledPeople;
+    DROP VIEW IF EXISTS LabeledLegStaff;
+    DROP VIEW IF EXISTS SplitTermLop;
+    DROP VIEW IF EXISTS SplitTermOp;
+    DROP VIEW IF EXISTS SplitTermCS;
+    DROP TABLE IF EXISTS LegStaffTerms;
+    DROP TABLE IF EXISTS LabeledLegStaffFull;
 
-    drop table if exists PersonClassificationsTmp;
-    drop table if exists CurrentClass;
+    DROP TABLE IF EXISTS AllPeeps;
+    DROP TABLE IF EXISTS UnlabeledPeople;
+
+    DROP TABLE IF EXISTS PersonClassificationsTmp;
 
   END |
 

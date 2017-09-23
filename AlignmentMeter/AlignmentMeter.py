@@ -11,7 +11,7 @@ CONN_INFO = {'host': 'dddb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
              # 'db': 'AndrewTest',
              'db': 'DDDB2016Aug',
              'user': 'dbMaster',
-             'passwd': os.environ['DBMASTERPASSWORD']'}
+             'passwd': os.environ['DBMASTERPASSWORD']}
 
 PCKL_DIR = 'PickledObjects/'
 

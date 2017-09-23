@@ -1,3 +1,10 @@
+SELECT_BID_BILL = '''SELECT bid, house FROM Bill
+                     WHERE state = %(state)s
+                     AND sessionYear = %(session_year)s
+                     AND type = %(type)s
+                     AND number = %(number)s
+                     AND session = %(session)s'''
+
 SELECT_ALL_BIDS = '''SELECT bid, type, number, house FROM Bill
                      WHERE state = %(state)s
                      AND sessionYear = %(session_year)s

@@ -13,6 +13,10 @@ CREATE EVENT PassingVotes_event
 DO
   BEGIN
 
+    DROP VIEW IF EXISTS DoPassVotes;
+    DROP VIEW IF EXISTS FloorVotes;
+    DROP VIEW IF EXISTS AllPassingVotesTmp;
+
     -- All votes  with "do pass" in the motion text
     CREATE OR REPLACE VIEW DoPassVotes
     AS

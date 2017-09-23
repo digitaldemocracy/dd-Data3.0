@@ -4,7 +4,7 @@ YEAR = 2017
 DEFAULT_TERM_START = "2017-01-01"
 
 FL_HEARING_HOUSE_SOURCE = "http://www.myfloridahouse.gov/Sections/HouseSchedule/houseschedule.aspx"
-FL_HEARING_SENATE_SOURCE = "https://www.flsenate.gov/Session/Calendars/2017"
+FL_HEARING_SENATE_SOURCE = "https://www.flsenate.gov/Session/Calendars/2018"
 
 
 

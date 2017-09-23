@@ -211,9 +211,10 @@ class Hearings_Manager(object):
     def import_hearings(self, hearings, cur_date):
         for hearing in hearings:
             #print("importing")
-            hid = self.get_hearing_hid(hearing.hearing_date, hearing.session_year, hearing.house)
+            hid = self.get_hearing_hid(hearing.hearing_date.date(), hearing.session_year, hearing.house)
+
             if hid is None:
-                hid = self.insert_hearing(hearing.hearing_date, hearing.state, hearing.session_year)
+                hid = self.insert_hearing(hearing.hearing_date.date(), hearing.state, hearing.session_year)
 
             if hearing.cid is not None and not self.is_comm_hearing_in_db(hearing.cid, hid):
                 self.insert_committee_hearing(hearing.cid, hid)
