@@ -85,7 +85,8 @@ class TxHearingParser(object):
         :return: A list of Hearing model objects
         """
         session_year = date.year
-        if date.year % 2 == 1:
+
+        if date.year % 2 == 0:
             session_year -= 1
 
         hearing_list = list()
