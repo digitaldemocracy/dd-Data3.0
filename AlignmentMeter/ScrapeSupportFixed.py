@@ -12,7 +12,7 @@ from SupportFinder import *
 
 data_dir = 'BillAnalysisLobs/'
 output_dir = 'BillAnalysisOut/'
-zip_url = 'http://downloads.leginfo.legislature.ca.gov/pubinfo_2017.zip'
+zip_url = 'https://downloads.leginfo.legislature.ca.gov/pubinfo_2017.zip'
 
 
 """Cleans all the lob files out of the data directory and all csv files out of the output directory"""
@@ -37,7 +37,7 @@ def clear_old_data():
 
 """Downloads and extracts the data zip file into the data directory"""
 def get_zip():
-    results = requests.get(zip_url)
+    results = requests.get(zip_url, verify=False)
     file = zipfile.ZipFile(BytesIO(results.content))
     file.extractall(data_dir)
 
