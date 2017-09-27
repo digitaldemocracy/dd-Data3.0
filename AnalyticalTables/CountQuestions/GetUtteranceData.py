@@ -78,7 +78,6 @@ def structure_utterances(data, classifications_df):
     # We want to worry only about one video at a time
     df_lst = []
     for g, g_df in data.groupby('vid'):
-        print('Video:', g)
         # Ordering utterances by time is probably the best way to determine succession
         # For some reason ordering by uid gives me funny behavior
         g_df.sort_values('time', inplace=True)
@@ -101,10 +100,12 @@ def structure_utterances(data, classifications_df):
         idx = (df.PersonType == 'Legislator') & (df.PersonType_next == 'Other')
         df = df[idx]
 
-        df_lst.append(df)
+        df_lst.append(df[cols])
 
-    pickle.dump(df_lst, open('df_lst_new.p', 'wb'))
-    return pd.concat(df_lst)
+    data = pd.concat(df_lst)
+
+    pickle.dump(data, open('data.p', 'wb'))
+    return data
 
 
 
