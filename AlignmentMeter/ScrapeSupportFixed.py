@@ -15,8 +15,17 @@ output_dir = 'BillAnalysisOut/'
 zip_url = 'https://downloads.leginfo.legislature.ca.gov/pubinfo_2017.zip'
 
 
+
+
 """Cleans all the lob files out of the data directory and all csv files out of the output directory"""
 def clear_old_data():
+
+    # Ensures the directories exist
+    if not os.path.exists(data_dir):
+        os.makedirs(data_dir)
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
     cwd = os.getcwd()
     for file in os.listdir(os.path.join(data_dir)):
         file_path = os.path.join(data_dir, file)
