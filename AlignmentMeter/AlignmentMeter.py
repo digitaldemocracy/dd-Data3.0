@@ -628,7 +628,7 @@ def add_term_info(df, term_df):
     return df
 
 
-def write_to_db(df, org_alignments_df, leg_votes_all_df, cnxn, engine):
+def write_to_db(df, org_alignments_df, leg_votes_all_df, engine, cnxn):
     """Pretty obvious. Writes these tables to the db"""
     data_df = make_data_table(org_alignments_df, leg_votes_all_df)
     data_df.to_sql('AlignmentScoresData', engine, if_exists='replace', index=False)
@@ -671,8 +671,7 @@ def write_to_db(df, org_alignments_df, leg_votes_all_df, cnxn, engine):
     df['rank'] = np.nan
 
     df.to_sql('CombinedAlignmentScores', engine, if_exists='replace', index=False)
-#    Excluding will make the query run slower
-#    add_table_indices(cnxn)
+    add_table_indices(cnxn)
 
 
 # Print statements are left intentionally so you can monitor process
