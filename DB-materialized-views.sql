@@ -388,6 +388,7 @@ CREATE TABLE CombinedAlignmentScores(
   positions_registered int,
   votes_in_agreement int,
   votes_in_disagreement int,
+  total_votes int,
   affirmations int,
   num_bills int,
   no_abstain_votes bool,
@@ -398,7 +399,6 @@ CREATE TABLE CombinedAlignmentScores(
   dr_id int unique,
   rank int,
 
-  PRIMARY KEY (pid, oid, session_year, no_abstain_votes, no_resolutions, no_unanimous),
   index pid_idx (pid),
   index oid_idx (oid),
   index state_idx (state),

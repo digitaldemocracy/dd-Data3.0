@@ -554,7 +554,7 @@ def write_score_table(df, grp_cols, cnxn=None, tbl_name=None):
     df = summed_cols_df.merge(score_df, on=grp_cols)
 
     if tbl_name:
-        df.to_sql(tbl_name, cnxn, if_exists='replace', index=False)
+        df.to_sql(tbl_name, cnxn, if_exists='replace', index=False, flavor = 'mysql')
 
     return df
 
@@ -565,6 +565,11 @@ def add_table_indices(cnxn):
     s = """alter table CombinedAlignmentScores
         add dr_id int NOT NULL unique AUTO_INCREMENT"""
     c.execute(s)
+    
+    s = """alter table CombinedAlignmentScores
+      add state VARCHAR(2) default 'CA'"""
+    c.execute(s)
+    
     s = """alter table CombinedAlignmentScores
       add INDEX pid_idx (pid),
       add INDEX oid_idx (oid),
@@ -628,11 +633,11 @@ def add_term_info(df, term_df):
     return df
 
 
-def write_to_db(df, org_alignments_df, leg_votes_all_df, engine, cnxn):
+def write_to_db(df, org_alignments_df, leg_votes_all_df, cnxn, engine):
     """Pretty obvious. Writes these tables to the db"""
     data_df = make_data_table(org_alignments_df, leg_votes_all_df)
-    data_df.to_sql('AlignmentScoresData', engine, if_exists='replace', index=False)
-    df.to_sql('BillAlignmentScores', engine, if_exists='replace', index=False)
+    data_df.to_sql('AlignmentScoresData', engine, if_exists='replace', index=False, flavor='mysql')
+    df.to_sql('BillAlignmentScores', engine, if_exists='replace', index=False, flavor='mysql')
 
     df_cpy = df.copy()
     df_cpy['session_year'] = 'All'
@@ -670,8 +675,48 @@ def write_to_db(df, org_alignments_df, leg_votes_all_df, engine, cnxn):
     # Added per Toshi request
     df['rank'] = np.nan
 
-    df.to_sql('CombinedAlignmentScores', engine, if_exists='replace', index=False)
-    add_table_indices(cnxn)
+    # For closing cnxn is the only way this works
+    cnxn.close()
+    cnxn = pymysql.connect(**CONN_INFO)
+    create_combined_scores_tbl(cnxn)
+    cnxn.close()
+    
+    df.to_sql('CombinedAlignmentScores', engine, if_exists='append', index=False, flavor='mysql')
+
+
+def create_combined_scores_tbl(cnxn):
+    c = cnxn.cursor()
+    
+    s = "drop table if exists CombinedAlignmentScores"
+    c.execute(s)
+    
+    s = """CREATE TABLE if not exists CombinedAlignmentScores(
+              pid int,
+              oid int,
+              house VARCHAR(100),
+              party ENUM('Republican', 'Democrat', 'Other'),
+              score double,
+              positions_registered int,
+              votes_in_agreement int,
+              votes_in_disagreement int,
+              total_votes int,
+              affirmations int,
+              num_bills int,
+              no_abstain_votes bool,
+              no_resolutions bool,
+              no_unanimous bool,
+              session_year enum('2015', '2017', 'All'),
+              pid_house_party VARCHAR(255),
+              dr_id int unique,
+              state VARCHAR(2),
+              rank int,
+
+              index pid_idx (pid),
+              index oid_idx (oid),
+              index state_idx (state),
+              index pid_house_party_idx (pid, house, party)
+            ) ENGINE=InnoDB DEFAULT CHARSET=latin1;"""
+    c.execute(s)
 
 
 # Print statements are left intentionally so you can monitor process
@@ -700,11 +745,12 @@ def main():
                        'no_resolution': 'no_resolutions'}, inplace=True)
     # Code takes a long time to run, so you don't want to lose data if there is an issue on the db side
     pickle.dump(df, open(PCKL_DIR + 'final_df.p', 'wb'))
-    
+    # df = pickle.load(open(PCKL_DIR + 'final_df.p', 'rb'))
+
     engine = 'mysql+pymysql://{user}:{passwd}@{host}/{db}'.format(**CONN_INFO)
+    # cnxn is closed in this function
     write_to_db(df, org_alignments_df, leg_votes_all_df, cnxn, engine)
     
-    cnxn.close()
     
     
 if __name__ == '__main__':
