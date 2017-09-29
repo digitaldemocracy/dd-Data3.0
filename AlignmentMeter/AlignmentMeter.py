@@ -707,7 +707,7 @@ def create_combined_scores_tbl(cnxn):
               no_unanimous bool,
               session_year enum('2015', '2017', 'All'),
               pid_house_party VARCHAR(255),
-              dr_id int unique,
+              dr_id int unique AUTO_INCREMENT,
               state VARCHAR(2),
               rank int,
 
@@ -732,20 +732,20 @@ def main():
 
     print('Read in data')
 
-    # To avoid conflicting alignments. Data should really be cleaner
-    org_alignments_df = org_alignments_df.drop_duplicates(['oid', 'bid', 'date'])
-
-    filters = ['unanimous', 'abstain_vote', 'resolution']
-
-    df = create_all_scores(leg_votes_all_df, org_alignments_df, filters)
-    # This is a separate function because I sort of just ran out of steam at the end and this was easier
-    df = add_term_info(df, term_df)
-
-    df.rename(columns={'no_abstain_vote': 'no_abstain_votes',
-                       'no_resolution': 'no_resolutions'}, inplace=True)
-    # Code takes a long time to run, so you don't want to lose data if there is an issue on the db side
-    pickle.dump(df, open(PCKL_DIR + 'final_df.p', 'wb'))
-    # df = pickle.load(open(PCKL_DIR + 'final_df.p', 'rb'))
+    # # To avoid conflicting alignments. Data should really be cleaner
+    # org_alignments_df = org_alignments_df.drop_duplicates(['oid', 'bid', 'date'])
+    #
+    # filters = ['unanimous', 'abstain_vote', 'resolution']
+    #
+    # df = create_all_scores(leg_votes_all_df, org_alignments_df, filters)
+    # # This is a separate function because I sort of just ran out of steam at the end and this was easier
+    # df = add_term_info(df, term_df)
+    #
+    # df.rename(columns={'no_abstain_vote': 'no_abstain_votes',
+    #                    'no_resolution': 'no_resolutions'}, inplace=True)
+    # # Code takes a long time to run, so you don't want to lose data if there is an issue on the db side
+    # pickle.dump(df, open(PCKL_DIR + 'final_df.p', 'wb'))
+    df = pickle.load(open(PCKL_DIR + 'final_df.p', 'rb'))
 
     engine = 'mysql+pymysql://{user}:{passwd}@{host}/{db}'.format(**CONN_INFO)
     # cnxn is closed in this function
