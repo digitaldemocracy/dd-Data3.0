@@ -276,6 +276,49 @@ class TxHearingParser(object):
 
         return hearing_list
 
+
+    def scrape_floor_hearings(self, url, house):
+        """
+        Scrapes information on bills discussed on house and senate floor hearings
+        :param url: A URL to a daily floor committee calendar
+        :param house: The
+        :return:
+        """
+        doc_text = requests.get(url).text
+        meeting_soup = BeautifulSoup(doc_text, "html.parser")
+
+        bill_list = list()
+
+        date = None
+
+        if house == 'Senate':
+            for text in meeting_soup.find_all('p'):
+                try:
+                    date = dt.datetime.strptime(text.find('span').contents[0], '%B %d, %Y')
+                    break
+
+                except:
+                    continue
+        else:
+            for text in meeting_soup.find_all('p'):
+                try:
+                    date = dt.datetime.strptime(text.find('span').contents[0], '%A, %B %d, %Y')
+                    break
+
+                except:
+                    continue
+
+        cid = self.get_committee_cid(house + " Floor", house, date)
+
+        for bill_link in meeting_soup.find_all('a'):
+            bill_name = bill_link.contents[0]
+            bill_list.append(bill_name)
+
+        hearing_list = self.build_hearing_list(cid, date, bill_list, house)
+
+        return hearing_list
+
+
     def scrape_committee_meeting_list(self, house):
         """
         Scrapes all of the meeting notices/minutes in a legislative chamber from committee web pages
@@ -284,12 +327,15 @@ class TxHearingParser(object):
         """
         hearing_list = list()
         doc_list = list()
+        floor_doc_list = list()
 
         if house == 'House':
             doc_list = self.hearing_page_parser.get_house_minutes()
+            floor_doc_list = self.hearing_page_parser.get_house_floor_attachments()
 
         if house == 'Senate':
             doc_list = self.hearing_page_parser.get_senate_hearing_notice()
+            floor_doc_list = self.hearing_page_parser.get_senate_floor_attachments()
 
         for doc in doc_list:
             if house == 'House':
@@ -297,5 +343,8 @@ class TxHearingParser(object):
 
             if house == 'Senate':
                 hearing_list += self.scrape_senate_meeting_notice(doc)
+
+        for doc in floor_doc_list:
+            hearing_list += self.scrape_floor_hearings(doc, house)
 
         return hearing_list

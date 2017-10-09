@@ -40,6 +40,20 @@ SELECT_CHAMBER_HEARING = '''SELECT distinct h.hid FROM Hearing h
                             AND state = %(state)s
                             AND session_year = %(year)s'''
 
+SELECT_HEARING_WITH_COMMITTEE = '''SELECT h.hid FROM Hearing h
+                                   LEFT JOIN CommitteeHearings ch on h.hid = ch.hid
+                                   WHERE h.date = %(date)s
+                                   AND state = %(state)s
+                                   AND session_year = %(year)s
+                                   AND cid = %(cid)s'''
+
+SELECT_HEARING_NO_COMMITTEE = '''SELECT h.hid FROM Hearing h
+                                 LEFT JOIN CommitteeHearings ch on h.hid = ch.hid
+                                 WHERE h.date = %(date)s
+                                 AND state = %(state)s
+                                 AND session_year = %(year)s
+                                 AND cid is NULL'''
+
 SELECT_COMMITTEE_HEARING = '''SELECT * FROM CommitteeHearings
                               WHERE cid = %(cid)s
                               AND hid = %(hid)s'''
