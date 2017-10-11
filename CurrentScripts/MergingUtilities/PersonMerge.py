@@ -532,6 +532,16 @@ def get_person_names(dddb, person):
     except MySQLdb.Error:
         print(traceback.format_exc())
 
+def complete_merge_person(dddb, person):
+    merge_gp(dddb, person)
+    merge_lobbyist(dddb, person)
+    merge_legstaff(dddb, person)
+    merge_leg_analyst(dddb, person)
+    merge_state_agency(dddb, person)
+    merge_state_const_office(dddb, person)
+    merge_legislator(dddb, person)
+    merge_utterances(dddb, person)
+    delete_person(dddb, person)
 
 def main():
     arg_parser = argparse.ArgumentParser(description='Merges two people')
@@ -554,19 +564,10 @@ def main():
         print_string += "\nAre you sure you want to do this? (y/n)\n"
 
         if args.force or raw_input(print_string).lower() == 'y':
-            merge_gp(dddb, person)
-            merge_lobbyist(dddb, person)
-            merge_legstaff(dddb, person)
-            merge_leg_analyst(dddb, person)
-            merge_state_agency(dddb, person)
-            merge_state_const_office(dddb, person)
-            merge_legislator(dddb, person)
-            merge_utterances(dddb, person)
-            delete_person(dddb, person)
+            complete_merge_person(dddb, person)
         else:
             print("Exiting.")
             exit()
-
 
 if __name__ == '__main__':
     main()
