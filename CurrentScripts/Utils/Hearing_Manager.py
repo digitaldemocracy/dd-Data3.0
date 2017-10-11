@@ -53,15 +53,14 @@ class Hearings_Manager(object):
     '''
 
 
-    def get_hearing_hid(self,  date, session_year,  house):
-
-        hearing = {'date': date, 'year': session_year, 'state': self.state, 'house': house}
+    def get_hearing_hid(self,  date, session_year, house, cid):
+        hearing = {'date': date, 'year': session_year, 'state': self.state, 'house': house, 'cid': cid}
 
         try:
-            self.dddb.execute(SELECT_CHAMBER_HEARING, hearing)
+            self.dddb.execute(SELECT_HEARING_WITH_COMMITTEE, hearing)
 
             if self.dddb.rowcount == 0:
-                self.dddb.execute(SELECT_HEARING, hearing)
+                self.dddb.execute(SELECT_HEARING_NO_COMMITTEE, hearing)
                 if self.dddb.rowcount == 0:
                     return None
                 else:
@@ -202,16 +201,17 @@ class Hearings_Manager(object):
                 #print traceback.format_exc()
                 self.logger.exception(format_logger_message("HearingAgenda insert failed", (INSERT_HEARING_AGENDA % agenda)))
 
-    '''
-    Gets hearing data from OpenStates and inserts it into the database
-    Once a Hearing has been inserted, this function also inserts
-    the corresponding CommitteeHearings and HearingAgendas.
-    '''
 
     def import_hearings(self, hearings, cur_date):
+        """
+        Gets hearing data from OpenStates and inserts it into the database
+        Once a Hearing has been inserted, this function also inserts
+        the corresponding CommitteeHearings and HearingAgendas.
+        :param hearings: A list of hearing model objects to be inserted
+        """
         for hearing in hearings:
             #print("importing")
-            hid = self.get_hearing_hid(hearing.hearing_date.date(), hearing.session_year, hearing.house)
+            hid = self.get_hearing_hid(hearing.hearing_date.date(), hearing.session_year, hearing.house, hearing.cid)
 
             if hid is None:
                 hid = self.insert_hearing(hearing.hearing_date.date(), hearing.state, hearing.session_year)
@@ -222,10 +222,11 @@ class Hearings_Manager(object):
             if hearing.bid is not None and not self.is_hearing_agenda_in_db(hid, hearing.bid, cur_date):
                 self.insert_hearing_agenda(hid, hearing.bid, cur_date)
 
-    '''
-    Generates a report for graylogger
-    '''
+
     def log(self):
+        """
+        Generates a report for the logger
+        """
         LOG = {'tables': [{'state': self.state, 'name': 'Hearing', 'inserted': self.H_INS, 'updated': 0, 'deleted': 0},
                           {'state': self.state, 'name': 'CommitteeHearing', 'inserted': self.CH_INS, 'updated': 0, 'deleted': 0},
                           {'state': self.state, 'name': 'HearingAgenda', 'inserted': self.HA_INS, 'updated': self.HA_UPD,

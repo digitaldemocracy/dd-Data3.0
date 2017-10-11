@@ -45,3 +45,34 @@ class TxHearingPageParser(object):
             links += [self.create_attachment_link(link["href"]) for link in all_links if link.img and type in link["href"] and "html" in link["href"]]
 
         return links
+
+    def get_senate_floor_attachments(self):
+        url = self.base_url + "/Calendars/CalendarsByLegislature.aspx?Chbr=S&ForLeg=1"
+        senate_floor_soup = BeautifulSoup(requests.get(url).text, "html.parser")
+
+        docs_table = senate_floor_soup.find('table', id='tblCalendars')
+        docs_table = docs_table.find_all('tr')
+
+        links = []
+
+        for row in docs_table:
+            if row.find('td').contents[0] == 'Senate Floor Action':
+                links.append(self.base_url + row.find('a').get('href'))
+
+        return links
+
+
+    def get_house_floor_attachments(self):
+        url = self.base_url + "/Calendars/CalendarsByLegislature.aspx?Chbr=H&ForLeg=1"
+        house_floor_soup = BeautifulSoup(requests.get(url).text, "html.parser")
+
+        docs_table = house_floor_soup.find('table', id="tblCalendars")
+        docs_table = docs_table.find_all('tr')
+
+        links = []
+
+        for row in docs_table:
+            if row.find('td').contents[0] == 'Daily House Calendar':
+                links.append(self.base_url + row.find('a').get('href'))
+
+        return links
