@@ -213,6 +213,23 @@ def merge_org(dddb, org, throw_exc=False):
             exit(1)
         print(traceback.format_exc())
 
+def has_org_concept(dddb, org, throw_exc=False):
+    """
+    Check to see if this organization has an OrgConcept
+    :param dddb: connection to the DDDB
+    :param org: dictionary containging 'oid'
+    :return: returns the OrgConcept oid or 0 if doesn't have one.
+    """
+    try:
+        org_oid = {'bad_oid': org['oid']}
+        dddb.execute(sel_org_concept, org_oid)
+        if dddb.rowcount == 0:
+            return 0
+        return dddb.fetchone()[0]
+    except:
+        if throw_exc:
+            exit(1)
+        print(traceback.format_exc())
 
 def add_org_concept(dddb, org, throw_exc=False):
     """
@@ -224,9 +241,9 @@ def add_org_concept(dddb, org, throw_exc=False):
     """
     try:
         dddb.execute(select_org_concept_id)
-        new_oid = dddb.fetchone()[0]
+        new_oid = dddb.fetchone()[0] - 1
 
-        org_concept = {'oid': new_oid, 'name': org['concept']}
+        org_concept = {'good_oid': new_oid, 'name': org['concept']}
 
         # Insert a new OrgConcept
         dddb.execute(insert_org_concept, org_concept)
@@ -235,6 +252,7 @@ def add_org_concept(dddb, org, throw_exc=False):
         dddb.execute(insert_org_concept_affiliation, {'new_oid': new_oid,
                                                       'old_oid': org['good_oid'],
                                                       'is_subchapter': False})
+        return new_oid;
 
     except:
         if throw_exc:
@@ -300,6 +318,33 @@ def delete_org(dddb, org, throw_exc=False):
         if throw_exc:
             exit(1)
         print(traceback.format_exc())
+
+
+def get_org_name(dddb, org, is_org_concept=False):
+    try:
+        if is_org_concept:
+            dddb.execute(sel_org_concept_name, {'oid': org['oid']})
+
+            if dddb.rowcount >= 1:
+                org_name = dddb.fetchone()[0]
+            else:
+                print("The specified good oid is not a valid OrgConcept oid. Exiting.")
+                exit(1)
+        else:
+            dddb.execute(sel_org_name, {'oid': org['oid']})
+
+            if dddb.rowcount >= 1:
+                org_name = dddb.fetchone()[0]
+            else:
+                print("The specified good oid is not a valid oid. Exiting.")
+                exit(1)
+
+        return org_name
+
+    except MySQLdb.Error:
+        print(traceback.format_exc())
+        exit(1)
+
 
 
 def get_org_names(dddb, org, is_org_concept):
