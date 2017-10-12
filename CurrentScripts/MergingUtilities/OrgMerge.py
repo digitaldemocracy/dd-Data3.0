@@ -243,7 +243,7 @@ def add_org_concept(dddb, org, throw_exc=False):
         dddb.execute(select_org_concept_id)
         new_oid = dddb.fetchone()[0] - 1
 
-        org_concept = {'good_oid': new_oid, 'name': org['concept']}
+        org_concept = {'oid': new_oid, 'name': org['concept'], 'canon_oid': org['good_oid']}
 
         # Insert a new OrgConcept
         dddb.execute(insert_org_concept, org_concept)
@@ -408,7 +408,7 @@ def main():
     if args.subchapter:
         org['is_subchapter'] = True
 
-    with connect('live') as dddb:
+    with connect() as dddb:
         if not args.force:
             org_names = get_org_names(dddb, org, args.orgConcept)
 
