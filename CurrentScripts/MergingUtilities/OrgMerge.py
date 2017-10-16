@@ -9,7 +9,7 @@ from OrgMergeQueries import *
 from Utils.Database_Connection import *
 
 
-def merge_knownclients(dddb, org):
+def merge_knownclients(dddb, org, throw_exc=False):
     """
     Changes rows in OrgAlignments that refer to bad_oid to refer to good_oid.
     First checks for identical rows that already refer to good_oid.
@@ -35,10 +35,12 @@ def merge_knownclients(dddb, org):
         print("Updated " + str(dddb.rowcount) + " rows in KnownClients")
 
     except MySQLdb.Error:
+        if throw_exc:
+            exit(1)
         print(traceback.format_exc())
 
 
-def merge_genpub(dddb, org):
+def merge_genpub(dddb, org, throw_exc=False):
     """
     Changes rows in OrgAlignments that refer to bad_oid to refer to good_oid.
     First checks for identical rows that already refer to good_oid.
@@ -63,10 +65,12 @@ def merge_genpub(dddb, org):
         print("Updated " + str(dddb.rowcount) + " rows in GeneralPublic")
 
     except MySQLdb.Error:
+        if throw_exc:
+            exit(1)
         print(traceback.format_exc())
 
 
-def merge_org_alignment(dddb, org):
+def merge_org_alignment(dddb, org, throw_exc=False):
     """
     Changes rows in OrgAlignments that refer to bad_oid to refer to good_oid.
     First checks for identical rows that already refer to good_oid.
@@ -91,10 +95,12 @@ def merge_org_alignment(dddb, org):
         print("Updated " + str(dddb.rowcount) + " rows in OrgAlignment")
 
     except MySQLdb.Error:
+        if throw_exc:
+            exit(1)
         print(traceback.format_exc())
 
 
-def merge_lobby_employer(dddb, org):
+def merge_lobby_employer(dddb, org, throw_exc=False):
     """
     Changes rows in LobbyEmployer that refer to bad_oid to refer to good_oid
     Once good_oid has been added to LobbyEmployer, also changes rows in the tables
@@ -162,10 +168,12 @@ def merge_lobby_employer(dddb, org):
             print("Updated " + str(dddb.rowcount) + " rows in LobbyistEmployer")
 
     except:
+        if throw_exc:
+            exit(1)
         print(traceback.format_exc())
 
 
-def merge_org(dddb, org):
+def merge_org(dddb, org, throw_exc=False):
     """
     Changes rows in the following tables that refer to bad_oid to refer to good_oid:
         - Gift
@@ -186,7 +194,7 @@ def merge_org(dddb, org):
         dddb.execute(up_contribution, org)
         print("Updated " + str(dddb.rowcount) + " rows in Contribution")
 
-        merge_genpub(dddb, org)
+        merge_genpub(dddb, org, throw_exc)
 
         dddb.execute(up_behest, org)
         print("Updated " + str(dddb.rowcount) + " rows in Behests")
@@ -194,17 +202,36 @@ def merge_org(dddb, org):
         dddb.execute(up_combinedreps, org)
         print("Updated " + str(dddb.rowcount) + " rows in CombinedRepresentations")
 
-        merge_org_alignment(dddb, org)
+        merge_org_alignment(dddb, org, throw_exc)
 
-        merge_knownclients(dddb, org)
+        merge_knownclients(dddb, org, throw_exc)
 
-        merge_lobby_employer(dddb, org)
+        merge_lobby_employer(dddb, org, throw_exc)
 
     except:
+        if throw_exc:
+            exit(1)
         print(traceback.format_exc())
 
+def has_org_concept(dddb, org, throw_exc=False):
+    """
+    Check to see if this organization has an OrgConcept
+    :param dddb: connection to the DDDB
+    :param org: dictionary containging 'oid'
+    :return: returns the OrgConcept oid or 0 if doesn't have one.
+    """
+    try:
+        org_oid = {'bad_oid': org['oid']}
+        dddb.execute(sel_org_concept, org_oid)
+        if dddb.rowcount == 0:
+            return 0
+        return dddb.fetchone()[0]
+    except:
+        if throw_exc:
+            exit(1)
+        print(traceback.format_exc())
 
-def add_org_concept(dddb, org):
+def add_org_concept(dddb, org, throw_exc=False):
     """
     Adds a new row to the OrgConcept table using a specified name
     and the next smallest negative number as the oid.
@@ -214,9 +241,9 @@ def add_org_concept(dddb, org):
     """
     try:
         dddb.execute(select_org_concept_id)
-        new_oid = dddb.fetchone()[0]
+        new_oid = dddb.fetchone()[0] - 1
 
-        org_concept = {'oid': new_oid, 'name': org['concept']}
+        org_concept = {'oid': new_oid, 'name': org['concept'], 'canon_oid': org['good_oid']}
 
         # Insert a new OrgConcept
         dddb.execute(insert_org_concept, org_concept)
@@ -225,12 +252,15 @@ def add_org_concept(dddb, org):
         dddb.execute(insert_org_concept_affiliation, {'new_oid': new_oid,
                                                       'old_oid': org['good_oid'],
                                                       'is_subchapter': False})
+        return new_oid;
 
     except:
+        if throw_exc:
+            exit(1)
         print(traceback.format_exc())
 
 
-def merge_org_concept(dddb, org, is_org_concept=False, hide=True):
+def merge_org_concept(dddb, org, is_org_concept=False, hide=True, throw_exc=False):
     """
     Adds an OrgConceptAffiliation for the specified bad_oid
     Then, it sets the display_flag of the bad_oid's row in the Organizations
@@ -262,10 +292,12 @@ def merge_org_concept(dddb, org, is_org_concept=False, hide=True):
             print("Updated " + str(dddb.rowcount) + " rows in Organizations")
 
     except MySQLdb.Error:
+        if throw_exc:
+            exit(1)
         print(traceback.format_exc())
 
 
-def delete_org(dddb, org):
+def delete_org(dddb, org, throw_exc=False):
     """
     Deletes any OrgConceptAffiliations belonging to bad_oid, then
     deletes the Organization and its OrganizationStateAffiliation specified by bad_oid
@@ -283,7 +315,36 @@ def delete_org(dddb, org):
         print("Deleted " + str(dddb.rowcount) + " rows in Organizations")
 
     except:
+        if throw_exc:
+            exit(1)
         print(traceback.format_exc())
+
+
+def get_org_name(dddb, org, is_org_concept=False):
+    try:
+        if is_org_concept:
+            dddb.execute(sel_org_concept_name, {'oid': org['oid']})
+
+            if dddb.rowcount >= 1:
+                org_name = dddb.fetchone()[0]
+            else:
+                print("The specified good oid is not a valid OrgConcept oid. Exiting.")
+                exit(1)
+        else:
+            dddb.execute(sel_org_name, {'oid': org['oid']})
+
+            if dddb.rowcount >= 1:
+                org_name = dddb.fetchone()[0]
+            else:
+                print("The specified good oid is not a valid oid. Exiting.")
+                exit(1)
+
+        return org_name
+
+    except MySQLdb.Error:
+        print(traceback.format_exc())
+        exit(1)
+
 
 
 def get_org_names(dddb, org, is_org_concept):
@@ -295,7 +356,7 @@ def get_org_names(dddb, org, is_org_concept):
                 good_org_name = dddb.fetchone()[0]
             else:
                 print("The specified good oid is not a valid OrgConcept oid. Exiting.")
-                exit()
+                exit(1)
         else:
             dddb.execute(sel_org_name, {'oid': org['good_oid']})
 
@@ -303,7 +364,7 @@ def get_org_names(dddb, org, is_org_concept):
                 good_org_name = dddb.fetchone()[0]
             else:
                 print("The specified good oid is not a valid oid. Exiting.")
-                exit()
+                exit(1)
 
         dddb.execute(sel_org_name, {'oid': org['bad_oid']})
 
@@ -311,13 +372,13 @@ def get_org_names(dddb, org, is_org_concept):
             bad_org_name = dddb.fetchone()[0]
         else:
             print("The specified bad oid is not a valid oid. Exiting.")
-            exit()
+            exit(1)
 
         return {'good_name': good_org_name, 'bad_name': bad_org_name}
 
     except MySQLdb.Error:
         print(traceback.format_exc())
-        exit()
+        exit(1)
 
 
 def main():
@@ -347,7 +408,7 @@ def main():
     if args.subchapter:
         org['is_subchapter'] = True
 
-    with connect('live') as dddb:
+    with connect() as dddb:
         if not args.force:
             org_names = get_org_names(dddb, org, args.orgConcept)
 
