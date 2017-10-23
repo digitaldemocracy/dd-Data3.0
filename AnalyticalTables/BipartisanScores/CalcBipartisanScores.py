@@ -4,17 +4,14 @@ import numpy as np
 import itertools
 from datetime import datetime
 import os
+import pickle
 
 
 CONN_INFO = {
              'host': 'dddb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-             # 'host': 'localhost',
              'port': 3306,
-             # 'db': 'andrew_dddb',
              'db': 'DDDB2016Aug',
-             # 'user': 'root',
              'user': 'dbMaster',
-             # 'passwd': 'Macymo%12'
              'passwd': os.environ['DBMASTERPASSWORD']
              }
 
@@ -204,9 +201,10 @@ def main():
     filters = ['unanimous', 'abstain_vote', 'resolution']
     leg_scores_df = generate_full_scores_df(votes_df, filters)
 
-    cols = ['pid', 'session_year', 'normed_score']
-    leg_scores_df[cols].rename(columns={'normed_score': 'score'}).to_sql('BipartisanshipScores',
-                                                                         cnxn,
+    # You need to the engine to write to sql for some reason
+    engine = 'mysql+pymysql://{user}:{passwd}@{host}/{db}'.format(**CONN_INFO)
+    leg_scores_df.rename(columns={'normed_score': 'score'}).to_sql('BipartisanshipScores',
+                                                                         engine,
                                                                          'mysql',
                                                                          if_exists='replace',
                                                                          index=False)

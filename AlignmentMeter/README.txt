@@ -7,13 +7,11 @@ Process for Running: (In order)
 
 Run: ScrapeSupportFixed.py
     - Downloads data in lob files from here: 'http://downloads.leginfo.legislature.ca.gov/pubinfo_2017.zip'
-    - Unzips these files into CollectingData/BillAnalysisLobs
-        - It depends on this directory existing
-    - Writes csv files containing support and opposition into CollectingData/BillAnalysisOut
-        - Again, this directory must exist
+    - Unzips these files into BillAnalysisLobs
+    - Writes csv files containing support and opposition into BillAnalysisOut
 
 Run: InsertAlignments.py
-    - Reads the data from the csvs in CollectingData/BillAnalysisOut and writes that info to
+    - Reads the data from the csvs in BillAnalysisOut and writes that info to
       the database
 
 Run: AlignmentMeter.py
