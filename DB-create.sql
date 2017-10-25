@@ -2010,6 +2010,21 @@ CREATE TABLE IF NOT EXISTS TT_CommitteeSecretary (
   FOREIGN KEY (state) REFERENCES State(abbrev)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+/*
+ Stores speaker prediction results to be used in Transcription Tool 
+*/
+CREATE TABLE IF NOT EXISTS TT_SpeakerPrediction (
+  id INTEGER AUTO_INCREMENT,
+  vid INTEGER NOT NULL,
+  diarizationTag VARCHAR(5) NOT NULL,
+  pid INTEGER NOT NULL,
+  confidence FLOAT,
+  PRIMARY KEY (id),
+  FOREIGN KEY (pid) REFERENCES Person(pid),
+  FOREIGN KEY (vid) REFERENCES Video(vid),
+  UNIQUE (vid, diarizationtag, pid)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 CREATE OR REPLACE VIEW TT_currentCuts
 AS SELECT * FROM TT_Cuts
 WHERE current = TRUE ORDER BY videoId DESC, cutId ASC;
