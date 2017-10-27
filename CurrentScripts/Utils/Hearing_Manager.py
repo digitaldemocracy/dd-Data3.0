@@ -152,11 +152,8 @@ class Hearings_Manager(object):
         hearing['session_year'] = session_year
         hearing['state'] = state
 
-
         try:
-            hearing['session_year'] = 2017
-            self.dddb.execute(INSERT_HEARING, {'date': hearing['date'], 'session_year': hearing['session_year'],
-                                          'state': state})
+            self.dddb.execute(INSERT_HEARING, hearing)
             self.H_INS += self.dddb.rowcount
 
             return self.dddb.lastrowid
