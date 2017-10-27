@@ -177,11 +177,6 @@ def get_hearing_hid(date, house, dddb):
     try:
         dddb.execute(SELECT_CHAMBER_HEARING, hearing)
 
-        # if dddb.rowcount == 0:
-        #     logger.exception(format_logger_message("Selection failed for Hearing", (SELECT_CHAMBER_HEARING % hearing)))
-        #     exit()
-        # else:
-        #     return dddb.fetchone()[0]
         if dddb.rowcount >= 1:
             return dddb.fetchone()[0]
         else:
@@ -361,22 +356,16 @@ def import_house_agendas(f, dddb):
 
     date = None
     committee = None
-    #posted_date = None
 
     for line in f:
-        #print(line)
         if 'MEETINGS' in line:
             h_flag = 1
-            # print(line)
-        # elif h_flag == 0 and re.match(r'^([A-Z]+),\s([A-Z]+)\s([0-9]{1,2}),\s([0-9]{4})', line):
-        #     match = re.match(r'^([A-Z]+),\s([A-Z]+)\s([0-9]{1,2}),\s([0-9]{4})', line)
-        #     posted_date = clean_date(match.group(0))
+
         elif h_flag == 1:
             if re.match(r'^([a-zA-Z]+),\s([a-zA-Z]+)\s([0-9]{1,2}),\s([0-9]{4})', line) is not None:
                 date = clean_date(line)
                 date = dt.datetime.strptime(date, '%Y-%m-%d')
                 print(date)
-                #hid = get_hearing_hid(date, 'House', dddb)
 
             elif 'DAILY ORDER OF BUSINESS' in line or 'BILL INDEX' in line:
                 break
@@ -386,7 +375,7 @@ def import_house_agendas(f, dddb):
                     match = re.findall(r'(HB\s[0-9]+|HCR\s[0-9]+|HJR\s[0-9]+|HR\s[0-9]+|HM\s[0-9]+)', line)
                     if match is not None:
                         for item in match:
-                            # print item
+
                             bid = get_bill_bid(item, date, dddb)
                             print(bid)
                             hearing = Hearing(date, 'House', 'Regular', 'FL', session_year,
@@ -394,18 +383,9 @@ def import_house_agendas(f, dddb):
 
                             hearing_list.append(hearing)
 
-                            # if hid is None:
-                            #     hid = insert_hearing(date, dddb)
-                            #
-                            # if not is_hearing_agenda_in_db(hid, bid, posted_date, dddb):
-                            #     insert_hearing_agenda(hid, bid, posted_date, dddb)
-
                 else:
                     comm = re.search(r'^.*?Committee.*?(?=[0-9])', line)
                     if comm is not None:
-
-                        #if hid is None:
-                        #    hid = insert_hearing(date, dddb)
 
                         if 'the' not in comm.group(0).lower():
                             committee = get_comm_cid(comm.group(0), 'House', date, dddb)
@@ -414,13 +394,6 @@ def import_house_agendas(f, dddb):
                                               committee, None)
 
                             hearing_list.append(hearing)
-
-                            # if committee == None:
-                            #     print("here")
-                            #     print(comm)
-                            #     exit()
-                            #if not is_comm_hearing_in_db(committee, hid, dddb):
-                            #    insert_committee_hearing(committee, hid, dddb)
 
         else:
             continue
@@ -503,8 +476,6 @@ def get_house_agenda(dddb):
     html_soup = BeautifulSoup(urllib2.urlopen(FL_HEARING_HOUSE_SOURCE).read(), "lxml")
 
     hearing_list = []
-    #f = open("fl_house_hearings.txt", "r")
-    #html_soup = BeautifulSoup(f.read())
 
     for link in html_soup.find_all('li', class_='calendarlist'):
         doc_link = 'http://www.myfloridahouse.gov' + link.find('a').get('href').strip()
@@ -528,8 +499,6 @@ def get_senate_agenda(dddb):
     for link in html_soup.find('div', class_='grid-33').find_all('li'):
         doc_link = 'https://www.flsenate.gov' + link.find('a').get('href').strip()
         print(doc_link)
-        #date_posted = doc_link.split('_')[2]
-        #date_posted = dt.datetime.strptime(date_posted, "%Y-%m-%d").date()
 
         get_agenda_text(doc_link)
 
