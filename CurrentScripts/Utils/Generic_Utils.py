@@ -63,7 +63,7 @@ def create_logger():
 
     state = file_name.split("_")[0]
     if not os.path.exists(os.environ["SCRIPTPATH"] + "/logs"):
-        os.makedirs(os.environ["SCRIPTPATH"] + "logs")
+        os.makedirs(os.environ["SCRIPTPATH"] + "/logs")
     if not os.path.exists(os.environ["SCRIPTPATH"] + "/logs/" + state):
         os.makedirs(os.environ["SCRIPTPATH"] + "/logs/" + state)
 

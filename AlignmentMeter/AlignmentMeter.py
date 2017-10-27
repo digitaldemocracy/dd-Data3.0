@@ -464,7 +464,15 @@ def make_data_table(org_alignments_df, leg_votes_df):
     org_alignments_df.rename(columns={'date': 'date_org'}, inplace=True)
     leg_votes_df.rename(columns={'date': 'date_leg'}, inplace=True)
 
-    data = pd.concat([org_alignments_df, leg_votes_df])
+    leg_combos_df = leg_votes_df[['pid', 'bid']].drop_duplicates()
+    org_combos_df = org_alignments_df[['oid', 'bid']].drop_duplicates()
+
+    out_df = leg_combos_df.merge(org_combos_df, on='bid')
+
+    leg_out_df = out_df.merge(leg_votes_df, on=['pid', 'bid'], how='left')
+    org_out_df = out_df.merge(org_alignments_df, on=['oid', 'bid'], how='left')
+
+    out_df = pd.concat([leg_out_df, org_out_df])
 
     cols_dict = {'bid': 'bill',
                  'alignment': 'org_alignment',
@@ -479,21 +487,38 @@ def make_data_table(org_alignments_df, leg_votes_df):
                  'unanimous': 'unanimous',
                  'abstain_vote': 'abstain_vote',
                  'resolution': 'resolution'}
-    data = data[list(cols_dict.keys())].rename(columns=cols_dict)
 
-    data['leg_vote_date'] = pd.to_datetime(data['leg_vote_date'])
-    data['date_of_org_alignment'] = pd.to_datetime(data['date_of_org_alignment'])
+    out_df = out_df[list(cols_dict.keys())].rename(columns=cols_dict)
 
-    data.sort_values(by=['bill', 'date_of_org_alignment', 'leg_vote_date'], inplace=True)
+    out_df['leg_vote_date'] = pd.to_datetime(out_df['leg_vote_date'])
+    out_df['date_of_org_alignment'] = pd.to_datetime(out_df['date_of_org_alignment'])
 
-    data['single_date'] = data.apply(lambda row: (row['date_of_org_alignment']
-                                                  if pd.notnull(row['date_of_org_alignment'])
-                                                  else row['leg_vote_date']),
-                                     axis=1)
+    out_df['single_date'] = out_df.apply(lambda row: (row['date_of_org_alignment']
+                                                      if pd.notnull(row['date_of_org_alignment'])
+                                                      else row['leg_vote_date']),
+                                         axis=1)
 
-    data.sort_values(['bill', 'single_date'], inplace=True)
+    out_df.sort_values(['pid', 'oid', 'bill', 'single_date'], inplace=True)
 
-    return data
+    # Just need to reorder there
+    cols_order = ['pid',
+                  'oid',
+                  'bill',
+                  'single_date',
+                  'leg_first',
+                  'leg_last',
+                  'leg_alignment',
+                  'leg_vote_date',
+                  'unanimous',
+                  'abstain_vote',
+                  'resolution',
+                  'organization',
+                  'org_alignment',
+                  'date_of_org_alignment'
+                  ]
+    out_df = out_df[cols_order]
+
+    return out_df
 
 
 def get_positions(g):
@@ -732,20 +757,20 @@ def main():
 
     print('Read in data')
 
-    # # To avoid conflicting alignments. Data should really be cleaner
-    # org_alignments_df = org_alignments_df.drop_duplicates(['oid', 'bid', 'date'])
-    #
-    # filters = ['unanimous', 'abstain_vote', 'resolution']
-    #
-    # df = create_all_scores(leg_votes_all_df, org_alignments_df, filters)
-    # # This is a separate function because I sort of just ran out of steam at the end and this was easier
-    # df = add_term_info(df, term_df)
-    #
-    # df.rename(columns={'no_abstain_vote': 'no_abstain_votes',
-    #                    'no_resolution': 'no_resolutions'}, inplace=True)
-    # # Code takes a long time to run, so you don't want to lose data if there is an issue on the db side
-    # pickle.dump(df, open(PCKL_DIR + 'final_df.p', 'wb'))
-    df = pickle.load(open(PCKL_DIR + 'final_df.p', 'rb'))
+    # To avoid conflicting alignments. Data should really be cleaner
+    org_alignments_df = org_alignments_df.drop_duplicates(['oid', 'bid', 'date'])
+
+    filters = ['unanimous', 'abstain_vote', 'resolution']
+
+    df = create_all_scores(leg_votes_all_df, org_alignments_df, filters)
+    # This is a separate function because I sort of just ran out of steam at the end and this was easier
+    df = add_term_info(df, term_df)
+
+    df.rename(columns={'no_abstain_vote': 'no_abstain_votes',
+                       'no_resolution': 'no_resolutions'}, inplace=True)
+    # Code takes a long time to run, so you don't want to lose data if there is an issue on the db side
+    pickle.dump(df, open(PCKL_DIR + 'final_df.p', 'wb'))
+    # df = pickle.load(open(PCKL_DIR + 'final_df.p', 'rb'))
 
     engine = 'mysql+pymysql://{user}:{passwd}@{host}/{db}'.format(**CONN_INFO)
     # cnxn is closed in this function
