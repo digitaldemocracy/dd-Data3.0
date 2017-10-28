@@ -1,6 +1,3 @@
-#!/usr/bin/env python2.7
-# -*- coding: utf8 -*-
-
 import csv
 import json
 import pprint
@@ -9,6 +6,7 @@ from levenshtein import *
 
 org_types = ['engineering', 'foundation', 'law office', 'association']
 
+
 class DDOrgTools:
     # stoplist = [',', 'of', 'california', 'inc', 'association', '&', 'pac', 'and', 'for',
     #             'the', 'llc', 'school', 'group', 'city', 'ca', 'committee', 'community',
@@ -16,7 +14,11 @@ class DDOrgTools:
     #             'assn', 'a', 'assoc', 'co', 'corp', '#', 'at', 'cal', 'by', 'on', ':', ';', "enterprise",
     #             "enterprises", "systems"]
 
-    stoplist = ['llc', 'pac', 'inc', 'foundation', 'engineering', 'law office', 'corporation', 'corp']
+    stoplist = ['llc', 'pac', 'inc', 'foundation', 'engineering', 'law office', 'corporation', 'corp',
+                'and', 'affiliates', 'affiliate', 'subsidiary', 'subsidiaries', 'its', 'of', 'the', 'pac',
+                'city', 'development', 'capital', 'healthcare', 'council']
+
+    abbreviations = {'publ': 'public', 'govt': 'government'}
 
     def __init__(self):
         pass
@@ -28,25 +30,54 @@ class DDOrgTools:
                 data.append(line)
         return data
 
-    def filterdata(self, line):
+    def norm_name(self, line):
         line = line.lower()
 
         for char in line:
-            if not (char.isalnum() or char.isspace()):
+            if char == "'":
                 line = line.replace(char, '')
+            elif char == ';':
+                line = line.replace(char, '')
+            elif char == ':':
+                line = line.replace(char, '')
+            elif char == '`':
+                line = line.replace(char, '')
+            elif char == '.':
+                line = line.replace(char, '')
+            elif char == ',':
+                line = line.replace(char, '')
+            elif char == '/' or char == '\\':
+                line = line.replace(char, ' ')
+            elif char == '&':
+                line = line.replace(char, 'and')
+            elif not (char.isalnum() or char.isspace()):
+                line = line.replace(char, ' ')
 
-        linewords = line.split(' ')
+        linewords = line.split()
         if linewords[0] == 'u':
             linewords.pop(0)
+
+        line = ' '.join(linewords)
+
+        return line.strip()
+
+    def filterdata(self, line):
+        line = line.lower()
+        linewords = line.split()
 
         for word in linewords:
             if word in self.stoplist:
                 linewords.remove(word)
 
+        for word in linewords:
+            if word in self.abbreviations.keys():
+                index = linewords.index(word)
+                linewords[index] = self.abbreviations[word]
+
         line = ' '.join(linewords)
 
-        for m in re.finditer(r'(llc|inc|pac|assn|political action committee)( |$)', line):
-            line = line.replace(m.group(0).strip(), ' ')
+        # for m in re.finditer(r'(llc|inc|pac|assn|political action committee)( |$)', line):
+        #     line = line.replace(m.group(0).strip(), ' ')
 
         return line.strip()
 
@@ -56,10 +87,14 @@ class DDOrgTools:
         return line
 
     def getDistance(self, org1, org2):
-        org1 = self.filterdata(org1)
+        org1 = self.norm_name(org1)
         org1 = self.bracesRemove(org1)
-        org2 = self.filterdata(org2)
+        org1 = self.filterdata(org1)
+
+        org2 = self.norm_name(org2)
         org2 = self.bracesRemove(org2)
+        org2 = self.filterdata(org2)
+
         #print([org1, org2])
         list1 = re.split('\s+', org1)
         list2 = re.split("\s+", org2)
@@ -139,8 +174,9 @@ def stage3_cluster(clusters):
 
             for j in range(i+1, len(s2_clusters)):
                 word_dist = levenshtein(s2_clusters[i]['name'], s2_clusters[j]['name'])
+                norm_dist = float(word_dist) / float(max(len(s2_clusters[i]['name']), len(s2_clusters[j]['name'])))
 
-                if s2_clusters[j]['clustered'] == 0 and word_dist <= 1:
+                if s2_clusters[j]['clustered'] == 0 and norm_dist <= 0.08:
                     so_clust.append(s2_clusters[j])
                     s2_clusters[j]['clustered'] = 1
 
@@ -159,20 +195,24 @@ def stage3_cluster(clusters):
 
 
 def stage2_cluster(clusters):
+    cluster_tool = DDOrgTools()
+
     s2_clusters = []
     s1_clusters = [{'clustered': 0, 'name': key} for key in clusters.keys()]
 
     for i in range(0, len(s1_clusters)):
         if s1_clusters[i]['clustered'] == 0:
             so_clust = [s1_clusters[i]]
-            cluster_words = s1_clusters[i]['name'].split(' ')
+            filter_name = cluster_tool.filterdata(s1_clusters[i]['name'])
+            cluster_words = filter_name.split()
 
             for j in range(i+1, len(s1_clusters)):
-                cluster2_words = s1_clusters[j]['name'].split(' ')
+                filter_name_2 = cluster_tool.filterdata(s1_clusters[j]['name'])
+                cluster2_words = filter_name_2.split()
                 word_dist = levenshtein(cluster_words, cluster2_words)
+                norm_dist = float(word_dist) / float(len(cluster_words))
 
-                if s1_clusters[j]['clustered'] == 0 and word_dist <= 1\
-                        and (len(cluster_words) > 1 and len(cluster2_words) > 1):
+                if s1_clusters[j]['clustered'] == 0 and norm_dist <= 0.25:
                     so_clust.append(s1_clusters[j])
                     s1_clusters[j]['clustered'] = 1
 
@@ -197,7 +237,7 @@ def stage1_cluster(orgs):
 
     for i in range(0, len(orgs)):
         if orgs[i]['clustered'] == 0:
-            canon_name = cluster_tool.filterdata(orgs[i]['name'])
+            canon_name = cluster_tool.norm_name(orgs[i]['name'])
             clusters[canon_name] = [orgs[i]]
             orgs[i]['clustered'] = 1
 
@@ -210,26 +250,50 @@ def stage1_cluster(orgs):
     return clusters
 
 
+def cluster_to_csv(clusters):
+    """
+    Converts the dictionary of organization clusters to tabular format
+    and writes it to a CSV file
+    :param clusters: A dictionary containing one or more clustered organizations
+    """
+    with open('orgClusters.csv', 'w') as csv_file:
+        fieldnames = ['Cluster name', 'Org Name', 'Org oid']
+
+        csv_writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+
+        csv_writer.writeheader()
+
+        for cluster in clusters.keys():
+            orgs = clusters[cluster]
+            for org in orgs:
+                row_dict = {'Cluster name': cluster.strip(), 'Org Name': org['name'].strip(), 'Org oid': org['oid'].strip()}
+                csv_writer.writerow(row_dict)
+
+
 def main():
-    with open('OrgClusterTest.csv', 'r') as csvfile:
+    with open('test_db_clusters.csv', 'r') as csvfile:
         csv_reader = csv.reader(csvfile)
         csv_reader.next()
 
         orgs = [{'oid': row[1], 'name': row[2], 'clustered': 0} for row in csv_reader]
+        #orgs = orgs[:100]
 
     s1_clusters = stage1_cluster(orgs)
-    # s2_clusters = stage2_cluster(s1_clusters)
-    # s3_clusters = stage3_cluster(s2_clusters)
-    # pprint.pprint(s3_clusters)
+    #pprint.pprint(s1_clusters)
+    s2_clusters = stage2_cluster(s1_clusters)
+    s3_clusters = stage3_cluster(s2_clusters)
+    pprint.pprint(s3_clusters)
 
     with open('test_clusters.json', 'wb') as jsonfile:
         json.dump(s1_clusters, jsonfile)
 
-    # with open('s2_test_clusters.json', 'wb') as jsonfile:
-    #     json.dump(s2_clusters, jsonfile)
-    #
-    # with open('s3_test_clusters.json', 'wb') as jsonfile:
-    #     json.dump(s3_clusters, jsonfile)
+    with open('s2_test_clusters.json', 'wb') as jsonfile:
+        json.dump(s2_clusters, jsonfile)
+
+    with open('s3_test_clusters.json', 'wb') as jsonfile:
+        json.dump(s3_clusters, jsonfile)
+
+    cluster_to_csv(s3_clusters)
 
 
 if __name__ == '__main__':
