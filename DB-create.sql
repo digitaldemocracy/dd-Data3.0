@@ -2025,6 +2025,21 @@ CREATE TABLE IF NOT EXISTS TT_SpeakerPrediction (
   UNIQUE (vid, diarizationtag, pid)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+/*
+ Stores new person created in a task 
+*/
+CREATE TABLE IF NOT EXISTS TT_NewPerson (
+  id INTEGER AUTO_INCREMENT,
+  pid INTEGER NOT NULL,
+  tid INTEGER NOT NULL,
+  eid INTEGER NOT NULL,
+  lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+  PRIMARY KEY (id),
+  UNIQUE (pid, tid)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE OR REPLACE VIEW TT_currentCuts
+AS SELECT * FROM TT_Cuts
 CREATE OR REPLACE VIEW TT_currentCuts
 AS SELECT * FROM TT_Cuts
 WHERE current = TRUE ORDER BY videoId DESC, cutId ASC;
