@@ -1,0 +1,413 @@
+"""
+File: FrontLog
+Author: Nathan Philliber
+Date: 1 November 2017
+
+Description:
+    - Manage front log
+    - Generate sheets for people and organizations
+    - Fill sheets with new organizations and suggested duplicates
+    - Merge marked duplicates from same spreadsheet
+"""
+
+from httplib2 import Http
+from oauth2client.service_account import ServiceAccountCredentials
+from apiclient import discovery
+from Utils.Generic_Utils import create_logger
+from Utils.Database_Connection import connect
+from sys import version_info
+import datetime
+import argparse
+
+people_spreadsheet_id = '<INSERT SPREADSHEET KEY HERE>'
+organizations_spreadsheet_id = '<INSERT SPREADSHEET KEY HERE>'
+api_key_path = '<PATH TO GOOGLE JSON KEY HERE>'
+
+sql_select_organizations_after_oid = '''SELECT oid, name, city, stateHeadquartered 
+                                        FROM Organizations WHERE oid > %(oid)s;'''
+sql_select_organizations_after_oid_with_limit = '''SELECT oid, name, city, stateHeadquartered FROM Organizations 
+                                                   WHERE oid > %(oid)s ORDER BY oid LIMIT %(limit)s;'''
+
+
+def connect_to_sheets(auth_key_path):
+    """
+    Connect to Google Sheets API and return service object
+    :param auth_key_path: path to json oauth2 key
+    :return: Google api service
+    """
+
+    scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
+    credentials = ServiceAccountCredentials.from_json_keyfile_name(auth_key_path, scope)
+    http = credentials.authorize(Http())
+    discovery_url = 'https://sheets.googleapis.com/$discovery/rest?version=v4'
+    return discovery.build('sheets', 'v4', http=http, discoveryServiceUrl=discovery_url)
+
+
+def get_sheet_id_from_title(service, spreadsheet_id, title):
+    """
+    Get the sheet id that matches the first instance of title
+    :param service: Google api service
+    :param spreadsheet_id: spreadsheet id that sheet is contained in
+    :param title: sheet name string
+    :return: sheet id
+    """
+
+    spreadsheet_data = service.spreadsheets().get(spreadsheetId=spreadsheet_id).execute()
+    sheets = spreadsheet_data.get('sheets', '')
+    for sheet in sheets:
+        if sheet.get('properties', {}).get('title', '') == title:
+            return sheet.get('properties').get('sheetId')
+    return None
+
+
+def duplicate_sheet(service, spreadsheet_id, template_sheet_id, new_title=None, index=0):
+    """
+    Create a copy of a sheet. Put the next sheet at the specified index
+    :param service: Google api service
+    :param spreadsheet_id: spreadsheet id of sheets
+    :param template_sheet_id: sheet to be copied
+    :param new_title: title of copy (optional)
+    :param index: index of where to put copy (default is first/0)
+    :return: return title of sheet copy
+    """
+
+    body = {
+        "requests": [{
+            "duplicateSheet": {
+                "newSheetName": new_title,
+                "insertSheetIndex": index,
+                "sourceSheetId": template_sheet_id
+            }
+        }]
+    }
+
+    result = service.spreadsheets().batchUpdate(spreadsheetId=spreadsheet_id, body=body).execute()
+    return result.get('replies', {})[0].get('duplicateSheet', {}).get('properties', {}).get('title', '')
+
+
+def protect_columns(service, spreadsheet_id, sheet_title, first=1, last=26):
+    """
+    Protect all columns in specified range
+    :param service: Google api service
+    :param spreadsheet_id: spreadsheet id
+    :param sheet_title: title of sheet
+    :param first: first column to protect
+    :param last: last column to protect
+    """
+
+    sheet_id = get_sheet_id_from_title(service, spreadsheet_id, sheet_title)
+
+    body = {
+        "requests": [{
+            "addProtectedRange": {
+                "protectedRange": {
+                    "range": {
+                        "endColumnIndex": last,
+                        "sheetId": sheet_id,
+                        "startColumnIndex": first
+                    },
+                    "description": "Don't Edit",
+                    "warningOnly": 'True'
+                }
+            }
+        }]
+    }
+    service.spreadsheets().batchUpdate(spreadsheetId=spreadsheet_id, body=body).execute()
+
+
+def find_previous_sheet_by_date(service, spreadsheet_id, max_sheet_title=None):
+    """
+    Find the id of the sheet that became before this one (by date in sheet's title)
+    :param service: Google api service
+    :param spreadsheet_id: spreadsheet id that contains sheet
+    :param max_sheet_title: title of sheet, should be "DATE Organization/or/Person"
+    :return: sheet title of found sheet
+    """
+
+    if max_sheet_title is not None:
+        cur_date = max_sheet_title.split(' ')[0]
+    else:
+        cur_date = None
+
+    spreadsheet_data = service.spreadsheets().get(spreadsheetId=spreadsheet_id).execute()
+    sheets = spreadsheet_data.get('sheets', '')
+
+    cur_highest = '.'  # Lowest ASCII value
+
+    for sheet in sheets:
+        title = sheet.get('properties', {}).get('title', '')
+        date = title.split(' ')[0]
+        if date[0].isdigit() and cur_highest.split(' ')[0] < date:
+            if cur_date is None or date < cur_date:
+                cur_highest = title
+
+    if cur_highest == '.':
+        cur_highest = None
+
+    return cur_highest
+
+
+def find_highest_id_in_column(service, spreadsheet_id, sheet_title, column='C', start_row=2):
+    """
+    Find the largest id in a column, useful to know where to continue loading entities from
+    :param service: Google API service
+    :param spreadsheet_id: Spreadsheet id
+    :param sheet_title: Title of sheet to search
+    :param column: column name to search in
+    :param start_row: row to start search at (i.e. skip the title row/s)
+    :return: id
+    """
+
+    result = service.spreadsheets().values().get(spreadsheetId=spreadsheet_id, range="'"+sheet_title+"'!" +
+                                                 column + str(start_row) + ":" + column).execute()
+
+    return max(result['values'])[0]
+
+
+def get_organization_data(last_processed_oid, limit=None):
+    """
+    :param last_processed_oid: the last oid that was processed by this script,
+                                display all organizations that have higher oids
+    :param limit: limit the number of organizations that should be put into the sheet
+    :return: list containing all new organizations in following format:
+            [{oid, name, city, state, suggested:[{oid, name, city, state}, ...]}, ...]
+    """
+
+    with connect('local', logger=create_logger()) as dddb:
+        dddb.execute(sql_select_organizations_after_oid if limit is None
+                     else sql_select_organizations_after_oid_with_limit, {'oid': last_processed_oid, 'limit': limit})
+        results = dddb.fetchall()
+
+        data = []
+        for result in results:
+            data.append({"oid": result[0], "name": result[1], "city": result[2], "state": result[3],
+                         "suggested": []})
+
+        return data
+
+
+def populate_organizations_sheet(service, spreadsheet_id, sheet_title, start_search_oid=None, limit=None):
+    """
+    Fill the sheet with new organizations and suggestions for merges.
+    Assumes sheet is copy of template (but otherwise empty)
+    :param service: Google api service
+    :param spreadsheet_id: spreadsheet id
+    :param sheet_title: title of sheet to fill
+    :param start_search_oid: the oid of the organization to start load from. If none, will start from last sheet
+    :param limit: limit the number of organizations that should be put into the sheet
+    """
+
+    if start_search_oid is None:
+        last_sheet = find_previous_sheet_by_date(service, spreadsheet_id, sheet_title)
+        last_highest_oid = find_highest_id_in_column(service, spreadsheet_id, last_sheet)
+    else:
+        last_highest_oid = start_search_oid
+
+    data = get_organization_data(last_highest_oid, limit)
+
+    values = []
+    for org_data in data:
+        row = ['[Suspected]' if len(org_data['suggested']) > 0 else '', org_data['oid'], org_data['name'],
+               org_data['city'], org_data['state']]
+
+        for suggest in org_data['suggested']:
+            suggest_cel = 'OID: ' + str(suggest['oid']) + ', Name: ' + str(suggest['name']) + ', City: ' + \
+                            str(suggest['city']) + ', State: ' + str(suggest['state'])
+
+            row.append(suggest_cel)
+        values.append(row)
+
+    body = {"values": values}
+
+    sheet_range = "'"+sheet_title+"'!B2"
+
+    service.spreadsheets().values().append(spreadsheetId=spreadsheet_id, range=sheet_range,
+                                           valueInputOption='USER_ENTERED', body=body).execute()
+
+
+def get_organization_suggestions(dddb, oid, name, city, state):
+    """
+    Return a list of possible organization matches
+    :param dddb: Database connection
+    :param oid: oid of organization
+    :param name: name of organization
+    :param city: city of organization
+    :param state: state of organization
+    :return: a list of possible organization matches, or empty of none
+            format: [{oid, name, city, state}, ...]
+    """
+
+
+def process_organization_sheet_merges(service, spreadsheet_id, sheet_title):
+    """
+    Merge organizations indicated on a google sheet
+    :param service: Google api service
+    :param spreadsheet_id: spreadsheet id
+    :param sheet_title: sheet title to get merge pairs from
+    :return: {num_success, num_failed}
+    """
+
+    result = service.spreadsheets().values().batchGet(spreadsheetId=spreadsheet_id, ranges=[
+        "'" + sheet_title + "'!A2:A",  "'" + sheet_title + "'!C2:C"]).execute()
+
+    if 'values' not in result['valueRanges'][0] or 'values' not in result['valueRanges'][1]:
+        print("Did not find anything to merge in " + sheet_title)
+        return {'num_success': 0, 'num_failed': 0}
+
+    with connect('local', logger=create_logger()) as dddb:
+        for good_oid, bad_oid in zip(result['valueRanges'][0]['values'], result['valueRanges'][1]['values']):
+            if good_oid != [] and bad_oid != []:
+                merge_organization_pair(dddb, good_oid[0], bad_oid[0])
+
+
+def merge_organization_pair(dddb, good_oid, bad_oid):
+    """
+    Merge bad_oid into good_oid
+    :param dddb: Database connection
+    :param good_oid: The organization to be merged into
+    :param bad_oid: The organization to be merged
+    :return: true/false for success/failure
+    """
+
+    # TODO: Process merges
+    print("Attempting to merge " + str(bad_oid) + " into " + str(good_oid) + ":")
+
+
+def get_people_data(time_period):
+    """
+    :param time_period: how long ago to select people from (seconds)
+    :return: list containing all new organizations in following format:
+            [{pid, first, last, middle, image, suggested:[{pid, first, last, middle, image}, ...]}, ...]
+    """
+
+
+def populate_people_sheet(service, spreadsheet_id, sheet_id):
+    """
+    Fill the sheet with new people and suggestions for merges.
+    Assumes sheet is copy of template (but otherwise empty)
+    :param service: Google api service
+    :param spreadsheet_id: spreadsheet id
+    :param sheet_id: sheet id to fill
+    """
+
+
+def process_people_sheet_merges(service, spreadsheet_id, sheet_id):
+    """
+    Merge people indicated on a google sheet
+    :param service: Google api service
+    :param spreadsheet_id: spreadsheet id
+    :param sheet_id: sheet id to get merge pairs from
+    :return:
+    """
+
+
+def generate_organizations_sheet(service, spreadsheet_id, start_oid=None, date=None, limit=None):
+    """
+    Generate a new sheet, populated with recent organizations
+    :param service: Google api service
+    :param spreadsheet_id: spreadsheet id of spreadsheet to put sheet in
+    :param start_oid: the organization to start from
+    :param date: the date of the sheet to check for last organization
+    :param limit: the limit for number of organizations to put into sheet
+    """
+
+    # Get correct date for sheet
+    if date is not None:
+        # Lazy format checking
+        date = datetime.datetime.strptime(date, "%Y-%m-%d").strftime("%Y-%m-%d")
+    else:
+        date = datetime.datetime.now().strftime("%Y-%m-%d")
+
+    # Make sure that there's a good last sheet or -start is there
+    last_sheet = find_previous_sheet_by_date(service, spreadsheet_id, date + " Organizations")
+    if last_sheet is None and start_oid is None:
+        print("No previous sheet to find starting oid from. Use -start <OID> to specify a starting point.")
+        exit(-1)
+
+    # Create new sheet from template
+    template_sheet_id = get_sheet_id_from_title(service, spreadsheet_id, "TEMPLATE")
+    new_sheet_title = duplicate_sheet(service, spreadsheet_id, template_sheet_id, date + " Organizations")
+
+    # Populate the sheet with organization data
+    populate_organizations_sheet(service, spreadsheet_id, new_sheet_title, start_oid, limit)
+    protect_columns(service, spreadsheet_id, new_sheet_title)
+
+
+def main():
+
+    # Arg parser setup
+
+    arg_parser = argparse.ArgumentParser(description='Front Log Utility. Load recently added organizations/people' +
+                                         ' into a google spreadsheet. Merge indicated pairs on Google sheet back' +
+                                         ' into the database.')
+
+    arg_parser.add_argument('-p', '--people', help='Use the people spreadsheet.', action='store_true')
+    arg_parser.add_argument('-o', '--organizations', help='Use the organizations spreadsheet.', action='store_true')
+
+    action_group = arg_parser.add_mutually_exclusive_group(required=True)
+    action_group.add_argument('-g', '--generate', help='Generate a spreadsheet from database', action='store_true')
+    action_group.add_argument('-m', '--merge', help='Merge indicated from sheet to database.', action='store_true')
+
+    arg_parser.add_argument('-d', '--date', help='The date to call this sheet. Default is today. Format: '
+                                                 'year-month-day. Picking a date that takes place before other '
+                                                 'already existing sheets will result in weird behavior. If you do '
+                                                 'need to do this, it is recommended that you also use -start and '
+                                                 'specify a start id point.',
+                            type=str, default=None)
+    arg_parser.add_argument('-s', '--start', help='The id to start filling sheet from. (Not recommended option.) '
+                                                  'By default, sheet will fill based on last generated sheet',
+                            type=str, default=None)
+    arg_parser.add_argument('-l', '--limit', help='Limit the number of entities to fill when generating sheet.',
+                            type=int, default=None)
+    arg_parser.add_argument('-f', '--force', help='Bypass confirmation dialog.', action='store_true')
+
+    args = arg_parser.parse_args()
+
+    if args.people is False and args.organizations is False:
+        arg_parser.error('Process people and/or organizations? Must specify -p and/or -o')
+
+    if args.people and args.organizations and args.start:
+        arg_parser.error('Start id parameter not compatible with both people and organizations at once.' +
+                         ' Choose -p or -o to use -start.')
+
+    # Build confirmation message
+
+    conf_msg = '\nYou are about to '
+    if args.generate:
+        conf_msg += 'GENERATE sheet' + ('s for both people and organizations.' if args.people and args.organizations
+                                        else ' for ' + ('people.' if args.people else 'organizations.'))
+        if args.date is not None:
+            conf_msg += '\nThe sheet' + ('s' if args.people and args.organizations else '') + \
+                        ' will be marked with ' + args.date + ' as the date.'
+
+        if args.start is not None:
+            conf_msg += '\nThe sheet will be filled with ids starting from ' + args.start + '.'
+
+        if args.limit is not None:
+            conf_msg += '\nThe number of entities in the sheet will be limited to ' + str(args.limit) + '.'
+
+    if args.merge:
+        conf_msg += 'MERGE sheet' + ('s for both people and organizations.' if args.people and args.organizations
+                                     else ' for ' + ('people.' if args.people else 'organizations.'))
+        conf_msg += '\nWill use ' + ('most recent sheet.' if args.date is None else 'sheet from ' + args.date + '.')
+
+    conf_msg += '\n\nWould you like to continue? (y/n): '
+
+    py3 = version_info[0] > 2
+
+    # Display confirmation is necessary and run operations
+
+    if args.force or (py3 and input(conf_msg).lower() == 'y') or (py3 is False and raw_input(conf_msg).lower() == 'y'):
+        service = connect_to_sheets(api_key_path)
+
+        if args.organizations and args.generate:
+            generate_organizations_sheet(service, organizations_spreadsheet_id, args.start, args.date, args.limit)
+
+        if args.organizations and args.merge:
+            process_organization_sheet_merges(service, organizations_spreadsheet_id,
+                                              find_previous_sheet_by_date(service, organizations_spreadsheet_id)
+                                              if args.date is None else args.date + " Organizations")
+
+
+if __name__ == '__main__':
+    main()
