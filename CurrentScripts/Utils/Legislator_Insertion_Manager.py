@@ -279,7 +279,6 @@ class LegislatorInsertionManager(object):
             if pid_year_tuple:
                 pid = pid_year_tuple[0]
                 year = pid_year_tuple[1]
-
                 legislator.pid = pid
 
                 # This is only used when naming formats change.
@@ -291,11 +290,19 @@ class LegislatorInsertionManager(object):
 
                 # If term is current but there is a new session year. Used for re-election.
                 if year != self.session_year:
+                    # TODO: Investigate why this fucked up florida when change session year to 2018
+                    # idea no restriction on state and house for update query? re election issue with get pid?
                     self.update_term_to_not_current(legislator, UPDATE_TERM_TO_NOT_CURRENT_PID)
                     self.insert_term(legislator)
             else:
                 pid = self.find_not_current_legislator(legislator)
+                #TODO: 1 am nick says this logic may not be right????
+                # you find an old legislator then make the term not current? 
+                # Nick what the fuck? -- 1 am nick
+                # ah wait update the current district term to not current then add a new district for a former legislator(now current)??
+                # --1 am nick
                 if pid:
+                    legislator.pid = pid
                     self.update_term_to_not_current(legislator, UPDATE_TERM_TO_NOT_CURRENT_DISTRICT)
                     self.insert_term(legislator)
                 else:

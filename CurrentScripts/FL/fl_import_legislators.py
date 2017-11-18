@@ -29,7 +29,8 @@ from OpenStatesParsers.legislators_openstates_parser import LegislatorOpenStateP
 if __name__ == "__main__":
     with connect() as dddb:
         logger = create_logger()
-        session_year = get_session_year(dddb, "FL", logger)
+        #session_year = get_session_year(dddb, "FL", logger)
+        session_year = 2017
         parser = LegislatorOpenStateParser("FL", session_year)
         leg_manager = LegislatorInsertionManager(dddb, logger, "FL", session_year)
         legislators = parser.get_legislators_list()
