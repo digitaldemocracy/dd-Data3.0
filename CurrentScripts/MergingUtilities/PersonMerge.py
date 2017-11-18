@@ -60,6 +60,9 @@ sel_unique_billsponsors = '''select * from BillSponsors
                              and contribution = %(contribution)s'''
 sel_alt_names = '''select pid, name from AlternateNames where pid = %(bad_pid)s'''
 sel_unique_alt_name = '''select * from AlternateNames where pid = %(pid)s and name = %(name)s'''
+sel_all_legstaffreps = '''select pid, hid from LegislativeStaffRepresentation where pid = %(bad_pid)s'''
+sel_unique_legstaffrep = '''select pid, hid from LegislativeStaffRepresentation
+                            where pid = %(pid)s and hid = %(hid)s'''
 
 # SQL Inserts
 insert_term = '''insert into Term
@@ -146,6 +149,8 @@ del_lobbydirectemployment = '''delete from LobbyistDirectEmployment where pid = 
                          and rpt_date = %(rpt_date)s
                          and ls_end_yr = %(ls_end_yr)s
                          and state = %(state)s'''
+del_legstaffrep = '''delete from LegislativeStaffRepresentation
+                      where pid = %(pid)s and hid = %(hid)s'''
 del_sarepreps = '''delete from StateAgencyRepRepresentation where pid = %(pid)s
                    and hid = %(hid)s
                    and did = %(did)s'''
@@ -282,6 +287,17 @@ def merge_legstaff(dddb, leg):
             if dddb.rowcount == 0:
                 dddb.execute(insert_legstaff, leg)
                 print("Inserted " + str(dddb.rowcount) + " rows in LegislativeStaff")
+
+            dddb.execute(sel_all_legstaffreps % leg)
+            results = dddb.fetchall()
+
+            for row in results:
+                legstaffrep = {'pid': leg['good_pid'], 'hid': row[1]}
+
+                dddb.execute(sel_unique_legstaffrep % legstaffrep)
+
+                if dddb.rowcount != 0:
+                    dddb.execute(del_legstaffrep, {'pid': leg['bad_pid'], 'hid': legstaffrep['hid']})
 
             dddb.execute(up_legstaffreps, leg)
             print("Updated " + str(dddb.rowcount) + " rows in LegislativeStaffRepresentation")
@@ -465,9 +481,6 @@ def update_legislator(dddb, leg):
         dddb.execute(up_authors, leg)
         print("Updated " + str(dddb.rowcount) + " rows in Authors")
 
-        dddb.execute(up_legstaffreps, leg)
-        print("Updated " + str(dddb.rowcount) + " rows in LegislativeStaffRepresentation")
-
         dddb.execute(up_altid, leg)
 
         dddb.execute(up_alignmentscores, leg)
@@ -559,8 +572,8 @@ def main():
     with connect() as dddb:
         person_names = get_person_names(dddb, person)
 
-        print_string = "About to merge person " + str(person['bad_pid'])+":"+person_names['bad_name']
-        print_string += " into person " + str(person['good_pid'])+":"+person_names['good_name']
+        print_string = "About to merge person " + str(person['bad_pid'])+":"+person_names['bad_name'].encode('utf-8')
+        print_string += " into person " + str(person['good_pid'])+":"+person_names['good_name'].encode('utf-8')
         print_string += "\nAre you sure you want to do this? (y/n)\n"
 
         if args.force or raw_input(print_string).lower() == 'y':

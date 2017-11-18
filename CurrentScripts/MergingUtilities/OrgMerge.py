@@ -275,7 +275,7 @@ def merge_org_concept(dddb, org, is_org_concept=False, hide=True, throw_exc=Fals
         if is_org_concept:
             concept_oid = org['good_oid']
         else:
-            dddb.execute(sel_org_concept, org)
+            dddb.execute(sel_good_org_concept, org)
             if dddb.rowcount == 0:
                 return
 
@@ -287,9 +287,9 @@ def merge_org_concept(dddb, org, is_org_concept=False, hide=True, throw_exc=Fals
 
         print("Inserted " + str(dddb.rowcount) + " rows into OrgConceptAffiliation")
 
-        if hide:
-            dddb.execute(update_organization, org)
-            print("Updated " + str(dddb.rowcount) + " rows in Organizations")
+        #if hide:
+        #    dddb.execute(update_organization, org)
+        #    print("Updated " + str(dddb.rowcount) + " rows in Organizations")
 
     except MySQLdb.Error:
         if throw_exc:
@@ -388,6 +388,7 @@ def main():
     arg_parser.add_argument("bad_oid", help='The oid of the organization to be merged', type=int)
 
     arg_parser.add_argument("-c", "--concept", help="Creates a new OrgConcept with the given name and adds OrgConceptAffiliations for both orgs")
+    arg_parser.add_argument("-cn", "--conceptNoMerge", help="Creates a new OrgConcept with the given name and adds OrgConceptAffiliations without merging data")
     arg_parser.add_argument("-s", "--subchapter", help="Indicates that bad_oid is a subchapter of good_oid",
                             action="store_true")
     arg_parser.add_argument("-o", "--orgConcept", help="Specifies an OrgConcept oid instead of a good_oid. Adds an OrgConceptAffiliation for bad_oid",
@@ -404,6 +405,8 @@ def main():
     org = {'good_oid': args.good_oid, 'bad_oid': args.bad_oid, 'is_subchapter': False}
     if args.concept:
         org['concept'] = args.concept
+    elif args.conceptNoMerge:
+        org['concept'] = args.conceptNoMerge
 
     if args.subchapter:
         org['is_subchapter'] = True
@@ -429,7 +432,7 @@ def main():
             else:
                 print("About to merge org " + str(org["bad_oid"])+":"+org_names['bad_name']
                       + " into org " + str(org['good_oid'])+":"+org_names['good_name'])
-                if args.concept:
+                if args.concept or args.conceptNoMerge:
                     print("A new OrgConcept for " + org['concept'] + " will also be created and"
                                                                      " OrgConceptAffiliations for both orgs will be added")
                 if args.subchapter:
@@ -448,6 +451,10 @@ def main():
                 if args.delete:
                     print("Deleting org")
                     delete_org(dddb, org)
+            elif args.conceptNoMerge:
+                print("Adding OrgConcepts")
+                add_org_concept(dddb, org)
+                merge_org_concept(dddb, org)
             elif args.orgConcept:
                 print("Merging org into OrgConcept")
                 merge_org_concept(dddb, org, is_org_concept=True, hide=False)
