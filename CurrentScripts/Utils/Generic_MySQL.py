@@ -143,19 +143,21 @@ def get_pid(dddb, logger, person, source_link=None):
                            qi_query=INSERT_ALTERNATE_NAME,
                            objType="Alternate Name",
                            logger=logger)
-        else:
-            if person.district:
-                pid_year_tuple = get_entity(db_cursor=dddb,
-                                    entity=person.__dict__,
-                                    query=SELECT_LEG_WITH_HOUSE_DISTRICT_NO_NAME,
-                                    objType="Get pid",
-                                    logger=logger)
-                if pid_year_tuple:
-                    logger.exception("Legislature found without name: " + str(person.__dict__))
-                    vals = {"pid": pid_year_tuple[0], "name": person.alternate_name, "source": source_link}
-                    insert_entity(db_cursor=dddb,
-                                  entity=vals,
-                                  qi_query=INSERT_ALTERNATE_NAME,
-                                  objType="Alternate Name",
-                                  logger=logger)
+        # Should only be used for first time use. Problem is with re election
+        # Finds district the maps new person to old person.
+        #else:
+        #    if person.district:
+        #        pid_year_tuple = get_entity(db_cursor=dddb,
+        #                            entity=person.__dict__,
+        #                            query=SELECT_LEG_WITH_HOUSE_DISTRICT_NO_NAME,
+        #                            objType="Get pid",
+        #                            logger=logger)
+        #        if pid_year_tuple:
+        #            logger.exception("Legislature found without name: " + str(person.__dict__))
+        #            vals = {"pid": pid_year_tuple[0], "name": person.alternate_name, "source": source_link}
+        #            insert_entity(db_cursor=dddb,
+        #                          entity=vals,
+        #                          qi_query=INSERT_ALTERNATE_NAME,
+        #                          objType="Alternate Name",
+        #                          logger=logger)
     return pid_year_tuple

@@ -64,6 +64,8 @@ UPDATE_TERM_TO_NOT_CURRENT_DISTRICT = '''
                               UPDATE Term
                               SET current_term = 0
                               WHERE district=%(district)s
+                              AND state = %(state)s
+                              AND house = %(house)s
                               AND current_term = 1
                             '''
 
