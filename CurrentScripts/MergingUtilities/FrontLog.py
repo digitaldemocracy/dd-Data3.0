@@ -16,18 +16,20 @@ from apiclient import discovery
 from Utils.Generic_Utils import create_logger
 from Utils.Database_Connection import connect
 from sys import version_info
+from MergingUtilities.OrgMerge import *
 import datetime
 import argparse
 
 people_spreadsheet_id = '<INSERT SPREADSHEET KEY HERE>'
-organizations_spreadsheet_id = '<INSERT SPREADSHEET KEY HERE>'
-api_key_path = '<PATH TO GOOGLE JSON KEY HERE>'
+organizations_spreadsheet_id = '1-X-gDXnCMKq7SKLxBTl1DhK8nEgN0yqtZwpHADQg_N0'
+api_key_path = './DDKEY'
 
 sql_select_organizations_after_oid = '''SELECT oid, name, city, stateHeadquartered 
                                         FROM Organizations WHERE oid > %(oid)s;'''
 sql_select_organizations_after_oid_with_limit = '''SELECT oid, name, city, stateHeadquartered FROM Organizations 
                                                    WHERE oid > %(oid)s ORDER BY oid LIMIT %(limit)s;'''
-
+sql_update_concept_name_and_canon_oid = '''UPDATE OrgConcept SET name = %(name)s, canon_oid = %(oid)s 
+                                           WHERE oid = %(concept_oid)s;'''
 
 def connect_to_sheets(auth_key_path):
     """
@@ -225,6 +227,56 @@ def populate_organizations_sheet(service, spreadsheet_id, sheet_title, start_sea
                                            valueInputOption='USER_ENTERED', body=body).execute()
 
 
+def paint_column_colors(service, spreadsheet_id, sheet_id, value_list, column=0):
+    """
+    Color a column based on values in list
+    :param service: Google api service
+    :param spreadsheet_id: id of spreadsheet
+    :param sheet_id: id of sheet (not sheet title)
+    :param value_list: list of values, either True (green), False (red), or None (gray)
+    :param column: the column to set colors in
+    """
+
+    requests = []
+
+    red = {"userEnteredFormat": {"backgroundColor": {"red": 1.0, "green": 0.2, "blue": 0.2, "alpha": 1.0}}}
+    green = {"userEnteredFormat": {"backgroundColor": {"red": 0.2, "green": 1.0, "blue": 0.2, "alpha": 1.0}}}
+    gray = {"userEnteredFormat": {"backgroundColor": {"red": 0.85, "green": 0.85, "blue": 0.85, "alpha": 1.0}}}
+
+    last_row = 0
+
+    for value in value_list:
+        values = []
+        if value is None:
+            values.append(gray)
+        elif value is False:
+            values.append(red)
+        else:
+            values.append(green)
+
+        last_row += 1
+
+        requests.append({
+            "updateCells": {
+                "rows": [{
+                    "values": values
+                }],
+                "fields": 'userEnteredFormat.backgroundColor',
+                "range": {
+                    "sheetId": sheet_id,
+                    "startColumnIndex": column,
+                    "endColumnIndex": column + 1,
+                    "startRowIndex": last_row,
+                    "endRowIndex": last_row + 1
+                }
+            }
+        })
+
+    body = {"requests": requests}
+
+    service.spreadsheets().batchUpdate(spreadsheetId=spreadsheet_id, body=body).execute()
+
+
 def get_organization_suggestions(dddb, oid, name, city, state):
     """
     Return a list of possible organization matches
@@ -233,9 +285,10 @@ def get_organization_suggestions(dddb, oid, name, city, state):
     :param name: name of organization
     :param city: city of organization
     :param state: state of organization
-    :return: a list of possible organization matches, or empty of none
+    :return: a list of possible organization matches, or empty if none
             format: [{oid, name, city, state}, ...]
     """
+    # Make sure that the suggestion matches include matches from the new stuff, this solves concept canon oid problem
 
 
 def process_organization_sheet_merges(service, spreadsheet_id, sheet_title):
@@ -254,23 +307,90 @@ def process_organization_sheet_merges(service, spreadsheet_id, sheet_title):
         print("Did not find anything to merge in " + sheet_title)
         return {'num_success': 0, 'num_failed': 0}
 
-    with connect('local', logger=create_logger()) as dddb:
+    results = []
+
+    wrapper_connection = connect('local', logger=create_logger())
+    with wrapper_connection as dddb:
         for good_oid, bad_oid in zip(result['valueRanges'][0]['values'], result['valueRanges'][1]['values']):
             if good_oid != [] and bad_oid != []:
-                merge_organization_pair(dddb, good_oid[0], bad_oid[0])
+                results.append(merge_organization_pair(wrapper_connection, dddb, good_oid[0], bad_oid[0]))
+            else:
+                results.append(None)
+
+    paint_column_colors(service, spreadsheet_id, get_sheet_id_from_title(service, spreadsheet_id, sheet_title), results)
 
 
-def merge_organization_pair(dddb, good_oid, bad_oid):
+def merge_organization_pair(wrapper_connection, dddb, good_oid, bad_oid):
     """
     Merge bad_oid into good_oid
+    :param wrapper_connection: MySQL_Wrapper object
     :param dddb: Database connection
     :param good_oid: The organization to be merged into
     :param bad_oid: The organization to be merged
     :return: true/false for success/failure
     """
 
-    # TODO: Process merges
-    print("Attempting to merge " + str(bad_oid) + " into " + str(good_oid) + ":")
+    #   |---------------------------------|
+    #   |   |                 good        |
+    #   |---|-----------------------------|
+    #   | b |           concept   indep   |
+    #   | a | concept  |   A        B     |
+    #   | d | indep    |   C        D     |
+    #   |---------------------------------|
+
+    try:
+        good_concept_oid = has_org_concept(dddb, {'oid': good_oid}, True)
+        bad_concept_oid = has_org_concept(dddb, {'oid': bad_oid}, True)
+
+        if good_concept_oid != 0:
+
+            # A: good:concept - bad:concept
+            if bad_concept_oid != 0:
+                print("[Case: Good=Concept, Bad=Concept]")
+                print("Currently no support for merging two concept organizations.")
+                wrapper_connection.connection.commit()
+                return False
+
+            # C: good:concept - bad:indep
+            #    Merge bad into good concept
+            else:
+                print("[Case: Good=Concept, Bad=Independent] " + str(bad_oid) + " -> " + str(good_concept_oid))
+                merge_org(dddb, {'good_oid': good_oid, 'bad_oid': bad_oid, 'is_subchapter': False}, throw_exc=True)
+                merge_org_concept(dddb, {'good_oid': good_concept_oid, 'bad_oid': bad_oid, 'is_subchapter': False},
+                                  is_org_concept=True, throw_exc=True)
+                wrapper_connection.connection.commit()
+                return True
+        else:
+
+            # B: good:indep - bad:concept
+            #    Merge good into bad then change canon_oid and name to good
+            if bad_concept_oid != 0:
+                print("[Case: Good=Independent, Bad=Concept] " + str(good_oid) + " -> " + str(bad_concept_oid) +
+                      ", then change concept name/canon_oid")
+                merge_org(dddb, {'good_oid': bad_oid, 'bad_oid': good_oid, 'is_subchapter': False}, throw_exc=True)
+                merge_org_concept(dddb, {'good_oid': bad_concept_oid, 'bad_oid': good_oid, 'is_subchapter': False},
+                                  throw_exc=True)
+                dddb.execute(sql_update_concept_name_and_canon_oid, {'oid': good_oid, 'canon_oid': bad_concept_oid,
+                                                                     'name': get_org_name(dddb, {'oid': good_oid})})
+                wrapper_connection.connection.commit()
+                return True
+
+            # D: good:indep - bad:indep
+            #    Create new org concept
+            else:
+                print("[Case: Good=Independent, Bad=Independent] " + str(bad_oid) + " -> " + str(good_oid) +
+                      " -> new concept organization")
+                good_concept_oid = add_org_concept(dddb, {'good_oid': good_oid,
+                                                          'concept': get_org_name(dddb, {'oid': good_oid})})
+                merge_org(dddb, {'good_oid': good_oid, 'bad_oid': bad_oid, 'is_subchapter': False}, throw_exc=True)
+                merge_org_concept(dddb, {'good_oid': good_concept_oid, 'bad_oid': bad_oid, 'is_subchapter': False},
+                                  is_org_concept=True, throw_exc=True)
+                wrapper_connection.connection.commit()
+                return True
+    except:
+        wrapper_connection.connection.rollback()
+        print("FAILED to merge. Rolling back...")
+        return False
 
 
 def get_people_data(time_period):
@@ -318,10 +438,10 @@ def generate_organizations_sheet(service, spreadsheet_id, start_oid=None, date=N
     else:
         date = datetime.datetime.now().strftime("%Y-%m-%d")
 
-    # Make sure that there's a good last sheet or -start is there
+    # Make sure that there's a good last sheet or --start is there
     last_sheet = find_previous_sheet_by_date(service, spreadsheet_id, date + " Organizations")
     if last_sheet is None and start_oid is None:
-        print("No previous sheet to find starting oid from. Use -start <OID> to specify a starting point.")
+        print("No previous sheet to find starting oid from. Use --start <OID> to specify a starting point.")
         exit(-1)
 
     # Create new sheet from template
@@ -395,7 +515,7 @@ def main():
 
     py3 = version_info[0] > 2
 
-    # Display confirmation is necessary and run operations
+    # Display confirmation if necessary and run operations
 
     if args.force or (py3 and input(conf_msg).lower() == 'y') or (py3 is False and raw_input(conf_msg).lower() == 'y'):
         service = connect_to_sheets(api_key_path)
