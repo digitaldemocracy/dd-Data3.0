@@ -2,6 +2,7 @@ import pymysql
 import sys
 import sqlparse
 import re
+import os
 
 """
 File: sql_wrapper.py
@@ -23,7 +24,7 @@ CONN_INFO = {
              'port': 3306,
              'db': 'DDDB2016Aug',
              'user': 'dbMaster',
-             'passwd': 'BalmerPeak'
+             'passwd': os.environ['DBMASTERPASSWORD']
              }
 
 
@@ -74,7 +75,7 @@ def parse_sql(sql):
         if stmt:
             stmts.append(stmt)
 
-    return stmts, to_drop
+    return stmts, set(to_drop)
 
 
 def main():
@@ -93,6 +94,8 @@ def main():
         for stmt in stmts:
             cursor.execute(stmt)
     except pymysql.InternalError as e:
+        run_drop_stmts(cursor, to_drop)
+    except pymysql.err.ProgrammingError as e:
         run_drop_stmts(cursor, to_drop)
     finally:
         cursor.close()
