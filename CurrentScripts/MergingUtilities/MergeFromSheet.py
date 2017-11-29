@@ -5,7 +5,7 @@
 File: MergeFromSheet
 Author: Nathan Philliber
 Date: 3 October 2017
-Last Updated: 27 October 2017
+Last Updated: 29 November 2017
 
 Description:
     - Quickly merge many people and organizations from a Google spreadsheet.
@@ -20,10 +20,10 @@ from oauth2client.service_account import ServiceAccountCredentials
 from MergingUtilities.PersonMerge import complete_merge_person as mergePerson
 from MergingUtilities.OrgMerge import *
 
-# Default authenitifcation json path
-googleAuthentification = '<GOOGLE OAUTH2.0 KEY HERE>'
+# Default authentication json path
+googleAuthentication = '<GOOGLE OAUTH2.0 KEY HERE>'
 # Default Google Sheets key
-sheetKey = '<GSHEETS KEY HERE>'
+sheetKey = '1IVvERi8i45EO_GgwDvReiAn6_rzKHsJP2YNKj4-vi5g'
 
 
 # Sheet type variables
@@ -196,7 +196,7 @@ def main():
         args.put_back = False
 
     scope = ['https://spreadsheets.google.com/feeds']
-    credentials = ServiceAccountCredentials.from_json_keyfile_name(googleAuthentification, scope)
+    credentials = ServiceAccountCredentials.from_json_keyfile_name(googleAuthentication, scope)
     gc = gspread.authorize(credentials)
     spreadsheet = gc.open_by_key(args.sheet)
     pSheet = spreadsheet.worksheet('Person')
@@ -204,7 +204,7 @@ def main():
     pSheetH = None if args.dont_store is True else spreadsheet.worksheet('History_Person')
     oSheetH = None if args.dont_store is True else spreadsheet.worksheet('History_Organization')
 
-    dddbConnection = connect('local', logger=logger)
+    dddbConnection = connect(logger=logger)
 
     with dddbConnection as dddb:
         print("===== [ Merge Started " + str(datetime.datetime.now()) + " utc ] =====")
