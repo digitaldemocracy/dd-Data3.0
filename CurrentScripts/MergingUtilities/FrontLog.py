@@ -30,6 +30,8 @@ sql_select_organizations_after_oid_with_limit = '''SELECT oid, name, city, state
                                                    WHERE oid > %(oid)s ORDER BY oid LIMIT %(limit)s;'''
 sql_update_concept_name_and_canon_oid = '''UPDATE OrgConcept SET name = %(name)s, canon_oid = %(oid)s 
                                            WHERE oid = %(concept_oid)s;'''
+sql_update_organization_name = '''UPDATE Organizations SET name = %(name)s WHERE oid = %(oid)s;'''
+
 
 def connect_to_sheets(auth_key_path):
     """
@@ -227,7 +229,7 @@ def populate_organizations_sheet(service, spreadsheet_id, sheet_title, start_sea
                                            valueInputOption='USER_ENTERED', body=body).execute()
 
 
-def paint_column_colors(service, spreadsheet_id, sheet_id, value_list, column=0):
+def paint_column_colors(service, spreadsheet_id, sheet_id, value_list, column=0, no_color_none=False):
     """
     Color a column based on values in list
     :param service: Google api service
@@ -246,31 +248,31 @@ def paint_column_colors(service, spreadsheet_id, sheet_id, value_list, column=0)
     last_row = 0
 
     for value in value_list:
+        last_row += 1
         values = []
-        if value is None:
+        if value is None and no_color_none is False:
             values.append(gray)
         elif value is False:
             values.append(red)
-        else:
+        elif value is True:
             values.append(green)
 
-        last_row += 1
-
-        requests.append({
-            "updateCells": {
-                "rows": [{
-                    "values": values
-                }],
-                "fields": 'userEnteredFormat.backgroundColor',
-                "range": {
-                    "sheetId": sheet_id,
-                    "startColumnIndex": column,
-                    "endColumnIndex": column + 1,
-                    "startRowIndex": last_row,
-                    "endRowIndex": last_row + 1
+        if values:
+            requests.append({
+                "updateCells": {
+                    "rows": [{
+                        "values": values
+                    }],
+                    "fields": 'userEnteredFormat.backgroundColor',
+                    "range": {
+                        "sheetId": sheet_id,
+                        "startColumnIndex": column,
+                        "endColumnIndex": column + 1,
+                        "startRowIndex": last_row,
+                        "endRowIndex": last_row + 1
+                    }
                 }
-            }
-        })
+            })
 
     body = {"requests": requests}
 
@@ -291,6 +293,27 @@ def get_organization_suggestions(dddb, oid, name, city, state):
     # Make sure that the suggestion matches include matches from the new stuff, this solves concept canon oid problem
 
 
+def try_update_org_name(dddb, oid, new_name):
+    """
+    Update the organization name if provided name is different
+    :param dddb: Database connection
+    :param oid: oid of organization
+    :param new_name: name that organization should be named
+    :return: {old_name, new_name} or None if no change
+    """
+
+    dddb.execute(sel_org_name, {'oid': oid})
+    if dddb.rowcount == 0:
+        return None
+    old_name = dddb.fetchone()[0]
+
+    if old_name != new_name:
+        dddb.execute(sql_update_organization_name, {'oid': oid, 'name': new_name})
+        print("Changed name of '" + old_name + "' to '" + new_name + "'")
+        return {'old_name': old_name, 'new_name': new_name}
+    return None
+
+
 def process_organization_sheet_merges(service, spreadsheet_id, sheet_title):
     """
     Merge organizations indicated on a google sheet
@@ -301,23 +324,31 @@ def process_organization_sheet_merges(service, spreadsheet_id, sheet_title):
     """
 
     result = service.spreadsheets().values().batchGet(spreadsheetId=spreadsheet_id, ranges=[
-        "'" + sheet_title + "'!A2:A",  "'" + sheet_title + "'!C2:C"]).execute()
+        "'" + sheet_title + "'!A2:A",  "'" + sheet_title + "'!C2:C", "'" + sheet_title + "'!D2:D"]).execute()
 
     if 'values' not in result['valueRanges'][0] or 'values' not in result['valueRanges'][1]:
         print("Did not find anything to merge in " + sheet_title)
         return {'num_success': 0, 'num_failed': 0}
 
-    results = []
-
     wrapper_connection = connect('local', logger=create_logger())
     with wrapper_connection as dddb:
+        results = []
+        for oid, cur_name in zip(result['valueRanges'][1]['values'], result['valueRanges'][2]['values']):
+            update_result = try_update_org_name(dddb, oid[0], cur_name[0])
+            results.append(None if update_result is None else True)
+
+        paint_column_colors(service, spreadsheet_id, get_sheet_id_from_title(service, spreadsheet_id, sheet_title),
+                            results, column=3, no_color_none=True)
+
+        results = []
         for good_oid, bad_oid in zip(result['valueRanges'][0]['values'], result['valueRanges'][1]['values']):
             if good_oid != [] and bad_oid != []:
                 results.append(merge_organization_pair(wrapper_connection, dddb, good_oid[0], bad_oid[0]))
             else:
                 results.append(None)
 
-    paint_column_colors(service, spreadsheet_id, get_sheet_id_from_title(service, spreadsheet_id, sheet_title), results)
+        paint_column_colors(service, spreadsheet_id, get_sheet_id_from_title(service, spreadsheet_id, sheet_title),
+                            results)
 
 
 def merge_organization_pair(wrapper_connection, dddb, good_oid, bad_oid):
@@ -346,6 +377,9 @@ def merge_organization_pair(wrapper_connection, dddb, good_oid, bad_oid):
 
             # A: good:concept - bad:concept
             if bad_concept_oid != 0:
+
+                # TODO: Check if they are in the same concept
+
                 print("[Case: Good=Concept, Bad=Concept]")
                 print("Currently no support for merging two concept organizations.")
                 wrapper_connection.connection.commit()
