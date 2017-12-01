@@ -21,16 +21,20 @@ import datetime
 import argparse
 
 people_spreadsheet_id = '<INSERT SPREADSHEET KEY HERE>'
-organizations_spreadsheet_id = '1-X-gDXnCMKq7SKLxBTl1DhK8nEgN0yqtZwpHADQg_N0'
-api_key_path = './DDKEY'
+organizations_spreadsheet_id = '<INSERT SPREADSHEET KEY HERE>'
+api_key_path = '<OAUTH2 KEY>'
 
 sql_select_organizations_after_oid = '''SELECT oid, name, city, stateHeadquartered 
                                         FROM Organizations WHERE oid > %(oid)s;'''
 sql_select_organizations_after_oid_with_limit = '''SELECT oid, name, city, stateHeadquartered FROM Organizations 
                                                    WHERE oid > %(oid)s ORDER BY oid LIMIT %(limit)s;'''
+sql_select_organization_city = '''SELECT city FROM Organizations WHERE oid = %(oid)s;'''
+sql_select_organization_state = '''SELECT stateHeadquartered FROM Organizations WHERE oid = %(oid)s;'''
 sql_update_concept_name_and_canon_oid = '''UPDATE OrgConcept SET name = %(name)s, canon_oid = %(oid)s 
                                            WHERE oid = %(concept_oid)s;'''
 sql_update_organization_name = '''UPDATE Organizations SET name = %(name)s WHERE oid = %(oid)s;'''
+sql_update_organization_city = '''UPDATE Organizations SET city = %(city)s WHERE oid = %(oid)s;'''
+sql_update_organization_state = '''UPDATE Organizations SET stateHeadquartered = %(state)s WHERE oid = %(oid)s;'''
 
 
 def connect_to_sheets(auth_key_path):
@@ -89,7 +93,7 @@ def duplicate_sheet(service, spreadsheet_id, template_sheet_id, new_title=None, 
     return result.get('replies', {})[0].get('duplicateSheet', {}).get('properties', {}).get('title', '')
 
 
-def protect_columns(service, spreadsheet_id, sheet_title, first=1, last=26):
+def protect_columns(service, spreadsheet_id, sheet_title, first=1, last=26, description="Don't Edit"):
     """
     Protect all columns in specified range
     :param service: Google api service
@@ -97,6 +101,7 @@ def protect_columns(service, spreadsheet_id, sheet_title, first=1, last=26):
     :param sheet_title: title of sheet
     :param first: first column to protect
     :param last: last column to protect
+    :param description: description of protected range
     """
 
     sheet_id = get_sheet_id_from_title(service, spreadsheet_id, sheet_title)
@@ -110,7 +115,7 @@ def protect_columns(service, spreadsheet_id, sheet_title, first=1, last=26):
                         "sheetId": sheet_id,
                         "startColumnIndex": first
                     },
-                    "description": "Don't Edit",
+                    "description": description,
                     "warningOnly": 'True'
                 }
             }
@@ -165,7 +170,12 @@ def find_highest_id_in_column(service, spreadsheet_id, sheet_title, column='C', 
     result = service.spreadsheets().values().get(spreadsheetId=spreadsheet_id, range="'"+sheet_title+"'!" +
                                                  column + str(start_row) + ":" + column).execute()
 
-    return max(result['values'])[0]
+    cur_max = result['values'][0][0]
+    for value in result['values']:
+        if int(value[0]) > int(cur_max):
+            cur_max = value[0]
+
+    return cur_max
 
 
 def get_organization_data(last_processed_oid, limit=None):
@@ -229,6 +239,27 @@ def populate_organizations_sheet(service, spreadsheet_id, sheet_title, start_sea
                                            valueInputOption='USER_ENTERED', body=body).execute()
 
 
+def update_column(service, spreadsheet_id, sheet_name, value_list, column='A'):
+    """
+    Update values in a column.
+    :param service: Google api service
+    :param spreadsheet_id: id of spreadsheet
+    :param sheet_name: sheet title
+    :param value_list: list of values to update in column. None = no update
+    :param column: which column to update
+    """
+
+    body = {
+        "values": [value_list],
+        "majorDimension": 'COLUMNS'
+    }
+
+    service.spreadsheets().values().update(spreadsheetId=spreadsheet_id,
+                                           body=body,
+                                           range="'"+sheet_name+"'!"+str(column)+"2:"+str(column),
+                                           valueInputOption='USER_ENTERED').execute()
+
+
 def paint_column_colors(service, spreadsheet_id, sheet_id, value_list, column=0, no_color_none=False):
     """
     Color a column based on values in list
@@ -237,7 +268,11 @@ def paint_column_colors(service, spreadsheet_id, sheet_id, value_list, column=0,
     :param sheet_id: id of sheet (not sheet title)
     :param value_list: list of values, either True (green), False (red), or None (gray)
     :param column: the column to set colors in
+    :param no_color_none: True if don't want to color on None, false to color None values gray
     """
+
+    if True not in value_list and False not in value_list:
+        return
 
     requests = []
 
@@ -307,10 +342,55 @@ def try_update_org_name(dddb, oid, new_name):
         return None
     old_name = dddb.fetchone()[0]
 
-    if old_name != new_name:
+    if old_name != new_name and "(previously \"" not in new_name:
         dddb.execute(sql_update_organization_name, {'oid': oid, 'name': new_name})
         print("Changed name of '" + old_name + "' to '" + new_name + "'")
         return {'old_name': old_name, 'new_name': new_name}
+    return None
+
+
+def try_update_city(dddb, oid, new_city):
+    """
+    Update the organization's city if the provided city is different
+    :param dddb: Database connection
+    :param oid: oid of organization to update
+    :param new_city: city string
+    :return: {old_city, new_city} or None if no change
+    """
+
+    dddb.execute(sql_select_organization_city, {'oid': oid})
+    if dddb.rowcount == 0 or new_city == "":
+        return None
+    old_city = dddb.fetchone()[0]
+
+    if old_city != new_city and "previously \"" not in new_city:
+        print("Changed city of organization " + str(oid) + " from '" + str(old_city) + "' to '" + new_city + "'")
+        dddb.execute(sql_update_organization_city, {'oid': oid, 'city': new_city})
+
+        return {'old_city': old_city, 'new_city': new_city}
+    return None
+
+
+def try_update_state(dddb, oid, new_state):
+    """
+    Update the organization's state if the provided state is different
+    :param dddb: Database connection
+    :param oid: oid of organization to update
+    :param new_state: state string
+    :return: {old_state, new_state} or None if no change
+    """
+
+    dddb.execute(sql_select_organization_state, {'oid': oid})
+    if dddb.rowcount == 0 or new_state == "":
+        return None
+    old_state = dddb.fetchone()[0]
+
+    if old_state != new_state and "previously \"" not in new_state:
+        print("Changed state headquarters of organization " + str(oid) + " from '" + str(old_state) +
+              "' to '" + new_state + "'")
+        dddb.execute(sql_update_organization_state, {'oid': oid, 'state': new_state})
+
+        return {'old_state': old_state, 'new_state': new_state}
     return None
 
 
@@ -324,31 +404,72 @@ def process_organization_sheet_merges(service, spreadsheet_id, sheet_title):
     """
 
     result = service.spreadsheets().values().batchGet(spreadsheetId=spreadsheet_id, ranges=[
-        "'" + sheet_title + "'!A2:A",  "'" + sheet_title + "'!C2:C", "'" + sheet_title + "'!D2:D"]).execute()
-
-    if 'values' not in result['valueRanges'][0] or 'values' not in result['valueRanges'][1]:
-        print("Did not find anything to merge in " + sheet_title)
-        return {'num_success': 0, 'num_failed': 0}
+        "'" + sheet_title + "'!A2:A",
+        "'" + sheet_title + "'!C2:C",
+        "'" + sheet_title + "'!D2:D",
+        "'" + sheet_title + "'!E2:E",
+        "'" + sheet_title + "'!F2:F"]).execute()
 
     wrapper_connection = connect('local', logger=create_logger())
     with wrapper_connection as dddb:
-        results = []
+
+        # Check for name changes
+        new_names = []
+        paint_results = []
         for oid, cur_name in zip(result['valueRanges'][1]['values'], result['valueRanges'][2]['values']):
             update_result = try_update_org_name(dddb, oid[0], cur_name[0])
-            results.append(None if update_result is None else True)
+            paint_results.append(None if update_result is None else True)
+            new_names.append(None if update_result is None else (update_result['new_name'] + " (previously \"" +
+                                                                 update_result['old_name'] + "\")"))
 
         paint_column_colors(service, spreadsheet_id, get_sheet_id_from_title(service, spreadsheet_id, sheet_title),
-                            results, column=3, no_color_none=True)
+                            paint_results, column=3, no_color_none=True)
+        update_column(service, spreadsheet_id, sheet_title, new_names, column='D')
 
-        results = []
+        # Check for city changes
+        new_cities = []
+        paint_results = []
+        for oid, cur_city in zip(result['valueRanges'][1]['values'], result['valueRanges'][3]['values']):
+            update_result = try_update_city(dddb, oid[0], "" if len(cur_city) == 0 else cur_city[0])
+            paint_results.append(None if update_result is None else True)
+            new_cities.append(None if update_result is None else (str(update_result['new_city']) + " (previously \"" +
+                                                                  str(update_result['old_city']) + "\")"))
+
+        paint_column_colors(service, spreadsheet_id, get_sheet_id_from_title(service, spreadsheet_id, sheet_title),
+                            paint_results, column=4, no_color_none=True)
+        update_column(service, spreadsheet_id, sheet_title, new_cities, column='E')
+
+        # Check for state changes
+        new_states = []
+        paint_results = []
+        for oid, cur_state in zip(result['valueRanges'][1]['values'], result['valueRanges'][4]['values']):
+            update_result = try_update_state(dddb, oid[0], "" if len(cur_state) == 0 else cur_state[0])
+            paint_results.append(None if update_result is None else True)
+            new_states.append(None if update_result is None else (str(update_result['new_state']) + " (previously \"" +
+                                                                  str(update_result['old_state']) + "\")"))
+
+        paint_column_colors(service, spreadsheet_id, get_sheet_id_from_title(service, spreadsheet_id, sheet_title),
+                            paint_results, column=5, no_color_none=True)
+        update_column(service, spreadsheet_id, sheet_title, new_states, column='F')
+
+        # Make sure that there are some merge requests
+        if 'values' not in result['valueRanges'][0] or 'values' not in result['valueRanges'][1]:
+            print("Did not find anything to merge in " + sheet_title)
+            return {'num_success': 0, 'num_failed': 0}
+
+        # Check for merge requests
+        paint_results = []
         for good_oid, bad_oid in zip(result['valueRanges'][0]['values'], result['valueRanges'][1]['values']):
             if good_oid != [] and bad_oid != []:
-                results.append(merge_organization_pair(wrapper_connection, dddb, good_oid[0], bad_oid[0]))
+                paint_results.append(merge_organization_pair(wrapper_connection, dddb, good_oid[0], bad_oid[0]))
             else:
-                results.append(None)
+                paint_results.append(None)
 
         paint_column_colors(service, spreadsheet_id, get_sheet_id_from_title(service, spreadsheet_id, sheet_title),
-                            results)
+                            paint_results)
+
+        protect_columns(service, spreadsheet_id, sheet_title, first=0, last=26,
+                        description="This sheet has already been merged. Do not edit.")
 
 
 def merge_organization_pair(wrapper_connection, dddb, good_oid, bad_oid):
@@ -378,10 +499,12 @@ def merge_organization_pair(wrapper_connection, dddb, good_oid, bad_oid):
             # A: good:concept - bad:concept
             if bad_concept_oid != 0:
 
-                # TODO: Check if they are in the same concept
-
                 print("[Case: Good=Concept, Bad=Concept]")
                 print("Currently no support for merging two concept organizations.")
+
+                if good_concept_oid == bad_concept_oid:
+                    print("These organizations are already in the same concept.")
+
                 wrapper_connection.connection.commit()
                 return False
 
@@ -484,7 +607,8 @@ def generate_organizations_sheet(service, spreadsheet_id, start_oid=None, date=N
 
     # Populate the sheet with organization data
     populate_organizations_sheet(service, spreadsheet_id, new_sheet_title, start_oid, limit)
-    protect_columns(service, spreadsheet_id, new_sheet_title)
+    protect_columns(service, spreadsheet_id, new_sheet_title, first=1, last=2)
+    protect_columns(service, spreadsheet_id, new_sheet_title, first=6, last=26)
 
 
 def main():
