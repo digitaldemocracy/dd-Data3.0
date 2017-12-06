@@ -1,18 +1,23 @@
+"""
+File: GetUtteranceData.py
+Author: Andrew Voorhees
+
+Performs the initial data processing steps to prepare utterances for classification. If no command line arguments are
+provided it will try and read data from the db. Alternately you can provide paths to data files.
+
+"""
+
 import numpy as np
 import pandas as pd
 import os
 import pymysql
-import pickle
 import re
+import sys
+
+from conn_info import CONN_INFO
 
 
-CONN_INFO = {
-             'host': 'dddb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-             'port': 3306,
-             'db': 'DDDB2016Aug',
-             'user': 'dbMaster',
-             'passwd': os.environ['DBMASTERPASSWORD']
-             }
+data_dir = 'SavedData'
 
 
 def get_utterances(cnxn):
@@ -171,19 +176,19 @@ def load_data(cnxn=None, utr_file=None, clf_file=None):
 
         Args:
             cnxn: The connection to the db
-            utr_file: File pointer to the utterance data
-            clf_file: File pointer to the person classification data
+            utr_file: File path to the utterance data
+            clf_file: File path to the person classification data
 
         Returns:
             A dataframe containing the cleaned and processed data
 
     """
-    # TODO circle back and add a connection assertion
-
-    data = get_utterances(cnxn)
-    classifications_df = get_classifications(cnxn)
-    pickle.dump(data, open('raw_utterances.p', 'wb'))
-    pickle.dump(classifications_df, open('classifications_df.p', 'wb'))
+    if cnxn:
+        data = get_utterances(cnxn)
+        classifications_df = get_classifications(cnxn)
+    else:
+        data = pd.read_csv(utr_file, encoding='latin1')
+        classifications_df = pd.read_csv(clf_file, encoding='latin1')
 
     data = process_utterances(data, classifications_df)
 
@@ -218,8 +223,6 @@ def subset_utterances(g_df):
 
     # If more than 5 seconds passsed, we're going to call that not successive
     df = df[df.endTime > df.time_next - 5]
-    # TODO, I'm not going to explicitly throw out utterances where there is a long pause between
-    # the previous and the current. It might be worth doing this building the classifier though
 
     # I want to make sure the succeeding utterance is either not a legislator or the same person
     idx = (df.simple_label_next != 'Legislator') | (df.pid == df.pid_next)
@@ -296,6 +299,7 @@ def structure_utterances(data):
 
     df_lst = []
     for vid, g_df in data.groupby('vid'):
+        # allows the user to see how far along this is
         print('vid:', vid)
         df = subset_utterances(g_df)
         df = combine_leg_utterances(df)
@@ -311,23 +315,30 @@ def structure_utterances(data):
     # Want to remove the cases where we switch bill discussions
     data = data[data.did == data.did_next]
 
-    # Drops committee chair as utterances are usually procedural.
+    # Drops committee chair as utterances they are usually procedural.
     data = data[data.committee_position != 'Chair']
 
     return data
 
 
 def main():
-    cnxn = pymysql.connect(**CONN_INFO)
-
-    # Grabs data from the db and processes it
-    data = load_data(cnxn)
+    # No cmd line arg means we're reading from db
+    if len(sys.argv) == 1:
+        cnxn = pymysql.connect(**CONN_INFO)
+        # Grabs data from the db and processes it
+        data = load_data(cnxn=cnxn)
+        cnxn.close()
+    # Two means we're reading from files
+    elif len(sys.argv) == 3:
+        data = load_data(utr_file=sys.argv[1], clf_file=sys.argv[2])
+    else:
+        print('Improper number of command line arguments.')
+        sys.exit()
 
     # Structures data so that it is ready to be labeled
     data = structure_utterances(data)
-    data.to_csv('refined_utterances.csv', index=False)
+    data.to_csv(os.path.join(data_dir, 'refined_utterances.csv'), index=False)
 
-    cnxn.close()
 
 if __name__ == '__main__':
     main()

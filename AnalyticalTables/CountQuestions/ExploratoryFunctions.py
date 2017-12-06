@@ -1,3 +1,11 @@
+"""
+Script: ExploratoryFunctions.py
+Author: Andrew Voorhees
+
+Contains functions used by the notebooks for preprocessing and data exploration. Final function is imported in
+both ClassifierFunctions and GenEngagementScores.
+"""
+
 import pandas as pd
 import numpy as np
 import pickle
@@ -90,15 +98,27 @@ def vectorize_text(vect, field, data, prepend):
     return data, scores_cols
 
 
-def run_preprocess_nb_code():
-    """Just all the code found in the preprocessing notebook necessary to generate the final data"""
-    data = pd.read_csv('merged_labeled_data.csv')
-    data.uids = data.uids.apply(eval)
+def run_preprocess_nb_code(data, labeled_data=False):
+    """Just all the code found in the preprocessing notebook necessary to generate the final data. Rather than
+       pickling the data and features dictionary at the end, just returns them. """
 
-    data['label'] = data.apply(lambda row: get_classes(row), axis=1)
+    if labeled_data:
+        data['label'] = data.apply(lambda row: get_classes(row), axis=1)
+        data['binary_label'] = [0 if lab == 'procedural' else 1 for lab in data.label]
 
     # A nested dictionary containing lists of all the features columns names in the "data" dataframe
     features_dict = {}
+
+    # Hot encoding for 'context' features
+    d = {}
+    features_dict['context_features'] = d
+    # context_features is a global
+    for feat in context_features:
+        dummies = pd.get_dummies(data[feat])
+        dummies.columns = [feat + '_' + col for col in dummies]
+
+        d[feat] = list(dummies.columns)
+        data = pd.concat([data, dummies], axis=1)
 
     data['word_count'] = data.text.apply(lambda t: len(word_tokenize(t)))
     data['prev_word_count'] = data.text_prev.apply(lambda t: len(word_tokenize(t)))
@@ -110,88 +130,5 @@ def run_preprocess_nb_code():
     data['?_ratio'] = data['?_count'] / data.word_count
 
     features_dict['eng_features'] = eng_features
-
-    # objects needed for text processing
-    stop_words = set(stopwords.words('english'))
-    stemmer = SnowballStemmer("english")
-    translator = str.maketrans(dict.fromkeys(string.punctuation))
-
-    # creates processed versions of the three texts
-    text_features = ['text', 'text_next', 'text_prev']
-    features_dict['text_feaures'] = text_features
-
-    processed_text_features = []
-    for feat in text_features:
-        feat = 'processed_' + feat
-        processed_text_features.append(feat)
-        data[feat] = data.text.apply(process_text,
-                                     stemmer=stemmer,
-                                     translator=translator,
-                                     stop_words=stop_words)
-
-    features_dict['processed_text_features'] = processed_text_features
-
-    q_text_features = []
-    for feat in text_features:
-        feat = 'q_' + feat
-        q_text_features.append(feat)
-        data[feat] = data.text.apply(only_q_words, interrogative_words=interrogative_words)
-
-    features_dict['q_text_features'] = q_text_features
-
-    tfidf_features = {}
-    for feat in text_features:
-        feat = 'processed_' + feat
-        data, tfidf_score_cols = vectorize_text(TfidfVectorizer(),
-                                                feat,
-                                                data,
-                                                'tfidf_score_' + feat)
-        tfidf_features[feat] = tfidf_score_cols
-
-    features_dict['tfidf_features'] = tfidf_features
-
-    q_tfidf_features = {}
-    for feat in text_features:
-        feat = 'q_' + feat
-        data, tfidf_score_cols = vectorize_text(TfidfVectorizer(),
-                                                feat,
-                                                data,
-                                                'tfidf_score_' + feat)
-        q_tfidf_features[feat] = tfidf_score_cols
-
-    features_dict['q_tfidf_features'] = q_tfidf_features
-
-    # bigrams
-    bi_tfidf_features = {}
-    for feat in text_features:
-        data, tfidf_score_cols = vectorize_text(TfidfVectorizer(ngram_range=(2, 2)),
-                                                feat,
-                                                data,
-                                                'tfidf_score_' + feat)
-        bi_tfidf_features[feat] = tfidf_score_cols
-
-    features_dict['bi_tfidf_features'] = bi_tfidf_features
-
-    # trigrams
-    tri_tfidf_features = {}
-    for feat in text_features:
-        data, tfidf_score_cols = vectorize_text(TfidfVectorizer(ngram_range=(2, 2)),
-                                                feat,
-                                                data,
-                                                'tfidf_score_' + feat)
-        tri_tfidf_features[feat] = tfidf_score_cols
-
-    features_dict['tri_tfidf_features'] = tri_tfidf_features
-
-    # quad-grams
-    quad_tfidf_features = {}
-    for feat in text_features:
-        data, tfidf_score_cols = vectorize_text(TfidfVectorizer(ngram_range=(2, 2)),
-                                                feat,
-                                                data,
-                                                'tfidf_score_' + feat)
-        quad_tfidf_features[feat] = tfidf_score_cols
-
-    features_dict['quad_tfidf_features'] = quad_tfidf_features
 
     return data, features_dict

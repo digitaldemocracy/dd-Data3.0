@@ -1,3 +1,11 @@
+"""
+Script: ClassifierFunctions.py
+Author: Andrew Voorhees
+
+Contains functions and imports used by the classifier notebooks. The final function is used by GenEngagementScores.py
+for counting engagements.
+"""
+
 import pandas as pd
 import numpy as np
 import pickle
@@ -42,6 +50,8 @@ import matplotlib.pyplot as plt
 
 # Used for saving the model at the end
 from sklearn.externals import joblib
+
+from ExploratoryFunctions import run_preprocess_nb_code
 
 # Set so it's easy to replicate
 RANDOM_STATE = 42
@@ -162,5 +172,59 @@ def evaluate_model(model, param_grid, X, y, optimize='f1'):
     print_model_info(grid)
 
     return grid
+
+
+def get_context_features(features_dict):
+    """Helper for generate_final_classifier. Gets the features used by clf_context"""
+    model_features = []
+
+    # context features w/o simple label
+    top_features = ['committee_position_prev',
+                    'committee_position',
+                    'committee_position_next',
+
+                    'simple_label_prev',
+                    'simple_label_next'
+                    ]
+    for feat in top_features:
+        # adds every feature in the bottom level list
+        model_features += features_dict['context_features'][feat]
+
+    extra_features = ['word_count',
+                      '?_count']
+    model_features += extra_features
+
+    return model_features
+
+
+def generate_final_classifier(data_file):
+    """Trains and returns the final classifier with the optimal hyperparameters hard-coded in. This is done because
+       pickling sklearn estimators and then switching btw different architectures can cause problems.
+
+       Arguments:
+           data_file: A string with the path to the data file
+   """
+    data = pd.read_csv(data_file)
+    data.uids = data.uids.apply(eval)
+
+    data, features_dict = run_preprocess_nb_code(data, labeled_data=True)
+
+    pipeline = [('vect', TfidfVectorizer(encoding='unicode',
+                                         ngram_range=(1,1),
+                                         max_df=.5)),
+                ('clf', MultinomialNB())]
+    clf_text = Pipeline(pipeline)
+
+    clf_context = SVC(probability=True, C=1, gamma=.2)
+    context_features = get_context_features(features_dict)
+
+    classifiers = [(clf_text, 'text'),
+                   (clf_context, context_features)]
+
+    model = MyVotingClassifier(classifiers=classifiers, weights=[.9, .1])
+
+    model.fit(data, data.binary_label)
+
+    return model
 
 
