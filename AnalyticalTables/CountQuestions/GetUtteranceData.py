@@ -15,9 +15,8 @@ CONN_INFO = {
              }
 
 
-
 def get_utterances(cnxn):
-    """Gets the utterance data from the db"""
+    """Queries the db for utterance data."""
     # Hearings in December are actually the next legislative year and PersonClassifications is
     # too stupid to know that
     q = '''SELECT DISTINCT u.*, 
@@ -57,16 +56,16 @@ def get_classifications(cnxn):
     classifications_df = pd.read_sql(q, cnxn)
 
     d = {
-          'Former Legislator': 'Legislator',
-          'General Public': 'General Public',
-          'Legislative Analyst Office': 'LAO',
-          'Legislative Staff': 'Staff',
-          'Legislator': 'Legislator',
-          'Lobbyist': 'Lobbyist',
-          'State Agency Representative': 'State Agency Rep',
-          'State Constitutional Office': 'State Const Office',
-          'Unlabeled': 'Unlabeled'
-        }
+        'Former Legislator': 'Legislator',
+        'General Public': 'General Public',
+        'Legislative Analyst Office': 'LAO',
+        'Legislative Staff': 'Staff',
+        'Legislator': 'Legislator',
+        'Lobbyist': 'Lobbyist',
+        'State Agency Representative': 'State Agency Rep',
+        'State Constitutional Office': 'State Const Office',
+        'Unlabeled': 'Unlabeled'
+    }
     classifications_df['simple_label'] = classifications_df.PersonType.map(d)
 
     # Does not take into consideration whether one type of label should trump another
@@ -75,9 +74,23 @@ def get_classifications(cnxn):
     return classifications_df
 
 
+def add_simple_labels(df, classifications_df):
+    """Adds simplified class labels for the speaker of a given utterances"""
+    df = df.merge(classifications_df, how='left', on=['pid', 'specific_year'],
+                  suffixes=['', '_duplicate'])
+
+    keep_cols = [col for col in df.columns if '_duplicate' not in col]
+    df = df[keep_cols]
+
+    df.loc[pd.isnull(df['PersonType']), 'simple_label'] = 'Unlabeled'
+    df.loc[df.bill_author, 'simple_label'] = 'Bill Author'
+
+    return df
+
+
 def check_position(g_df):
-    "Checks if the dataframe contains a chair or vice chair. Meant to be used with an apply"
-    size_cond = (len(g_df) > 1)
+    "Checks if the dataframe cotains a Chair, Vice-Chair, or Member. Meant to be used with an apply"
+    size_cond = g_df.committee_position.nunique() > 1
 
     if not size_cond:
         return pd.Series({'chair_flag': False,
@@ -96,9 +109,18 @@ def check_position(g_df):
 
 
 def fix_multiple_positions(data):
-    """As multiple committees can appear in the same hearing, we can't be certain who the chair is. This
-       handles this by labeling a member a 'possible chair' if they are a committee chair in one of the
-       committees"""
+    """The join with CommitteeHearings results in doubling up of uids, as multiple committees can appear in the same
+       hearing. We can't be certain who the chair is. This function handles this by labeling a member a 'possible chair'
+       (or vice-chair) if they are a committee chair in one of the committees. It also overrides non-member
+       classifications as members if they appear in one committee and not the other. Finally it dedupes the dataframe
+       so uid can act as a key.
+
+       Arguments:
+           data: Dataframe containing all the utterances and committee labels
+
+        Returns:
+            The deduped dataframe with clean committee position labels
+    """
     groups = data.groupby('uid')
 
     is_pos_df = groups.apply(check_position)
@@ -121,23 +143,63 @@ def fix_multiple_positions(data):
     return data
 
 
-def add_simple_labels(df, classifications_df):
-    """Adds simplified class labels for the speaker of a given utterances"""
-    df = df.merge(classifications_df, how='left', on=['pid', 'specific_year'],
-                  suffixes=['', '_duplicate'])
+def process_utterances(data, classifications_df):
+    """Cleans the raw utterance data and merges in classification info.
+        Args:
+            data: The raw data read from the db or a file
+            classifications_df: Dataframe containing the classifications for each pid
 
-    keep_cols = [col for col in df.columns if '_duplicate' not in col]
-    df = df[keep_cols]
+        Returns:
+            The cleaned dataframe joined with classifications
+    """
+    # Changes 0 and 1 values to Python booleans
+    data['bill_author'] = data.bill_author.apply(lambda x: False if x == 0 else True)
+    # Relabel null text to blank string
+    data.loc[pd.isnull(data.text), 'text'] = ' '
 
-    df.loc[pd.isnull(df['PersonType']), 'simple_label'] = 'Unlabeled'
-    df.loc[df.bill_author, 'simple_label'] = 'Bill Author'
+    # Replaces PersonType with simplified labels
+    data = add_simple_labels(data, classifications_df)
 
-    return df
+    # Handles doubling up from join with CommitteeHearings
+    data = fix_multiple_positions(data)
+
+    return data
+
+
+def load_data(cnxn=None, utr_file=None, clf_file=None):
+    """Loads and processes the data either from a the db or from a file.
+
+        Args:
+            cnxn: The connection to the db
+            utr_file: File pointer to the utterance data
+            clf_file: File pointer to the person classification data
+
+        Returns:
+            A dataframe containing the cleaned and processed data
+
+    """
+    # TODO circle back and add a connection assertion
+
+    data = get_utterances(cnxn)
+    classifications_df = get_classifications(cnxn)
+    pickle.dump(data, open('raw_utterances.p', 'wb'))
+    pickle.dump(classifications_df, open('classifications_df.p', 'wb'))
+
+    data = process_utterances(data, classifications_df)
+
+    return data
 
 
 def subset_utterances(g_df):
     """Sorts and subsets utterance dataframe to include only instances of a legislator interacting
-       with a witness of bill author. Intended to be run only on utterances of the same video"""
+       with a witness of bill author. Intended to be run only on utterances of the same video.
+
+       Arguments:
+           g_df: Dataframe containing utterances from the same video
+
+        Returns:
+            The processed dataframe
+    """
     # Ordering utterances by time is probably the best way to determine succession
     # For some reason ordering by uid gives me funny behavior
     g_df.sort_values('time', inplace=True)
@@ -169,7 +231,14 @@ def subset_utterances(g_df):
 def combine_leg_utterances(df):
     """Combines all series of utterances by a single legislator into single blocks of text.
        Returns a dataframe with the legislator's utterance, the previous utterance, and
-       the next utterance."""
+       the next utterance.
+
+       Arguments:
+           df: Dataframe of utterances that have already been subsetted and sorted
+
+        Returns:
+            Dataframe with concatenated utterances
+    """
     # Ensures that strings of utterances by the same legislator are combined
     first = True
     out_lst = []
@@ -204,7 +273,11 @@ def combine_leg_utterances(df):
 
                  'simple_label_prev': first_row['simple_label_prev'],
                  'simple_label': row['simple_label'],
-                 'simple_label_next': row['simple_label_next']}
+                 'simple_label_next': row['simple_label_next'],
+
+                 'did': row['did'],
+                 'did_next': row['did_next']
+                 }
             out_lst.append(d)
 
             # reset utterances and text
@@ -219,51 +292,27 @@ def combine_leg_utterances(df):
 
 
 def structure_utterances(data):
-    """Returns final dataframe of structured uttterances"""
-    # Drops committee chair as utterances are usually procedural. Creates succession issues but this
-    # is handled later
-    # TODO you need to consider whether you want to retain this
-    # data = data[data.committee_position != 'Chair']
+    """Returns final dataframe meant for classification. Rows contain concatenated leg utterances."""
 
     df_lst = []
-    for g, g_df in data.groupby('vid'):
-        print('vid:', g)
+    for vid, g_df in data.groupby('vid'):
+        print('vid:', vid)
         df = subset_utterances(g_df)
         df = combine_leg_utterances(df)
-        df['vid'] = g
+        df['vid'] = vid
 
         df_lst.append(df)
 
     data = pd.concat(df_lst)
 
-    return data
+    # last minute additions:
+    # 2998 is the committee secretary and we want to ignore them
+    data = data[data.pid_next != 2998]
+    # Want to remove the cases where we switch bill discussions
+    data = data[data.did == data.did_next]
 
-
-def process_utterances(data, classifications_df):
-    """Cleans the raw utterance data and merges in classification info. """
-    # Changes 0 and 1 values to Python booleans
-    data['bill_author'] = data.bill_author.apply(lambda x: False if x == 0 else True)
-    # Relabel null text to blank string
-    data.loc[pd.isnull(data.text), 'text'] = ' '
-
-    # Replaces PersonType with simplified labels
-    data = add_simple_labels(data, classifications_df)
-
-    # Handles doubling up from join with CommitteeHearings
-    data = fix_multiple_positions(data)
-
-    return data
-
-
-def load_data(cnxn=None, utr_file=None, clf_file=None):
-    # TODO circle back and add a connection assertion
-
-    data = get_utterances(cnxn)
-    classifications_df = get_classifications(cnxn)
-    pickle.dump(data, open('raw_utterances.p', 'wb'))
-    pickle.dump(classifications_df, open('classifications_df.p', 'wb'))
-
-    data = process_utterances(data, classifications_df)
+    # Drops committee chair as utterances are usually procedural.
+    data = data[data.committee_position != 'Chair']
 
     return data
 
@@ -276,7 +325,7 @@ def main():
 
     # Structures data so that it is ready to be labeled
     data = structure_utterances(data)
-    pickle.dump(data, open('refined_utterances.p', 'wb'))
+    data.to_csv('refined_utterances.csv', index=False)
 
     cnxn.close()
 

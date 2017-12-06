@@ -67,6 +67,14 @@ class TestGetUtteranceData(unittest.TestCase):
             self.answer.sort_index(axis=1, inplace=True)
             self.answer.sort_values('uid', inplace=True)
 
+        if name == 'check_position test4':
+            self.data = self.data_file.parse('UtteranceData2')
+            self.classifications_df = self.data_file.parse('PersonClassifications')
+            self.answer = self.answer_file.parse('test3')
+            # Don't want the order this is written in to impact test
+            self.answer.sort_index(axis=1, inplace=True)
+            self.answer.sort_values('uid', inplace=True)
+
     def tearDown(self):
         print('\nend of test', self.shortDescription())
 
