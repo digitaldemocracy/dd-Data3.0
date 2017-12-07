@@ -22,10 +22,11 @@ from ClassifierFunctions import generate_final_classifier
 from ExploratoryFunctions import run_preprocess_nb_code
 from conn_info import CONN_INFO
 
+data_dir = 'SavedData'
 # file path to the training data
-train_file = 'merged_labeled_data.csv'
+train_file = os.path.join(data_dir, 'merged_labeled_data.csv')
 # Path to the processed utterances
-data_file = 'refined_utterances.csv'
+data_file = os.path.join(data_dir, 'refined_utterances.csv')
 
 
 def get_predictions():
@@ -33,7 +34,7 @@ def get_predictions():
     model = generate_final_classifier(train_file)
 
     data = pd.read_csv(data_file, encoding='latin1')
-    # don't need the second return eleemnt
+    # don't need the second return element
     data, _ = run_preprocess_nb_code(data)
 
     data['class'] = model.predict(data)
