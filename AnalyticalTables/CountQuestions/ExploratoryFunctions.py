@@ -16,6 +16,7 @@ from nltk import word_tokenize
 from nltk.corpus import stopwords
 # A popular stemming algorithm
 from nltk.stem import SnowballStemmer
+from nltk.tokenize import sent_tokenize
 
 # I just use this for finding punctuation
 import string
@@ -23,8 +24,9 @@ import string
 # Transforms series of strings into a bag of word matrix and finds Tfidf scores
 from sklearn.feature_extraction.text import TfidfVectorizer
 
-# Used for visualization
-import scipy.stats as stats
+
+# Stanford NLP
+from pycorenlp import StanfordCoreNLP
 
 context_features = ['committee_position_prev',
                     'committee_position',
@@ -98,6 +100,41 @@ def vectorize_text(vect, field, data, prepend):
     data = pd.concat([data, scores], axis=1)
 
     return data, scores_cols
+
+
+def print_parse_tree(sent, nlp):
+    """Pretty prints a parse tree"""
+    output = nlp.annotate(sent, properties={
+        'annotators': 'parse, sentiment',
+        'outputFormat': 'json'
+    })
+    print(output['sentences'][0]['parse'])
+
+
+def stanford_parse(text, nlp=None, syntactic_targets=None):
+    "Breaks the text down into syntactic tags of interest and returns them joined as one long string."
+    assert nlp is not None
+    assert syntactic_targets is not None
+
+    sentences = sent_tokenize(text)
+
+    all_parts = []
+    sentiments = []
+    for sentence in sentences:
+        output = nlp.annotate(sentence, properties={
+            'annotators': 'parse, sentiment',
+            'outputFormat': 'json'
+        })
+
+        if output != 'CoreNLP request timed out. Your document may be too long.':
+            p_tree = output['sentences'][0]['parse']
+            sentiments.append(output['sentences'][0]['sentiment'])
+
+            all_parts += [w for w in word_tokenize(p_tree) if w in syntactic_targets]
+
+    parts_str = ' '.join(all_parts)
+
+    return parts_str
 
 
 def run_preprocess_nb_code(data, labeled_data=False):

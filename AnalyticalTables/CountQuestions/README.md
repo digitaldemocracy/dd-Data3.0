@@ -7,7 +7,7 @@ The purpose of this project was to find an effective way of measuring legislator
 ### Notebooks
 These explain the process of creating and training the classifier. They are not necessary for generating engagement counts, but are helpful for anybody who wants to follow along or make changes.
 - **Exploration and Preprocessing.ipynb**
-    - This file contains a basic exploration of the dataset as well as some preprocessing for the features. It modifies the dataset and pickles a new version, so it is necessary to be run prior to any of the classifer notebooks.
+    - This file contains a basic exploration of the dataset as well as some preprocessing for the features. It modifies the dataset and pickles a new version, so it is necessary to be run prior to any of the classifer notebooks. The last bit of this code is dependent on Stanford Core NLP, but there are instructions in the notebook.
 <br><br>
 - **Build Classifier with Context Features.ipynb**
     - File contains the steps for building a classifier based just on the context features, (ie ignoring the step features).
@@ -17,6 +17,9 @@ These explain the process of creating and training the classifier. They are not 
 <br><br>
 - **Weighting Classifiers.ipynb**
     - Takes all of my other classifiers and finds the optimal weights for a voting classifier that I defined.
+<br><br>
+- **Building the Classifier with Syntax Tags.ipynb**
+    - This file explores attempts to build a classifier by looking at the syntax tags, rather than specific words.
 
 ### Files
 The Python files do the actually work of counting enagements and uploading them to the database.
@@ -41,6 +44,7 @@ The Python files do the actually work of counting enagements and uploading them 
 <br><br>
 - **ExploratoryFunctions.py**
     - Contains functions used by the notebooks for preprocessing and data exploration. Final function is imported in both ClassifierFunctions and GenEngagementScores.
+<br><br>
 - **conn_info.py**
     - Just contains the hard-coded db connection information
 
@@ -51,9 +55,6 @@ The Python files do the actually work of counting enagements and uploading them 
 <br><br>
 - **SavedData**
     - This is where all of the data files are written to from the code. Also contains my labeled data set.
-<br><br>
-- **StanfordNLP**
-    - Contains the files necessary for using 'Stanford CoreNLP'. This is not required for getting the  engagement counts, but it is used by some of the notebooks.
 <br><br>
 - **TestData**
     - Contains the excel files used by the unit tests.
