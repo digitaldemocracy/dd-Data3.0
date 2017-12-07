@@ -21,7 +21,7 @@ DO
       SELECT
         a.pid,
         b.sessionYear AS session_year,
-        count(*)      AS num_chaptered
+        count(distinct b.bid)      AS num_chaptered
       FROM authors a
         JOIN Bill b
           ON a.bid = b.bid
@@ -33,7 +33,7 @@ DO
       SELECT
         a.pid,
         b.sessionYear AS session_year,
-        count(*)      AS num_vetoed
+        count(distinct b.bid)      AS num_vetoed
       FROM authors a
         JOIN Bill b
           ON a.bid = b.bid
@@ -45,7 +45,7 @@ DO
       SELECT
         a.pid,
         b.sessionYear AS session_year,
-        count(*)      AS num_authored
+        count(distinct b.bid)      AS num_authored
       FROM authors a
         JOIN Bill b
           ON a.bid = b.bid
