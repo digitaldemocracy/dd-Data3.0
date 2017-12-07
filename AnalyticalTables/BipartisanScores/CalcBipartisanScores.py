@@ -181,7 +181,7 @@ def generate_full_scores_df(votes_df, filters):
     for leg_votes_df, combo in zip(votes_df_lst, combinations):
         print('Combo', combo)
         print(datetime.now())
-        df = calc_scores(votes_df)
+        df = calc_scores(leg_votes_df)
         for flt in filters:
             flag = 1 if flt in combo else 0
             # Why the no? If a field was in the filter in means we specifically filtered out that field.
