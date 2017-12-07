@@ -1,3 +1,12 @@
+
+"""
+File: GetEngagementScores.py
+Author: Andrew Voorhees
+
+Basic unit tests for GetUtteranceData.py.
+
+"""
+
 import unittest
 import pandas as pd
 from os.path import join as path_join
@@ -68,12 +77,25 @@ class TestGetUtteranceData(unittest.TestCase):
             self.answer.sort_values('uid', inplace=True)
 
         if name == 'check_position test4':
-            self.data = self.data_file.parse('UtteranceData2')
-            self.classifications_df = self.data_file.parse('PersonClassifications')
-            self.answer = self.answer_file.parse('test3')
+            self.g_df = self.data_file.parse('MultiplePositions')
+            self.answer = pd.Series({'chair_flag': True,
+                                     'vice_flag': True,
+                                     'member_flag': True})
+
+        if name == 'subset_utterances test5':
+            self.g_df = self.data_file.parse('SubsetUtter')
+            self.answer = self.answer_file.parse('test5')
             # Don't want the order this is written in to impact test
             self.answer.sort_index(axis=1, inplace=True)
-            self.answer.sort_values('uid', inplace=True)
+            self.answer.sort_values('time', inplace=True)
+
+        if name == 'combine_leg_utterances test6':
+            self.g_df = self.data_file.parse('CombineUtter')
+            self.answer = self.answer_file.parse('test6')
+            # Don't want the order this is written in to impact test
+            self.answer.sort_index(axis=1, inplace=True)
+            self.answer.sort_values('uid_prev', inplace=True)
+            self.answer['uids'] = self.answer.uids.apply(eval)
 
     def tearDown(self):
         print('\nend of test', self.shortDescription())
@@ -101,8 +123,34 @@ class TestGetUtteranceData(unittest.TestCase):
         out.sort_index(axis=1, inplace=True)
         out.sort_values('uid', inplace=True)
 
+        self.assertTrue(out.equals(self.answer))
+
+    def test_process_utterances_4(self):
+        """check_position test4"""
+        out = check_position(self.g_df)
+        self.assertTrue(out.equals(self.answer))
+
+    def test_subset_utterances_5(self):
+        """subset_utterances test5"""
+        out = subset_utterances(self.g_df)
+        out.sort_index(axis=1, inplace=True)
+        out.sort_values('time', inplace=True)
+        out.reset_index(drop=True, inplace=True)
+
+        self.assertTrue(out.equals(self.answer))
+
+    def test_combine_leg_utterances_6(self):
+        """combine_leg_utterances test6"""
+        out = combine_leg_utterances(self.g_df)
+        out.sort_index(axis=1, inplace=True)
+        out.sort_values('uid_prev', inplace=True)
+        out.reset_index(drop=True, inplace=True)
+
         pickle.dump(out, open('out.p', 'wb'))
         pickle.dump(self.answer, open('answer.p', 'wb'))
 
         self.assertTrue(out.equals(self.answer))
 
+
+if __name__ == '__main__':
+    unittest.main()

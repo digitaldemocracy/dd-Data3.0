@@ -43,6 +43,10 @@ eng_features = ['word_count',
                 '?_ratio'
                ]
 
+text_features = ['text',
+                 'text_next',
+                 'text_prev']
+
 # from wikipedia
 interrogative_words = set(['which',
                            'what',
@@ -66,8 +70,6 @@ def get_classes(row):
         out = 'engagement'
     elif row.procedural | row.procedural_question:
         out = 'procedural'
-    elif row.topic_intro:
-        out = 'topic_intro'
     # Every row should have one of these labels
     assert out
     return out
