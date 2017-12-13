@@ -36,6 +36,11 @@ class LegislatorOpenStateParser(object):
 
 
     def clean_values(self, entry):
+        '''
+        Removes unnecessary or empty fields from json object.
+        :param entry: Legislator json object from openstates.
+        :return: A cleaned json object.
+        '''
         for field in entry:
             if len(str(entry[field])) == 0 or field == "offices" or entry[field] == None:
                 entry[field] = None
@@ -43,6 +48,12 @@ class LegislatorOpenStateParser(object):
 
 
     def get_office_info(self, offices):
+        '''
+        Goes through the offices json of the legislator json object
+        and retrieves information.
+        :param offices: Json object full of office information.
+        :return: a dictionary of office information.
+        '''
         if offices == None or len(offices) == 0:
             return {"capitol_phone" : "N/A", "capitol_fax" : "N/A", "room_number" : "N/A"}
         else:
@@ -53,11 +64,21 @@ class LegislatorOpenStateParser(object):
                             "room_number": str(office['address'].split()[0])}
 
     def set_house(self, legislator):
+        '''
+        Sets the house to our standards.
+        :param legislator: Legislator json object.
+        :return: String of the legislators house.
+        '''
         if "chamber" not in legislator or str(legislator["chamber"]) == "upper":
             return "Senate"
         return "House"
 
     def set_party(self, legislator):
+        '''
+        Parses and formats the party of the legislator.
+        :param legislator: Legislator Json
+        :return: String of the legislator's party.
+        '''
         if "party" not in legislator:
             return "Other"
         elif str(legislator["party"]) == "Democratic":
@@ -68,6 +89,12 @@ class LegislatorOpenStateParser(object):
         return "Other"
 
     def construct_email(self, legislator):
+        '''
+        Constructs the email of the legislator.
+        Most states/houses have a standard for creating emails.
+        :param legislator: Legislator json.
+        :return: String of the legislator's email.
+        '''
         if "house" not in legislator or legislator["house"] == "N/A":
             return "N/A"
         elif self.state == "FL":
@@ -77,6 +104,13 @@ class LegislatorOpenStateParser(object):
 
 
     def get_legislators_list(self, legislator_json):
+        '''
+        Parses the legislator json from the openstates api
+        and creates a list of legislator objects.
+        :param legislator_json: A json object full of legislator
+                                json objects
+        :return: A list of legislator model objects
+        '''
         legislators = list()
         for entry in legislator_json:
             entry = self.clean_values(entry=entry)
