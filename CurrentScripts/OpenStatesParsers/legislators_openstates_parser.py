@@ -22,6 +22,7 @@ from Models.Person import *
 from Models.Legislator import *
 from Constants.General_Constants import *
 from Utils.Generic_Utils import clean_name
+import datetime
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -31,7 +32,9 @@ class LegislatorOpenStateParser(object):
         self.state = state
         self.session_year = session_year
         self.validation_list = {"offices", "photo_url", "party", "email", "district"}
-        self.emails = {"tx_house": "@house.texas.gov", "tx_senate": "@senate.texas.gov", "fl_house": "@myfloridahouse.gov",
+        self.emails = {"tx_house": "@house.texas.gov",
+                       "tx_senate": "@senate.texas.gov",
+                       "fl_house": "@myfloridahouse.gov",
                         "fl_senate": "@flsenate.gov"}
 
 
@@ -42,7 +45,7 @@ class LegislatorOpenStateParser(object):
         :return: A cleaned json object.
         '''
         for field in entry:
-            if len(str(entry[field])) == 0 or field == "offices" or entry[field] == None:
+            if len(str(entry[field])) == 0:
                 entry[field] = None
         return entry
 
@@ -60,8 +63,7 @@ class LegislatorOpenStateParser(object):
             for office in offices:
                 if office["type"] == "capitol":
                     return {"capitol_phone": str(office["phone"]),
-                            "capitol_fax": str(office["fax"]),
-                            "room_number": str(office['address'].split()[0])}
+                            "capitol_fax": str(office["fax"])}
 
     def set_house(self, legislator):
         '''
@@ -114,8 +116,7 @@ class LegislatorOpenStateParser(object):
         legislators = list()
         for entry in legislator_json:
             entry = self.clean_values(entry=entry)
-
-            # entry = self.format_legislator(entry, state)
+            entry["house"] = self.set_house(entry)
             office_info = self.get_office_info(entry["offices"])
             # Person table data
             name_parts = [entry["first_name"],
@@ -125,21 +126,26 @@ class LegislatorOpenStateParser(object):
 
             name_parts = [name_part for name_part in name_parts if name_part]
 
-            legislator = Legislator(name = clean_name(" ".join(name_parts)),
+            name = clean_name(" ".join(name_parts))
+            entry["first_name"] = name["first"]
+            entry["last_name"] = name["last"]
+
+
+            legislator = Legislator(name = name,
                                     image = entry["photo_url"],
                                     source = "openstates",
                                     alt_ids = entry["all_ids"],
                                     year=self.session_year,
-                                    house=self.set_house(entry),
+                                    house=entry["house"],
                                     district=str(entry["district"]) if "district" in entry else 0,
                                     party=self.set_party(entry),
-                                    start=DEFAULT_TERM_START,
+                                    start=datetime.date.today(),
                                     current_term=1,
                                     state = self.state,
                                     website_url = entry["url"],
                                     capitol_phone = office_info["capitol_phone"],
                                     capitol_fax = office_info["capitol_fax"],
-                                    room_number = office_info["room_number"],
+                                    room_number = None,
                                     email = self.construct_email(entry))
 
             legislators.append(legislator)
