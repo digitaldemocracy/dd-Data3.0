@@ -22,9 +22,14 @@ class Legislator(object):
         self.email_form_link = email_form_link
         self.official_bio = OfficialBio
 
+    def __str__(self):
+        return str(self.__dict__)
+
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+
     def set_name(self, name):
         self.name = name
-
         parts = [name["first"],
                  name["nickname"],
                  name["middle"],
