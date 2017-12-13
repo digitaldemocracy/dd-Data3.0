@@ -30,8 +30,6 @@ class LegislatorOpenStateParser(object):
     def __init__(self, state, session_year):
         self.state = state
         self.session_year = session_year
-        self.LEGISLATORS_SEARCH_URL = 'https://openstates.org/api/v1/legislators/?state={0}&active=true&apikey=' + OPENSTATES_API_KEY
-        self.LEGISLATORS_DETAIL_URL = 'https://openstates.org/api/v1/legislators/{0}&apikey=' + OPENSTATES_API_KEY
         self.validation_list = {"offices", "photo_url", "party", "email", "district"}
         self.emails = {"tx_house": "@house.texas.gov", "tx_senate": "@senate.texas.gov", "fl_house": "@myfloridahouse.gov",
                         "fl_senate": "@flsenate.gov"}
@@ -77,20 +75,8 @@ class LegislatorOpenStateParser(object):
         elif self.state == "TX":
             return legislator["first_name"] + "." + legislator["last_name"] + self.emails["tx_" + legislator["house"].lower()]
 
-    # def format_legislator(self, legislator, state):
-    #     legislator = self.set_house(legislator)
-    #     for field in self.validation_list:
-    #         if field not in legislator or not legislator[field]:
-    #             if field == "district":
-    #                 legislator["district"] = 0
-    #             else:
-    #                 legislator[field] = None
-    #     return legislator
 
-
-    def get_legislators_list(self):
-        api_url = self.LEGISLATORS_SEARCH_URL.format(self.state.lower())
-        legislator_json = requests.get(api_url).json()
+    def get_legislators_list(self, legislator_json):
         legislators = list()
         for entry in legislator_json:
             entry = self.clean_values(entry=entry)
@@ -98,7 +84,6 @@ class LegislatorOpenStateParser(object):
             # entry = self.format_legislator(entry, state)
             office_info = self.get_office_info(entry["offices"])
             # Person table data
-
             name_parts = [entry["first_name"],
                           entry["middle_name"],
                           entry["last_name"],

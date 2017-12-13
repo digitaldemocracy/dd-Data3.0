@@ -26,16 +26,17 @@ from Utils.Database_Connection import connect
 from Utils.Generic_MySQL import get_session_year
 from Utils.Legislator_Insertion_Manager import LegislatorInsertionManager
 from OpenStatesParsers.legislators_openstates_parser import LegislatorOpenStateParser
-
+from OpenStatesParsers.OpenStatesApi import OpenStatesAPI
 if __name__ == "__main__":
     with connect() as dddb:
         logger = create_logger()
-        # print(logger.exception("Asdf"))
-        # exit()
         session_year = get_session_year(dddb, "TX", logger)
         parser = LegislatorOpenStateParser("TX", session_year)
+        openStatesApi = OpenStatesAPI("TX")
         leg_manager = LegislatorInsertionManager(dddb, logger, "TX", session_year)
-        legislators = parser.get_legislators_list()
+
+        legislator_json = openStatesApi.get_legislators_json()
+        legislators = parser.get_legislators_list(legislator_json)
         leg_manager.add_legislators_db(legislators)
         leg_manager.log()
 
