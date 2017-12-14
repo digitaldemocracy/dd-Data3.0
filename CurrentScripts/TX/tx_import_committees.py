@@ -24,6 +24,7 @@ from Utils.Generic_Utils import create_logger
 from Utils.Database_Connection import connect
 from Utils.Generic_MySQL import get_session_year
 from Utils.Committee_Insertion_Manager import CommitteeInsertionManager
+from OpenStatesParsers.OpenStatesApi import OpenStatesAPI
 
 
 def main():
@@ -31,8 +32,13 @@ def main():
         logger = create_logger()
         session_year = get_session_year(dddb, "TX", logger)
         committee_insertion_manager = CommitteeInsertionManager(dddb, "TX", session_year, logger)
-        parser = TxCommitteeParser(session_year)
-        committees = parser.get_committee_list()
+        api = OpenStatesAPI("TX")
+        parser = TxCommitteeParser(session_year, api)
+
+
+        committee_json = api.get_committee_json()
+        state_metadata = api.get_state_metadate_json()
+        committees = parser.get_committee_list(committee_json, state_metadata)
         committee_insertion_manager.import_committees(committees)
         committee_insertion_manager.log()
 

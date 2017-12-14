@@ -14,20 +14,15 @@ from OpenStatesParsers.committee_openstates_parser import *
 
 
 class FlCommitteeParser(CommitteeOpenStateParser):
-    def __init__(self, session_year):
+    def __init__(self, session_year, api):
         '''
         Constructor for FlCommitteeParser Class. Using OpenStates General Parser.
         Overriding get_committee_list
         :param session_year: The current session year for Texas
         '''
-        super(FlCommitteeParser, self).__init__("FL", session_year, "Senate", "House")
+        super(FlCommitteeParser, self).__init__(api, "FL", session_year, "Senate", "House")
 
-    def get_committee_list(self):
-        api_url = self.COMMITTEE_SEARCH_URL.format(self.state.lower())
-        metadata_url = self.STATE_METADATA_URL.format(self.state.lower())
-
-        committee_json = requests.get(api_url).json()
-        metadata = requests.get(metadata_url).json()
+    def get_committee_list(self, committee_json, metadata):
 
         comm_list = list()
         for entry in committee_json:
@@ -92,60 +87,3 @@ class FlCommitteeParser(CommitteeOpenStateParser):
                     print("Error committee not created properly.")
 
         return comm_list
-
-#
-# '''
-# This function builds and returns a list containing a dictionary for each committee in the given state.
-#
-# Each dictionary includes these fields:
-#     comm_id: The committee's OpenStates ID number
-#     state: The state the committee is in
-#     house: The legislative house the committee is a part of (eg. Senate)
-#     type: The type of committeee (eg. Standing)
-#     name: The name of the committee, formatted in the manner used in the CommitteeNames table (eg. Senate Standing Committee on Agriculture)
-#     short_name: The shortened name of the committee (eg. Agriculture)
-# '''
-#
-#
-# '''
-# This function returns a list of dictionaries for each committe member on the specified committee.
-#
-# The dictionaries returned by this function have two fields:
-#     leg_id: The member's OpenStates ID number
-#     position: The member's position on the committee
-#     name: The committee member's name
-# '''
-# def get_committee_membership(comm_id):
-#     api_url = COMMITTEE_DETAIL_URL.format(comm_id)
-#     committee_json = requests.get(api_url).json()
-#
-#     member_list = list()
-#
-#     for entry in committee_json['members']:
-#         member = dict()
-#
-#         member['leg_id'] = entry['leg_id']
-#
-#         if 'vice' in entry['role'].lower():
-#             member['position'] = 'Vice-Chair'
-#         elif 'chair' in entry['role'].lower():
-#             member['position'] = 'Chair'
-#         else:
-#             member['position'] = 'Member'
-#
-#         member['name'] = entry['name']
-#
-#         member_list.append(member)
-#
-#     return member_list
-#
-# '''
-# Committees that OpenStates has updated in the past week
-# are defined as current in the database
-# '''
-# def is_committee_current(updated):
-#     update_date = dt.datetime.strptime(updated, '%Y-%m-%d %H:%M:%S')
-#
-#     diff = dt.datetime.now() - update_date
-#
-#     return diff.days <= 7

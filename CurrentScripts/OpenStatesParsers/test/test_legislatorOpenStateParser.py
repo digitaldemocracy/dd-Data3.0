@@ -8,11 +8,13 @@ from Models.Legislator import Legislator
 from OpenStatesParsers.legislators_openstates_parser import LegislatorOpenStateParser
 import json
 import datetime
+import os
 
 class TestLegislatorOpenStateParser(TestCase):
     def setUp(self):
         self.parser = LegislatorOpenStateParser("TX", 2017)
-        json_file = open("../JSON/legislator/tx_legislator.json")
+        print(os.getcwd())
+        json_file = open(os.environ["SCRIPTPATH"] +"/JSON/legislator/tx_legislator.json")
         self.legislator_json = json.load(json_file)
 
     def test_clean_values(self):

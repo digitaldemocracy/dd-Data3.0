@@ -146,8 +146,16 @@ class CommitteeInsertionManager(object):
         Inserts rows into the committee names table.
         :param committee: A committee to insert.
         '''
-        if insert_entity_with_check(db_cursor=self.dddb, entity=committee.__dict__, select_query=SELECT_COMMITTEE_NAME,
-                                    insert_query=INSERT_COMMITTEE_NAME, objType="CommitteeName", logger=self.logger):
+        if is_entity_in_db(db_cursor=self.dddb,
+                           entity=committee.__dict__,
+                           query=SELECT_COMMITTEE_NAME,
+                           objType="CommitteeName Select",
+                           logger=self.logger) == False and \
+                insert_entity(db_cursor=self.dddb,
+                              entity=committee.__dict__,
+                              insert_query=INSERT_COMMITTEE_NAME,
+                              objType="CommitteeName Insert",
+                              logger=self.logger):
             self.CN_INSERTED += 1
 
     def insert_servesOn(self, member, committee):
@@ -161,9 +169,16 @@ class CommitteeInsertionManager(object):
                                     house=committee.house,
                                     start_date=dt.datetime.today().strftime("%Y-%m-%d"),
                                     current_flag=1)
-        if insert_entity_with_check(db_cursor=self.dddb, entity=member.__dict__, select_query=SELECT_SERVES_ON,
-                                    insert_query=INSERT_SERVES_ON, objType="Committee Member ServesOn",
-                                    logger=self.logger):
+        if is_entity_in_db(db_cursor=self.dddb,
+                           entity=member.__dict__,
+                           query=SELECT_SERVES_ON,
+                           objType="Serves On Select",
+                           logger=self.logger) == False and \
+                insert_entity(db_cursor=self.dddb,
+                              entity=member.__dict__,
+                              insert_query=INSERT_SERVES_ON,
+                              objType="Serves On Insert",
+                              logger=self.logger):
             self.SO_INSERTED += 1
 
     def get_old_members(self, committee, committee_members_in_database):

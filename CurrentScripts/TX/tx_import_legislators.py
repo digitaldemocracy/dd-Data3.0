@@ -30,13 +30,13 @@ from OpenStatesParsers.OpenStatesApi import OpenStatesAPI
 if __name__ == "__main__":
     with connect() as dddb:
         logger = create_logger()
-        session_year = get_session_year(dddb, "TX", logger)
+        session_year = get_session_year(dddb, "TX", logger, True)
         parser = LegislatorOpenStateParser("TX", session_year)
         openStatesApi = OpenStatesAPI("TX")
         leg_manager = LegislatorInsertionManager(dddb, logger, "TX", session_year)
 
         legislator_json = openStatesApi.get_legislators_json()
         legislators = parser.get_legislators_list(legislator_json)
-        leg_manager.add_legislators_db(legislators)
+        leg_manager.add_legislators_db(legislators, "openstates")
         leg_manager.log()
 
