@@ -2,7 +2,9 @@
 SELECT_SESSION_YEAR = '''SELECT max(start_year) FROM Session
                          WHERE state = %(state)s
                          '''
-
+SELECT_SESSION_YEAR_LEGISLATOR = '''SELECT max(start_year) FROM LegislatorSession
+                                    WHERE state = %(state)s
+                                 '''
 SELECT_COMMITTEE_NAME = '''SELECT * FROM CommitteeNames
                            WHERE name = %(name)s
                            AND house = %(house)s
