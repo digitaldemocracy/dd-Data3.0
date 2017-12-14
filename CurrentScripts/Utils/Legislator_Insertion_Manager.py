@@ -19,17 +19,12 @@ Populates:
   - AltId (pid, altId)
   - PersonStateAffiliation (pid, state)
 '''
-import os
 import sys
 import json
-import glob
-import subprocess
-from Utils.Generic_Utils import format_absolute_path
 from Constants.Legislator_Queries import *
 from Generic_MySQL import is_entity_in_db, \
                           get_entity_id, \
                           insert_entity, \
-                          get_pid, \
                           update_entity, \
                           insert_entity_with_check
 
@@ -50,16 +45,6 @@ class LegislatorInsertionManager(object):
         self.PERSON_STATE_INSERT = 0
         self.ALTERNATE_ID_INSERT = 0
         self.ALTERNATE_NAME_INSERT = 0
-        self.PICTURE_UPLOADED = 0
-        self.directory = format_absolute_path(self.state + "_ProfilePics/")
-        if not os.path.exists(self.directory):
-            os.makedirs(self.directory)
-
-
-
-
-
-
 
     def log(self):
         '''
@@ -77,36 +62,14 @@ class LegislatorInsertionManager(object):
         self.logger.debug(LOG)
         sys.stderr.write(json.dumps(LOG))
 
-
-    def is_term_in_db(self, term):
-        '''
-        Checks to see if a term entry already exists in the DB.
-        :param term: Term model object
-        :return: id if in db, false otherwise.
-        '''
-        return is_entity_in_db(self.dddb, QS_TERM, term.__dict__, "Term", self.logger)
-
-
-    def is_leg_in_db(self, person):
-        '''
-        This function checks to see if a legislator is already in the DB.
-        :param legislator: Person model object with house and district
-        :return: id if in db, false otherwise.
-        '''
-        return get_entity_id(self.dddb, QS_LEGISLATOR, person, "Legislator", self.logger)
-
-
     def insert_person(self, legislator):
         '''
         Handles inserting a person into the Person Table
         :param person: legislator Model Object
         :return: pid if the insertion was a success, false otherwise.
         '''
-        result = insert_entity(db_cursor=self.dddb,
-                                  entity=legislator.__dict__,
-                                  qi_query=QI_PERSON,
-                                  objType="Person",
-                                  logger=self.logger)
+        result = insert_entity(db_cursor=self.dddb, entity=legislator.__dict__, insert_query=INSERT_PERSON,
+                               objType="Person", logger=self.logger)
         if result:
             self.PERSON_INSERT += 1
         return result
@@ -119,11 +82,8 @@ class LegislatorInsertionManager(object):
         :param person: A legislator model object.
         :return: The pid if successful, false otherwise.
         '''
-        result = insert_entity(db_cursor=self.dddb,
-                              entity=legislator.__dict__,
-                              qi_query=QI_PERSONSTATE,
-                              objType="PersonStateAffliation",
-                              logger=self.logger)
+        result = insert_entity(db_cursor=self.dddb, entity=legislator.__dict__, insert_query=INSERT_PERSONSTATE,
+                               objType="PersonStateAffliation", logger=self.logger)
 
         if result:
             self.PERSON_STATE_INSERT += 1
@@ -141,13 +101,10 @@ class LegislatorInsertionManager(object):
         alt_ids = legislator.alt_ids
         for alt_id in alt_ids:
             legislator.current_alt_id = str(alt_id)
-            result = insert_entity_with_check(db_cursor=self.dddb,
-                                              entity=legislator.__dict__,
-                                              qi_query=QI_ALTID,
-                                              qs_query=SELECT_ALTID,
-                                              objType="AltID",
+            result = insert_entity_with_check(db_cursor=self.dddb, entity=legislator.__dict__,
+                                              select_query=SELECT_ALTID, insert_query=INSERT_ALTID, objType="AltID",
                                               logger=self.logger)
-            if result:
+            if isinstance(result, int):
                 self.ALTERNATE_ID_INSERT += 1
 
         return result
@@ -159,11 +116,8 @@ class LegislatorInsertionManager(object):
         :param legislator: Legislator model object.
         :return: pid if insert is successful, false otherwise.
         '''
-        result = insert_entity(db_cursor=self.dddb,
-                              entity=legislator.__dict__,
-                              qi_query=QI_LEGISLATOR,
-                              objType="Legislator",
-                              logger=self.logger)
+        result = insert_entity(db_cursor=self.dddb, entity=legislator.__dict__, insert_query=INSERT_LEGISLATOR,
+                               objType="Legislator", logger=self.logger)
 
         if result:
             self.LEGISLATOR_INSERT += 1
@@ -176,16 +130,41 @@ class LegislatorInsertionManager(object):
         :param term: legislator model object
         :return:
         '''
-        result = insert_entity(db_cursor=self.dddb,
-                                 entity=legislator.__dict__,
-                                 qi_query=QI_TERM,
-                                 objType="Term",
-                                 logger=self.logger)
-        if result:
-            self.TERM_INSERT += 1
+        result = False
+        term = is_entity_in_db(db_cursor=self.dddb,
+                               entity=legislator.__dict__,
+                               query=SELECT_TERM_CURRENT_TERM,
+                               objType="Term Check",
+                               logger=self.logger)
+        if term == 0:
+            result = self.update_term(legislator, UPDATE_TERM_TO_CURRENT)
+            if result:
+                self.TERM_UPDATE += 1
+        elif term is None:
+            result = insert_entity(db_cursor=self.dddb, entity=legislator.__dict__, insert_query=INSERT_TERM,
+                                   objType="Term", logger=self.logger)
+            if result:
+                self.TERM_INSERT += 1
         return result
+    
 
-    def update_term_to_not_current(self, legislator, query):
+    def insert_alternate_names(self, legislator):
+        '''
+        Inserts legislator name into the alternate names table.
+        :legislator: legislator model object.
+        :return:
+        '''
+        result = insert_entity_with_check(db_cursor=self.dddb, entity=legislator.__dict__,
+                                          select_query=SELECT_ALT_NAMES, insert_query=INSERT_ALT_NAMES,
+                                          objType="Alternate Names", logger=self.logger)
+
+        if result:
+            self.ALTERNATE_NAME_INSERT += 1
+        return result
+    
+    
+
+    def update_term(self, legislator, query):
         '''
         Inserts term into term table
         :param term: legislator model object
@@ -208,23 +187,23 @@ class LegislatorInsertionManager(object):
                              objType="Person Update",
                              logger=self.logger)
         if result:
-            self.PERSON_UPDATE += 1
+            self.PERSON_UPDATE = 1
         return result
 
     def insert_new_legislator(self, legislator):
         '''
         Handles inserting a new legislator into all relevant tables for legislators.
-        :param legislator: Legislor
+        :param legislator: Legislator
         :return:
         '''
-        pid = self.insert_person(legislator)
-        if pid:
-            legislator.pid = pid
-            self.update_term_to_not_current(legislator, UPDATE_TERM_TO_NOT_CURRENT_DISTRICT)
-            self.insert_person_state(legislator)
-            self.insert_alt_id(legislator)
-            self.insert_legislator(legislator)
-            self.insert_term(legislator)
+        legislator.pid = self.insert_person(legislator)
+        if legislator.pid and\
+            self.update_term(legislator, UPDATE_TERM_TO_NOT_CURRENT_DISTRICT) and\
+            self.insert_person_state(legislator) and\
+            self.insert_alt_id(legislator) and\
+            self.insert_alternate_names(legislator) and\
+            self.insert_legislator(legislator) and\
+            self.insert_term(legislator):
 
             self.TERM_UPDATE += 1
             self.PERSON_INSERT += 1
@@ -239,34 +218,56 @@ class LegislatorInsertionManager(object):
                                query=SELECT_NOT_CURRENT_LEGISLATOR,
                                objType="Term Update",
                                logger=self.logger)
-    def download_profile_pic(self, legislator):
-        if legislator.image and len(legislator.image.strip()) > 0:
-            filename, file_extension = os.path.splitext(legislator.image)
-            print(filename)
-            print(file_extension)
-            print(self.directory + str(legislator.pid))
-            call = "curl " + legislator.image + " --create-dirs -o " + self.directory + "/" + str(legislator.pid) + file_extension
-            print(call)
-            subprocess.call([
-                "curl", legislator.image, "--create-dirs", "-o", self.directory + "/" + str(legislator.pid) + file_extension
-            ], shell=False)
-            #subprocess.call(call)
 
+    def find_legislator_pid(self, legislator):
+        '''
+        Checks if we already have this legislator in the alternate id
+        table.
+        :param legislator: Legislator model object
+        :return: pid or None
+        '''
+        pid = None
+        if legislator.alt_ids:
+            pid = get_entity_id(db_cursor=self.dddb,
+                                 entity=legislator.__dict__,
+                                 query=SELECT_ALTID_MULTIPLE,
+                                 objType="Find PID from Alt ID",
+                                 logger=self.logger)
+        if pid is None:
+            pid = get_entity_id(db_cursor=self.dddb,
+                             entity=legislator.__dict__,
+                             query=SELECT_LEGISLATOR_DISTRICT_HOUSE,
+                             objType="Find PID from Alt ID",
+                             logger=self.logger)
+        if pid is None:
+            pid = get_entity_id(db_cursor=self.dddb,
+                             entity=legislator.__dict__,
+                             query=SELECT_LEGISLATOR_HOUSE,
+                             objType="Find PID from Alt ID",
+                             logger=self.logger)
+        if pid is None:
+            pid = get_entity_id(db_cursor=self.dddb,
+                             entity=legislator.__dict__,
+                             query=SELECT_LEGISLATOR,
+                             objType="Find PID from Alt ID",
+                             logger=self.logger)
+        return pid
 
-    def upload_profile_pic(self):
-        print("Copying bills to S3")
-        profile_pics = glob.glob(self.directory + "/*")
-        for pic in profile_pics:
-            subprocess.call(['aws', 's3', 'cp', pic, 's3://dd-drupal-files/images/'])
+    def is_current_legislator_for_house_district(self, legislator):
+        '''
+        Gets the latest term year for the legislator.
+        Note, the legislator must already have a pid.
+        :param legislator: legislator model object
+        :return: a year or None
+        '''
+        year = get_entity_id(self.dddb,
+                           SELECT_LATEST_TERM_YEAR,
+                           legislator.__dict__,
+                           "Term Year Lookup",
+                           self.logger)
+        return year is not None and self.session_year == int(year)
 
-        # # Delete bill PDFs
-        # del_bill_pdfs = 'rm -rf ' + format_absolute_path('FL-Build/bill_PDF/') + '*.pdf'
-        #
-        # subprocess.call(del_bill_pdfs, shell=True)
-        # return 1
-
-
-    def add_legislators_db(self, legislator_list):
+    def add_legislators_db(self, legislator_list, source):
         '''
         For each legislator in the list of legislator objects, check if they are in the
         database as a legislator. If they are not, add them to all legislator tables
@@ -274,36 +275,23 @@ class LegislatorInsertionManager(object):
         :param legislator_list:
         :return:
         '''
+        count = 0
         for legislator in legislator_list:
-            pid_year_tuple = get_pid(self.dddb, self.logger, legislator, "openstates")
-            if pid_year_tuple:
-                pid = pid_year_tuple[0]
-                year = pid_year_tuple[1]
-                legislator.pid = pid
+            count += 1
+            legislator.year = self.session_year
 
-                # This is only used when naming formats change.
-                #self.update_person(legislator)
-                #self.download_profile_pic(legislator)
-                #self.upload_profile_pic()
-                #exit()
+            # If a pid is found, we already have there person data.
+            legislator.pid = self.find_legislator_pid(legislator)
+
+            if legislator.pid:
+                # Insert any new names and alt ids
+                self.insert_alternate_names(legislator)
                 self.insert_alt_id(legislator)
-
-                # If term is current but there is a new session year. Used for re-election.
-                if year != self.session_year:
-                    # TODO: Investigate why this fucked up florida when change session year to 2018
-                    # idea no restriction on state and house for update query? re election issue with get pid?
-                    self.update_term_to_not_current(legislator, UPDATE_TERM_TO_NOT_CURRENT_PID)
+                # if the legislator exist but
+                # does not have a current term
+                # for that house and district
+                if self.is_current_legislator_for_house_district(legislator) == False:
+                    self.update_term(legislator, UPDATE_TERM_TO_NOT_CURRENT_DISTRICT)
                     self.insert_term(legislator)
-            else:
-                pid = self.find_not_current_legislator(legislator)
-                #TODO: 1 am nick says this logic may not be right????
-                # you find an old legislator then make the term not current? 
-                # Nick what the fuck? -- 1 am nick
-                # ah wait update the current district term to not current then add a new district for a former legislator(now current)??
-                # --1 am nick
-                if pid:
-                    legislator.pid = pid
-                    self.update_term_to_not_current(legislator, UPDATE_TERM_TO_NOT_CURRENT_DISTRICT)
-                    self.insert_term(legislator)
-                else:
-                    self.insert_new_legislator(legislator)
+            elif legislator.pid is None:
+                self.insert_new_legislator(legislator)

@@ -206,7 +206,8 @@ def parse_lobbyist(dddb, lobFile, lobUrl):
                     lobFirm["oid"] = org["oid"]
                     lobFirm["state"] = "FL"
                     lobFirm["filer_naml"] = row[23]
-                    LF_INSERT += insert_entity_with_check(dddb, lobFirm, QS_LOBBYINGFIRM, QI_LOBBYINGFIRM, "Lobbyist Firm", logger)
+                    LF_INSERT += insert_entity_with_check(dddb, lobFirm, QS_LOBBYINGFIRM, QI_LOBBYINGFIRM,
+                                                          "Lobbyist Firm", logger)
                     
                     # Add LobbyingFirmState table info
                     lobFirm["filer_id"] = org["oid"] # use oid for unique key
@@ -221,12 +222,14 @@ def parse_lobbyist(dddb, lobFile, lobUrl):
                         lobFirm["ls_end_yr"] = int(row[34].split("/")[-1])
                     else:
                         lobFirm["ls_end_yr"] = None
-                    LFS_INSERT += insert_entity_with_check(dddb, lobFirm,  QS_LOBBYINGFIRMSTATE, QI_LOBBYINGFIRMSTATE, "Lobbyist Firm State", logger)
+                    LFS_INSERT += insert_entity_with_check(dddb, lobFirm, QS_LOBBYINGFIRMSTATE, QI_LOBBYINGFIRMSTATE,
+                                                           "Lobbyist Firm State", logger)
 
                     # Add LobbyistEmployer skipping coalition
                     # Skipping coalition
                     # Use previous filer_id
-                    LEMPLOYER_INSERT += insert_entity_with_check(dddb, lobFirm, QS_LOBBYISTEMPLOYER, QI_LOBBYISTEMPLOYER, "Lobbyist Employer", logger)
+                    LEMPLOYER_INSERT += insert_entity_with_check(dddb, lobFirm, QS_LOBBYISTEMPLOYER,
+                                                                 QI_LOBBYISTEMPLOYER, "Lobbyist Employer", logger)
                     
                     # Add LobbyistEmployment
                     lobbyist["sender_id"] = lobFirm["filer_id"]
@@ -239,7 +242,8 @@ def parse_lobbyist(dddb, lobFile, lobUrl):
                         lobbyist["ls_end_yr"] = int(row[15].split("/")[-1])
                     else:
                         lobbyist["ls_end_yr"] = 2018
-                    LEMPLOYMENT_INSERT += insert_entity_with_check(dddb, lobbyist, QS_LOBBYISTEMPLOYMENT, QI_LOBBYISTEMPLOYMENT, "Lobbyist Employment", logger)
+                    LEMPLOYMENT_INSERT += insert_entity_with_check(dddb, lobbyist, QS_LOBBYISTEMPLOYMENT,
+                                                                   QI_LOBBYISTEMPLOYMENT, "Lobbyist Employment", logger)
                     
                     # Add Organization they are representing
                     org["name"] = row[13]
@@ -272,7 +276,8 @@ def parse_lobbyist(dddb, lobFile, lobUrl):
                     # Add LobbyistEmployer in-house lobbyist use organization they are representing
                     # Skipping coalition
                     org['filer_id'] = org["oid"]
-                    LEMPLOYER_INSERT += insert_entity_with_check(dddb, org, QS_LOBBYISTEMPLOYER, QI_LOBBYISTEMPLOYER, "Lobbyist Employer", logger)
+                    LEMPLOYER_INSERT += insert_entity_with_check(dddb, org, QS_LOBBYISTEMPLOYER, QI_LOBBYISTEMPLOYER,
+                                                                 "Lobbyist Employer", logger)
 
                     # Add LobbyistEmployment
                     # NEED PID 
@@ -287,7 +292,9 @@ def parse_lobbyist(dddb, lobFile, lobUrl):
                         lobbyist["ls_end_yr"] = int(row[15].split("/")[-1])
                     else:
                         lobbyist["ls_end_yr"] = 2018
-                    LDE_INSERT += insert_entity_with_check(dddb, lobbyist, QS_LOBBYISTDIRECTEMPLOYMENT, QI_LOBBYISTDIRECTEMPLOYMENT, "Lobbyist Direct Employment", logger)
+                    LDE_INSERT += insert_entity_with_check(dddb, lobbyist, QS_LOBBYISTDIRECTEMPLOYMENT,
+                                                           QI_LOBBYISTDIRECTEMPLOYMENT, "Lobbyist Direct Employment",
+                                                           logger)
 
 
 def insert_lobbyist_db(dddb, lobbyist):

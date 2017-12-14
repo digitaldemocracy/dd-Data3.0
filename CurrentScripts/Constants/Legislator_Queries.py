@@ -1,40 +1,23 @@
-QS_LEGISLATOR = '''SELECT a.pid 
-                    FROM Term t, AlternateNames a 
-                    WHERE a.pid = t.pid
-                    AND t.state = %(state)s
-                    AND t.current_term = 1
-                    AND a.name like %(like_name)s
-                    AND t.house = %(house)s
-                    AND t.district = %(district)s
-                    GROUP BY a.pid
-                    '''
-QS_TERM = '''
-          SELECT district
-          FROM Term
-          WHERE pid=%(pid)s
-          AND state=%(state)s
-          AND year=%(year)s
-          AND house=%(house)s
-          '''
-QI_LEGISLATOR = '''
+
+INSERT_LEGISLATOR = '''
                 INSERT INTO Legislator
                   (pid,state,capitol_phone,capitol_fax,website_url,room_number)
                 VALUES
                   (%(pid)s,%(state)s,%(capitol_phone)s,%(capitol_fax)s,%(website_url)s,%(room_number)s)
                 '''
-QI_PERSON = '''
+INSERT_PERSON = '''
             INSERT INTO Person
               (first,middle,last, source, image)
             VALUES
               (%(first)s,%(middle)s,%(last)s,%(source)s,%(image)s)
             '''
-QI_PERSONSTATE = '''
+INSERT_PERSONSTATE = '''
                 INSERT INTO PersonStateAffiliation
                     (pid, state)
                 VALUES
                     (%(pid)s,%(state)s)
                  '''
-QI_ALTID = '''
+INSERT_ALTID = '''
            INSERT INTO AlternateId (pid, alt_id, source)
             VALUES (%(pid)s, %(current_alt_id)s, %(source)s)
             '''
@@ -45,6 +28,8 @@ SELECT_ALTID = '''
                WHERE pid=%(pid)s
                AND alt_id=%(current_alt_id)s
                 '''
+
+
 SELECT_ALT_NAMES = '''
                 SELECT pid
                 FROM AlternateNames
@@ -56,7 +41,7 @@ INSERT_ALT_NAMES = '''
                   '''
 
 
-QI_TERM = '''
+INSERT_TERM = '''
           INSERT INTO Term
             (pid,year,house,state,district,party,current_term, start)
           VALUES
@@ -127,3 +112,73 @@ SELECT_TERM_NO_PID = '''
                       AND year=%(year)s
                       AND house=%(house)s
                     '''
+
+SELECT_ALTID_MULTIPLE = '''
+                               SELECT t.pid 
+                               FROM AlternateId a, Term t 
+                               WHERE a.alt_id in %(alt_ids)s 
+                               and a.pid = t.pid 
+                               and t.state = %(state)s
+                               group by t.pid
+                            '''
+
+
+SELECT_LEGISLATOR_DISTRICT_HOUSE = '''SELECT a.pid 
+                                    FROM Term t, AlternateNames a 
+                                    WHERE a.pid = t.pid
+                                    AND t.state = %(state)s
+                                    AND a.name like %(like_name)s
+                                    AND t.house = %(house)s
+                                    AND t.district = %(district)s
+                                    GROUP BY a.pid
+                                    '''
+
+SELECT_LEGISLATOR_HOUSE = '''SELECT a.pid 
+                            FROM Term t, AlternateNames a 
+                            WHERE a.pid = t.pid
+                            AND t.state = %(state)s
+                            AND a.name like %(like_name)s
+                            AND t.house = %(house)s
+                            GROUP BY a.pid
+                            '''
+
+SELECT_LEGISLATOR = '''SELECT a.pid 
+                        FROM Term t, AlternateNames a 
+                        WHERE a.pid = t.pid
+                        AND t.state = %(state)s
+                        AND a.name like %(like_name)s
+                        GROUP BY a.pid
+                        '''
+
+SELECT_LATEST_TERM_YEAR = '''
+                            SELECT MAX(t.year)
+                            FROM Term t
+                            WHERE t.pid = %(pid)s
+                            AND t.state = %(state)s
+                            AND t.house = %(house)s
+                            AND t.district = %(district)s
+                            AND t.current_term = 1
+                            '''
+
+SELECT_TERM_CURRENT_TERM = '''
+                SELECT current_term
+                FROM Term
+                WHERE district=%(district)s
+                AND state=%(state)s
+                AND year=%(year)s
+                AND house=%(house)s
+                AND pid = %(pid)s
+              '''
+
+
+UPDATE_TERM_TO_CURRENT = '''
+                            UPDATE Term
+                            SET current_term = 1
+                            WHERE pid=%(pid)s
+                            AND district=%(district)s
+                            AND state=%(state)s
+                            AND year=%(year)s
+                            AND house=%(house)s
+                            AND current_term = 0
+                          '''
+
