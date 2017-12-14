@@ -79,16 +79,12 @@ class CommitteeInsertionManager(object):
             pid = False
             if member.pid is None:
                 if member.alt_id is None:
-                    pid_year_tuple = get_pid(self.dddb, self.logger, member, committee.link)
-                    if pid_year_tuple:
-                        pid = pid_year_tuple[0]
+                    pid = get_pid(self.dddb, self.logger, member, committee.link)
                 else:
                     try:
                         self.dddb.execute(SELECT_PID, member.__dict__)
                         if self.dddb.rowcount == 0:
-                            pid_year_tuple = get_pid(self.dddb, self.logger, member, committee.link)
-                            if pid_year_tuple:
-                                pid = pid_year_tuple[0]
+                            pid = get_pid(self.dddb, self.logger, member, committee.link)
                         else:
                             pid = self.dddb.fetchone()[0]
 

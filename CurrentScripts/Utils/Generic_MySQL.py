@@ -166,4 +166,4 @@ def get_pid(dddb, logger, person, source_link=None, strict=False):
         #                          qi_query=INSERT_ALTERNATE_NAME,
         #                          objType="Alternate Name",
         #                          logger=logger)
-    return pid_year_tuple
+    return pid
