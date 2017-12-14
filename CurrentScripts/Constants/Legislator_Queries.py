@@ -45,6 +45,16 @@ SELECT_ALTID = '''
                WHERE pid=%(pid)s
                AND alt_id=%(current_alt_id)s
                 '''
+SELECT_ALT_NAMES = '''
+                SELECT pid
+                FROM AlternateNames
+                WHERE pid = %(pid)s AND name = %(alternate_name)s
+               '''
+INSERT_ALT_NAMES = '''
+                  INSERT INTO AlternateNames (pid, name, source)
+                    VALUES (%(pid)s, %(alternate_name)s, %(source)s)
+                  '''
+
 
 QI_TERM = '''
           INSERT INTO Term
