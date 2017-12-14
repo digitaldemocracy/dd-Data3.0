@@ -74,10 +74,7 @@ class BillInsertionManager(object):
         :param bill: A dictionary returned by a Bill object's to_dict method
         :return: True if the insert succeeds, false otherwise
         """
-        return insert_entity(db_cursor=self.dddb,
-                             entity=bill,
-                             qi_query=INSERT_BILL,
-                             objType="Bill",
+        return insert_entity(db_cursor=self.dddb, entity=bill, insert_query=INSERT_BILL, objType="Bill",
                              logger=self.logger)
 
     def update_bill_status(self, bill):
@@ -117,17 +114,11 @@ class BillInsertionManager(object):
 
             motion['mid'] = mid
 
-            return insert_entity(db_cursor=self.dddb,
-                                 entity=motion,
-                                 qi_query=INSERT_MOTION,
-                                 objType="Motion",
+            return insert_entity(db_cursor=self.dddb, entity=motion, insert_query=INSERT_MOTION, objType="Motion",
                                  logger=self.logger)
         else:
             if not self.check_motion(motion):
-                return insert_entity(db_cursor=self.dddb,
-                                     entity=motion,
-                                     qi_query=INSERT_MOTION,
-                                     objType="Motion",
+                return insert_entity(db_cursor=self.dddb, entity=motion, insert_query=INSERT_MOTION, objType="Motion",
                                      logger=self.logger)
 
     def import_motions(self, motion_list):
@@ -152,11 +143,8 @@ class BillInsertionManager(object):
         :param vote: A dictionary returned by a Vote object's to_dict method
         :return: True if the insert succeeds, false otherwise
         """
-        return insert_entity(db_cursor=self.dddb,
-                             entity=vote,
-                             qi_query=INSERT_BILL_VOTE_SUMMARY,
-                             objType="BillVoteSummary",
-                             logger=self.logger)
+        return insert_entity(db_cursor=self.dddb, entity=vote, insert_query=INSERT_BILL_VOTE_SUMMARY,
+                             objType="BillVoteSummary", logger=self.logger)
 
     def is_bill_vote_detail_in_db(self, vote_detail):
         """
@@ -172,11 +160,8 @@ class BillInsertionManager(object):
         :param vote_detail: A dictionary returned by a VoteDetail object's to_dict method
         :return: True if the vote detail is in the database, false otherwise
         """
-        return insert_entity(db_cursor=self.dddb,
-                             entity=vote_detail,
-                             qi_query=INSERT_BILL_VOTE_DETAIL,
-                             objType="BillVoteDetail",
-                             logger=self.logger)
+        return insert_entity(db_cursor=self.dddb, entity=vote_detail, insert_query=INSERT_BILL_VOTE_DETAIL,
+                             objType="BillVoteDetail", logger=self.logger)
 
     def is_version_in_db(self, version):
         """
@@ -192,10 +177,7 @@ class BillInsertionManager(object):
         :param version: A dictionary returned by a Version object's to_dict method
         :return: True if the vote detail is in the database, false otherwise
         """
-        return insert_entity(db_cursor=self.dddb,
-                             entity=version,
-                             qi_query=INSERT_VERSION,
-                             objType="BillVersion",
+        return insert_entity(db_cursor=self.dddb, entity=version, insert_query=INSERT_VERSION, objType="BillVersion",
                              logger=self.logger)
 
     def check_version_text(self, version):
@@ -244,10 +226,7 @@ class BillInsertionManager(object):
         :param action: A dictionary returned from an Action object's to_dict method
         :return: True if the insert succeeds, false otherwise
         """
-        return insert_entity(db_cursor=self.dddb,
-                             entity=action,
-                             qi_query=INSERT_ACTION,
-                             objType="Action",
+        return insert_entity(db_cursor=self.dddb, entity=action, insert_query=INSERT_ACTION, objType="Action",
                              logger=self.logger)
 
     def check_action_text(self, action):

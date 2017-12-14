@@ -57,19 +57,13 @@ class LobbyistInsertionManager(object):
                               objType="Lobbyist",
                               logger=self.logger)
         if not pid:
-            pid = insert_entity(db_cursor=self.dddb,
-                                entity=lobbyist.__dict__,
-                                qi_query=INSERT_PERSON,
-                                objType="Lobbyist",
-                                logger=self.logger)
+            pid = insert_entity(db_cursor=self.dddb, entity=lobbyist.__dict__, insert_query=INSERT_PERSON,
+                                objType="Lobbyist", logger=self.logger)
             self.person += 1
             if pid:
                 lobbyist.pid = pid
-                if not insert_entity(db_cursor=self.dddb,
-                                entity=lobbyist.__dict__,
-                                qi_query=INSERT_LOBBYIST,
-                                objType="Lobbyist",
-                                logger=self.logger):
+                if not insert_entity(db_cursor=self.dddb, entity=lobbyist.__dict__, insert_query=INSERT_LOBBYIST,
+                                     objType="Lobbyist", logger=self.logger):
                     return False
                 self.lobbyist += 1
         return pid
@@ -84,24 +78,18 @@ class LobbyistInsertionManager(object):
             oid = self.insert_organization(lobbyist.employer_dict())
             if oid:
                 lobbyist.employer_oid = oid
-                result = insert_entity_with_check(db_cursor=self.dddb,
-                                                entity=lobbyist.__dict__,
-                                                qs_query=SELECT_NAME_LOBBYINGFIRM,
-                                                qi_query=INSERT_LOBBYINGFIRM,
-                                                objType="LobbyingFirm",
-                                                logger=self.logger) # and \
-                result2 = insert_entity_with_check(db_cursor=self.dddb,
-                                                entity=lobbyist.__dict__,
-                                                qs_query=SELECT_NAME_LOBBYINGFIRMSTATE,
-                                                qi_query=INSERT_LOBBYINGFIRMSTATE,
-                                                objType="LobbyingFirmState",
-                                                logger=self.logger) #and \
-                result3 =insert_entity_with_check(db_cursor=self.dddb,
-                                                entity=lobbyist.__dict__,
-                                                qs_query=SELECT_LOBBYISTEMPLOYMENT,
-                                                qi_query=INSERT_LOBBYISTEMPLOYMENT,
-                                                objType="Lobbyist Employment",
-                                                logger=self.logger)
+                result = insert_entity_with_check(db_cursor=self.dddb, entity=lobbyist.__dict__,
+                                                  select_query=SELECT_NAME_LOBBYINGFIRM,
+                                                  insert_query=INSERT_LOBBYINGFIRM, objType="LobbyingFirm",
+                                                  logger=self.logger)  # and \
+                result2 = insert_entity_with_check(db_cursor=self.dddb, entity=lobbyist.__dict__,
+                                                   select_query=SELECT_NAME_LOBBYINGFIRMSTATE,
+                                                   insert_query=INSERT_LOBBYINGFIRMSTATE, objType="LobbyingFirmState",
+                                                   logger=self.logger)  #and \
+                result3 = insert_entity_with_check(db_cursor=self.dddb, entity=lobbyist.__dict__,
+                                                   select_query=SELECT_LOBBYISTEMPLOYMENT,
+                                                   insert_query=INSERT_LOBBYISTEMPLOYMENT,
+                                                   objType="Lobbyist Employment", logger=self.logger)
                 if result and result2 and result3:
                     self.lobbying_firm += 1
                     self.lobbying_firm_state += 1
@@ -116,30 +104,22 @@ class LobbyistInsertionManager(object):
         :param org_dict: either the client or employer dictionary from the lobbyist model.
         :return: the oid if successful, false otherwise.
         '''
-        return insert_entity_with_check(db_cursor=self.dddb,
-                                        entity=org_dict,
-                                        qi_query=INSERT_ORGANIZATION,
-                                        qs_query=SELECT_OID_ORGANIZATION,
-                                        objType="Organization",
-                                        logger=self.logger)
+        return insert_entity_with_check(db_cursor=self.dddb, entity=org_dict, select_query=SELECT_OID_ORGANIZATION,
+                                        insert_query=INSERT_ORGANIZATION, objType="Organization", logger=self.logger)
 
     def insert_direct_employment(self, lobbyist):
         '''
         Inserts the lobbyist data into the direct employment tables.
         :param lobbyist: Lobbyist model object
         '''
-        result = insert_entity_with_check(db_cursor=self.dddb,
-                                            entity=lobbyist.__dict__,
-                                            qs_query=SELECT_OID_LOBBYISTEMPLOYER,
-                                            qi_query=INSERT_LOBBYISTEMPLOYER,
-                                            objType="Lobbyist Employer",
-                                            logger=self.logger) and \
-               insert_entity_with_check(db_cursor=self.dddb,
-                                        entity=lobbyist.__dict__,
-                                        qi_query=INSERT_LOBBYISTDIRECTEMPLOYMENT,
-                                        qs_query=SELECT_PID_LOBBYISTDIRECTEMPLOYMENT,
-                                        objType="Lobbyist Direct Employment",
-                                        logger=self.logger)
+        result = insert_entity_with_check(db_cursor=self.dddb, entity=lobbyist.__dict__,
+                                          select_query=SELECT_OID_LOBBYISTEMPLOYER,
+                                          insert_query=INSERT_LOBBYISTEMPLOYER, objType="Lobbyist Employer",
+                                          logger=self.logger) and \
+                 insert_entity_with_check(db_cursor=self.dddb, entity=lobbyist.__dict__,
+                                          select_query=SELECT_PID_LOBBYISTDIRECTEMPLOYMENT,
+                                          insert_query=INSERT_LOBBYISTDIRECTEMPLOYMENT,
+                                          objType="Lobbyist Direct Employment", logger=self.logger)
         if result:
             self.lobbyist_employer += 1
             self.lobbyist_direct_employment += 1
@@ -150,12 +130,10 @@ class LobbyistInsertionManager(object):
         If we do not know a lobbyist employer then the lobbyist is inserted into
         :param lobbyist: Lobbyist model object
         '''
-        result = insert_entity_with_check(db_cursor=self.dddb,
-                                        entity=lobbyist.__dict__,
-                                        qi_query=INSERT_LOBBYISTCONTRACTWORK,
-                                        qs_query=SELECT_OID_LOBBYISTCONTRACKWORK,
-                                        objType="Lobbyist Contract Work",
-                                        logger=self.logger)
+        result = insert_entity_with_check(db_cursor=self.dddb, entity=lobbyist.__dict__,
+                                          select_query=SELECT_OID_LOBBYISTCONTRACKWORK,
+                                          insert_query=INSERT_LOBBYISTCONTRACTWORK, objType="Lobbyist Contract Work",
+                                          logger=self.logger)
         if result:
             self.lobbying_contract_work += 1
 

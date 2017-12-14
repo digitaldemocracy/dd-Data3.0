@@ -113,11 +113,8 @@ class WitnessListInsertionManager(object):
         :param witness: witness Model Object
         :return: pid if the insertion was a success, false otherwise.
         '''
-        result = insert_entity(db_cursor=self.dddb,
-                                  entity=witness.__dict__,
-                                  qi_query=INSERT_PERSON,
-                                  objType="Person",
-                                  logger=self.logger)
+        result = insert_entity(db_cursor=self.dddb, entity=witness.__dict__, insert_query=INSERT_PERSON,
+                               objType="Person", logger=self.logger)
         if result or result >= 0:
             self.PERSON_INSERT += 1
         return result
@@ -128,11 +125,8 @@ class WitnessListInsertionManager(object):
         :param person: Witness Model Object
         :return: oid if the insertion was a success, false otherwise.
         '''
-        result = insert_entity(db_cursor=self.dddb,
-                                  entity=witness.__dict__,
-                                  qi_query=INSERT_ORGANIZATIONS,
-                                  objType="Person",
-                                  logger=self.logger)
+        result = insert_entity(db_cursor=self.dddb, entity=witness.__dict__, insert_query=INSERT_ORGANIZATIONS,
+                               objType="Person", logger=self.logger)
         if result or result >= 0:
             self.ORGANIZATION_INSERT += 1
         return result
@@ -145,11 +139,8 @@ class WitnessListInsertionManager(object):
         :param person: A witness model object.
         :return: The pid if successful, false otherwise.
         '''
-        result = insert_entity(db_cursor=self.dddb,
-                              entity=witness.__dict__,
-                              qi_query=INSERT_PERSONSTATE,
-                              objType="PersonStateAffliation",
-                              logger=self.logger)
+        result = insert_entity(db_cursor=self.dddb, entity=witness.__dict__, insert_query=INSERT_PERSONSTATE,
+                               objType="PersonStateAffliation", logger=self.logger)
 
         if result:
             self.PERSON_STATE_INSERT += 1
@@ -165,11 +156,8 @@ class WitnessListInsertionManager(object):
         :param witness: Witness model object.
         :return: pid if insert is successful, false otherwise.
         '''
-        result = insert_entity(db_cursor=self.dddb,
-                              entity=witness.__dict__,
-                              qi_query=INSERT_WITNESS,
-                              objType="Witness",
-                              logger=self.logger)
+        result = insert_entity(db_cursor=self.dddb, entity=witness.__dict__, insert_query=INSERT_WITNESS,
+                               objType="Witness", logger=self.logger)
 
         if result or result >= 0:
             self.WITNESS_INSERT += 1
@@ -181,11 +169,8 @@ class WitnessListInsertionManager(object):
                 :param witness: Witness model object.
                 :return: pid if insert is successful, false otherwise.
                 '''
-        result = insert_entity(db_cursor=self.dddb,
-                               entity=witness.__dict__,
-                               qi_query=INSERT_WITNESS_ORGS,
-                               objType="Witness",
-                               logger=self.logger)
+        result = insert_entity(db_cursor=self.dddb, entity=witness.__dict__, insert_query=INSERT_WITNESS_ORGS,
+                               objType="Witness", logger=self.logger)
 
         if result or result >= 0:
             self.WITNESS_ORG_INSERT += 1

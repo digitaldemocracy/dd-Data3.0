@@ -74,34 +74,25 @@ class BillAuthorInsertionManager(object):
                              logger=self.logger)
 
     def insert_bill_sponsor(self, bill_author):
-        result = insert_entity_with_check(db_cursor=self.dddb,
-                                         entity=bill_author.__dict__,
-                                         qs_query=SELECT_PID_BILL_SPONSORS,
-                                         qi_query=INSERT_BILL_SPONSORS,
-                                         objType="Bill Sponsor",
-                                         logger=self.logger)
+        result = insert_entity_with_check(db_cursor=self.dddb, entity=bill_author.__dict__,
+                                          select_query=SELECT_PID_BILL_SPONSORS, insert_query=INSERT_BILL_SPONSORS,
+                                          objType="Bill Sponsor", logger=self.logger)
         if result:
             self.BILL_SPONSOR_INSERTS += 1
         return result
 
     def insert_bill_sponsor_roll(self, bill_author):
-        result = insert_entity_with_check(db_cursor=self.dddb,
-                                         entity=bill_author.__dict__,
-                                         qs_query=SELECT_BILL_SPONSOR_ROLL,
-                                         qi_query=INSERT_BILL_SPONSOR_ROLLS,
-                                         objType="Bill Sponsor Roll",
-                                         logger=self.logger)
+        result = insert_entity_with_check(db_cursor=self.dddb, entity=bill_author.__dict__,
+                                          select_query=SELECT_BILL_SPONSOR_ROLL, insert_query=INSERT_BILL_SPONSOR_ROLLS,
+                                          objType="Bill Sponsor Roll", logger=self.logger)
         if result:
             self.BILL_SPONSOR_ROLL_INSERTS += 1
         return result
 
     def insert_author(self, bill_author):
-        result = insert_entity_with_check(db_cursor=self.dddb,
-                                         entity=bill_author.__dict__,
-                                         qs_query=SELECT_PID_AUTHORS,
-                                         qi_query=INSERT_AUTHORS,
-                                         objType="Author",
-                                         logger=self.logger)
+        result = insert_entity_with_check(db_cursor=self.dddb, entity=bill_author.__dict__,
+                                          select_query=SELECT_PID_AUTHORS, insert_query=INSERT_AUTHORS,
+                                          objType="Author", logger=self.logger)
         if result:
             self.AUTHOR_INSERTS += 1
         return result
@@ -147,12 +138,9 @@ class BillAuthorInsertionManager(object):
 
 
     def insert_committee_author(self, bill_author):
-        result = insert_entity_with_check(db_cursor=self.dddb,
-                                        entity=bill_author.__dict__,
-                                        qs_query=SELECT_CID_COMMITTEE_AUTHOR,
-                                        qi_query=INSERT_COMMITTEE_AUTHORS,
-                                        objType="Author",
-                                        logger=self.logger)
+        result = insert_entity_with_check(db_cursor=self.dddb, entity=bill_author.__dict__,
+                                          select_query=SELECT_CID_COMMITTEE_AUTHOR,
+                                          insert_query=INSERT_COMMITTEE_AUTHORS, objType="Author", logger=self.logger)
         if result:
             self.COMMITTEE_AUTHOR_INSERTS += 1
         return result

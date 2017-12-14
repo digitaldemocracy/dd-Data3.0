@@ -123,11 +123,8 @@ class CommitteeInsertionManager(object):
         :param committee: A Committee model objects.
         :return: The cid
         '''
-        cid = insert_entity(db_cursor=self.dddb,
-                         entity=committee.__dict__,
-                         qi_query=INSERT_COMMITTEE,
-                         objType="Committee",
-                         logger=self.logger)
+        cid = insert_entity(db_cursor=self.dddb, entity=committee.__dict__, insert_query=INSERT_COMMITTEE,
+                            objType="Committee", logger=self.logger)
         if cid:
             self.C_INSERTED += 1
         else:
@@ -153,12 +150,8 @@ class CommitteeInsertionManager(object):
         Inserts rows into the committee names table.
         :param committee: A committee to insert.
         '''
-        if insert_entity_with_check(db_cursor=self.dddb,
-                                    entity=committee.__dict__,
-                                    qs_query=SELECT_COMMITTEE_NAME,
-                                    qi_query=INSERT_COMMITTEE_NAME,
-                                    objType="CommitteeName",
-                                    logger=self.logger):
+        if insert_entity_with_check(db_cursor=self.dddb, entity=committee.__dict__, select_query=SELECT_COMMITTEE_NAME,
+                                    insert_query=INSERT_COMMITTEE_NAME, objType="CommitteeName", logger=self.logger):
             self.CN_INSERTED += 1
 
     def insert_servesOn(self, member, committee):
@@ -172,11 +165,8 @@ class CommitteeInsertionManager(object):
                                     house=committee.house,
                                     start_date=dt.datetime.today().strftime("%Y-%m-%d"),
                                     current_flag=1)
-        if insert_entity_with_check(db_cursor=self.dddb,
-                                    entity=member.__dict__,
-                                    qs_query=SELECT_SERVES_ON,
-                                    qi_query=INSERT_SERVES_ON,
-                                    objType="Committee Member ServesOn",
+        if insert_entity_with_check(db_cursor=self.dddb, entity=member.__dict__, select_query=SELECT_SERVES_ON,
+                                    insert_query=INSERT_SERVES_ON, objType="Committee Member ServesOn",
                                     logger=self.logger):
             self.SO_INSERTED += 1
 

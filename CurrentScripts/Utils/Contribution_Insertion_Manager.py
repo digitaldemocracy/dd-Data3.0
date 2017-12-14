@@ -111,7 +111,7 @@ class ContributionInsertionManager(object):
         """
         org = {'name': name, 'state': self.state}
 
-        oid = insert_entity(self.dddb, org, INSERT_ORGANIZATION,'Organization', self.logger)
+        oid = insert_entity(self.dddb, org, INSERT_ORGANIZATION, 'Organization', self.logger)
 
         if oid is False:
             return False
