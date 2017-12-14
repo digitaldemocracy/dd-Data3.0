@@ -436,7 +436,7 @@ CREATE TABLE BipartisanshipScores(
   no_abstain_votes bool,
   no_resolutions bool,
   no_unanimous bool,
-  session_year enum('2015', '2017', 'All'),
+  session_year enum('2015', '2017', 'All')
 
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
@@ -494,7 +494,7 @@ CREATE TABLE LegParticipationVerbal_analyt (
   leg_time_in_hours DOUBLE,
   avg_word_count    DOUBLE,
   avg_time_in_hours DOUBLE,
-  PRIMARY KEY (pid, session_year),
+  PRIMARY KEY (pid, session_year)
 )
   ENGINE = InnoDB
   DEFAULT CHARSET = latin1;
@@ -522,6 +522,33 @@ CREATE TABLE IF NOT EXISTS LegislativeSuccessRates_analyt (
 
   PRIMARY KEY (pid, session_year),
   FOREIGN KEY (pid) REFERENCES Person (pid)
+)
+  ENGINE = INNODB
+  CHARACTER SET utf8
+  COLLATE utf8_general_ci;
+
+
+CREATE TABLE IF NOT EXISTS EngagementScores_analyt(
+  pid           INT,
+  session_year  YEAR,
+  engagements INT, -- Raw count of the # of engagements by the legislator
+
+  PRIMARY KEY (pid, session_year),
+  FOREIGN KEY (pid) REFERENCES Person (pid)
+)
+  ENGINE = INNODB
+  CHARACTER SET utf8
+  COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS EngagementScores_analyt(
+  pid           INT,
+  hid           INT,
+  session_year  YEAR,
+  engagements INT, -- Raw count of the # of engagements by the legislator
+
+  PRIMARY KEY (pid, session_year),
+  FOREIGN KEY (pid) REFERENCES Person (pid),
+  FOREIGN KEY (hid) REFERENCES Hearing (hid)
 )
   ENGINE = INNODB
   CHARACTER SET utf8

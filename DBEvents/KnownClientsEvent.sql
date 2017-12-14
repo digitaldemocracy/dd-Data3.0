@@ -107,9 +107,6 @@ DO
       ) THOUSANDS
       ) SEQ;
 
-    ALTER TABLE NumRange
-      ADD INDEX seq_idx (SeqValue);
-
     DROP TABLE IF EXISTS KnownClientsTmp;
     CREATE TABLE KnownClientsTmp
     AS

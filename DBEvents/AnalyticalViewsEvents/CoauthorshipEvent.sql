@@ -41,7 +41,7 @@ DO
       SELECT
         pid,
         session_year,
-        count(*) AS count
+        count(distinct bid) AS count
       FROM BillCoauthors
       GROUP BY pid, session_year;
 
@@ -50,7 +50,7 @@ DO
       SELECT
         pid,
         session_year,
-        count(*) AS count
+        count(distinct bid) AS count
       FROM BillCoauthors
       WHERE party = co_party
       GROUP BY pid, session_year;
@@ -60,7 +60,7 @@ DO
       SELECT
         pid,
         session_year,
-        count(*) AS count
+        count(distinct bid) AS count
       FROM BillCoauthors
       WHERE party != co_party
       GROUP BY pid, session_year;
@@ -71,7 +71,7 @@ DO
       SELECT
         co_pid,
         session_year,
-        count(*) AS count
+        count(distinct bid) AS count
       FROM BillCoauthors
       GROUP BY co_pid, session_year;
 
@@ -80,7 +80,7 @@ DO
       SELECT
         co_pid,
         session_year,
-        count(*) AS count
+        count(distinct bid) AS count
       FROM BillCoauthors
       WHERE party = co_party
       GROUP BY co_pid, session_year;
@@ -90,7 +90,7 @@ DO
       SELECT
         co_pid,
         session_year,
-        count(*) AS count
+        count(distinct bid) AS count
       FROM BillCoauthors
       WHERE party != co_party
       GROUP BY co_pid, session_year;
