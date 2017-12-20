@@ -40,7 +40,7 @@ SELECT_COMMITTEE_MEMBERS = '''SELECT pid FROM servesOn
                             WHERE house = %(house)s
                             AND cid = %(cid)s
                             AND state = %(state)s
-                            AND current_flag = true
+                            AND current_flag = 1
                             AND year = %(session_year)s'''
 
 SELECT_HOUSE_MEMBERS = '''SELECT p.pid FROM Person p

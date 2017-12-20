@@ -127,7 +127,7 @@ def get_pid(dddb, logger, person, source_link=None, strict=False):
     else:
        query = SELECT_LEG_FIRSTLAST
 
-    pid = get_entity(db_cursor=dddb,
+    pid = get_entity_id(db_cursor=dddb,
                                     entity=person.__dict__,
                                     query=query,
                                     objType="Get PID",
