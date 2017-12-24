@@ -130,24 +130,24 @@ class LegislatorOpenStateParser(object):
             entry["first_name"] = name["first"]
             entry["last_name"] = name["last"]
 
+            if "district" in entry:
+                legislator = Legislator(name = name,
+                                        image = entry["photo_url"],
+                                        source = "openstates",
+                                        alt_ids = entry["all_ids"],
+                                        year=self.session_year,
+                                        house=entry["house"],
+                                        district=str(entry["district"]),
+                                        party=self.set_party(entry),
+                                        start=datetime.date.today(),
+                                        current_term=1,
+                                        state = self.state,
+                                        website_url = entry["url"],
+                                        capitol_phone = office_info["capitol_phone"],
+                                        capitol_fax = office_info["capitol_fax"],
+                                        room_number = None,
+                                        email = self.construct_email(entry))
 
-            legislator = Legislator(name = name,
-                                    image = entry["photo_url"],
-                                    source = "openstates",
-                                    alt_ids = entry["all_ids"],
-                                    year=self.session_year,
-                                    house=entry["house"],
-                                    district=str(entry["district"]) if "district" in entry else 0,
-                                    party=self.set_party(entry),
-                                    start=datetime.date.today(),
-                                    current_term=1,
-                                    state = self.state,
-                                    website_url = entry["url"],
-                                    capitol_phone = office_info["capitol_phone"],
-                                    capitol_fax = office_info["capitol_fax"],
-                                    room_number = None,
-                                    email = self.construct_email(entry))
-
-            legislators.append(legislator)
+                legislators.append(legislator)
 
         return legislators

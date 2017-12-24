@@ -50,6 +50,20 @@ class TestLegislatorOpenStateParser(TestCase):
 
         self.assertEqual(result, expected)
 
+    def test_get_office_info_fail(self):
+        offices = [{"fax": "49502989kdjkf",
+                    "name": "District Office",
+                    "phone": "nononono",
+                    "address": "blah",
+                    "type": "district",
+                    "email": None}]
+
+        expected = None
+
+        result = self.parser.get_office_info(offices)
+
+        self.assertEqual(result, expected)
+
 
     def test_set_party_dem(self):
         leg = {"party" : "Democratic"}
@@ -142,36 +156,23 @@ class TestLegislatorOpenStateParser(TestCase):
         result = self.parser.construct_email(leg)
         self.assertEqual(result, expected)
 
+    def test_construct_email_unknown(self):
+        self.parser.state = "asdf"
+        leg = {"first_name": "Jerry",
+               "last_name": "Smith",
+               "house": "House"}
+        expected = "N/A"
+        result = self.parser.construct_email(leg)
+        self.assertEqual(result, expected)
+
 
     def test_get_legislators_list(self):
         self.parser.state = "TX"
         expected = list()
-        expected.append(Legislator(name = {"first" : u"Dan",
-                                           "last": u"Patrick",
-                                           "nickname": None,
-                                           "middle": None,
-                                           "suffix": None,
-                                           "like_name": u"Dan%Patrick",
-                                           "like_last_name": u"%Patrick",
-                                           "like_first_name": u"Dan%",
-                                           "like_nick_name": u"%Patrick",
-                                           "title": None
-                                           },
-                                    image = u"danp.jpg",
-                                    source = "openstates",
-                                    alt_ids = ["1","2","3"],
-                                    year=2017,
-                                    house= "Senate",
-                                    district= 0,
-                                    party= "Other",
-                                    start=datetime.date.today(),
-                                    current_term=1,
-                                    state = "TX",
-                                    website_url = "dan.org",
-                                    capitol_phone = "N/A",
-                                    capitol_fax = "N/A",
-                                    room_number = None,
-                                    email = "Dan.Patrick@senate.texas.gov"))
+        # Note: The json file has three people.
+        # Dan patrick is Lieutenant Governor and
+        # does not have a district so we do not
+        # include him.
         expected.append(Legislator(name={"first" : "Alma",
                                            "last": "Allen",
                                            "nickname": None,
@@ -225,18 +226,18 @@ class TestLegislatorOpenStateParser(TestCase):
         result = self.parser.get_legislators_list(self.legislator_json)
         self.assertEqual(result, expected)
 
-    def compare_dict(self, expected, result):
-        '''
-        Given two list of legislator objects iterate
-        through them and compare there values.
-        if a value is different print them.
-        :param expected: list of legislator objects
-        :param result: list of legislator objects
-        '''
-        for i in range(len(result)):
-            for key in result[i].__dict__:
-                if result[i].__dict__[key] != expected[i].__dict__[key]:
-                    print(i, " ", key, " Failed: ", result[i].__dict__[key], " != ", expected[i].__dict__[key])
+    # def compare_dict(self, expected, result):
+    #     '''
+    #     Given two list of legislator objects iterate
+    #     through them and compare there values.
+    #     if a value is different print them.
+    #     :param expected: list of legislator objects
+    #     :param result: list of legislator objects
+    #     '''
+    #     for i in range(len(result)):
+    #         for key in result[i].__dict__:
+    #             if result[i].__dict__[key] != expected[i].__dict__[key]:
+    #                 print(i, " ", key, " Failed: ", result[i].__dict__[key], " != ", expected[i].__dict__[key])
 
 
 
