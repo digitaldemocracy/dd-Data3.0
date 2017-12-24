@@ -15,12 +15,7 @@ Source:
 """
 
 import sys
-import json
-import requests
-from Models.Term import *
-from Models.Person import *
-from Models.Legislator import *
-from Constants.General_Constants import *
+from Models.Legislator import Legislator
 from Utils.Generic_Utils import clean_name
 import datetime
 
@@ -103,7 +98,7 @@ class LegislatorOpenStateParser(object):
             return legislator["last_name"] + "." + legislator["first_name"] + self.emails["fl_" + legislator["house"].lower()]
         elif self.state == "TX":
             return legislator["first_name"] + "." + legislator["last_name"] + self.emails["tx_" + legislator["house"].lower()]
-
+        return "N/A"
 
     def get_legislators_list(self, legislator_json):
         '''
