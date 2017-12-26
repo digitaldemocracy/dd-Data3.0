@@ -57,8 +57,8 @@ class LegislatorOpenStateParser(object):
         else:
             for office in offices:
                 if office["type"] == "capitol":
-                    return {"capitol_phone": str(office["phone"]),
-                            "capitol_fax": str(office["fax"])}
+                    return {"capitol_phone": str(office["phone"]) if office["phone"] != None else "N/A",
+                            "capitol_fax": str(office["fax"]) if office["fax"] != None else "N/A"}
 
     def set_house(self, legislator):
         '''
@@ -95,7 +95,10 @@ class LegislatorOpenStateParser(object):
         if "house" not in legislator or legislator["house"] == "N/A":
             return "N/A"
         elif self.state == "FL":
-            return legislator["last_name"] + "." + legislator["first_name"] + self.emails["fl_" + legislator["house"].lower()]
+            if legislator["house"].lower() == "senate":
+                return legislator["last_name"] + "." + legislator["first_name"] + self.emails["fl_senate"]
+            else:
+                return legislator["first_name"] + "." + legislator["last_name"] + self.emails["fl_house"]
         elif self.state == "TX":
             return legislator["first_name"] + "." + legislator["last_name"] + self.emails["tx_" + legislator["house"].lower()]
         return "N/A"
@@ -118,6 +121,9 @@ class LegislatorOpenStateParser(object):
                           entry["middle_name"],
                           entry["last_name"],
                           entry["suffixes"]]
+            print(name_parts)
+            print(office_info)
+
 
             name_parts = [name_part for name_part in name_parts if name_part]
 
@@ -140,7 +146,7 @@ class LegislatorOpenStateParser(object):
                                         website_url = entry["url"],
                                         capitol_phone = office_info["capitol_phone"],
                                         capitol_fax = office_info["capitol_fax"],
-                                        room_number = None,
+                                        room_number = "N/A",
                                         email = self.construct_email(entry))
 
                 legislators.append(legislator)

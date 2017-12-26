@@ -13,7 +13,6 @@ import os
 class TestLegislatorOpenStateParser(TestCase):
     def setUp(self):
         self.parser = LegislatorOpenStateParser("TX", 2017)
-        print(os.getcwd())
         json_file = open(os.environ["SCRIPTPATH"] +"/JSON/legislator/tx_legislator.json")
         self.legislator_json = json.load(json_file)
 
@@ -125,7 +124,7 @@ class TestLegislatorOpenStateParser(TestCase):
         leg = {"first_name": "Jerry",
                "last_name": "Smith",
                "house": "House"}
-        expected = "Smith.Jerry@myfloridahouse.gov"
+        expected = "Jerry.Smith@myfloridahouse.gov"
         result = self.parser.construct_email(leg)
         self.assertEqual(result, expected)
 
@@ -196,7 +195,7 @@ class TestLegislatorOpenStateParser(TestCase):
                                  website_url="al.com",
                                  capitol_phone="512-463-0744",
                                  capitol_fax="512-463-0761",
-                                 room_number=None,
+                                 room_number="N/A",
                                  email="Alma.Allen@house.texas.gov"))
         expected.append(Legislator(name={"first" : "Roberto",
                                            "last": "Alonzo",
@@ -221,7 +220,7 @@ class TestLegislatorOpenStateParser(TestCase):
                                  website_url="berto.com",
                                  capitol_phone="512-463-0408",
                                  capitol_fax="512-463-1817",
-                                 room_number=None,
+                                 room_number="N/A",
                                  email="Roberto.Alonzo@senate.texas.gov"))
         result = self.parser.get_legislators_list(self.legislator_json)
         self.assertEqual(result, expected)

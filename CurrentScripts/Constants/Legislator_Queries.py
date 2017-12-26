@@ -1,9 +1,9 @@
 
 INSERT_LEGISLATOR = '''
                 INSERT INTO Legislator
-                  (pid,state,capitol_phone,capitol_fax,website_url,room_number)
+                  (pid,state,capitol_phone,capitol_fax,website_url,room_number, email)
                 VALUES
-                  (%(pid)s,%(state)s,%(capitol_phone)s,%(capitol_fax)s,%(website_url)s,%(room_number)s)
+                  (%(pid)s,%(state)s,%(capitol_phone)s,%(capitol_fax)s,%(website_url)s,%(room_number)s, %(email)s)
                 '''
 INSERT_PERSON = '''
             INSERT INTO Person
