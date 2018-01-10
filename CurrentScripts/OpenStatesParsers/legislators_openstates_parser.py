@@ -121,8 +121,6 @@ class LegislatorOpenStateParser(object):
                           entry["middle_name"],
                           entry["last_name"],
                           entry["suffixes"]]
-            print(name_parts)
-            print(office_info)
 
 
             name_parts = [name_part for name_part in name_parts if name_part]
