@@ -35,12 +35,12 @@ def main():
         committee_insertion_manager = CommitteeInsertionManager(dddb, "TX", session_year, leg_session_year, logger)
         api = OpenStatesAPI("TX")
         parser = TxCommitteeParser(session_year,leg_session_year, api)
-        verify = DatabaseVerification("TX", dddb, logger)
+        #verify = DatabaseVerification("TX", dddb, logger)
         committee_json = api.get_committee_json()
         state_metadata = api.get_state_metadate_json()
         committees = parser.get_committee_list(committee_json, state_metadata)
         committee_insertion_manager.import_committees(committees)
-        verify.check_db()
+        #verify.check_db()
         committee_insertion_manager.log()
 
 
