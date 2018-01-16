@@ -91,7 +91,7 @@ class CommitteeInsertionManager(object):
                     except MySQLdb.Error:
                         self.logger.exception(format_logger_message("PID selection failed for AltId", (SELECT_PID % member.__dict__)))
                 if not pid:
-                    self.logger.exception("PID not found for person: " + str(member.__dict__))
+                    self.logger.exception("PID ("+str(pid) +") not found for person: " + str(member.__dict__))
                     to_remove.append(member)
                 else:
                     member.pid = pid
