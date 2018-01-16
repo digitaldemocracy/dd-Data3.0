@@ -14,13 +14,13 @@ from OpenStatesParsers.committee_openstates_parser import *
 
 
 class FlCommitteeParser(CommitteeOpenStateParser):
-    def __init__(self, session_year, api):
+    def __init__(self, session_year, leg_session_year, api):
         '''
         Constructor for FlCommitteeParser Class. Using OpenStates General Parser.
         Overriding get_committee_list
         :param session_year: The current session year for Texas
         '''
-        super(FlCommitteeParser, self).__init__(api, "FL", session_year, "Senate", "House")
+        super(FlCommitteeParser, self).__init__(api, "FL", session_year, leg_session_year, "Senate", "House")
 
     def get_committee_list(self, committee_json, metadata):
 

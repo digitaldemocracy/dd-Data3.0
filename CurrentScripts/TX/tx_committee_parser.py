@@ -13,13 +13,13 @@ from OpenStatesParsers.committee_openstates_parser import *
 
 
 class TxCommitteeParser(CommitteeOpenStateParser):
-    def __init__(self, session_year, api):
+    def __init__(self, session_year, leg_session_year, api):
         '''
         Constructor for TxCommitteeParser Class. Using OpenStates General Parser.
         Overriding get_committee_list
         :param session_year: The current session year for Texas
         '''
-        super(TxCommitteeParser, self).__init__(api, "TX", session_year, "Senate", "House")
+        super(TxCommitteeParser, self).__init__(api, "TX", session_year, leg_session_year, "Senate", "House")
 
     def set_house(self, entry, metadata):
         '''

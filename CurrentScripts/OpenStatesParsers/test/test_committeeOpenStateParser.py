@@ -4,7 +4,7 @@ from OpenStatesParsers.committee_openstates_parser import CommitteeOpenStatePars
 
 class TestCommitteeOpenStateParser(TestCase):
     def setUp(self):
-        self.parser = CommitteeOpenStateParser(None, "TX", 2017, "Senate", "House")
+        self.parser = CommitteeOpenStateParser(None, "TX", 2017, 2017, "Senate", "House")
     def test_get_committee_list(self):
         self.assertRaises(ValueError)
 

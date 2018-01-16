@@ -47,7 +47,7 @@ SELECT_HOUSE_MEMBERS = '''SELECT p.pid FROM Person p
                           JOIN Legislator l ON p.pid = l.pid
                           JOIN Term t ON l.pid = t.pid
                           WHERE l.state = %(state)s
-                          AND t.year = %(session_year)s
+                          AND t.year = %(leg_session_year)s
                           AND t.house = %(house)s'''
 
 

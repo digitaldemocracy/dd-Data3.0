@@ -13,12 +13,12 @@ Description:
 """
 
 class CommitteeMember(object):
-    def __init__(self, name=None, session_year=None, state=None, position="Member", alt_id=None,
+    def __init__(self, name=None, session_year=None, leg_session_year=None, state=None, position="Member", alt_id=None,
                  current_flag=None, start_date=None, end_date=None,
                  pid=None, cid=None, house=None, district=None):
-        if (name and session_year and state != "CA") \
-                or (pid and session_year and state) \
-                or (name and session_year and state and position and current_flag and house):
+        if (name and session_year and leg_session_year and state != "CA") \
+                or (pid and session_year and leg_session_year and state) \
+                or (name and session_year and leg_session_year and state and position and current_flag and house):
             if name:
                 parts = [name["first"],
                          name["nickname"],
@@ -37,6 +37,7 @@ class CommitteeMember(object):
                 self.title = name["title"]
                 self.suffix = name["suffix"]
             self.position = position
+            self.leg_session_year = leg_session_year
             self.session_year = session_year
             self.state = state
             self.alt_id = alt_id
