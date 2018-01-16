@@ -224,9 +224,9 @@ class LegislatorInsertionManager(object):
         Checks if we already have this legislator in the alternate id
         table.
         :param legislator: Legislator model object
-        :return: pid or None
+        :return: pid or False
         '''
-        pid = None
+        pid = False
         if legislator.alt_ids:
             pid = get_entity_id(db_cursor=self.dddb,
                                  entity=legislator.__dict__,
@@ -282,7 +282,6 @@ class LegislatorInsertionManager(object):
 
             # If a pid is found, we already have there person data.
             legislator.pid = self.find_legislator_pid(legislator)
-
             if legislator.pid:
                 # Insert any new names and alt ids
                 self.insert_alternate_names(legislator)
@@ -293,5 +292,5 @@ class LegislatorInsertionManager(object):
                 if self.is_current_legislator_for_house_district(legislator) == False:
                     self.update_term(legislator, UPDATE_TERM_TO_NOT_CURRENT_DISTRICT)
                     self.insert_term(legislator)
-            elif legislator.pid is None:
+            elif legislator.pid == False:
                 self.insert_new_legislator(legislator)
