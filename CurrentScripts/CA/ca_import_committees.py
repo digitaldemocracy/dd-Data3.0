@@ -17,8 +17,9 @@ def main():
     with connect() as dddb:
         logger = create_logger()
         session_year = get_session_year(dddb, "CA", logger)
-        committee_insertion_manager = CommitteeInsertionManager(dddb, "CA", session_year, logger)
-        parser = CaCommitteeParser(session_year)
+        leg_session_year = get_session_year(dddb, "CA", logger, True)
+        committee_insertion_manager = CommitteeInsertionManager(dddb, "CA", session_year, leg_session_year, logger)
+        parser = CaCommitteeParser(session_year, leg_session_year)
         committees = parser.get_committee_list()
         committee_insertion_manager.import_committees(committees)
         committee_insertion_manager.log()

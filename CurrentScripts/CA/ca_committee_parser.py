@@ -20,8 +20,9 @@ sys.setdefaultencoding('utf-8')
 
 class CaCommitteeParser(object):
 
-    def __init__(self, session_year):
+    def __init__(self, session_year, leg_session_year):
         self.session_year = session_year
+        self.leg_session_year = leg_session_year
         self.state = "CA"
 
     def format_link(self, link, house_link):
@@ -135,6 +136,7 @@ class CaCommitteeParser(object):
                                      position=position,
                                      state=self.state,
                                      session_year=self.session_year,
+                                     leg_session_year=self.leg_session_year,
                                      current_flag=1,
                                      house=houseAndDistrict[0],
                                      district=houseAndDistrict[1])
