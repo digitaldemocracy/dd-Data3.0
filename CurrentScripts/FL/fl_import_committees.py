@@ -29,9 +29,10 @@ def main():
     with connect() as dddb:
         logger = create_logger()
         session_year = get_session_year(dddb, "FL", logger)
-        committee_insertion_manager = CommitteeInsertionManager(dddb, "FL", session_year, logger)
+        leg_session_year = get_session_year(dddb, "FL", logger, True)
+        committee_insertion_manager = CommitteeInsertionManager(dddb, "FL", session_year, leg_session_year, logger)
         api = OpenStatesAPI("FL")
-        parser = FlCommitteeParser(session_year, api)
+        parser = FlCommitteeParser(session_year,leg_session_year, api)
 
         committee_json = api.get_committee_json()
         state_metadata = api.get_state_metadate_json()

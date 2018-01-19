@@ -31,11 +31,13 @@ sys.setdefaultencoding("utf-8")
 
 class CommitteeInsertionManager(object):
 
-    def __init__(self, dddb, state, session_year, logger):
+    def __init__(self, dddb, state, session_year, leg_session_year, logger):
         self.state = state
         self.dddb = dddb
         self.logger = logger
         self.session_year = session_year
+        self.leg_session_year = leg_session_year
+
 
         self.CN_INSERTED = 0
         self.C_INSERTED = 0
@@ -91,7 +93,7 @@ class CommitteeInsertionManager(object):
                     except MySQLdb.Error:
                         self.logger.exception(format_logger_message("PID selection failed for AltId", (SELECT_PID % member.__dict__)))
                 if not pid:
-                    self.logger.exception("PID not found for person: " + str(member.__dict__))
+                    self.logger.exception("PID ("+str(pid) +") not found for person: " + str(member.__dict__))
                     to_remove.append(member)
                 else:
                     member.pid = pid
@@ -107,9 +109,11 @@ class CommitteeInsertionManager(object):
         :param floor_committee: A floor committee represented with a Committee model object.
         :return: A formatted list of CommitteeMember model objects
         '''
+        floor_committee.leg_session_year = self.leg_session_year
         members = get_all(self.dddb, SELECT_HOUSE_MEMBERS, floor_committee.__dict__, "House Floor Member Selection", self.logger)
         return [CommitteeMember(pid=member[0],
                                 session_year=floor_committee.session_year,
+                                leg_session_year=self.leg_session_year,
                                 state=self.state) for member in members]
 
 
@@ -193,6 +197,7 @@ class CommitteeInsertionManager(object):
 
         return [CommitteeMember(pid = member_in_db[0],
                                 session_year = self.session_year,
+                                leg_session_year=self.leg_session_year,
                                 state = self.state,
                                 end_date = dt.datetime.today().strftime("%Y-%m-%d"),
                                 cid = committee.cid,

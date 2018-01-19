@@ -24,10 +24,11 @@ from Models.CommitteeMember import *
 
 class CommitteeOpenStateParser(object):
 
-    def __init__(self, api, state, session_year, upper_chamber_name, lower_chamber_name):
+    def __init__(self, api, state, session_year, leg_session_year, upper_chamber_name, lower_chamber_name):
         self.api = api
         self.state = state
         self.session_year = session_year
+        self.leg_session_year = leg_session_year
         self.upper_chamber_name = upper_chamber_name
         self.lower_chamber_name = lower_chamber_name
 
@@ -67,6 +68,7 @@ class CommitteeOpenStateParser(object):
                                                state=self.state,
                                                alt_id=openstates_leg_id,
                                                position=position,
+                                               leg_session_year=self.leg_session_year,
                                                session_year=self.session_year))
 
         return member_list
