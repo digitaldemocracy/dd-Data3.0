@@ -150,8 +150,6 @@ def clean_name(name):
     if len(name_arr) == 1 and name_arr[0] in problem_names.keys():
         name_arr = list(problem_names[name_arr[0]])
 
-    if len(name_arr) > 2:
-        print(name_arr)
 
     for word in name_arr:
         if word != name_arr[0] and (len(word) <= 1 or word in ending.keys()):
@@ -177,9 +175,7 @@ def call_senate_api(restCall, house, offset):
     if house != "":
         house = "/" + house
     url = API_URL.format(restCall, API_YEAR, house, offset)
-    # print "Hey Yall!!! I'm going to print the result of the API_URL format call!"
     r = requests.get(url)
-    print url
     out = r.json()
     return out["result"]["items"]
 
@@ -225,8 +221,6 @@ def is_term_in_db(senator, dddb):
         query = dddb.fetchone()
 
         if query[0] != senator['district'] or query[1] == 0:
-            # print "Hella updated! Radical!~~~~~"
-            # print 'updated', senator
             try:
                 dddb.execute(QU_TERM, senator)
                 T_UPDATE += dddb.rowcount
@@ -264,7 +258,6 @@ def get_senators_api():
             ret_sens.append(sen)
         except IndexError:
             logger.exception('Problem with name ' + senator['fullName'])
-    print "Downloaded %d legislators..." % len(ret_sens)
     return ret_sens
 
 
@@ -310,7 +303,6 @@ def add_senator_db(senator, dddb):
 
 
     if is_term_in_db(senator, dddb) is False:
-        # print insert_term % senator
         try:
             senator['current'] = 1
             dddb.execute(insert_term, senator)
@@ -336,7 +328,6 @@ def check_legislator_members(senator, dddb):
 
     for member in members:
         if member[0] not in temp:
-            print(member[0])
             try:
                 dddb.execute(QU_TERM_END_DATE, (date, member[0], senator['year']))
                 T_UPDATE += dddb.rowcount
@@ -353,8 +344,6 @@ def add_senators_db(dddb):
     for senator in senators:
         if add_senator_db(senator, dddb):
             x += 1
-            # check_legislator_members(senators, dddb)
-            # print "Added %d legislators" % x
 
 
 def main():
