@@ -19,6 +19,7 @@ import MySQLdb
 from datetime import datetime
 from Utils.Generic_Utils import *
 from Utils.Database_Connection import *
+from Utils.Generic_MySQL import get_session_year
 
 logger = None
 logged_list = list()
@@ -286,9 +287,8 @@ def add_authors_db(year, dddb):
 
 def main():
     with connect() as dddb:
-        year = datetime.now().year
+        year = get_session_year(dddb, "NY", logger)
         add_authors_db(year, dddb)
-
 
     LOG = {'tables': [{'state': 'NY', 'name': 'authors:', 'inserted': INSERTED, 'updated': A_UPDATE, 'deleted': 0},
                       {'state': 'NY', 'name': 'BillSponsors', 'inserted': BS_INSERTED, 'updated': 0, 'deleted': 0}]}
