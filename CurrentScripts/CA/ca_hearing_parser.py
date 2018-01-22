@@ -42,13 +42,12 @@ class CaHearingsParser(object):
         return committee_name.strip()
 
     def format_agenda(self, agenda):
-        print("formatting")
         # agenda is given as a tuple (which is not mutable)
         agenda = list(agenda)
         bid = "CA_" + str(agenda[0])
         house = capublic_format_house(agenda[1])
         name = self.clean_committee_name(agenda[2])
-        committee_name = capublic_format_committee_name(name, house)
+        committee_name = format_committee_name(name, house, "Standing")
         state = "CA"
         session_year = 2017
         type = "Regular"
@@ -64,7 +63,6 @@ class CaHearingsParser(object):
     '''
     def get_formatted_agendas(self):
         agendas = self.get_all_agendas()
-        print(agendas)
         return [self.format_agenda(agenda) for agenda in agendas]
 
 
@@ -74,7 +72,6 @@ class CaHearingsParser(object):
         :param date: the current date.
         :return: A list of tuples containing bill agendas
         '''
-        print("selecting")
         return get_all(db_cursor=self.capublic_cursor,
                 query=CA_PUB_SELECT_ALL_HEARINGS,
                 entity={"date" : self.cur_date},
