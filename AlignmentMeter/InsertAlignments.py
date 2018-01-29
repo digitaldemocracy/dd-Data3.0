@@ -9,6 +9,7 @@ from io import BytesIO
 DATA_DIR = 'BillAnalysisOut'
 
 CONN_INFO = {'host': 'dddb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+             #'host': 'dev.digitaldemocracy.org',
              'port': 3306,
              'db': 'DDDB2016Aug',
              # 'db': 'AndrewTest',
