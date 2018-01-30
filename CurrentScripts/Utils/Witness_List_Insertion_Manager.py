@@ -52,7 +52,7 @@ class WitnessListInsertionManager(object):
                            'PersonState Inserted': self.PERSON_STATE_INSERT,
                            'Organization inserted': self.ORGANIZATION_INSERT}]}
         self.logger.debug(LOG)
-        sys.stderr.write(json.dumps(LOG))
+        sys.stdout.write(json.dumps(LOG))
 
     def is_person_in_db(self, witness):
         '''

@@ -140,7 +140,7 @@ def main():
     add_bill_actions_db(dddb)      
 
   LOG = {'tables': [{'state': 'NY', 'name': 'Action', 'inserted':INSERTED, 'updated': 0, 'deleted': 0}]}
-  sys.stderr.write(json.dumps(LOG))
+  sys.stdout.write(json.dumps(LOG))
   logger.info(LOG)
 
 if __name__ == '__main__':

@@ -41,7 +41,7 @@ class LobbyistInsertionManager(object):
                            'deleted': 0},
                           {'state': self.state, 'name': 'LobbyistDirectEmployment', 'inserted': self.lobbyist_direct_employment, 'updated': 0,
                            'deleted': 0}]}
-        sys.stderr.write(json.dumps(LOG))
+        sys.stdout.write(json.dumps(LOG))
         self.logger.info(LOG)
 
     def insert_lobbyist(self, lobbyist):
