@@ -106,8 +106,8 @@ sel_good_org_concept = '''select new_oid, old_oid from OrgConceptAffiliation whe
 select_org_concept_id = '''select min(oid) from OrgConcept'''
 #update_organization = '''update Organizations set display_flag = 0 where oid = %(bad_oid)s'''
 update_organization = '''update Organizations set display_flag = 0 where oid = %(bad_oid)s'''
-insert_org_concept = '''insert into OrgConcept (oid, name, canon_oid, meter_flag)
-                        values (%(oid)s, %(name)s, %(canon_oid)s, 0)'''
+insert_org_concept = '''insert into OrgConcept (oid, name, meter_flag)
+                        values (%(oid)s, %(name)s, 0)'''
 # insert_org_concept_affiliation = '''insert into OrgConceptAffiliation (new_oid, old_oid, is_subchapter)
 #                                     VALUES (%(new_oid)s, %(old_oid)s, %(is_subchapter)s)'''
 insert_org_concept_affiliation = '''insert into OrgConceptAffiliation (new_oid, old_oid)

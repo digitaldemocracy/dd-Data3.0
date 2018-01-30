@@ -43,7 +43,7 @@ class ContributionInsertionManager(object):
                            'updated': self.CONTRIBUTIONS_UPDATED, 'deleted': 0},
                           ]}
         self.logger.info(LOG)
-        sys.stderr.write(json.dumps(LOG))
+        sys.stdout.write(json.dumps(LOG))
 
     def get_pid(self, first, last):
         """

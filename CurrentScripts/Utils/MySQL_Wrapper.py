@@ -202,7 +202,4 @@ class MySQL_Wrapper(object):
 
 
 
-with MySQL_Wrapper("localhost", "DDDB2016Aug", "root", "", create_logger()) as db:
-    db.execute("select * from Person limit 1")
-    print(db.fetchall())
 

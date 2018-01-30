@@ -15,7 +15,8 @@ import os
 import sys
 import time
 import socket
-import MySQLdb
+#import MySQLdb
+from MySQL_Wrapper import MySQL_Wrapper
 
 def countdown(db):
     '''
@@ -30,7 +31,7 @@ def countdown(db):
     print()
 
 
-def connect(db = None):
+def connect(db = None, logger=None):
     '''
     Returns a MySQLdb connection to the specified database.
     Checks the current IP address and checks against the dw server. If the script is running on the
@@ -39,34 +40,13 @@ def connect(db = None):
     :param override_flag: override_flag forces the scripted to run on the live server
     :return: a MySQLdb connection to the specified database
     '''
-    if socket.gethostbyname(socket.gethostname()) == "172.31.37.21" or db == "force" or \
-            (db == "live" and raw_input(
-                "Are you sure you want this script on the live database? (y/n) ").lower() == "y"):
-        if len(sys.argv) == 1:
-            countdown("live")
-        return MySQLdb.connect(host='dddb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-                                   port=3306,
-                                   db='DDDB2016Aug',
-                                   user='dbMaster',
-                                   passwd=os.environ["DBMASTERPASSWORD"],
-                                   charset='utf8')
-    elif db == "local":
+    if db == "local":
         countdown("local")
-        return MySQLdb.connect(host='localhost',
-                           port=3306,
-                           db='DDDB2016Aug',
-                           user='root',
-                           passwd='',
-                           charset='utf8')
-    else:
-        print("Running on Dev DB")
-        return MySQLdb.connect(host='dev.digitaldemocracy.org',
-                               port=3306,
-                               db='DDDB2016Aug',
-                               user='dbMaster',
-                               passwd=os.environ["DBMASTERPASSWORD"],
-                               charset='utf8')
-
+        return MySQL_Wrapper(host='dev.digitaldemocracy.org',
+                           database='nathan_dddb',
+                           user='nphillib',
+                           password='f3cZJ7nMLs',
+                           logger=logger)
 
 def connect_to_capublic():
     '''
