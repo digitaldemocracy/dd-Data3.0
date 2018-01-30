@@ -28,7 +28,7 @@ class BillAuthorInsertionManager(object):
                           {'state': self.state, 'name': 'CommitteeAuthors', 'inserted': self.COMMITTEE_AUTHOR_INSERTS, 'updated': 0,
                            'deleted': 0}]}
         self.logger.info(LOG)
-        sys.stdout.write(json.dumps(LOG))
+        sys.stderr.write(json.dumps(LOG))
 
     def get_person(self, bill_author):
         pid = None

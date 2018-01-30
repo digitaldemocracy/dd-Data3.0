@@ -57,7 +57,7 @@ class BillInsertionManager(object):
                           {'state': self.state, 'name': 'Action', 'inserted': self.A_INSERTED, 'updated': 0, 'deleted': 0},
                           {'state': self.state, 'name': 'BillVersion', 'inserted': self.V_INSERTED, 'updated': self.V_UPDATED, 'deleted': 0}]}
         self.logger.info(LOG)
-        sys.stdout.write(json.dumps(LOG))
+        sys.stderr.write(json.dumps(LOG))
 
 
     def is_bill_in_db(self, bill):

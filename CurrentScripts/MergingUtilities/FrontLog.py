@@ -21,8 +21,8 @@ import datetime
 import argparse
 
 people_spreadsheet_id = '<INSERT SPREADSHEET KEY HERE>'
-organizations_spreadsheet_id = '1m1XlcRYJfwc3hsfBCdiiz5J_JrNpiRrawFeV2PCpNyc'
-api_key_path = '/Users/Nathan/Documents/Programming_Projects/Digital_Democracy/dd-Data3.0/CurrentScripts/DDKEY'
+organizations_spreadsheet_id = '<INSERT SPREADSHEET KEY HERE>'
+api_key_path = '<OAUTH2 KEY>'
 
 sql_select_organizations_after_oid = '''SELECT oid, name, city, stateHeadquartered 
                                         FROM Organizations WHERE oid > %(oid)s;'''
@@ -325,7 +325,6 @@ def get_organization_suggestions(dddb, oid, name, city, state):
     :return: a list of possible organization matches, or empty if none
             format: [{oid, name, city, state}, ...]
     """
-
     # Make sure that the suggestion matches include matches from the new stuff, this solves concept canon oid problem
 
 

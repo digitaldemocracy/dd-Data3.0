@@ -60,7 +60,7 @@ class LegislatorInsertionManager(object):
                            'Legislators inserted': self.LEGISLATOR_INSERT,
                            'AltId Inserted': self.ALTERNATE_ID_INSERT}]}
         self.logger.debug(LOG)
-        sys.stdout.write(json.dumps(LOG))
+        sys.stderr.write(json.dumps(LOG))
 
     def insert_person(self, legislator):
         '''

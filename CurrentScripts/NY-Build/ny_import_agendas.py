@@ -538,7 +538,7 @@ def main():
     LOG = {'tables': [{'state': 'NY', 'name': 'Hearing', 'inserted':I_H, 'updated': 0, 'deleted': 0},
       {'state': 'NY', 'name': 'CommitteeHearings', 'inserted':I_CH, 'updated': 0, 'deleted': 0},
       {'state': 'NY', 'name': 'HearingAgenda', 'inserted':I_HA, 'updated': U_HA, 'deleted': 0}]}
-    sys.stdout.write(json.dumps(LOG))
+    sys.stderr.write(json.dumps(LOG))
     logger.info(LOG)
 
 if __name__ == '__main__':

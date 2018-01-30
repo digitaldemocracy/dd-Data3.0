@@ -134,7 +134,7 @@ def main():
         get_districts(dd_cursor)
 
     LOG = {'tables': [{'state': 'CA', 'name': 'District', 'inserted':INSERTED, 'updated': 0, 'deleted': 0}]}
-    sys.stdout.write(json.dumps(LOG))
+    sys.stderr.write(json.dumps(LOG))
     logger.info(LOG)
 
 if __name__ == "__main__":

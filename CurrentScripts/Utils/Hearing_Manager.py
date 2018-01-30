@@ -229,4 +229,4 @@ class Hearings_Manager(object):
                           {'state': self.state, 'name': 'HearingAgenda', 'inserted': self.HA_INS, 'updated': self.HA_UPD,
                            'deleted': 0}]}
         self.logger.info(LOG)
-        sys.stdout.write(json.dumps(LOG))
+        sys.stderr.write(json.dumps(LOG))

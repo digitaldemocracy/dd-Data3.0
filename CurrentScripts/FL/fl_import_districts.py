@@ -137,7 +137,7 @@ def main():
 
         LOG = {'tables': [{'state': 'FL', 'name': 'District', 'inserted': D_INSERT, 'updated': 0, 'deleted': 0}]}
         logger.info(LOG)
-        sys.stdout.write(json.dumps(LOG))
+        sys.stderr.write(json.dumps(LOG))
 
 
 if __name__ == '__main__':

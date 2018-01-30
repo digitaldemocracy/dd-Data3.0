@@ -563,7 +563,7 @@ def main():
                       {'state': 'CA', 'name': 'LobbyistDirectEmployment', 'inserted': LDE_INSERT, 'updated': 0,
                        'deleted': 0},
                       {'state': 'CA', 'name': 'LobbyingContracts', 'inserted': LC_INSERT, 'updated': 0, 'deleted': 0}]}
-    sys.stdout.write(json.dumps(LOG))
+    sys.stderr.write(json.dumps(LOG))
     logger.info(LOG)
 
 

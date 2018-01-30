@@ -276,7 +276,7 @@ def main():
 
         LOG = {'tables': [{'state': 'NY', 'name': 'Legislator', 'inserted': 0, 'updated': L_UPDATE, 'deleted': 0},
                           {'state': 'NY', 'name': 'Term', 'inserted': 0, 'updated': T_UPDATE, 'deleted': 0}]}
-        sys.stdout.write(json.dumps(LOG))
+        sys.stderr.write(json.dumps(LOG))
         logger.info(LOG)
 
 

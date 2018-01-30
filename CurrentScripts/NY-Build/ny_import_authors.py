@@ -292,7 +292,7 @@ def main():
 
     LOG = {'tables': [{'state': 'NY', 'name': 'authors:', 'inserted': INSERTED, 'updated': A_UPDATE, 'deleted': 0},
                       {'state': 'NY', 'name': 'BillSponsors', 'inserted': BS_INSERTED, 'updated': 0, 'deleted': 0}]}
-    sys.stdout.write(json.dumps(LOG))
+    sys.stderr.write(json.dumps(LOG))
     logger.info(LOG)
 
 #   call = call_senate_api("bills", 2015, "", 1)

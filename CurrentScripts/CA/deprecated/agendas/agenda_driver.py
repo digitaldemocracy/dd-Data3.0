@@ -499,7 +499,7 @@ def main():
     LOG = {'tables': [{'state': 'CA', 'name': 'Hearing', 'inserted': H_INSERT, 'updated': H_UPDATE, 'deleted': 0},
               {'state': 'CA', 'name': 'HearingAgenda', 'inserted': HA_INSERT, 'updated': HA_UPDATE, 'deleted': 0},
               {'state': 'CA', 'name': 'CommitteeHearings', 'inserted': CH_INSERT, 'updated': 0, 'deleted': 0}]}
-    sys.stdout.write(json.dumps(LOG))
+    sys.stderr.write(json.dumps(LOG))
 
 #  connection.commit()
 #  connection.close()

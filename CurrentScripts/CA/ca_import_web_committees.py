@@ -435,7 +435,7 @@ def scan_page(url, pattern):
         #   Second time and thereafter returns 200 (Success).
         if error.getcode() == 403:
             # TO DO: Implement logic to retry page retrieval (using wget?)
-            sys.stdout.write("{0}: {1}\n".format(url, error))
+            sys.stderr.write("{0}: {1}\n".format(url, error))
             try:
                 comm_name = url.split('//')[1].split('.')[0]
                 html = open('html_pages/'+comm_name, 'r').read()
@@ -443,7 +443,7 @@ def scan_page(url, pattern):
             except IOError:
                 sys.stderr.write("Error: File %s does not appear to exist."%comm_name)
         else:
-            sys.stdout.write("{0}: {1}\n".format(url, error))
+            sys.stderr.write("{0}: {1}\n".format(url, error))
         return []
 
 
@@ -876,7 +876,7 @@ def main():
     LOG = {'tables': [{'state': 'CA', 'name': 'Committee', 'inserted':C_INSERT, 'updated': 0, 'deleted': 0},
                       {'state': 'CA', 'name': 'servesOn:', 'inserted':S_INSERT, 'updated': enddate_count, 'deleted': S_DELETE},
                       {'state': 'CA', 'name': 'CommitteeNames', 'inserted':CN_INSERT, 'updated': 0, 'deleted': 0}]}
-    sys.stdout.write(json.dumps(LOG))
+    sys.stderr.write(json.dumps(LOG))
     logger.info(LOG)
 if __name__ == '__main__':
     logger = create_logger()

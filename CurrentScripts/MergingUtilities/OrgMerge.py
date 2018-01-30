@@ -113,11 +113,9 @@ def merge_lobby_employer(dddb, org, throw_exc=False):
         filer_id = dddb.fetchone()
 
         if filer_id is not None:
-
             dddb.execute(sel_lobbyemployer, {'oid': org['good_oid']})
 
             if dddb.rowcount == 0:
-
                 dddb.execute(ins_lobbyemployer, org)
                 print("Inserted " + str(dddb.rowcount) + " rows in LobbyistEmployer")
 
@@ -130,8 +128,7 @@ def merge_lobby_employer(dddb, org, throw_exc=False):
                 if dddb.rowcount != 0:
                     dddb.execute(del_lobbyrep, {'pid': lr['pid'], 'did': lr['did'], 'oid': org['bad_oid']})
                     print("Deleted " + str(dddb.rowcount) + " rows in LobbyistRepresentation")
-
-            dddb.execute(up_lobbyreps, org)  # dying here
+            dddb.execute(up_lobbyreps, org)
             print("Updated " + str(dddb.rowcount) + " rows in LobbyistRepresentations")
 
             dddb.execute(sel_lobbyingcontracts, org)
@@ -146,7 +143,6 @@ def merge_lobby_employer(dddb, org, throw_exc=False):
                                                      'rpt_date': lc['rpt_date'], 'state': lc['state']})
                     print("Deleted " + str(dddb.rowcount) + " rows in LobbyingContracts")
             dddb.execute(up_lobbyingcontract, org)
-
             print("Updated " + str(dddb.rowcount) + " rows in LobbyingContracts")
 
             dddb.execute(sel_lobbydiremployment, org)
@@ -162,7 +158,6 @@ def merge_lobby_employer(dddb, org, throw_exc=False):
                                                           'rpt_date': lde['rpt_date'], 'ls_end_year': lde['ls_end_year'],
                                                           'state': lde['state']})
                     print("Deleted " + str(dddb.rowcount) + " rows in LobbyistDirectEmployment")
-
             dddb.execute(up_lobbyistdirectemployment, org)
             print("Updated " + str(dddb.rowcount) + " rows in LobbyistDirectEmployment")
 
@@ -173,10 +168,9 @@ def merge_lobby_employer(dddb, org, throw_exc=False):
             print("Updated " + str(dddb.rowcount) + " rows in LobbyistEmployer")
 
     except:
-        print(traceback.format_exc())
         if throw_exc:
             exit(1)
-
+        print(traceback.format_exc())
 
 
 def merge_org(dddb, org, throw_exc=False):

@@ -964,7 +964,7 @@ def main():
       {'state': 'CA', 'name': 'Person', 'inserted':P_INSERT, 'updated': 0, 'deleted': 0},
       {'state': 'CA', 'name': 'PersonStateAffiliation', 'inserted':PSA_INSERT, 'updated': 0, 'deleted': 0},
       {'state': 'CA', 'name': 'LegislativeStaff', 'inserted':L_INSERT, 'updated': 0, 'deleted': 0}]}
-    sys.stdout.write(json.dumps(LOG))
+    sys.stderr.write(json.dumps(LOG))
     logger.info(LOG)
 
 if __name__ == '__main__':

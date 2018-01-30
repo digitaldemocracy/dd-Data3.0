@@ -270,7 +270,7 @@ def main():
         add_authors_db(2017, dddb)
 
     LOG = {'tables': [{'state': 'NY', 'name': 'BillSponsors', 'inserted': INSERTED, 'updated': 0, 'deleted': 0}]}
-    sys.stdout.write(json.dumps(LOG))
+    sys.stderr.write(json.dumps(LOG))
     logger.info(LOG)
 
 
