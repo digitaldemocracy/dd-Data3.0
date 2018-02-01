@@ -48,7 +48,7 @@ class FlBillParser(BillOpenStatesParser):
             session_name = entry["session"]
             for term in metadata["terms"]:
                 if session_name in term["sessions"]:
-                    session_year = term["start_year"]
+                    session_year = term["end_year"]
 
             # This value is used to construct the BID for a bill
             bid_session = str(session_year)
