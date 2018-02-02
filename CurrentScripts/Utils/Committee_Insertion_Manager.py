@@ -52,7 +52,7 @@ class CommitteeInsertionManager(object):
                           {'state': self.state, 'name': 'Committee', 'inserted': self.C_INSERTED, 'updated': 0, 'deleted': 0},
                           {'state': self.state, 'name': 'servesOn', 'inserted': self.SO_INSERTED, 'updated': self.SO_UPDATED, 'deleted': 0}]}
         self.logger.info(LOG)
-        sys.stderr.write(json.dumps(LOG))
+        sys.stdout.write(json.dumps(LOG))
 
 
     def get_committee_cid(self, committee):

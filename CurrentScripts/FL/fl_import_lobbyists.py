@@ -341,7 +341,7 @@ def main():
               {'state': 'FL', 'name': 'LobbyistEmployment', 'inserted':LEMPLOYMENT_INSERT, 'updated': 0, 'deleted': 0},
               {'state': 'FL', 'name': 'LobbyistDirectEmployment', 'inserted':LDE_INSERT, 'updated': 0, 'deleted': 0},
               {'state': 'FL', 'name': 'LobbyingContracts', 'inserted':LC_INSERT, 'updated': 0, 'deleted': 0}]}
-        sys.stderr.write(json.dumps(LOG))
+        sys.stdout.write(json.dumps(LOG))
         logger.info(LOG)
 
 if __name__ == '__main__':
