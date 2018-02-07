@@ -17,7 +17,7 @@ do
    if [ ! -e $fold ]; then
       mkdir $fold
       cd $fold
-      wget ftp://www.leginfo.ca.gov/pub/bill/$fold.zip 
+      wget ftp://www.leginfo.ca.gov/pub/bill/$fold.zip --no-check-certificate 
       unzip $fold.zip
       rm $fold.zip
       cd ..
