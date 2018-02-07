@@ -244,7 +244,7 @@ def main():
   LOG = {'tables': [{'state': 'CA', 'name': 'Person', 'inserted':P_INSERT, 'updated': 0, 'deleted': 0},
     {'state': 'CA', 'name': 'Legislator', 'inserted':L_INSERT, 'updated': 0, 'deleted': 0},
     {'state': 'CA', 'name': 'Term', 'inserted':T_INSERT, 'updated': T_UPDATE, 'deleted': 0}]}
-  sys.stderr.write(json.dumps(LOG))
+  sys.stdout.write(json.dumps(LOG))
 
 if __name__ == "__main__":
   with GrayLogger('http://dw.digitaldemocracy.org:12202/gelf') as _logger:

@@ -4,12 +4,14 @@
 import ScrapeSupportFixed
 import InsertAlignments
 import AlignmentMeter
-
+from Utils.Generic_Utils import *
 
 def main():
-    ScrapeSupportFixed.main()
-    InsertAlignments.main()
-    AlignmentMeter.main()
+    logger = create_logger()
+
+    ScrapeSupportFixed.main(logger)
+    InsertAlignments.main(logger)
+    AlignmentMeter.main(logger)
     
     
 if __name__ == '__main__':

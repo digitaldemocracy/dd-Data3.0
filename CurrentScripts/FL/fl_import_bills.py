@@ -112,7 +112,7 @@ def get_pid_name(dddb, person):
             dddb.execute(SELECT_LEG_PID_FIRSTNAME, legislator)
 
             if dddb.rowcount != 1:
-                #print("Error: PID for " + person['name'] + " not found")
+                print("Error: PID for " + person['name'] + " not found")
                 #print(legislator)
                 return None
             else:
@@ -255,8 +255,10 @@ def format_votes(dddb, vote_list):
         vote.set_cid(get_vote_cid(dddb, vote))
 
         for vote_detail in vote.vote_details:
-            vote_detail.set_vote(vote.vote_id)
-            vote_detail.set_pid(get_pid(dddb, vote_detail.person))
+            #print(vote_detail.person)
+            if vote_detail.person['name'].lower() != 'vacant':
+                vote_detail.set_vote(vote.vote_id)
+                vote_detail.set_pid(get_pid(dddb, vote_detail.person))
 
 
 def format_bills(dddb):
@@ -268,6 +270,7 @@ def format_bills(dddb):
     bill_list = bill_parser.get_bill_list()
 
     for bill in bill_list:
+        print(bill.bid)
         format_votes(dddb, bill.votes)
         format_version(bill.versions)
 

@@ -298,7 +298,7 @@ def main():
                           {'state': 'CA', 'name': 'Payors', 'inserted': PAYOR_INSERTED, 'updated': 0, 'deleted': 0},
                           {'state': 'CA', 'name': 'Organizations', 'inserted': ORG_INSERTED, 'updated': 0,
                            'deleted': 0}]}
-        sys.stderr.write(json.dumps(LOG))
+        sys.stdout.write(json.dumps(LOG))
         logger.info(LOG)
 
 

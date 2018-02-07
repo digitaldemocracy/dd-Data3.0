@@ -5,10 +5,12 @@ from datetime import datetime
 import requests
 import zipfile
 from io import BytesIO
+from Utils.Generic_Utils import *
 
 DATA_DIR = 'BillAnalysisOut'
 
 CONN_INFO = {'host': 'dddb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+             #'host': 'dev.digitaldemocracy.org',
              'port': 3306,
              'db': 'DDDB2016Aug',
              # 'db': 'AndrewTest',
@@ -172,7 +174,7 @@ def filter_org_names(org_name):
         return org_name
 
 
-def main():
+def main(logger):
     with pymysql.connect(**CONN_INFO) as cursor:
 
         bill_info_df, bill_set = load_bill_info(cursor)
@@ -206,4 +208,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    logger = create_logger()
+    main(logger)

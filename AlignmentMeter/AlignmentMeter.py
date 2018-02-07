@@ -5,8 +5,10 @@ import pymysql
 import pickle
 import itertools
 import datetime
+from Utils.Generic_Utils import *
 
 CONN_INFO = {'host': 'dddb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+             #'host': 'dev.digitaldemocracy.org',
              'port': 3306,
              # 'db': 'AndrewTest',
              'db': 'DDDB2016Aug',
@@ -579,7 +581,7 @@ def write_score_table(df, grp_cols, cnxn=None, tbl_name=None):
     df = summed_cols_df.merge(score_df, on=grp_cols)
 
     if tbl_name:
-        df.to_sql(tbl_name, cnxn, if_exists='replace', index=False, flavor = 'mysql')
+        df.to_sql(tbl_name, cnxn, if_exists='replace', index=False)
 
     return df
 
@@ -661,8 +663,8 @@ def add_term_info(df, term_df):
 def write_to_db(df, org_alignments_df, leg_votes_all_df, cnxn, engine):
     """Pretty obvious. Writes these tables to the db"""
     data_df = make_data_table(org_alignments_df, leg_votes_all_df)
-    data_df.to_sql('AlignmentScoresData', engine, if_exists='replace', index=False, flavor='mysql')
-    df.to_sql('BillAlignmentScores', engine, if_exists='replace', index=False, flavor='mysql')
+    data_df.to_sql('AlignmentScoresData', engine, if_exists='replace', index=False)
+    df.to_sql('BillAlignmentScores', engine, if_exists='replace', index=False)
 
     df_cpy = df.copy()
     df_cpy['session_year'] = 'All'
@@ -706,7 +708,7 @@ def write_to_db(df, org_alignments_df, leg_votes_all_df, cnxn, engine):
     create_combined_scores_tbl(cnxn)
     cnxn.close()
     
-    df.to_sql('CombinedAlignmentScores', engine, if_exists='append', index=False, flavor='mysql')
+    df.to_sql('CombinedAlignmentScores', engine, if_exists='append', index=False)
 
 
 def create_combined_scores_tbl(cnxn):
@@ -745,7 +747,7 @@ def create_combined_scores_tbl(cnxn):
 
 
 # Print statements are left intentionally so you can monitor process
-def main():
+def main(logger):
     cnxn = pymysql.connect(**CONN_INFO)
 
     print('Connection successful')
@@ -770,7 +772,7 @@ def main():
                        'no_resolution': 'no_resolutions'}, inplace=True)
     # Code takes a long time to run, so you don't want to lose data if there is an issue on the db side
     pickle.dump(df, open(PCKL_DIR + 'final_df.p', 'wb'))
-    # df = pickle.load(open(PCKL_DIR + 'final_df.p', 'rb'))
+    #df = pickle.load(open(PCKL_DIR + 'final_df.p', 'rb'))
 
     engine = 'mysql+pymysql://{user}:{passwd}@{host}/{db}'.format(**CONN_INFO)
     # cnxn is closed in this function
@@ -779,4 +781,5 @@ def main():
     
     
 if __name__ == '__main__':
-    main()
+    logger = create_logger()
+    main(logger)
