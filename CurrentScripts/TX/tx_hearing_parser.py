@@ -15,6 +15,7 @@ import re
 import lxml
 import requests
 import datetime as dt
+import six
 from Models.Hearing import *
 from bs4 import BeautifulSoup
 from Utils.Generic_Utils import *
@@ -23,13 +24,13 @@ from Constants.Hearings_Queries import *
 from tx_hearing_page_parser import TxHearingPageParser
 
 class TxHearingParser(object):
-    def __init__(self, dddb, logger):
+    def __init__(self, dddb, logger, session_year):
         self.TX_BASE_URL = 'http://www.capitol.state.tx.us'
         self.TX_HEARING_RSS = 'http://www.capitol.state.tx.us/MyTLO/RSS/RSS.aspx?Type=upcomingcalendars{0}'
 
         self.bill_search_regex = re.compile(r'(HB\s[0-9]+|HCR\s[0-9]+|HJR\s[0-9]+|HR\s[0-9]+|SB\s[0-9]+|SCR\s[0-9]+|SJR\s[0-9]+|SR\s[0-9]+)')
 
-        self.hearing_page_parser = TxHearingPageParser()
+        self.hearing_page_parser = TxHearingPageParser(session_year)
 
         self.dddb = dddb
         self.logger = logger
@@ -214,10 +215,10 @@ class TxHearingParser(object):
         if len(bill_titles) != 0:
             for bill in bill_titles:
                 bill_tag = bill.find('b')
-                if bill_tag is not None:
-                    bill_name = bill_tag.contents[0]
+                if bill_tag is not None and isinstance(bill_tag.contents[0], six.string_types):
+                    bill_name = bill_tag.contents[0] 
                     if self.bill_search_regex.match(bill_name):
-                        bill_list.append(unicode(bill_name))
+                        bill_list.append(unicode(bill_name)) 
         else:
             matches = self.bill_search_regex.findall(doc_text)
             for match in matches:
