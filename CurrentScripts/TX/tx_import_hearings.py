@@ -28,15 +28,15 @@ from Utils.Generic_Utils import *
 from Utils.Hearing_Manager import *
 from Utils.Database_Connection import *
 from Constants.Hearings_Queries import *
-
+from Utils.Generic_MySQL import get_session_year
 logger = None
 
 
 def main():
     with connect() as dddb:
         cur_date = dt.datetime.now().strftime('%Y-%m-%d')
-
-        hearing_parser = TxHearingParser(dddb, logger)
+        session_year = get_session_year(dddb, "TX", logger)
+        hearing_parser = TxHearingParser(dddb, logger, session_year)
         hearing_manager = Hearings_Manager(dddb, 'TX')
 
         senate_hearings = hearing_parser.scrape_committee_meeting_list('Senate')
