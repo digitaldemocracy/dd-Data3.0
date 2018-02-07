@@ -64,10 +64,9 @@ SELECT_BILL = '''SELECT bid FROM Bill
                  AND type = %(type)s
                  AND number = %(number)s'''
 
-SELECT_HEARING_AGENDA = '''SELECT * FROM HearingAgenda
+SELECT_HEARING_AGENDA = '''SELECT current_flag FROM HearingAgenda
                            WHERE hid = %(hid)s
-                           AND bid = %(bid)s
-                           AND date_created = %(date)s'''
+                           AND bid = %(bid)s order by date_created desc limit 1'''
 
 SELECT_CURRENT_AGENDA = '''SELECT date_created FROM HearingAgenda
                            WHERE hid = %(hid)s

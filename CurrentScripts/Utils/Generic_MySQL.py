@@ -1,8 +1,8 @@
 import sys
 import MySQLdb
 from Constants.Find_Person_Queries import *
-from Generic_Utils import format_logger_message
-from Constants.Committee_Queries import SELECT_SESSION_YEAR_LEGISLATOR, SELECT_SESSION_YEAR
+from Utils.Generic_Utils import format_logger_message
+from Constants.Committee_Queries import SELECT_SESSION_YEAR_LEGISLATOR, SELECT_SESSION_YEAR, SELECT_COMMITTEE_SHORT_NAME
 
 reload(sys)
 
@@ -103,6 +103,26 @@ def get_session_year(db_cursor, state, logger, legislator = False):
                                 entity=entity,
                                 objType="Session for State",
                                 logger=logger)
+
+'''
+Gets CID from our database using the committee names listed in the agendas
+'''
+def get_comm_cid(dddb_cursor, comm_name, house, session_year, state, logger):
+    committee_info = {"name" : comm_name, "house": house,
+                      "session_year": session_year, "state": state}
+
+    try:
+        dddb_cursor.execute(SELECT_COMMITTEE_SHORT_NAME, committee_info)
+
+        if dddb_cursor.rowcount == 0:
+            logger.exception("ERROR: Committee not found" + SELECT_COMMITTEE_SHORT_NAME%committee_info)
+            return None
+
+        else:
+            return dddb_cursor.fetchone()[0]
+
+    except MySQLdb.Error:
+        logger.exception(format_logger_message("Committee selection failed for Committee", (SELECT_COMMITTEE % comm_name)))
 
 
 
