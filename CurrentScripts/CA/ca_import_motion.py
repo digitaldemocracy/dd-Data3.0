@@ -28,30 +28,25 @@ Sources:
   - bill_motion_tbl
 """
 
-import sys
-import json
-import MySQLdb
-import traceback
-import datetime as dt
-from ca_bill_parser import *
-from Utils.Generic_Utils import *
-from Utils.Database_Connection import *
-from Utils.Bill_Insertion_Manager import *
-from Constants.Bills_Queries import *
+from ca_bill_parser import CaBillParser
+from Utils.Generic_Utils import create_logger
+from Utils.Database_Connection import connect_to_capublic, connect
+from Utils.Bill_Insertion_Manager import BillInsertionManager
 
 
 def main():
     with connect() as dddb:
-        logger = create_logger()
+        with connect_to_capublic() as ca_public:
+            logger = create_logger()
 
-        bill_manager = BillInsertionManager(dddb, logger, 'CA')
-        bill_parser = CaBillParser()
+            bill_manager = BillInsertionManager(dddb, logger, 'CA')
+            bill_parser = CaBillParser(ca_public, dddb, logger)
 
-        motion_list = bill_parser.get_motions()
+            motion_list = bill_parser.get_motions()
 
-        bill_manager.import_motions(motion_list)
+            bill_manager.import_motions(motion_list)
 
-        bill_manager.log()
+            bill_manager.log()
 
 
 if __name__ == "__main__":
