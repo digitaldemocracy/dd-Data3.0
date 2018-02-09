@@ -1,7 +1,7 @@
 from datetime import datetime
 
 class Hearing(object):
-    def __init__(self, hearing_date, house, type, state, session_year,  cid, bid, committee_name):
+    def __init__(self, hearing_date, house, type, state, session_year,  cid, bid, committee_name = None):
         self.hearing_date = hearing_date
         self.house = house
         self.type = type

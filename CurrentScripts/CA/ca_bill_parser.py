@@ -60,7 +60,7 @@ TODO: make updated_date dependent on day of week - on Sunday, it should get all 
     Also, remove all old code
 """
 class CaBillParser(object):
-    def __init__(self, logger = None):
+    def __init__(self, ca_cursor, dddb, logger = None):
         # Used by CAPublic select queries.
         # We only get rows from the database that have been updated since this date
         if dt.date.today().weekday() == 6:
@@ -71,11 +71,9 @@ class CaBillParser(object):
         self.updated_date = dt.date.today() - dt.timedelta(weeks=3)
         self.updated_date = self.updated_date.strftime('%Y-%m-%d')
 
-        ca_connect = connect_to_capublic()
-        self.ca_cursor = ca_connect.cursor()
+        self.ca_cursor = ca_cursor
 
-        dddb_connect = connect()
-        self.dddb = dddb_connect.cursor()
+        self.dddb = dddb
 
         self.logger = logger
 

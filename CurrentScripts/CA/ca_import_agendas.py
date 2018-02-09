@@ -17,12 +17,12 @@ from Utils.Database_Connection import *
 
 def main():
     with connect_to_capublic() as capublic:
-        with connect() as dddb:
+        with connect("live") as dddb:
             cur_date = dt.datetime.now(timezone('US/Pacific')).strftime('%Y-%m-%d')
             logger = create_logger()
             parser = CaHearingsParser(dddb, capublic, cur_date, logger)
             agendas = parser.get_formatted_agendas()
-            hearing_manager = Hearings_Manager(dddb, "CA")
+            hearing_manager = Hearings_Manager(dddb, "CA", logger)
             hearing_manager.import_hearings(agendas, cur_date)
             hearing_manager.log()
 

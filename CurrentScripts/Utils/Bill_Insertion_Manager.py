@@ -278,12 +278,12 @@ class BillInsertionManager(object):
         :return: True if all the inserts succeed, false otherwise
         """
         for bill in bill_list:
-            if not self.is_bill_in_db(bill.to_dict()):
-                if not self.insert_bill(bill.to_dict()):
+            if not self.is_bill_in_db(bill.__dict__):
+                if not self.insert_bill(bill.__dict__):
                     return False
                 self.B_INSERTED += 1
             else:
-                if self.update_bill_status(bill.to_dict()):
+                if self.update_bill_status(bill.__dict__):
                     self.B_UPDATED += 1
 
             if bill.votes is not None:
@@ -317,14 +317,14 @@ class BillInsertionManager(object):
                 vote.set_mid(mid)
 
             # Get a vote's ID number if it exists
-            vote_id = self.get_vote_id(vote.to_dict())
+            vote_id = self.get_vote_id(vote.__dict__)
 
             # If the vote does not exist, insert it
             if not vote_id:
-                if not self.insert_bill_vote_summary(vote.to_dict()):
+                if not self.insert_bill_vote_summary(vote.__dict__):
                     return False
                 self.BVS_INSERTED += 1
-                vote_id = self.get_vote_id(vote.to_dict())
+                vote_id = self.get_vote_id(vote.__dict__)
 
             vote.set_vote_id(vote_id)
 
@@ -343,8 +343,8 @@ class BillInsertionManager(object):
         :return: True if all the inserts succeed, false otherwise
         """
         for detail in vote_detail_list:
-            if not self.is_bill_vote_detail_in_db(detail.to_dict()):
-                if not self.insert_bill_vote_detail(detail.to_dict()):
+            if not self.is_bill_vote_detail_in_db(detail.__dict__):
+                if not self.insert_bill_vote_detail(detail.__dict__):
                     return False
                 self.BVD_INSERTED += 1
 
@@ -357,13 +357,13 @@ class BillInsertionManager(object):
         :return: True if all the inserts succeed, false otherwise
         """
         for version in version_list:
-            if not self.is_version_in_db(version.to_dict()):
-                if not self.insert_version(version.to_dict()):
+            if not self.is_version_in_db(version.__dict__):
+                if not self.insert_version(version.__dict__):
                     return False
                 self.V_INSERTED += 1
 
             if version.text is not None:
-                updated = self.update_version(version.to_dict())
+                updated = self.update_version(version.__dict__)
 
                 if updated:
                     self.V_UPDATED += 1
@@ -377,8 +377,8 @@ class BillInsertionManager(object):
         :return: True if all the inserts succeed, false otherwise
         """
         for action in action_list:
-            if not self.is_action_in_db(action.to_dict()):
-                if not self.insert_action(action.to_dict()):
+            if not self.is_action_in_db(action.__dict__):
+                if not self.insert_action(action.__dict__):
                     return False
                 self.A_INSERTED += 1
 

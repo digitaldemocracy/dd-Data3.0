@@ -103,9 +103,9 @@ SELECT_COMMITTEE = '''SELECT cid FROM Committee
 SELECT_PID = '''SELECT pid FROM AlternateId
                 WHERE alt_id = %(alt_id)s'''
 
-SELECT_LEG_PID = '''SELECT * FROM Person p
-                    JOIN Term t ON p.pid = t.pid
-                    WHERE t.state = %(state)s
+SELECT_LEG_PID = '''SELECT * FROM Person p, Term t, servesOn s,
+                    WHERE p.pid = t.pid
+                    AND t.state = %(state)s
                     AND t.current_term = 1
                     AND p.last LIKE %(last)s
                     '''
@@ -146,7 +146,7 @@ SELECT_VERSION_TEXT = '''SELECT text FROM BillVersion
 INSERT_BILL = '''INSERT INTO Bill
                  (bid, type, number, billState, status, house, session, sessionYear, state)
                  VALUES
-                 (%(bid)s, %(type)s, %(number)s, %(billState)s, %(status)s, %(house)s, %(session)s,
+                 (%(bid)s, %(bill_type)s, %(number)s, %(bill_state)s, %(status)s, %(house)s, %(session)s,
                  %(session_year)s, %(state)s)'''
 
 INSERT_MOTION = '''INSERT INTO Motion
@@ -174,13 +174,13 @@ INSERT_VERSION = '''INSERT INTO BillVersion
                     title, digest, text, text_link, state)
                     VALUES
                     (%(vid)s, %(bid)s, %(date)s, %(bill_state)s, %(subject)s, %(appropriation)s,
-                    %(substantive_changes)s, %(title)s, %(digest)s, %(doc)s, %(text_link)s, %(state)s)'''
+                    %(substantive_changes)s, %(title)s, %(digest)s, %(text)s, %(text_link)s, %(state)s)'''
 
 # SQL Updates
 UPDATE_BILL_STATUS = '''UPDATE Bill
-                        SET status = %(status)s, billState = %(billState)s
+                        SET status = %(status)s, billState = %(bill_state)s
                         WHERE bid = %(bid)s
-                        AND (status != %(status)s or billState != %(billState)s)'''
+                        AND (status != %(status)s or billState != %(bill_state)s)'''
 
 UPDATE_VERSION = '''UPDATE BillVersion
                     SET title = %(title)s, digest = %(digest)s, text = %(doc)s, date = %(date)s, text_link = %(text_link)s

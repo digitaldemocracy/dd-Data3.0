@@ -19,49 +19,20 @@ class Vote(object):
         self.house = house
 
         self.motion = motion
-        self.result = result
+        self.result = "(PASS)" if result else "(FAIL)"
 
     def add_vote_detail(self, state, vote_result, pid=None,person=None):
-        vote_detail = VoteDetail(state, vote_result, vote=self.vote_id, pid=pid, person=person)
+        vote_detail = VoteDetail(state=state,
+                                 result=vote_result,
+                                 vote=self.vote_id,
+                                 pid=pid,
+                                 alt_id=person["alt_id"] if person else None,
+                                 name = person["name"] if person else None)
         self.vote_details.append(vote_detail)
-
-    def set_vote_id(self, vote_id):
-        self.vote_id = vote_id
-
-    def set_bid(self, bid):
-        self.bid = bid
-
-    def set_mid(self, mid):
-        self.mid = mid
-
-    def set_cid(self, cid):
-        self.cid = cid
-
-    def motion_dict(self):
-        return {'mid': self.mid,
-                'motion': self.motion,
-                'doPass': self.result}
-
-    def to_dict(self):
-        if self.result:
-            vote_res = '(PASS)'
-        else:
-            vote_res = '(FAIL)'
-
-        return {'bid': self.bid,
-                'mid': self.mid,
-                'cid': self.cid,
-                'date': self.vote_date,
-                'vote_seq': self.vote_date_seq,
-                'ayes': self.ayes,
-                'naes': self.naes,
-                'other': self.other,
-                'vote_details': self.vote_details,
-                'result': vote_res}
 
 
 class VoteDetail(object):
-    def __init__(self, state, result, vote=None, pid=None, person=None):
+    def __init__(self, state, result, vote=None, pid=None, person=None, alt_id = None, name = None):
         self.state = state
         self.result = result
 
@@ -69,15 +40,3 @@ class VoteDetail(object):
         self.pid = pid
 
         self.person = person
-
-    def set_vote(self, vote):
-        self.vote = vote
-
-    def set_pid(self, pid):
-        self.pid = pid
-
-    def to_dict(self):
-        return {'voteId': self.vote,
-                'state': self.state,
-                'voteRes': self.result,
-                'pid': self.pid}
