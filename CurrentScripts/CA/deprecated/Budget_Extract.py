@@ -13,7 +13,8 @@ Tables Affected:
     - BillVersion
 '''
 
-from Database_Connection import mysql_connection
+#from Database_Connection import mysql_connection
+import os
 import requests
 import MySQLdb
 import sys
@@ -24,9 +25,9 @@ import pandas as pd
 import subprocess
 from datetime import datetime
 from bs4 import BeautifulSoup
-from graylogger.graylogger import GrayLogger
-GRAY_URL = 'http://dw.digitaldemocracy.org:12202/gelf'
-logger = None
+#from graylogger.graylogger import GrayLogger
+#GRAY_URL = 'http://dw.digitaldemocracy.org:12202/gelf'
+#logger = None
 
 STATE = "CA"
 
@@ -117,8 +118,9 @@ def insert_bill(cursor, bid, number, sessionYear):
             cursor.execute(I_BILL, (bid, bType, number, billState, status, house, session, STATE, sessionYear, visibility_flag))
             I_B += cursor.rowcount
         except MySQLdb.Error:
-            logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-                additional_fields=create_payload('Bill',(I_BILL % (bid, bType, number, billState, status, house, session, STATE, sessionYear, visibility_flag))))
+            print("died")
+            # logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+            #     additional_fields=create_payload('Bill',(I_BILL % (bid, bType, number, billState, status, house, session, STATE, sessionYear, visibility_flag))))
 
 
 '''
@@ -135,9 +137,9 @@ def insert_billversion(cursor, bid, subject):
             cursor.execute(I_BILLVERSION, (bid, bid, billState, subject, subject, STATE))
             I_BV += cursor.rowcount
         except MySQLdb.Error:
-            logger.warning('Insert Failed', full_msg=traceback.format_exc(),
-                additional_fields=create_payload('BillVersion',(I_BILLVERSION % (bid, bid, billState, subject, subject, STATE))))
-        
+            print("here")
+            # logger.warning('Insert Failed', full_msg=traceback.format_exc(),
+            #     additional_fields=create_payload('BillVersion',(I_BILLVERSION % (bid, bid, billState, subject, subject, STATE))))
 '''
 downloads the budget pdfs into specified directory
 |pdfDir|: directory to download the pdfs in
@@ -155,13 +157,13 @@ def download_pdf(pdfDir, url, bid):
     return result
 
 def main():
-    ddinfo = mysql_connection(sys.argv)
-    with MySQLdb.connect(host=ddinfo['host'],
-                        user=ddinfo['user'],
-                        db=ddinfo['db'],
-                        port=ddinfo['port'],
-                        passwd=ddinfo['passwd'],
-                        charset='utf8') as dddb:
+    #ddinfo = mysql_connection(sys.argv)
+    with MySQLdb.connect(host='dddb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+                                   port=3306,
+                                   db='DDDB2016Aug',
+                                   user='dbMaster',
+                                   passwd=os.environ["DBMASTERPASSWORD"],
+                                   charset='utf8') as dddb:
         
         year = datetime.now().year
         yearStr = str(year) + "-" + str(year + 1)[2:]
@@ -176,12 +178,13 @@ def main():
         subprocess.call("mkdir " + pdfDir, shell=True)
         pdfCount = 0        
 
-        budgetList = read_spreadsheet("budgetline items.xlsx")
+        budgetList = read_spreadsheet("budgetlineitems.xlsx")
         for budget in budgetList:
-            #assuming we are using a spreadsheet that has 2015-16 in urls
-            if "2015-16" in budget["url"]:
+            print(budget)
+            #assuming we are using a spreadsheet that has 2018-19 in urls
+            if "2018-19" in budget["url"]:
                 url = budget["url"]
-                tempUrl = url.split("2015-16")
+                tempUrl = url.split("2018-19")
                 url = tempUrl[0] + yearStr  + tempUrl[1]
 
                 bid = "CA_" + str(year) + str(year + 1) + "BUD" + budget["dCode"]
@@ -193,21 +196,21 @@ def main():
                     insert_billversion(dddb, bid, budget["dept"])
 
        
-
-        logger.info(__file__ + ' terminated successfully.', 
-            full_msg='Inserted ' + str(I_B) + ' rows in Bill and inserted ' 
-                      + str(I_BV) + ' rows in BillVersion',
-            additional_fields={'_affected_rows':'Bill:'+ str(I_B) +
-                                           ', BillVersion:'+ str(I_BV),
-                               '_inserted':'Bill:'+ str(I_B) +
-                                           ', BillVersion:' + str(I_BV),
-                               '_state':'CA'})
+        print("here")
+        # logger.info(__file__ + ' terminated successfully.',
+        #     full_msg='Inserted ' + str(I_B) + ' rows in Bill and inserted '
+        #               + str(I_BV) + ' rows in BillVersion',
+        #     additional_fields={'_affected_rows':'Bill:'+ str(I_B) +
+        #                                    ', BillVersion:'+ str(I_BV),
+        #                        '_inserted':'Bill:'+ str(I_B) +
+        #                                    ', BillVersion:' + str(I_BV),
+        #                        '_state':'CA'})
         
         print "Downloaded", str(pdfCount), "pdfs"
         print "Inserted", str(I_B), "rows into Bill"
         print "Inserted", str(I_BV), "rows into BillVersion"
 
 if __name__ == '__main__':
-    with GrayLogger(GRAY_URL) as _logger:
-        logger = _logger
-        main()
+    #with GrayLogger(GRAY_URL) as _logger:
+    #logger = _logger
+    main()
