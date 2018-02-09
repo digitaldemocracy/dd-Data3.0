@@ -200,7 +200,6 @@ class Hearings_Manager(object):
             # Check if the hid_to_bids dict has the hearing
             # in it. if it is not there, get all current bids.
             if hid not in hid_to_bids:
-                print(hid)
                 hid_to_bids[hid] = [bid[0] for bid in self.get_all_bids_in_agenda(hid)]
 
             bids_in_agenda =  hid_to_bids[hid]
@@ -211,8 +210,6 @@ class Hearings_Manager(object):
 
             # If we have a bid
             if hearing.bid is not None:
-                print(hearing.bid)
-                print(bids_in_agenda)
                 # and the bid is not in the list of current bills in the agendas
                 if hearing.bid not in bids_in_agenda:
                     # insert the new hearing agenda.
