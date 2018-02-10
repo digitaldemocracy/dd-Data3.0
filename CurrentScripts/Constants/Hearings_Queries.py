@@ -64,18 +64,17 @@ SELECT_BILL = '''SELECT bid FROM Bill
                  AND type = %(type)s
                  AND number = %(number)s'''
 
-SELECT_HEARING_AGENDA = '''SELECT * FROM HearingAgenda
+SELECT_HEARING_AGENDA = '''SELECT current_flag FROM HearingAgenda
                            WHERE hid = %(hid)s
-                           AND bid = %(bid)s
-                           AND date_created = %(date)s'''
+                           AND bid = %(bid)s order by date_created desc limit 1'''
 
-SELECT_CURRENT_AGENDA = '''SELECT date_created FROM HearingAgenda
+SELECT_CURRENT_BIDS_ON_AGENDA = '''SELECT DISTINCT(bid) FROM HearingAgenda
                            WHERE hid = %(hid)s
-                           AND bid = %(bid)s
-                           AND current_flag = 1'''
+                            AND current_flag = 1'''
 
 # SQL Inserts
-INSERT_HEARING = '''INSERT INTO Hearing (date, state, session_year) VALUE (%(date)s, %(state)s, %(session_year)s)'''
+INSERT_HEARING = '''INSERT INTO Hearing (date, state, session_year) 
+                    VALUE (%(date)s, %(state)s, %(session_year)s)'''
 
 INSERT_COMMITTEE_HEARING = '''INSERT INTO CommitteeHearings
                               (cid, hid)
@@ -85,10 +84,10 @@ INSERT_COMMITTEE_HEARING = '''INSERT INTO CommitteeHearings
 INSERT_HEARING_AGENDA = '''INSERT INTO HearingAgenda
                            (hid, bid, date_created, current_flag)
                            VALUES
-                           (%(hid)s, %(bid)s, %(date_created)s, %(current_flag)s)'''
+                           (%(hid)s, %(bid)s, %(date_created)s, 1)'''
 
 # SQL Updates
-UPDATE_HEARING_AGENDA = '''UPDATE HearingAgenda
+UPDATE_HEARING_AGENDA_TO_NOT_CURRENT = '''UPDATE HearingAgenda
                            SET current_flag = 0
                            WHERE hid = %(hid)s
                            AND bid = %(bid)s'''

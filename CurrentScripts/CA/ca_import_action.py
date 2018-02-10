@@ -29,30 +29,26 @@ Populates:
   - Action (bid, date, text)
 """
 
-import sys
-import json
-import datetime as dt
-from Models.Action import *
-from ca_bill_parser import *
-from Utils.Generic_Utils import *
-from Utils.Database_Connection import *
-from Utils.Bill_Insertion_Manager import *
-from Constants.Bills_Queries import *
+from ca_bill_parser import CaBillParser
+from Utils.Generic_Utils import create_logger
+from Utils.Database_Connection import connect, connect_to_capublic
+from Utils.Bill_Insertion_Manager import BillInsertionManager
 
 
 def main():
     with connect() as dd_cursor:
-        logger = create_logger()
+        with connect_to_capublic() as ca_public:
+            logger = create_logger()
 
-        bill_manager = BillInsertionManager(dd_cursor, logger, 'CA')
-        bill_parser = CaBillParser()
+            bill_manager = BillInsertionManager(dd_cursor, logger, 'CA')
+            bill_parser = CaBillParser(ca_public, dd_cursor, logger)
 
-        # Get all of the Actions from capublic
-        action_list = bill_parser.get_actions()
+            # Get all of the Actions from capublic
+            action_list = bill_parser.get_actions()
 
-        bill_manager.add_actions_db(action_list)
+            bill_manager.add_actions_db(action_list)
 
-        bill_manager.log()
+            bill_manager.log()
 
 
 if __name__ == "__main__":

@@ -1,33 +1,37 @@
+import sys
 import json
 import MySQLdb
-from Generic_Utils import *
-from Generic_Utils import *
 from Constants.Hearings_Queries import *
-from Constants.General_Constants import *
+from Utils.Generic_MySQL import get_comm_cid
+from Utils.Generic_Utils import format_logger_message
+
+reload(sys)
+
+sys.setdefaultencoding('utf-8')
 
 class Hearings_Manager(object):
 
 
-    def __init__(self, dddb, state):
+    def __init__(self, dddb, state, logger):
         self.H_INS = 0  # Hearings inserted
         self.CH_INS = 0  # CommitteeHearings inserted
         self.HA_INS = 0  # HearingAgenda inserted
         self.HA_UPD = 0  # HearingAgenda updated
         self.state = state
         self.dddb = dddb
-        self.logger = create_logger()
+        self.logger = logger
 
 
-    def is_hearing_agenda_in_db(self,  hid, bid, date):
-        ha = {'hid': hid, 'bid': bid, 'date': date}
+    def is_hearing_agenda_in_db(self,  hid, bid):
+        ha = {'hid': hid, 'bid': bid}
 
         try:
             self.dddb.execute(SELECT_HEARING_AGENDA, ha)
 
             if self.dddb.rowcount == 0:
-                return False
+                return None
             else:
-                return True
+                return self.dddb.fetchone()[0]
 
         except MySQLdb.Error:
             self.logger.exception(format_logger_message("HearingAgenda selection failed.", (SELECT_HEARING_AGENDA % ha)))
@@ -72,37 +76,16 @@ class Hearings_Manager(object):
             self.logger.exception(format_logger_message("Hearing selection failed", (SELECT_CHAMBER_HEARING % hearing)))
 
 
-    '''
-    Gets CID from our database using the committee names listed in the agendas
-    '''
 
-
-    def get_comm_cid(self, comm_name, house, date):
-
-        try:
-            self.dddb.execute(SELECT_COMMITTEE, comm_name)
-
-            if self.dddb.rowcount == 0:
-                print("ERROR: Committee not found")
-                return None
-
-            else:
-                return self.dddb.fetchone()[0]
-
-        except MySQLdb.Error:
-            self.logger.exception(format_logger_message("Committee selection failed", (SELECT_COMMITTEE % comm_name)))
-
-
-
-    def update_hearing_agendas(self, hid, bid):
+    def update_hearing_agendas_to_not_current(self, hid, bid):
 
         ha = {'hid': hid, 'bid': bid}
 
         try:
-            self.dddb.execute(UPDATE_HEARING_AGENDA, ha)
+            self.dddb.execute(UPDATE_HEARING_AGENDA_TO_NOT_CURRENT, ha)
             self.HA_UPD += self.dddb.rowcount
         except MySQLdb.Error:
-            self.logger.exception(format_logger_message("HearingAgenda update failed", (UPDATE_HEARING_AGENDA % ha)))
+            self.logger.exception(format_logger_message("HearingAgenda update failed", (UPDATE_HEARING_AGENDA_TO_NOT_CURRENT % ha)))
 
 
     '''
@@ -113,31 +96,19 @@ class Hearings_Manager(object):
     '''
 
 
-    def check_current_agenda(self, hid, bid, date):
-        ha = {'hid': hid, 'bid': bid}
+    def get_all_bids_in_agenda(self, hid):
+        ha = {'hid': hid}
 
         try:
-            self.dddb.execute(SELECT_CURRENT_AGENDA, ha)
-
-            if self.dddb.rowcount == 0:
-                return 1
+            self.dddb.execute(SELECT_CURRENT_BIDS_ON_AGENDA, ha)
+            if self.dddb.rowcount != 0:
+                return self.dddb.fetchall()
             else:
-                curr_date = self.dddb.fetchone()[0]
-
-                date = dt.datetime.strptime(date, '%Y-%m-%d').date()
-
-                if date > curr_date:
-                    self.update_hearing_agendas(hid, bid)
-
-                    return 1
-                elif date < curr_date:
-                    return 0
-                else:
-                    return None
+                return list()
 
         except MySQLdb.Error:
             self.logger.exception(format_logger_message("HearingAgenda selection failed", (SELECT_CURRENT_AGENDA % ha)))
-
+        return None
 
     '''
     Inserts Hearings into the DB
@@ -176,7 +147,6 @@ class Hearings_Manager(object):
             self.CH_INS += self.dddb.rowcount
 
         except MySQLdb.Error:
-            # print traceback.format_exc()
             self.logger.exception(format_logger_message("CommitteeHearing insert failed", (INSERT_COMMITTEE_HEARING % comm_hearing)))
 
 
@@ -185,18 +155,14 @@ class Hearings_Manager(object):
     Inserts HearingAgendas into the DB
     '''
     def insert_hearing_agenda(self, hid, bid, date):
-        current_flag = self.check_current_agenda(hid, bid, date)
+        agenda = {'hid': hid, 'bid': bid, 'date_created': date}
 
-        if current_flag is not None:
-            agenda = {'hid': hid, 'bid': bid, 'date_created': date, 'current_flag': current_flag}
+        try:
+            self.dddb.execute(INSERT_HEARING_AGENDA, agenda)
+            self.HA_INS += self.dddb.rowcount
 
-            try:
-                self.dddb.execute(INSERT_HEARING_AGENDA, agenda)
-                self.HA_INS += self.dddb.rowcount
-
-            except MySQLdb.Error:
-                #print traceback.format_exc()
-                self.logger.exception(format_logger_message("HearingAgenda insert failed", (INSERT_HEARING_AGENDA % agenda)))
+        except MySQLdb.Error:
+            self.logger.exception(format_logger_message("HearingAgenda insert failed", (INSERT_HEARING_AGENDA % agenda)))
 
 
     def import_hearings(self, hearings, cur_date):
@@ -206,20 +172,62 @@ class Hearings_Manager(object):
         the corresponding CommitteeHearings and HearingAgendas.
         :param hearings: A list of hearing model objects to be inserted
         """
+        # this is a dictionary that contains hid as the key and
+        # a list of bills that appear in the agenda in the database.
+        # we use this to compare the new data to the current data.
+        # bills can be added and removed.
+        hid_to_bids = dict()
+        # for each hearing object
         for hearing in hearings:
-            #print("importing")
+            # if the cid is missing and there is a committee_name,
+            # find a cid
+            if hearing.cid is None and hearing.committee_name is not None:
+                hearing.cid = get_comm_cid(self.dddb,
+                                           hearing.committee_name,
+                                           hearing.house,
+                                           hearing.session_year,
+                                           hearing.state,
+                                           self.logger)
+
+            # try to find the hearing in the db
             hid = self.get_hearing_hid(hearing.hearing_date.date(), hearing.session_year, hearing.house, hearing.cid)
 
+            # if the hearing is missing in the db
             if hid is None:
+                # create a new hearing
                 hid = self.insert_hearing(hearing.hearing_date.date(), hearing.state, hearing.session_year)
 
+            # Check if the hid_to_bids dict has the hearing
+            # in it. if it is not there, get all current bids.
+            if hid not in hid_to_bids:
+                hid_to_bids[hid] = [bid[0] for bid in self.get_all_bids_in_agenda(hid)]
+
+            bids_in_agenda =  hid_to_bids[hid]
+
+            # if the cid is not None and the committee hearing is not in the db.
             if hearing.cid is not None and not self.is_comm_hearing_in_db(hearing.cid, hid):
                 self.insert_committee_hearing(hearing.cid, hid)
 
-            if hearing.bid is not None and not self.is_hearing_agenda_in_db(hid, hearing.bid, cur_date):
-                self.insert_hearing_agenda(hid, hearing.bid, cur_date)
+            # If we have a bid
+            if hearing.bid is not None:
+                # and the bid is not in the list of current bills in the agendas
+                if hearing.bid not in bids_in_agenda:
+                    # insert the new hearing agenda.
+                    self.insert_hearing_agenda(hid, hearing.bid, hearing.hearing_date)
+                else:
+                    # if the bill is in the list, remove it from the bids in agenda list
+                    # and update the dict
+                    bids_in_agenda.remove(hearing.bid)
+                    hid_to_bids[hid] = bids_in_agenda
 
+        # for each hearing and bill list
+        # any remaining bills have been removed
+        # and will be set to not current.
+        for hid, bill_list in hid_to_bids.items():
+            for bill in bill_list:
+                self.update_hearing_agendas_to_not_current(hid, bill)
 
+                # base case: they match, don't do anything.
     def log(self):
         """
         Generates a report for the logger

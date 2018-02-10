@@ -23,30 +23,3 @@ class Version(object):
 
         self.doctype = doctype
         self.url = url
-
-
-    def set_bid(self, bid):
-        self.bid = bid
-
-    def set_text(self, text):
-        self.text = text
-
-    def set_text_link(self, text_link):
-        self.text_link = text_link
-
-    def set_date(self, date):
-        self.date = date
-
-    def to_dict(self):
-        return {'vid': self.vid,
-                'bid': self.bid,
-                'state': self.state,
-                'date': self.date,
-                'bill_state': self.bill_state,
-                'subject': self.subject,
-                'appropriation': self.appropriation,
-                'substantive_changes': self.substantive_changes,
-                'title': self.title,
-                'digest': self.digest,
-                'doc': self.text,
-                'text_link': self.text_link}

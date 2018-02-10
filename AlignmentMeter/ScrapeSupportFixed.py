@@ -8,13 +8,11 @@ import requests
 import zipfile
 from io import BytesIO
 from SupportFinder import *
-
+from Utils.Generic_Utils import *
 
 data_dir = 'BillAnalysisLobs/'
 output_dir = 'BillAnalysisOut/'
 zip_url = 'https://downloads.leginfo.legislature.ca.gov/pubinfo_2017.zip'
-
-
 
 
 """Cleans all the lob files out of the data directory and all csv files out of the output directory"""
@@ -33,7 +31,7 @@ def clear_old_data():
             if os.path.isfile(file_path):
                 os.unlink(file_path)
         except Exception as e:
-            print(e)
+            logger.error(e)
 
     for file in os.listdir(os.path.join(output_dir)):
         file_path = os.path.join(output_dir, file)
@@ -41,7 +39,7 @@ def clear_old_data():
             if os.path.isfile(file_path):
                 os.unlink(file_path)
         except Exception as e:
-            print(e)
+            logger.error(e)
 
 
 """Downloads and extracts the data zip file into the data directory"""
@@ -84,14 +82,13 @@ def scrape_lob(doc_name, data):
                                  'no_tbl_info'])
 
 
-def main():
+def main(logger):
     # Apologies to future maintainer for the atrocious error handling here
     try:
         clear_old_data()
         get_zip()
     except Exception as e:
-        print('Loading data failed!')
-        print(e)
+        logger.error('Loading data failed!' + str(e))
 
     dat_cols = ['analysis_id',
                 'bill_id',
@@ -124,7 +121,8 @@ def main():
         count = scrape_lob(doc_name, data)
         counts += count
 
-    print('Counts:\n', counts)
+    logger.debug('Counts:\n', counts)
 
 if __name__ == '__main__':
-    main()
+    logger = create_logger()
+    main(logger)

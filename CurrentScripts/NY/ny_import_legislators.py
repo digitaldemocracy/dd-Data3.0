@@ -354,7 +354,7 @@ def main():
                       {'state': 'NY', 'name': 'PersonStateAffiliation', 'inserted': PSA_INSERT, 'updated': 0, 'deleted': 0},
                       {'state': 'NY', 'name': 'Legislator', 'inserted': L_INSERT, 'updated': 0, 'deleted': 0},
                       {'state': 'NY', 'name': 'Term', 'inserted': T_INSERT, 'updated': T_UPDATE, 'deleted': 0},]}
-    sys.stdout.write(json.dumps(LOG))
+    sys.stderr.write(json.dumps(LOG))
     logger.info(LOG)
 
 

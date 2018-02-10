@@ -18,6 +18,13 @@ SELECT_COMMITTEE = '''SELECT cid FROM Committee
                       AND session_year = %(session_year)s
                       '''
 
+SELECT_COMMITTEE_SHORT_NAME = '''SELECT cid FROM Committee
+                      WHERE state = %(state)s
+                      AND short_name = %(name)s
+                      AND house = %(house)s
+                      AND session_year = %(session_year)s
+                      '''
+
 SELECT_PID = '''SELECT pid FROM AlternateId
                 WHERE alt_id = %(alt_id)s'''
 

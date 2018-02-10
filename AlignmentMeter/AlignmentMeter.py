@@ -5,13 +5,13 @@ import pymysql
 import pickle
 import itertools
 import datetime
+from Utils.Generic_Utils import *
 
 CONN_INFO = {'host': 'dddb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
              #'host': 'dev.digitaldemocracy.org',
              'port': 3306,
              # 'db': 'AndrewTest',
              'db': 'DDDB2016Aug',
-             #'user': 'dbMaster',
              'user': 'scripts',
              'passwd': os.environ['DBMASTERPASSWORD']}
 
@@ -747,7 +747,7 @@ def create_combined_scores_tbl(cnxn):
 
 
 # Print statements are left intentionally so you can monitor process
-def main():
+def main(logger):
     cnxn = pymysql.connect(**CONN_INFO)
 
     print('Connection successful')
@@ -784,4 +784,5 @@ def main():
     
     
 if __name__ == '__main__':
-    main()
+    logger = create_logger()
+    main(logger)

@@ -7,7 +7,8 @@ else
    DAY=`TZ=America/Los_Angeles date +%a`
 fi
 
-BASE_DIR="$( cd "$( dirname "$0" )" && pwd )"
+#BASE_DIR="$( cd "$( dirname "$0" )" && pwd )"
+BASE_DIR="/home/data_warehouse_common/dd-Data3.0/updateScripts"
 WORKING_DIR=$BASE_DIR"/current"
 BACKUP_DIR=$BASE_DIR"/leginfo_"$DAY
 ZIP_NAME="pubinfo_"
@@ -31,7 +32,7 @@ rm -rf $WORKING_DIR
 # Make the directory again.
 mkdir $WORKING_DIR 
 cd $WORKING_DIR
-wget http://downloads.leginfo.legislature.ca.gov/$ZIP_NAME.zip
+wget http://downloads.leginfo.legislature.ca.gov/$ZIP_NAME.zip --no-check-certificate
 unzip $ZIP_NAME.zip
 rm $ZIP_NAME.zip
 cd ..
@@ -39,7 +40,7 @@ cd ..
 # MySQL needs read/execute permission, but is not owner/group.
 chmod -R 775 $WORKING_DIR
 cd $WORKING_DIR
-for SQL_FILE in ~/dd-Data3.0/updateScripts/opengov_load/*
+for SQL_FILE in /home/data_warehouse_common/dd-Data3.0/updateScripts/opengov_load/*
 do
    echo "Loading ${SQL_FILE%.*}..."
    mysql -uroot --local-infile=1 -Dcapublic -f -v < $SQL_FILE
@@ -47,6 +48,6 @@ done
 
 echo "Backing up files..."
 # Backup the current zip files.
-rm -rf $BACKUP_DIR
+rm -rf $WORKING_DIR
 # Copy the files using -R to avoid the "argument list too long" error.
-cp -R $WORKING_DIR $BACKUP_DIR
+#cp -R $WORKING_DIR $BACKUP_DIR
