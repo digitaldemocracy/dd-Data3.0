@@ -771,7 +771,10 @@ def main(logger):
     df.rename(columns={'no_abstain_vote': 'no_abstain_votes',
                        'no_resolution': 'no_resolutions'}, inplace=True)
     # Code takes a long time to run, so you don't want to lose data if there is an issue on the db side
-    pickle.dump(df, open(PCKL_DIR + 'final_df.p', 'wb'))
+    if not os.path.exists(PCKL_DIR):
+        os.makedirs(PCKL_DIR)
+    with open(PCKL_DIR + 'final_df.p', 'wb') as f:
+        pickle.dump(df, f)
     #df = pickle.load(open(PCKL_DIR + 'final_df.p', 'rb'))
 
     engine = 'mysql+pymysql://{user}:{passwd}@{host}/{db}'.format(**CONN_INFO)
