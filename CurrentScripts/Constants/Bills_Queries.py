@@ -87,12 +87,12 @@ SELECT_LAST_MID = '''SELECT MAX(mid) FROM Motion'''
 SELECT_VOTE = '''SELECT VoteId FROM BillVoteSummary
                  WHERE bid = %(bid)s
                  AND mid = %(mid)s
-                 AND VoteDate = %(date)s
-                 AND VoteDateSeq = %(vote_seq)s'''
+                 AND VoteDate = %(vote_date)s
+                 AND VoteDateSeq = %(vote_date_seq)s'''
 
 SELECT_BILL_VOTE_DETAIL = '''SELECT * FROM BillVoteDetail
                 WHERE pid = %(pid)s
-                AND voteId = %(voteId)s'''
+                AND voteId = %(vote)s'''
 
 SELECT_COMMITTEE = '''SELECT cid FROM Committee
                       WHERE short_name = %(name)s
@@ -157,12 +157,12 @@ INSERT_MOTION = '''INSERT INTO Motion
 INSERT_BILL_VOTE_SUMMARY = '''INSERT INTO BillVoteSummary
                 (bid, mid, cid, VoteDate, ayes, naes, abstain, result, VoteDateSeq)
                 VALUES
-                (%(bid)s, %(mid)s, %(cid)s, %(date)s, %(ayes)s, %(naes)s, %(other)s, %(result)s, %(vote_seq)s)'''
+                (%(bid)s, %(mid)s, %(cid)s, %(vote_date)s, %(ayes)s, %(naes)s, %(other)s, %(result)s, %(vote_date_seq)s)'''
 
 INSERT_BILL_VOTE_DETAIL = '''INSERT INTO BillVoteDetail
                 (pid, voteId, result, state)
                 VALUES
-                (%(pid)s, %(voteId)s, %(voteRes)s, %(state)s)'''
+                (%(pid)s, %(vote)s, %(result)s, %(state)s)'''
 
 INSERT_ACTION = '''INSERT INTO Action
                    (bid, date, text, seq_num)
