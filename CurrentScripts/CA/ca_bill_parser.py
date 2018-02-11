@@ -239,7 +239,7 @@ class CaBillParser(object):
             bid = '%s_%s' % (STATE, bid)
             date = vote_date.strftime('%Y-%m-%d %H:%M:%S')
             pid = self.get_person(legislator, loc_code)
-            vote = {'bid': bid, 'mid': mid, 'date': date, 'vote_seq': seq}
+            vote = {'bid': bid, 'mid': mid, 'vote_date': date, 'vote_date_seq': seq}
             vote_id = bill_manager.get_vote_id(vote)
 
             if not vote_id:
