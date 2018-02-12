@@ -63,5 +63,5 @@ def main():
     get_zip()
 
 if __name__ == '__main__':
-    os.chdir('/home/data_warehouse_common/scripts')
+    os.chdir('/home/data_warehouse_common/dd-Data3.0/CurrentScripts/CA/')
     main()

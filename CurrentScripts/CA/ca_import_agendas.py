@@ -17,7 +17,7 @@ from Utils.Database_Connection import *
 
 def main():
     with connect_to_capublic() as capublic:
-        with connect("live") as dddb:
+        with connect() as dddb:
             cur_date = dt.datetime.now(timezone('US/Pacific')).strftime('%Y-%m-%d')
             logger = create_logger()
             parser = CaHearingsParser(dddb, capublic, cur_date, logger)

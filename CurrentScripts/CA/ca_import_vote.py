@@ -33,15 +33,10 @@ Populates:
 """
 
 import sys
-import json
-import MySQLdb
-import traceback
-from Models.Vote import *
-from ca_bill_parser import *
-from Constants.Bills_Queries import *
-from Utils.Generic_Utils import *
-from Utils.Database_Connection import *
-from Utils.Bill_Insertion_Manager import *
+from ca_bill_parser import CaBillParser
+from Utils.Generic_Utils import create_logger
+from Utils.Database_Connection import connect_to_capublic, connect
+from Utils.Bill_Insertion_Manager import BillInsertionManager
 
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -49,18 +44,20 @@ sys.setdefaultencoding('utf8')
 
 def main():
     with connect() as dd_cursor:
-        logger = create_logger()
+        with connect_to_capublic() as ca_public:
 
-        bill_manager = BillInsertionManager(dd_cursor, logger, 'CA')
-        bill_parser = CaBillParser(logger=logger)
+            logger = create_logger()
 
-        vote_list = bill_parser.get_summary_votes()
-        bill_manager.add_votes_db(vote_list)
+            bill_manager = BillInsertionManager(dd_cursor, logger, 'CA')
+            bill_parser = CaBillParser(ca_public, dd_cursor, logger)
 
-        vote_detail_list = bill_parser.get_detail_votes(bill_manager)
-        bill_manager.add_vote_details_db(vote_detail_list)
+            vote_list = bill_parser.get_summary_votes()
+            bill_manager.add_votes_db(vote_list)
 
-        bill_manager.log()
+            vote_detail_list = bill_parser.get_detail_votes(bill_manager)
+            bill_manager.add_vote_details_db(vote_detail_list)
+
+            bill_manager.log()
 
 
 if __name__ == "__main__":

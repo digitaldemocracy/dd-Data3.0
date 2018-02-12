@@ -314,7 +314,7 @@ class BillInsertionManager(object):
                     self.M_INSERTED += 1
                     mid = self.get_motion_id(vote.motion_dict())
 
-                vote.set_mid(mid)
+                vote.mid = mid
 
             # Get a vote's ID number if it exists
             vote_id = self.get_vote_id(vote.__dict__)
@@ -326,12 +326,12 @@ class BillInsertionManager(object):
                 self.BVS_INSERTED += 1
                 vote_id = self.get_vote_id(vote.__dict__)
 
-            vote.set_vote_id(vote_id)
+            vote.vote_id = vote_id
 
             # Insert all the BillVoteDetails associated with a vote
             if vote.vote_details is not None:
                 for detail in vote.vote_details:
-                    detail.set_vote(vote.vote_id)
+                    detail.vote = vote.vote_id
                 self.add_vote_details_db(vote.vote_details)
 
         return True
