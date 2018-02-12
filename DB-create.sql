@@ -1911,7 +1911,7 @@ CREATE TABLE IF NOT EXISTS TT_Cuts (
 
 CREATE TABLE IF NOT EXISTS TT_ServiceRequests (
   cutId INTEGER,
-  serviceProvider ENUM("cielo", "green_button", "other"),
+  serviceProvider ENUM("cielo", "watson", "closed_captions", "green_button", "other"),
   turnaround INTEGER,
   fidelity VARCHAR(255),
   importance VARCHAR(255),
