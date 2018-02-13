@@ -37,7 +37,7 @@ def main():
         cur_date = dt.datetime.now().strftime('%Y-%m-%d')
         session_year = get_session_year(dddb, "TX", logger)
         hearing_parser = TxHearingParser(dddb, logger, session_year)
-        hearing_manager = Hearings_Manager(dddb, 'TX')
+        hearing_manager = Hearings_Manager(dddb, 'TX', logger)
 
         senate_hearings = hearing_parser.scrape_committee_meeting_list('Senate')
         hearing_manager.import_hearings(senate_hearings, cur_date)
