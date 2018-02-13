@@ -5,7 +5,7 @@ import csv
 def connect_db(stmt):
 
     db = pymysql.connect(host='dddb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
-                         host='dev.digitaldemocracy.org',
+                         #host='dev.digitaldemocracy.org',
                          # db=AndrewTest',
                          db='DDDB2016Aug',
                          user='scripts',
