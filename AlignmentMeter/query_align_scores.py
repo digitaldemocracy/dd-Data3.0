@@ -4,12 +4,12 @@ import csv
 
 def connect_db(stmt):
 
-    db = pymysql.connect(#host='dddb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+    db = pymysql.connect(host='dddb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                          host='dev.digitaldemocracy.org',
                          # db=AndrewTest',
                          db='DDDB2016Aug',
-                         #user='scripts',
-                         user='dbMaster',
+                         user='scripts',
+                         #user='dbMaster',
                          passwd=os.environ['DBMASTERPASSWORD'])
 
     cur = db.cursor()
