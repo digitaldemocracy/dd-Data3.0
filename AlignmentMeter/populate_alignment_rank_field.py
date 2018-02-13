@@ -1,10 +1,14 @@
-import MySQLdb
+import os
+import pymysql
 
 def main():
-    db = MySQLdb.connect(host="dddb.chzg5zpujwmo.us-west-2.rds.amazonaws.com",
-                         user="dbMaster",
-                         passwd="BalmerPeak",
-                         db="DDDB2016Aug")
+    db = pymysql.connect(#host='dddb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+                         host='dev.digitaldemocracy.org',
+                         # db=AndrewTest',
+                         db='DDDB2016Aug',
+                         #user='scripts',
+                         user='dbMaster',
+                         passwd=os.environ['DBMASTERPASSWORD'])
 
     cur = db.cursor()
     cur.execute("""
