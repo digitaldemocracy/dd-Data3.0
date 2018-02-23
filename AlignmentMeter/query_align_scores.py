@@ -1,13 +1,16 @@
-import MySQLdb
+import os
+import pymysql
 import csv
-from progress.bar import Bar
 
 def connect_db(stmt):
 
-    db = MySQLdb.connect(host="dddb.chzg5zpujwmo.us-west-2.rds.amazonaws.com",
-                         user="dbMaster",
-                         passwd="BalmerPeak",
-                         db="DDDB2016Aug")
+    db = pymysql.connect(host='dddb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+                         #host='dev.digitaldemocracy.org',
+                         # db=AndrewTest',
+                         db='DDDB2016Aug',
+                         user='scripts',
+                         #user='dbMaster',
+                         passwd=os.environ['DBMASTERPASSWORD'])
 
     cur = db.cursor()
     cur.execute(stmt)
@@ -61,18 +64,21 @@ def get_align_data(pid, oid):
 
     cur = connect_db(stmt.format(pid, oid))
     header = [i[0] for i in cur.description]
+
     results = cur.fetchall()
     for row in results:
-        key = (str(row[0]) + str(row[1]) + str(row[2]))
-        criteria[key].append(row)
+        if row[0] is not None and row[1] is not None and row[2] is not None:
+            key = "{0:1.0f}{1:1.0f}{2:1.0f}".format(row[0], row[1], row[2])
+            criteria[key].append(row)
 
     for vote in votes:
         flags = list(vote)
         filename = '{0}_{1}_{2}_{3}_{4}.csv'.format(pid, oid, flags[0], flags[1], flags[2])
-        with open('align_data/' + filename, 'wb') as csvfile:
+
+        with open('align_data/' + filename, 'w') as csvfile:
             w = csv.writer(csvfile)
             w.writerow(header)
-            for key, value in criteria.iteritems():
+            for key, value in criteria.items():
                 crit = list(key)
                 if value and not(flags[0] == '1' and flags[0] == crit[0]) and not(flags[1] == '1' and flags[1] == crit[1]) and not(flags[2] == '1' and flags[2] == crit[2]):
                     for v in value:
@@ -87,16 +93,17 @@ def main():
     #oids = [-23, -9, -7]
 
     ## SIMPLE TEST
-    #pids = [68321]
-    #oids = [-7]
+    # pids = [68321]
+    # oids = [-7]
+    if not os.path.exists('align_data'):
+        os.mkdir('align_data')
 
-
-    bar = Bar('Processing', max=len(pids) * len(oids))
+    #bar = Bar('Processing', max=len(pids) * len(oids))
     for pid in pids:
         for oid in oids:
             get_align_data(pid, oid)
-            bar.next()
-    bar.finish()
+            #bar.next()
+    #bar.finish()
 
 if __name__ == "__main__":
     main()
