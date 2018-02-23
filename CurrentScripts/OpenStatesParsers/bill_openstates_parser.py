@@ -14,31 +14,19 @@ Source:
   -OpenStates API
 """
 
-import requests
-import json
 import datetime as dt
-from Constants.General_Constants import *
-from Models.Bill import *
-from Models.Vote import *
-from Models.Version import *
-from Models.Action import *
+from Models.Vote import Vote
+from Models.Action import Action
 
 
 class BillOpenStatesParser(object):
-    def __init__(self, state):
+    def __init__(self, state, api, metadata):
         self.state = state
-
-        self.BILL_SEARCH_URL = "https://openstates.org/api/v1/bills/?state={0}&search_window=session&updated_since={1}"
-        self.BILL_SEARCH_URL += "&apikey=" + OPENSTATES_API_KEY
-
-        self.BILL_DETAIL_URL = "https://openstates.org/api/v1/bills/{0}/"
-        self.BILL_DETAIL_URL += "?apikey=" + OPENSTATES_API_KEY
-
-        self.STATE_METADATA_URL = "https://openstates.org/api/v1/metadata/{0}/"
-        self.STATE_METADATA_URL += "?apikey=" + OPENSTATES_API_KEY
+        self.api = api
+        self.metadata = metadata
 
 
-    def get_bill_list(self):
+    def get_bill_list(self, bill_json):
         """
         This function gets a list of bills from OpenStates
         Should be overwritten on a state by state basis
@@ -53,8 +41,6 @@ class BillOpenStatesParser(object):
         :param bid: The bill's BID in our database
         :return: A list of Vote objects
         """
-        metadata_url = self.STATE_METADATA_URL.format(self.state.lower())
-        metadata = requests.get(metadata_url).json()
 
         old_vote_date = None
         vote_seq = 1
@@ -78,7 +64,7 @@ class BillOpenStatesParser(object):
 
             date = str(dt.datetime.combine(date, dt.datetime.min.time()))
 
-            house = metadata["chambers"][entry["chamber"]]["name"]
+            house = self.metadata["chambers"][entry["chamber"]]["name"]
 
             vote = Vote(vote_date=date, vote_date_seq=vote_seq,
                         ayes=entry['yes_count'],naes=entry['no_count'],
@@ -112,10 +98,6 @@ class BillOpenStatesParser(object):
         old_action_date = None
 
         for entry in bill_actions:
-            # action = dict()
-            #
-            # action['bid'] = bid
-
             date = dt.datetime.strptime(entry['date'], '%Y-%m-%d %H:%M:%S').date()
 
             # seq_num is incremented if multiple actions happen on one day
@@ -131,13 +113,8 @@ class BillOpenStatesParser(object):
                     action_seq = 1
                     old_action_date = new_action_date
 
-            # action['seq_num'] = action_seq
-            date = str(date)
-
-            # action["text"] = entry["action"]
-
             action = Action(bid=bid,
-                            date=date,
+                            date=str(date),
                             text=entry['action'],
                             seq_num=action_seq)
 
@@ -166,9 +143,7 @@ class BillOpenStatesParser(object):
         :return: A dictionary containing details on a bill's votes, actions, and versions
         """
 
-        api_url = self.BILL_DETAIL_URL.format(os_bid)
-
-        detail_json = requests.get(api_url).json()
+        detail_json = self.api.get_bill_detail(os_bid)
 
         details = dict()
 

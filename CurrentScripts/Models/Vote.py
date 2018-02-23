@@ -40,3 +40,5 @@ class VoteDetail(object):
         self.pid = pid
 
         self.person = person
+        self.alt_id = alt_id
+        self.name = name
