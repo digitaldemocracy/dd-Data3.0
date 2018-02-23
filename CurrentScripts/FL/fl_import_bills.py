@@ -26,12 +26,16 @@ import os
 import sys
 import glob
 import urllib2
+import MySQLdb
+import requests
 import subprocess
-from fl_bill_parser import *
 from bs4 import BeautifulSoup
-from Utils.Generic_Utils import *
-from Utils.Database_Connection import *
-from Utils.Bill_Insertion_Manager import *
+from Constants.Bills_Queries import *
+from fl_bill_parser import FlBillParser
+from Utils.Database_Connection import connect
+from OpenStatesParsers.OpenStatesApi import OpenStatesAPI
+from Utils.Bill_Insertion_Manager import BillInsertionManager
+from Utils.Generic_Utils import create_logger, format_absolute_path, format_logger_message
 
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -112,7 +116,7 @@ def get_pid_name(dddb, person):
             dddb.execute(SELECT_LEG_PID_FIRSTNAME, legislator)
 
             if dddb.rowcount != 1:
-                print("Error: PID for " + person['name'] + " not found")
+                # print("Error: PID for " + person['name'] + " not found")
                 #print(legislator)
                 return None
             else:
@@ -229,20 +233,20 @@ def format_version(version_list):
 
     for version in version_list:
         try:
-            version.set_date(ver_dates[version.bill_state])
+            version.date = ver_dates[version.bill_state]
         except:
             logger.exception("Error getting version date for bill " + version.bid)
 
         if version.doctype == 'text/html':
             version_text = requests.get(version.url).content
-            version.set_text(version_text)
+            version.text = version_text
         # This is for when we set up FL bill text properly
         else:
             get_pdf(version.url, version.vid)
-            version.set_text(read_pdf_text(version.vid))
+            version.text = read_pdf_text(version.vid)
 
             link_name = 'https://s3-us-west-2.amazonaws.com/dd-drupal-files/bill/FL/' + version.vid + '.pdf'
-            version.set_text_link(link_name)
+            version.text_link = link_name
 
 
 def format_votes(dddb, vote_list):
@@ -252,13 +256,13 @@ def format_votes(dddb, vote_list):
     :param vote_list: A list of a bill's Vote objects
     """
     for vote in vote_list:
-        vote.set_cid(get_vote_cid(dddb, vote))
+        vote.cid = get_vote_cid(dddb, vote)
 
         for vote_detail in vote.vote_details:
-            #print(vote_detail.person)
+            # print(vote_detail.person)
             if vote_detail.person['name'].lower() != 'vacant':
-                vote_detail.set_vote(vote.vote_id)
-                vote_detail.set_pid(get_pid(dddb, vote_detail.person))
+                vote_detail.vote = vote.vote_id
+                vote_detail.pid = get_pid(dddb, vote_detail.person)
 
 
 def format_bills(dddb):
@@ -266,11 +270,13 @@ def format_bills(dddb):
     This function gets bill data from the bill parser and formats them with additional data
     :param dddb: A connection to the database
     """
-    bill_parser = FlBillParser()
-    bill_list = bill_parser.get_bill_list()
+    api = OpenStatesAPI("FL")
+    metadata = api.get_state_metadate_json()
+    bill_parser = FlBillParser(api, metadata)
+    bill_list = bill_parser.get_bill_list(api.get_bill_json())
 
     for bill in bill_list:
-        print(bill.bid)
+        # print(bill.bid)
         format_votes(dddb, bill.votes)
         format_version(bill.versions)
 
