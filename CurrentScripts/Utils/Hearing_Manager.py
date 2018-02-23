@@ -2,16 +2,14 @@ import sys
 import json
 import MySQLdb
 from Constants.Hearings_Queries import *
-from Utils.Generic_MySQL import get_comm_cid
-from Utils.Generic_Utils import format_logger_message
+from Generic_MySQL import get_comm_cid
+from Generic_Utils import format_logger_message
 
 reload(sys)
 
 sys.setdefaultencoding('utf-8')
 
 class Hearings_Manager(object):
-
-
     def __init__(self, dddb, state, logger):
         self.H_INS = 0  # Hearings inserted
         self.CH_INS = 0  # CommitteeHearings inserted
@@ -22,11 +20,11 @@ class Hearings_Manager(object):
         self.logger = logger
 
 
-    def is_hearing_agenda_in_db(self,  hid, bid):
-        ha = {'hid': hid, 'bid': bid}
+    def is_hearing_agenda_in_db(self, hid, bid, date):
+        ha = {'hid': hid, 'bid': bid, 'date': date}
 
         try:
-            self.dddb.execute(SELECT_HEARING_AGENDA, ha)
+            self.dddb.execute(SELECT_HEARING_AGENDA_DATE, ha)
 
             if self.dddb.rowcount == 0:
                 return None
@@ -157,12 +155,13 @@ class Hearings_Manager(object):
     def insert_hearing_agenda(self, hid, bid, date):
         agenda = {'hid': hid, 'bid': bid, 'date_created': date}
 
-        try:
-            self.dddb.execute(INSERT_HEARING_AGENDA, agenda)
-            self.HA_INS += self.dddb.rowcount
+        if self.is_hearing_agenda_in_db(hid, bid, date) is not None:
+            try:
+                self.dddb.execute(INSERT_HEARING_AGENDA, agenda)
+                self.HA_INS += self.dddb.rowcount
 
-        except MySQLdb.Error:
-            self.logger.exception(format_logger_message("HearingAgenda insert failed", (INSERT_HEARING_AGENDA % agenda)))
+            except MySQLdb.Error:
+                self.logger.exception(format_logger_message("HearingAgenda insert failed", (INSERT_HEARING_AGENDA % agenda)))
 
 
     def import_hearings(self, hearings, cur_date):
@@ -215,6 +214,7 @@ class Hearings_Manager(object):
                 if hearing.bid not in bids_in_agenda:
                     # insert the new hearing agenda.
                     self.insert_hearing_agenda(hid, hearing.bid, cur_date)
+                    bids_in_agenda.append(hearing.bid)
                 else:
                     # if the bill is in the list, remove it from the bids in agenda list
                     # and update the dict

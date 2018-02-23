@@ -68,6 +68,11 @@ SELECT_HEARING_AGENDA = '''SELECT current_flag FROM HearingAgenda
                            WHERE hid = %(hid)s
                            AND bid = %(bid)s order by date_created desc limit 1'''
 
+SELECT_HEARING_AGENDA_DATE = '''SELECT * FROM HearingAgenda
+                                WHERE hid = %(hid)s
+                                AND bid = %(bid)s
+                                AND date_created = %(date)s'''
+
 SELECT_CURRENT_BIDS_ON_AGENDA = '''SELECT DISTINCT(bid) FROM HearingAgenda
                            WHERE hid = %(hid)s
                             AND current_flag = 1'''

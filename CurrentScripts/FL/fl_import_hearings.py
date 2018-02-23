@@ -66,7 +66,8 @@ def clean_date(line):
 Takes the committee names listed in the agenda files
 and converts them to the format that commmittee names take in our database
 '''
-def format_committee(comm, house, date):
+def format_committee(comm, house, date, subcomm=None):
+    print(comm)
     comm_name = dict()
 
     comm_name['house'] = house
@@ -76,7 +77,15 @@ def format_committee(comm, house, date):
     comm = comm.replace('\x0c', '')
     comm = comm.split('(')[0]
 
-    if house.lower() == 'house':
+    if subcomm is not None:
+        subcomm = subcomm.replace('\x0c', '')
+        subcomm = subcomm.split('(')[0]
+        subcomm = subcomm.split('Subcommittee')[0].strip()
+
+        comm_name['name'] = subcomm
+        comm_name['type'] = 'Subcommittee'
+
+    elif house.lower() == 'house':
         subcommittee = re.match(r'.*?(?=\sSubcommittee)', comm)
 
         if 'Joint' in comm:
@@ -189,8 +198,8 @@ def get_hearing_hid(date, house, dddb):
 '''
 Gets CID from our database using the committee names listed in the agendas
 '''
-def get_comm_cid(comm, house, date, dddb):
-    comm_name = format_committee(comm, house, date)
+def get_comm_cid(comm, house, date, dddb, subcomm=None):
+    comm_name = format_committee(comm, house, date, subcomm)
 
     try:
         cid = get_entity_id(dddb, SELECT_COMMITTEE_SHORT_NAME, comm_name, 'Committee', logger)
@@ -200,7 +209,7 @@ def get_comm_cid(comm, house, date, dddb):
                 cid = get_entity_id(dddb, SELECT_COMMITTEE, comm_name, 'Committee', logger)
                 if not cid:
                     logger.exception("ERROR: Committee not found")
-                    #print(SELECT_COMMITTEE_SHORT_NAME % comm_name)
+                    print(SELECT_COMMITTEE_SHORT_NAME % comm_name)
                     return None
                 else:
                     return cid
@@ -232,7 +241,6 @@ def get_bill_bid(bill, date, dddb):
         if dddb.rowcount == 0:
             logger.exception("ERROR: Bill not found")
             print(SELECT_BILL%bill_info)
-            exit()
 
         else:
             return dddb.fetchone()[0]
@@ -357,6 +365,9 @@ def import_house_agendas(f, dddb):
     date = None
     committee = None
 
+    is_subcomm = False
+    subcomm = None
+
     for line in f:
         if 'MEETINGS' in line:
             h_flag = 1
@@ -377,23 +388,42 @@ def import_house_agendas(f, dddb):
                         for item in match:
 
                             bid = get_bill_bid(item, date, dddb)
-                            print(bid)
+                            #print(bid)
                             hearing = Hearing(date, 'House', 'Regular', 'FL', session_year,
                                               committee, bid)
 
                             hearing_list.append(hearing)
 
                 else:
-                    comm = re.search(r'^.*?Committee.*?(?=[0-9])', line)
-                    if comm is not None:
+                    if is_subcomm is True:
+                        comm = re.search(r'^.*?Committee.*?(?=[0-9])', line)
+                        if comm is not None:
+                            if 'the' not in comm.group(0).lower():
+                                committee = get_comm_cid(comm.group(0), 'House', date, dddb, subcomm.group(0))
+                                print(committee)
 
-                        if 'the' not in comm.group(0).lower():
-                            committee = get_comm_cid(comm.group(0), 'House', date, dddb)
-                            print(committee)
-                            hearing = Hearing(date, 'House', 'Regular', 'FL', session_year,
-                                              committee, None)
+                                hearing = Hearing(date, 'House', 'Regular', 'FL', session_year,
+                                                  committee, None)
 
-                            hearing_list.append(hearing)
+                                hearing_list.append(hearing)
+                        is_subcomm = False
+                        subcomm = None
+
+                    else:
+                        subcomm = re.search(r'^.*?Subcommittee$', line)
+                        if subcomm is not None:
+                            is_subcomm = True
+                            print(subcomm)
+
+                        comm = re.search(r'^.*?Committee.*?(?=[0-9])', line)
+                        if comm is not None:
+                            if 'the' not in comm.group(0).lower():
+                                committee = get_comm_cid(comm.group(0), 'House', date, dddb)
+                                print(committee)
+                                hearing = Hearing(date, 'House', 'Regular', 'FL', session_year,
+                                                  committee, None)
+
+                                hearing_list.append(hearing)
 
         else:
             continue
@@ -431,6 +461,7 @@ def import_senate_agendas(f, dddb):
 
             elif date is not None:
                 if re.search(r'.*?(?=(:\s([a-zA-Z]+),\s([a-zA-Z]+)\s([0-9]{1,2}),\s([0-9]{4})))', line) is not None:
+                    # Should check to make sure we're still parsing senate committee names correctly
                     comm = re.search(r'.*?(?=(:\s([a-zA-Z]+),\s([a-zA-Z]+)\s([0-9]{1,2}),\s([0-9]{4})))', line)
 
                     if "Special Order" not in comm.group(0):
@@ -439,6 +470,7 @@ def import_senate_agendas(f, dddb):
 
                         hearing = Hearing(date, 'Senate', 'Regular', 'FL', session_year,
                                           committee, None)
+
                         hearings_list.append(hearing)
 
                 elif re.findall(r'(SB\s[0-9]+|SCR\s[0-9]+|SJR\s[0-9]+|SR\s[0-9]+|SM\s[0-9]+|SPB\s[0-9]+)', line) is not None:
@@ -512,10 +544,10 @@ def main():
     with connect() as dddb:
         cur_date = dt.datetime.now().strftime('%Y-%m-%d')
 
-        hearing_manager = Hearings_Manager(dddb, 'FL')
+        hearing_manager = Hearings_Manager(dddb, 'FL', logger)
 
-        senate_hearings = get_senate_agenda(dddb)
-        house_hearings = get_house_agenda(dddb)
+        senate_hearings = list(set(get_senate_agenda(dddb)))
+        house_hearings = list(set(get_house_agenda(dddb)))
 
         hearing_manager.import_hearings(senate_hearings, cur_date)
         hearing_manager.import_hearings(house_hearings, cur_date)
