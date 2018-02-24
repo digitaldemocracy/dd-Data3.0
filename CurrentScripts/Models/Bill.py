@@ -1,6 +1,6 @@
 class Bill(object):
     def __init__(self, bid, bill_type, number, house, bill_state,
-                 session, state, session_year, title=None, os_bid = None, status=None):
+                 session, state, session_year, title=None, os_bid=None, status=None):
 
         self.bid = bid
 

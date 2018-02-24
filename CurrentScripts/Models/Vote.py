@@ -27,12 +27,18 @@ class Vote(object):
                                  vote=self.vote_id,
                                  pid=pid,
                                  alt_id=person["alt_id"] if person else None,
-                                 name = person["name"] if person else None)
+                                 name=person["name"] if person else None,
+                                 person=person)
         self.vote_details.append(vote_detail)
+
+    def motion_dict(self):
+        return {'mid': self.mid,
+                'motion': self.motion,
+                'doPass': 1 if self.result == '(PASS)' else 0}
 
 
 class VoteDetail(object):
-    def __init__(self, state, result, vote=None, pid=None, person=None, alt_id = None, name = None):
+    def __init__(self, state, result, vote=None, pid=None, person=None, alt_id=None, name=None):
         self.state = state
         self.result = result
 
