@@ -103,8 +103,8 @@ SELECT_COMMITTEE = '''SELECT cid FROM Committee
 SELECT_PID = '''SELECT pid FROM AlternateId
                 WHERE alt_id = %(alt_id)s'''
 
-SELECT_LEG_PID = '''SELECT * FROM Person p, Term t, servesOn s,
-                    WHERE p.pid = t.pid
+SELECT_LEG_PID = '''SELECT * FROM Person p
+                    JOIN Term t ON p.pid = t.pid
                     AND t.state = %(state)s
                     AND t.current_term = 1
                     AND p.last LIKE %(last)s
@@ -183,7 +183,7 @@ UPDATE_BILL_STATUS = '''UPDATE Bill
                         AND (status != %(status)s or billState != %(bill_state)s)'''
 
 UPDATE_VERSION = '''UPDATE BillVersion
-                    SET title = %(title)s, digest = %(digest)s, text = %(doc)s, date = %(date)s, text_link = %(text_link)s
+                    SET title = %(title)s, digest = %(digest)s, text = %(text)s, date = %(date)s, text_link = %(text_link)s
                     WHERE vid = %(vid)s'''
 
 UPDATE_ACTION_TEXT = '''UPDATE Action

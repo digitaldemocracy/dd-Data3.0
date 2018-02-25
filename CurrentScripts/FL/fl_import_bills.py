@@ -259,7 +259,6 @@ def format_votes(dddb, vote_list):
         vote.cid = get_vote_cid(dddb, vote)
 
         for vote_detail in vote.vote_details:
-            # print(vote_detail.person)
             if vote_detail.person['name'].lower() != 'vacant':
                 vote_detail.vote = vote.vote_id
                 vote_detail.pid = get_pid(dddb, vote_detail.person)
