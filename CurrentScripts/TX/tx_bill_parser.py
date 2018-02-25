@@ -10,49 +10,42 @@ Last Updated: 7/10/2017
 Description:
   - This file creates a Texas specific parser for parsing bill data.
 """
-
-from OpenStatesParsers.bill_openstates_parser import *
+from Models.Bill import Bill
+from Models.Version import Version
+import datetime as dt
+from OpenStatesParsers.bill_openstates_parser import BillOpenStatesParser
 
 class TxBillParser(BillOpenStatesParser):
-    def __init__(self):
+    def __init__(self, api, metadata):
         """
         Constructor for TxBillParser Class. Using OpenStates General Parser.
         Overriding get_bill_list and get_bill_versions
         """
-        super(TxBillParser, self).__init__("TX")
+        super(TxBillParser, self).__init__("TX", api, metadata)
 
-    def get_bill_list(self):
-        updated_date = dt.date.today() - dt.timedelta(weeks=1)
-        updated_date = updated_date.strftime('%Y-%m-%d')
-        api_url = self.BILL_SEARCH_URL.format(self.state.lower(), updated_date)
-        metadata_url = self.STATE_METADATA_URL.format(self.state.lower())
-
-        bill_json = requests.get(api_url).json()
-        metadata = requests.get(metadata_url).json()
-
+    def get_bill_list(self, bill_json):
         bill_list = list()
-
         for entry in bill_json:
             # bill['os_bid'] = entry["id"]
 
             state = entry["state"].upper()
-            house = metadata["chambers"][entry["chamber"]]["name"]
+            house = self.metadata["chambers"][entry["chamber"]]["name"]
 
             # The bill's type and number, eg. SB 01
             # bill_id[0] is the type, [1] is the number
             bill_id = entry["bill_id"].split(" ", 1)
 
-            session_data = metadata["session_details"][entry["session"]]
+            session_data = self.metadata["session_details"][entry["session"]]
 
             session_name = entry["session"]
-            for term in metadata["terms"]:
+            for term in self.metadata["terms"]:
                 if session_name in term["sessions"]:
                     session_year = term["start_year"]
 
             # This value is used to construct the BID for a bill
             bid_session = str(session_year)
 
-            session_data = metadata['session_details'][entry['session']]
+            session_data = self.metadata['session_details'][entry['session']]
 
             if session_data["type"] == "primary":
                 session = 0
@@ -75,9 +68,9 @@ class TxBillParser(BillOpenStatesParser):
                                        bid=bid,
                                        title=entry['title'])
 
-            bill.set_votes(details['votes'])
-            bill.set_versions(details['versions'])
-            bill.set_actions(details['actions'])
+            bill.votes = details['votes']
+            bill.versions = details['versions']
+            bill.actions = details['actions']
 
             bill_list.append(bill)
 

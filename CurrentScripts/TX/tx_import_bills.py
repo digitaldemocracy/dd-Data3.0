@@ -23,9 +23,11 @@ Populates:
 """
 
 import urllib2
-from tx_bill_parser import *
-from Utils.Bill_Insertion_Manager import *
-from Utils.Generic_Utils import create_logger
+import MySQLdb
+from tx_bill_parser import TxBillParser
+from OpenStatesParsers.OpenStatesApi import OpenStatesAPI
+from Utils.Bill_Insertion_Manager import BillInsertionManager, SELECT_LEG_PID, SELECT_PID
+from Utils.Generic_Utils import create_logger, format_logger_message
 from Utils.Database_Connection import connect
 
 
@@ -95,7 +97,7 @@ def format_version(version_list):
             doc = None
             #print('URL error with version ' + version.vid)
 
-        version.set_text(doc)
+        version.text = doc
 
 
 def format_votes(dddb, vote_list):
@@ -106,7 +108,7 @@ def format_votes(dddb, vote_list):
     """
     for vote in vote_list:
         for vote_detail in vote.vote_details:
-            vote_detail.set_vote(vote.vote_id)
+            vote_detail.vote = vote.vote_id
 
             if vote_detail.person is not None:
                 if vote_detail.person['alt_id'] is None:
@@ -121,7 +123,7 @@ def format_votes(dddb, vote_list):
 
                         vote.add_vote_detail(state=state, vote_result=vote_result, pid=pid)
                 else:
-                    vote_detail.set_pid(get_pid(dddb, vote_detail.person))
+                    vote_detail.pid = get_pid(dddb, vote_detail.person)
 
 
 def format_bills(dddb):
@@ -131,8 +133,10 @@ def format_bills(dddb):
     :param dddb: A connection to the database
     :return: A list of Bill objects
     """
-    bill_parser = TxBillParser()
-    bill_list = bill_parser.get_bill_list()
+    api = OpenStatesAPI("TX")
+    metadata = api.get_state_metadate_json()
+    bill_parser = TxBillParser(api, metadata)
+    bill_list = bill_parser.get_bill_list(api.get_bill_json())
 
     for bill in bill_list:
         format_votes(dddb, bill.votes)
