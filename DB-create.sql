@@ -239,10 +239,9 @@ CREATE TABLE IF NOT EXISTS OrganizationStateAffiliation (
   oid    INTEGER,
   state  VARCHAR(2),
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
-  lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
-
+  lastTouched_ts int(11) GENERATED ALWAYS AS ((to_seconds(`lastTouched`) - to_seconds('1970-01-01'))) VIRTUAL,
   PRIMARY KEY (oid, state),
-  FOREIGN KEY (oid) REFERENCES Organizations(pid),
+  FOREIGN KEY (oid) REFERENCES Organizations(oid),
   FOREIGN KEY (state) REFERENCES State(abbrev)
 )
   ENGINE = INNODB
@@ -1902,7 +1901,7 @@ CREATE TABLE IF NOT EXISTS TT_Cuts (
   created TIMESTAMP DEFAULT NOW(),
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
   lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
-
+  vtt VARCHAR(255),
   PRIMARY KEY (cutId),
   FOREIGN KEY (videoId) REFERENCES TT_Videos(videoId)
 )
@@ -1920,6 +1919,7 @@ CREATE TABLE IF NOT EXISTS TT_ServiceRequests (
   status ENUM("in_progress", "completed") DEFAULT "in_progress",
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
   lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
+  created DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (cutId),
   FOREIGN KEY (cutId) REFERENCES TT_Cuts(cutId)
 )
