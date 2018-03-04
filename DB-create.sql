@@ -1876,7 +1876,7 @@ CREATE TABLE IF NOT EXISTS TT_Videos (
   house VARCHAR(255),
   m3ug TINYINT(1) DEFAULT 0,
   doVFT TINYINT(1) DEFAULT 0,
-  priority TINYINT(1) DEFAULT 2,
+  priority TINYINT(1) DEFAULT 4,
   glacierId VARCHAR(255),
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
   lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
