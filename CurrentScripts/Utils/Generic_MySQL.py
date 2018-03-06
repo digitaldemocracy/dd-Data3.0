@@ -123,9 +123,9 @@ def get_comm_cid(dddb_cursor, comm_name, house, session_year, state, logger):
             if(dddb_cursor.rowcount > 1):
                 coms = dddb_cursor.fetchall()
                 closest = coms[0]
-                dis = 0
+                dis = levenshteinDistance(comm_name, closest[1])
                 for com in coms:
-                    res = levenshteinDistance(closest[6], com[6])
+                    res = levenshteinDistance(comm_name, com[1])
                     if res < dis:
                         dis = res
                         closest = com
