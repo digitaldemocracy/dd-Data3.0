@@ -20,7 +20,7 @@ SELECT_COMMITTEE = '''SELECT cid FROM Committee
 
 SELECT_COMMITTEE_SHORT_NAME = '''SELECT cid FROM Committee
                       WHERE state = %(state)s
-                      AND short_name = %(name)s
+                      AND short_name sounds like %(name)s
                       AND house = %(house)s
                       AND session_year = %(session_year)s
                       '''
