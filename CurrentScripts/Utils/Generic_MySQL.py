@@ -2,6 +2,7 @@ import sys
 import MySQLdb
 from Constants.Find_Person_Queries import *
 from Utils.Generic_Utils import format_logger_message
+from Utils.Generic_Utils import levenshteinDistance
 from Constants.Committee_Queries import SELECT_SESSION_YEAR_LEGISLATOR, SELECT_SESSION_YEAR, SELECT_COMMITTEE_SHORT_NAME
 
 reload(sys)
@@ -115,11 +116,22 @@ def get_comm_cid(dddb_cursor, comm_name, house, session_year, state, logger):
         dddb_cursor.execute(SELECT_COMMITTEE_SHORT_NAME, committee_info)
 
         if dddb_cursor.rowcount == 0:
-            logger.exception("ERROR: Committee not found" + SELECT_COMMITTEE_SHORT_NAME%committee_info)
+            logger.exception("ERROR: Committee not found" + SELECT_COMMITTEE_SHORT_NAME % committee_info)
             return None
 
         else:
-            return dddb_cursor.fetchone()[0]
+            if(dddb_cursor.rowcount > 1):
+                coms = dddb_cursor.fetchall()
+                closest = coms[0]
+                dis = 0
+                for com in coms:
+                    res = levenshteinDistance(closest[6], com[6])
+                    if res < dis:
+                        dis = res
+                        closest = com
+                return closest[0]
+            else:
+                return dddb_cursor.fetchone()[0]
 
     except MySQLdb.Error:
         logger.exception(format_logger_message("Committee selection failed for Committee", (SELECT_COMMITTEE % comm_name)))
