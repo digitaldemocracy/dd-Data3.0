@@ -138,8 +138,9 @@ def format_bills(dddb):
     bill_parser = TxBillParser(api, metadata)
     bill_list = bill_parser.get_bill_list(api.get_bill_json())
 
-    for bill in bill_list:
+    for bill in bill_list[:5]:
         format_votes(dddb, bill.votes)
+        format_version(bill.versions)
 
     return bill_list
 

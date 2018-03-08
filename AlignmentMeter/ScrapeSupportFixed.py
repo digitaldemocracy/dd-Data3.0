@@ -10,6 +10,9 @@ from io import BytesIO
 from SupportFinder import *
 from Utils.Generic_Utils import *
 
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+
 data_dir = 'BillAnalysisLobs/'
 output_dir = 'BillAnalysisOut/'
 zip_url = 'https://downloads.leginfo.legislature.ca.gov/pubinfo_2017.zip'

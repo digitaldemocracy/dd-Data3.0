@@ -40,7 +40,8 @@ if __name__ == "__main__":
         legislator_json = openStatesApi.get_legislators_json()
 
         for leg in legislator_json:
-            print(leg['email'])
+            print(leg)
+            print("\n")
         legislators = parser.get_legislators_list(legislator_json)
         leg_manager.add_legislators_db(legislators, "openstates")
         leg_manager.log()
