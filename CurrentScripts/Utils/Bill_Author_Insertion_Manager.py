@@ -58,6 +58,14 @@ class BillAuthorInsertionManager(object):
                                 query=SELECT_PID_LEGISLATOR_LAST_NAME_NO_HOUSE,
                                 objType="Person",
                                 logger=self.logger)
+
+        if not pid:
+            pid = get_entity_id(db_cursor=self.dddb,
+                                entity=bill_author.__dict__,
+                                query=SELECT_PID_LEGISLATOR_LAST_NAME_NO_YEAR,
+                                objType="Person",
+                                logger=self.logger)
+
         if not pid:
             pid = get_entity_id(db_cursor=self.dddb,
                                 entity=bill_author.__dict__,
@@ -173,7 +181,3 @@ class BillAuthorInsertionManager(object):
                         self.logger.exception("Committee not found\n" + str(bill_author.__dict__))
             else:
                 self.logger.exception("Bill not found\n" + str(bill_author.__dict__))
-
-
-
-
