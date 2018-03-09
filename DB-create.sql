@@ -2047,6 +2047,33 @@ CREATE TABLE IF NOT EXISTS TT_VideosCaption (
   FOREIGN KEY (videoId) REFERENCES TT_Videos(videoId)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+CREATE TABLE IF NOT EXISTS TT_ProtoUtterance (
+  uid    INTEGER AUTO_INCREMENT,
+  vid    INTEGER,
+  pid    INTEGER,
+  time   INTEGER,
+  endTime INTEGER,
+  text   TEXT,
+  current BOOLEAN NOT NULL,
+  finalized BOOLEAN NOT NULL,
+  alignment ENUM('For', 'Against', 'For_if_amend', 'Against_unless_amend', 'Neutral', 'Indeterminate', 'NA'),
+  dataFlag INTEGER DEFAULT 0,
+  diarizationTag VARCHAR(5) DEFAULT '',
+  did INT,
+  state VARCHAR(2),
+  lastTouched TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  lastTouched_ts INT(11) GENERATED ALWAYS AS ((to_seconds(lastTouched) - to_seconds('1970-01-01'))) VIRTUAL,
+
+  PRIMARY KEY (uid),
+  UNIQUE KEY (uid, vid, pid, current, time),
+  FOREIGN KEY (pid) REFERENCES Person(pid),
+  FOREIGN KEY (vid) REFERENCES Video(vid),
+  FOREIGN KEY (did) REFERENCES BillDiscussion(did),
+  FOREIGN KEY (state) REFERENCES State(abbrev)
+)
+  ENGINE = INNODB
+  DEFAULT CHARSET=utf8;
+
 CREATE OR REPLACE VIEW TT_currentCuts
 AS SELECT * FROM TT_Cuts
 WHERE current = TRUE ORDER BY videoId DESC, cutId ASC;
