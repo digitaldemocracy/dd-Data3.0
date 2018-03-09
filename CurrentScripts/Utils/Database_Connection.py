@@ -73,11 +73,12 @@ def connect_to_capublic():
     Returns a MySQLdb connection to capublic on the transcription server.
     :return: a MySQLdb connection
     '''
-    return MySQLdb.connect(host='transcription.digitaldemocracy.org',
-                             user='monty',
-                             db='capublic',
-                             passwd=os.environ["TRANSCRIPTIONMONTYPASSWORD"],
-                             charset='utf8')
+    return MySQLdb.connect(host='dw.digitaldemocracy.org',
+                           port=3306,
+                           user='dbMaster',
+                           db='capublic',
+                           passwd=os.environ["DBMASTERPASSWORD"],
+                           charset='utf8')
 
 
 
