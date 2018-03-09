@@ -36,7 +36,7 @@ class AuthorOpenStatesParser(object):
         self.BILL_API_URL = 'https://openstates.org/api/v1/bills/{0}/{1}/{2}/'
         self.BILL_API_URL += '?apikey=' + OPENSTATES_API_KEY
 
-        self.UPDATED_BILL_SEARCH_URL = "https://openstates.org/api/v1/bills/?state={0}&search_window=session&updated_since={1}"
+        self.UPDATED_BILL_SEARCH_URL = "https://openstates.org/api/v1/bills/?state={0}&search_window=session:{1}&updated_since={2}"
         self.UPDATED_BILL_SEARCH_URL += "&apikey=" + OPENSTATES_API_KEY
 
         self.BILL_DETAIL_URL = "https://openstates.org/api/v1/bills/{0}/"
@@ -58,6 +58,7 @@ class AuthorOpenStatesParser(object):
         name = name.replace('Select Committee on', '').strip()
         name = name.replace('Subcommittee', '').strip()
         name = name.replace('Committee', '', 1).strip()
+        name = name.replace(' and ', ' & ')
 
         name = name
 
@@ -140,7 +141,8 @@ class AuthorOpenStatesParser(object):
         bill_versions = get_all(self.dddb, SELECT_ALL_VIDS, {'bid': bill}, 'BillVersion', self.logger)
 
         for sponsor in sponsor_list:
-            if 'committee_id' in sponsor and sponsor['committee_id'] is not None:
+            if 'committee_id' in sponsor and (sponsor['committee_id'] is not None
+                    or 'committee' in sponsor['name'].lower()):
                 author_type = 'Committee'
                 name = self.format_committee_name(sponsor['name'])
                 alt_id = None
@@ -198,14 +200,13 @@ class AuthorOpenStatesParser(object):
         """
         bill_author_list = list()
 
-        bill_list = requests.get(self.UPDATED_BILL_SEARCH_URL.format(self.state, self.updated_date)).json()
+        bill_list = requests.get(self.UPDATED_BILL_SEARCH_URL.format(self.state, session_name, self.updated_date)).json()
 
-        for bill in bill_list:
+        for bill in bill_list[:100]:
             session_code = self.get_session_code(bill['session'])
 
             bill_sponsors = requests.get(self.BILL_DETAIL_URL.format(bill['id'])).json()['sponsors']
             bill_info = self.get_bill_info(bill['bill_id'], session_year, session_name, session_code)
-            print(bill_info)
 
             bill_author_list += self.format_bill_sponsor_list(bill_info[0], bill_info[1], bill_sponsors, session_year)
 

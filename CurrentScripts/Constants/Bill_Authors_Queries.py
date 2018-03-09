@@ -32,6 +32,16 @@ SELECT_PID_LEGISLATOR_LAST_NAME = '''SELECT p.pid
                                      AND t.current_term = 1
                                      ORDER BY p.pid'''
 
+SELECT_PID_LEGISLATOR_LAST_NAME_NO_YEAR = '''SELECT p.pid
+                                             FROM Person p, Legislator l, Term t
+                                             WHERE p.pid = l.pid
+                                             AND p.pid = t.pid
+                                             AND p.last = %(last_name)s
+                                             AND t.state = %(state)s
+                                             AND t.house = %(house)s
+                                             AND t.current_term = 1
+                                             ORDER BY p.pid'''
+
 SELECT_PID_LEGISLATOR_FULL_NAME = '''SELECT p.pid
                                      FROM Person p, Legislator l, Term t
                                      WHERE p.pid = l.pid 
@@ -103,6 +113,7 @@ SELECT_CID_COMMITTEE = '''SELECT cid
                           WHERE name sounds like %(committee_name)s
                           AND house = %(house)s
                           AND state = %(state)s
+                          AND session_year = %(session_year)s
                           AND current_flag = 1'''
 
 SELECT_CID_COMMITTEE_SHORT_NAME = '''SELECT cid
@@ -110,6 +121,7 @@ SELECT_CID_COMMITTEE_SHORT_NAME = '''SELECT cid
                           WHERE short_name sounds like %(committee_name)s
                           AND house = %(house)s
                           AND state = %(state)s
+                          AND session_year = %(session_year)s
                           AND current_flag = 1'''
 
 SELECT_CID_COMMITTEE_LIKE_SHORT_NAME = '''SELECT cid
@@ -117,6 +129,7 @@ SELECT_CID_COMMITTEE_LIKE_SHORT_NAME = '''SELECT cid
                                           WHERE short_name like %(committee_like_name)s
                                           AND house = %(house)s
                                           AND state = %(state)s
+                                          AND session_year = %(session_year)s
                                           AND current_flag = 1'''
 
 SELECT_CID_COMMITTEE_AUTHOR = '''SELECT cid
