@@ -684,7 +684,7 @@ CREATE TABLE IF NOT EXISTS Video_ttml (
   vid INTEGER,
   version INTEGER DEFAULT 0,
   ttml MEDIUMTEXT,
-  source VARCHAR(4) DEFAULT 0,
+  source VARCHAR(20) DEFAULT 0,
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
   lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
   dr_id INTEGER UNIQUE AUTO_INCREMENT,
@@ -1910,7 +1910,7 @@ CREATE TABLE IF NOT EXISTS TT_Cuts (
 
 CREATE TABLE IF NOT EXISTS TT_ServiceRequests (
   cutId INTEGER,
-  serviceProvider ENUM("cielo", "watson", "closed_captions", "green_button", "other"),
+  serviceProvider ENUM("cielo", "watson", "closed_captions", "rev", "youtube", "green_button", "other"),
   turnaround INTEGER,
   fidelity VARCHAR(255),
   importance VARCHAR(255),
