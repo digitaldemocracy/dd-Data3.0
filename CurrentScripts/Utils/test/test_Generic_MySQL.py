@@ -12,22 +12,26 @@ from Utils.Generic_Utils import *
 from Utils.Database_Connection import *
 
 
-class TestGenericMySQL(TestCase):
+class TestGenericMySQL(unittest.TestCase):
     def setUp(self):
         self.logger = create_logger()
         json_file = open(os.environ["SCRIPTPATH"] + "/JSON/committee/committee.json")
         self.committee_json = json.load(json_file)
-        self.dddb_cursor = connect()
+        #self.dddb_cursor = connect()
 
     def test_get_comm_cid(self):
-        for committee in self.committee_json:
-            cid = get_comm_cid(self.dddb_cursor,
-                               committee.name,
-                               committee.house,
-                               committee.session_year,
-                               committee.state,
-                               self.logger)
-            self.assertEqual(cid, committee.cid)
+        with connect() as dddb_cursor:
+            failed = []
+            for committee in self.committee_json:
+                cid = get_comm_cid(dddb_cursor,
+                                   committee['name'],
+                                   committee['house'],
+                                   committee['session_year'],
+                                   committee['state'],
+                                   self.logger)
+                if not ((cid is None and committee['cid'] is None) or (cid is not None and committee['cid'] is not None and int(cid) == int(committee['cid']))):
+                    failed.append({"expected":committee['cid'], "actual":cid, "name":committee['name']})
+            self.assertEqual(len(failed), 0, failed)
 
 
 if __name__ == '__main__':
