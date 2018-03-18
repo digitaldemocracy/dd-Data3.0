@@ -1,0 +1,30 @@
+[
+  {
+    "state": "NY",
+    "name": "Crime Victims, Crime and Corrections",
+    "house": "Senate",
+    "session_year": "2017",
+    "cid": "512"
+  },
+  {
+    "state": "NY",
+    "name": "Housing Construction and Community Development",
+    "house": "Senate",
+    "session_year": "2017",
+    "cid": "522"
+  },
+  {
+    "state": "NY",
+    "name": "Agricultural Production & Technology",
+    "house": "Assembly",
+    "session_year": "2017",
+    "cid": "667"
+  },
+  {
+    "state": "NY",
+    "name": "State-Local Relations",
+    "house": "Assembly",
+    "session_year": "2017",
+    "cid": "713"
+  }
+]
