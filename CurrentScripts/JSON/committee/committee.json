@@ -26,5 +26,41 @@
     "house": "Assembly",
     "session_year": "2017",
     "cid": "713"
+  },
+  {
+    "state": "CA",
+    "name": "Resources, Environmental Protection, Energy & Transportation",
+    "house": "Senate",
+    "session_year": "2015",
+    "cid": "69"
+  },
+  {
+    "state": "CA",
+    "name": "California Wine Industry",
+    "house": "Senate",
+    "session_year": "2015",
+    "cid": "120"
+  },
+  {
+    "state": "NY",
+    "name": "Cities",
+    "house": "Assembly",
+    "session_year": "2015",
+    "cid": "332"
+  },
+  {
+    "state": "NY",
+    "name": "Museums and Cultural Institutions",
+    "house": "Assembly",
+    "session_year": "2015",
+    "cid": "385"
+  }
+  ,
+  {
+    "state": "NY",
+    "name": "State Local Relations",
+    "house": "Assembly",
+    "session_year": "2015",
+    "cid": "410"
   }
 ]

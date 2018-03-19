@@ -17,7 +17,6 @@ class TestGenericMySQL(unittest.TestCase):
         self.logger = create_logger()
         json_file = open(os.environ["SCRIPTPATH"] + "/JSON/committee/committee.json")
         self.committee_json = json.load(json_file)
-        #self.dddb_cursor = connect()
 
     def test_get_comm_cid(self):
         with connect() as dddb_cursor:
@@ -29,8 +28,11 @@ class TestGenericMySQL(unittest.TestCase):
                                    committee['session_year'],
                                    committee['state'],
                                    self.logger)
-                if not ((cid is None and committee['cid'] is None) or (cid is not None and committee['cid'] is not None and int(cid) == int(committee['cid']))):
-                    failed.append({"expected":committee['cid'], "actual":cid, "name":committee['name']})
+                if not (
+                            (cid is None and committee['cid'] is None) or
+                            (cid is not None and committee['cid'] is not None and int(cid) == int(committee['cid']))
+                ):
+                    failed.append({"expected": committee['cid'], "actual": cid, "name": committee['name']})
             self.assertEqual(len(failed), 0, failed)
 
 
