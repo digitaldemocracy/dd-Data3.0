@@ -2011,6 +2011,22 @@ CREATE TABLE IF NOT EXISTS TT_CommitteeSecretary (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*
+ Designate Legislative Staff (doorkeeper & reading clerk)
+   to be used per house and state on Transcription Tool.
+   floor : 0 if non floor only, 1 if floor only, null if it does not matter
+*/
+CREATE TABLE IF NOT EXISTS TT_LegislativeStaff (
+  pid INTEGER NOT NULL,
+  floor TINYINT(1) DEFAULT 0,
+  house VARCHAR(255) NULL,
+  state VARCHAR(2) NOT NULL,
+  lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+  PRIMARY KEY (pid),
+  FOREIGN KEY (pid) REFERENCES Person(pid),
+  FOREIGN KEY (state) REFERENCES State(abbrev)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+/*
  Stores speaker prediction results to be used in Transcription Tool 
 */
 CREATE TABLE IF NOT EXISTS TT_SpeakerPrediction (
