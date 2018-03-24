@@ -1870,7 +1870,7 @@ CREATE TABLE IF NOT EXISTS TT_Videos (
   duration FLOAT,
   state VARCHAR(2),
   house VARCHAR(255),
-  status ENUM('downloading','downloaded','download failed','skipped','queued','cutting','cut','cutting failed','approved','tasked','deleted','tasking','tasking failed','archived'),
+  status ENUM('downloading','downloaded','download failed','skipped','queued','cutting','cut','cutting failed','approved','tasked','deleted','tasking','tasking failed','archived','transcription failed'),
   hid INT(11),
   uniqueUrl VARCHAR(255),
   house VARCHAR(255),
