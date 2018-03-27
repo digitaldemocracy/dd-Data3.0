@@ -155,7 +155,7 @@ class Hearings_Manager(object):
     def insert_hearing_agenda(self, hid, bid, date):
         agenda = {'hid': hid, 'bid': bid, 'date_created': date}
 
-        if self.is_hearing_agenda_in_db(hid, bid, date) is not None:
+        if self.is_hearing_agenda_in_db(hid, bid, date) is None:
             try:
                 self.dddb.execute(INSERT_HEARING_AGENDA, agenda)
                 self.HA_INS += self.dddb.rowcount
