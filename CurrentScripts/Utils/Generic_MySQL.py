@@ -3,7 +3,7 @@ import MySQLdb
 from Constants.Find_Person_Queries import *
 from Utils.Generic_Utils import format_logger_message
 from Utils.Generic_Utils import levenshteinDistance
-from Constants.Committee_Queries import SELECT_SESSION_YEAR_LEGISLATOR, SELECT_SESSION_YEAR, SELECT_COMMITTEE_SHORT_NAME
+from Constants.Committee_Queries import *
 
 reload(sys)
 
@@ -109,32 +109,39 @@ def get_session_year(db_cursor, state, logger, legislator = False):
 Gets CID from our database using the committee names listed in the agendas
 '''
 def get_comm_cid(dddb_cursor, comm_name, house, session_year, state, logger):
-    committee_info = {"name" : comm_name, "house": house,
+    committee_info = {"name": comm_name, "house": house,
                       "session_year": session_year, "state": state}
 
+    # Try exact match
     try:
         dddb_cursor.execute(SELECT_COMMITTEE_SHORT_NAME, committee_info)
-
-        if dddb_cursor.rowcount == 0:
-            logger.exception("ERROR: Committee not found" + SELECT_COMMITTEE_SHORT_NAME % committee_info)
-            return None
-
-        else:
-            if(dddb_cursor.rowcount > 1):
-                coms = dddb_cursor.fetchall()
-                closest = coms[0]
-                dis = levenshteinDistance(comm_name, closest[1])
-                for com in coms:
-                    res = levenshteinDistance(comm_name, com[1])
-                    if res < dis:
-                        dis = res
-                        closest = com
-                return closest[0]
-            else:
-                return dddb_cursor.fetchone()[0]
+        if dddb_cursor.rowcount == 1:
+            return dddb_cursor.fetchone()[0]
 
     except MySQLdb.Error:
-        logger.exception(format_logger_message("Committee selection failed for Committee", (SELECT_COMMITTEE % comm_name)))
+        logger.exception(format_logger_message("Committee selection (exact match) failed for Committee ", (SELECT_COMMITTEE % comm_name)))
+
+    # Try like match
+    try:
+        dddb_cursor.execute(SELECT_COMMITTEE_SOUNDSLIKE_SHORT_NAME, committee_info)
+
+        if dddb_cursor.rowcount > 1:
+            return min(dddb_cursor.fetchall(), key=lambda com: levenshteinDistance(com.short_name, comm_name)).short_name
+
+    except MySQLdb.Error:
+        logger.exception(format_logger_message("Committee selection failed for Committee ", (SELECT_COMMITTEE % comm_name)))
+
+    # Try like match, replace punctuation
+    try:
+        committee_info.name = re.sub(r"[\W\s]", "%", committee_info.name)
+        dddb_cursor.execute(SELECT_COMMITTEE_SOUNDSLIKE_SHORT_NAME, committee_info)
+
+        if dddb_cursor.rowcount > 1:
+            return min(dddb_cursor.fetchall(), key=lambda com: levenshteinDistance(com.short_name, comm_name)).short_name
+
+    except MySQLdb.Error:
+        logger.exception(
+            format_logger_message("Committee selection failed for Committee ", (SELECT_COMMITTEE % comm_name)))
 
 
 
