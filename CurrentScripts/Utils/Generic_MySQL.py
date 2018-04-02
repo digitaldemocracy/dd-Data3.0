@@ -123,7 +123,7 @@ def get_comm_cid(dddb_cursor, comm_name, house, session_year, state, logger):
 
         # Try like match
 
-        dddb_cursor.execute(SELECT_COMMITTEE_SOUNDSLIKE_SHORT_NAME, committee_info)
+        dddb_cursor.execute(SELECT_COMMITTEE_LIKE_SHORT_NAME, committee_info)
 
         if dddb_cursor.rowcount > 0:
             return min(dddb_cursor.fetchall(), key=lambda com: levenshteinDistance(com[1], comm_name))[0]
@@ -132,7 +132,7 @@ def get_comm_cid(dddb_cursor, comm_name, house, session_year, state, logger):
         # Try like match, replace punctuation and whitespace
 
         committee_info['name'] = ("%" + re.sub(r"[\W\s]+", "%", committee_info['name']) + "%").lower().replace("s%","%")
-        dddb_cursor.execute(SELECT_COMMITTEE_SOUNDSLIKE_SHORT_NAME, committee_info)
+        dddb_cursor.execute(SELECT_COMMITTEE_LIKE_SHORT_NAME, committee_info)
 
         if dddb_cursor.rowcount > 0:
             return min(dddb_cursor.fetchall(), key=lambda com: levenshteinDistance(com[1], comm_name))[0]
