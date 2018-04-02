@@ -1,5 +1,6 @@
 import sys
 import MySQLdb
+import re
 from Constants.Find_Person_Queries import *
 from Utils.Generic_Utils import format_logger_message
 from Utils.Generic_Utils import levenshteinDistance
@@ -119,32 +120,31 @@ def get_comm_cid(dddb_cursor, comm_name, house, session_year, state, logger):
             return dddb_cursor.fetchone()[0]
 
     except MySQLdb.Error:
-        logger.exception(format_logger_message("Committee selection (exact match) failed for Committee ", (SELECT_COMMITTEE % comm_name)))
+        print("Exact match failed")
+        #logger.exception(format_logger_message("Committee selection (exact match) failed for Committee ", (SELECT_COMMITTEE % comm_name)))
 
     # Try like match
     try:
         dddb_cursor.execute(SELECT_COMMITTEE_SOUNDSLIKE_SHORT_NAME, committee_info)
 
         if dddb_cursor.rowcount > 1:
-            return min(dddb_cursor.fetchall(), key=lambda com: levenshteinDistance(com.short_name, comm_name)).short_name
+            return min(dddb_cursor.fetchall(), key=lambda com: levenshteinDistance(com['short_name'], comm_name))[0]
 
     except MySQLdb.Error:
-        logger.exception(format_logger_message("Committee selection failed for Committee ", (SELECT_COMMITTEE % comm_name)))
+        print("Raw like match failed")
+        #logger.exception(format_logger_message("Committee selection failed for Committee ", (SELECT_COMMITTEE % comm_name)))
 
     # Try like match, replace punctuation
     try:
-        committee_info.name = re.sub(r"[\W\s]", "%", committee_info.name)
+        committee_info['name'] = re.sub(r"[\W\s|(s\s)]+", "%", committee_info['name'])
         dddb_cursor.execute(SELECT_COMMITTEE_SOUNDSLIKE_SHORT_NAME, committee_info)
 
         if dddb_cursor.rowcount > 1:
-            return min(dddb_cursor.fetchall(), key=lambda com: levenshteinDistance(com.short_name, comm_name)).short_name
+            return min(dddb_cursor.fetchall(), key=lambda com: levenshteinDistance(com['short_name'], comm_name))[0]
 
     except MySQLdb.Error:
-        logger.exception(
-            format_logger_message("Committee selection failed for Committee ", (SELECT_COMMITTEE % comm_name)))
-
-
-
+        print("Enhanced like match failed")
+        #logger.exception(format_logger_message("Committee selection failed for Committee ", (SELECT_COMMITTEE % comm_name)))
 
 
 def get_pid(dddb, logger, person, source_link=None, strict=False):
