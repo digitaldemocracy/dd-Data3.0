@@ -37,6 +37,7 @@ SELECT_LEG_FIRSTLAST = '''SELECT a.pid
                             AND t.current_term = 1
                             AND a.name like %(like_name)s
                             AND t.year = %(leg_session_year)s
+                            GROUP BY a.pid
                             '''
 
 SELECT_LEG_WITH_HOUSE_LASTNAME = '''SELECT a.pid

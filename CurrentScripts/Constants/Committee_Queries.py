@@ -25,9 +25,9 @@ SELECT_COMMITTEE_SHORT_NAME = '''SELECT cid, short_name FROM Committee
                       AND session_year = %(session_year)s
                       '''
 
-SELECT_COMMITTEE_SOUNDSLIKE_SHORT_NAME = '''SELECT cid, short_name FROM Committee
+SELECT_COMMITTEE_LIKE_SHORT_NAME = '''SELECT cid, short_name FROM Committee
                       WHERE state = %(state)s
-                      AND short_name sounds like %(name)s
+                      AND short_name SOUNDS LIKE %(name)s
                       AND house = %(house)s
                       AND session_year = %(session_year)s
                       '''
