@@ -22,4 +22,4 @@ LOAD DATA LOCAL
   ,TRANS_UID
   ,TRANS_UPDATE
 )
-SET SOURCE_DOC=LOAD_FILE(concat('/home/transcription_tool_common/dd-Data3.0/updateScripts/current/',@var1))
+SET SOURCE_DOC=LOAD_FILE(concat('/home/data_warehouse_common/dd-Data3.0/updateScripts/current/',@var1))

@@ -25,5 +25,5 @@ LOAD DATA LOCAL
   ,TRANS_UID
   ,TRANS_UPDATE
 )
-SET BILL_XML=LOAD_FILE(concat('/home/transcription_tool_common/dd-Data3.0/updateScripts/current/',@var1))
+SET BILL_XML=LOAD_FILE(concat('/home/data_warehouse_common/dd-Data3.0/updateScripts/current/',@var1))
 

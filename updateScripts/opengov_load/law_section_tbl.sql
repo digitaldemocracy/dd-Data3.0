@@ -25,4 +25,4 @@ LOAD DATA LOCAL
   ,TRANS_UID
   ,TRANS_UPDATE
 )
-SET CONTENT_XML=LOAD_FILE(concat('/home/andrew/code/opengov/leginfo/.cur/',@var1))
+SET CONTENT_XML=LOAD_FILE(concat('/home/data_warehouse_common/dd-Data3.0/updateScripts/current/',@var1))
