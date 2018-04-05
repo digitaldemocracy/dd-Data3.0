@@ -1,9 +1,10 @@
 import sys
 import MySQLdb
+import re
 from Constants.Find_Person_Queries import *
 from Utils.Generic_Utils import format_logger_message
 from Utils.Generic_Utils import levenshteinDistance
-from Constants.Committee_Queries import SELECT_SESSION_YEAR_LEGISLATOR, SELECT_SESSION_YEAR, SELECT_COMMITTEE_SHORT_NAME
+from Constants.Committee_Queries import *
 
 reload(sys)
 
@@ -109,35 +110,44 @@ def get_session_year(db_cursor, state, logger, legislator = False):
 Gets CID from our database using the committee names listed in the agendas
 '''
 def get_comm_cid(dddb_cursor, comm_name, house, session_year, state, logger):
-    committee_info = {"name" : comm_name, "house": house,
+    committee_info = {"name": comm_name, "house": house,
                       "session_year": session_year, "state": state}
 
     try:
+        # Try exact match
+
         dddb_cursor.execute(SELECT_COMMITTEE_SHORT_NAME, committee_info)
+        if dddb_cursor.rowcount == 1:
+            return dddb_cursor.fetchone()[0]
 
-        if dddb_cursor.rowcount == 0:
-            logger.exception("ERROR: Committee not found" + SELECT_COMMITTEE_SHORT_NAME % committee_info)
-            return None
 
-        else:
-            if(dddb_cursor.rowcount > 1):
-                coms = dddb_cursor.fetchall()
-                closest = coms[0]
-                dis = levenshteinDistance(comm_name, closest[1])
-                for com in coms:
-                    res = levenshteinDistance(comm_name, com[1])
-                    if res < dis:
-                        dis = res
-                        closest = com
-                return closest[0]
-            else:
-                return dddb_cursor.fetchone()[0]
+        # Try like match
+
+        dddb_cursor.execute(SELECT_COMMITTEE_LIKE_SHORT_NAME, committee_info)
+
+        if dddb_cursor.rowcount > 0:
+            return min(dddb_cursor.fetchall(), key=lambda com: levenshteinDistance(com[1], comm_name))[0]
+
+
+        # Try like match, replace punctuation and whitespace
+
+        committee_info['name'] = ("%" + re.sub(r"[\W\s]+", "%", committee_info['name']) + "%").lower().replace("s%","%")
+        dddb_cursor.execute(SELECT_COMMITTEE_LIKE_SHORT_NAME, committee_info)
+
+        if dddb_cursor.rowcount > 0:
+            return min(dddb_cursor.fetchall(), key=lambda com: levenshteinDistance(com[1], comm_name))[0]
+
+
+        # Try like match, replace punctuation and whitespace and "and"
+
+        committee_info['name'] = committee_info['name'].replace("%and%", "%")
+        dddb_cursor.execute(SELECT_COMMITTEE_LIKE_SHORT_NAME, committee_info)
+
+        if dddb_cursor.rowcount > 0:
+            return min(dddb_cursor.fetchall(), key=lambda com: levenshteinDistance(com[1], comm_name))[0]
 
     except MySQLdb.Error:
-        logger.exception(format_logger_message("Committee selection failed for Committee", (SELECT_COMMITTEE % comm_name)))
-
-
-
+        logger.exception(format_logger_message("Committee selection failed for Committee ", (SELECT_COMMITTEE % comm_name)))
 
 
 def get_pid(dddb, logger, person, source_link=None, strict=False):
