@@ -36,6 +36,8 @@ class CaBillAuthorParser(object):
         if author_type == "Committee":
             author_name = author_name.replace("Committee on", "").strip()
             return format_committee_name(author_name, house, "Standing")
+        else:
+            author_name = author_name.replace("–", "-")
         return author_name
 
 
