@@ -20,14 +20,14 @@ select pid, F_TEST(vid, bid) as version_num, vid, bid from BillSponsors;
 
 # Total number of utterance on a bill. DANGER TAKES FOREVER.
 select bd.bid, count(*) as total_utterances
-from (select * from Utterance order by lastTouched desc limit 10000) as u, BillDiscussion bd
+from (select * from Utterance where bid like "CA_20152016%" order by lastTouched desc limit 10000) as u, BillDiscussion bd
 where u.did = bd.did
 group by bd.bid
 
 # Total number of utterances on bill who are on committee
 select bd.bid, count(*) as total_utterances
 from BillDiscussion bd, (select *
-                         from Utterance
+                         from Utterance where bid like "CA_20152016%"
                          order by lastTouched desc
                          limit 100) as u,
                         CommitteeHearings ch,
@@ -42,7 +42,7 @@ group by bd.bid;
 # Total number of utterances on bill who are not on committee
 select bd.bid, count(*) as total_utterances
 from BillDiscussion bd, (select *
-                         from Utterance
+                         from Utterance where bid like "CA_20152016%"
                          order by lastTouched desc
                          limit 100) as u,
                         CommitteeHearings ch
