@@ -41,7 +41,15 @@ class BillAuthorInsertionManager(object):
                                 logger=self.logger)
 
         if not pid:
+            bill_author.current = 1
             pid = get_entity_id(db_cursor=self.dddb,
+                                entity=bill_author.__dict__,
+                                query=SELECT_PID_LEGISLATOR_LAST_NAME,
+                                objType="Person",
+                                logger=self.logger)
+            if not pid:
+                bill_author.current = 0
+                pid = get_entity_id(db_cursor=self.dddb,
                                 entity=bill_author.__dict__,
                                 query=SELECT_PID_LEGISLATOR_LAST_NAME,
                                 objType="Person",
@@ -63,6 +71,13 @@ class BillAuthorInsertionManager(object):
             pid = get_entity_id(db_cursor=self.dddb,
                                 entity=bill_author.__dict__,
                                 query=SELECT_PID_LEGISLATOR_LAST_NAME_NO_YEAR,
+                                objType="Person",
+                                logger=self.logger)
+
+        if not pid:
+            pid = get_entity_id(db_cursor=self.dddb,
+                                entity=bill_author.__dict__,
+                                query=SELECT_PID_LEGISLATOR_FULL_NAME_NO_HOUSE,
                                 objType="Person",
                                 logger=self.logger)
 
@@ -168,11 +183,6 @@ class BillAuthorInsertionManager(object):
                             self.insert_author(bill_author)
                     else:
                         self.logger.exception("Person not found\n" + str(bill_author.__dict__))
-                        bill_author.cid = self.get_cid(bill_author)
-                        if bill_author.cid:
-                            self.insert_committee_author(bill_author)
-                        else:
-                            self.logger.exception("Committee not found\n" + str(bill_author.__dict__))
                 else:
                     bill_author.cid = self.get_cid(bill_author)
                     if bill_author.cid:
