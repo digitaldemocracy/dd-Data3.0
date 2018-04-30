@@ -58,6 +58,9 @@ sel_unique_billsponsors = '''select * from BillSponsors
                              and bid = %(bid)s
                              and vid = %(vid)s
                              and contribution = %(contribution)s'''
+sel_leg_success_rates = '''select * from LegislativeSuccessRates_analyt where pid = %(bad_pid)s'''
+sel_unique_success_rate = '''select * from LegislativeSuccessRates_analyt
+                             where pid = %(pid)s and session_year = %(year)s'''
 sel_alt_names = '''select pid, name from AlternateNames where pid = %(bad_pid)s'''
 sel_unique_alt_name = '''select * from AlternateNames where pid = %(pid)s and name = %(name)s'''
 sel_all_legstaffreps = '''select pid, hid from LegislativeStaffRepresentation where pid = %(bad_pid)s'''
@@ -124,6 +127,10 @@ up_legoffice_staff = '''update LegOfficePersonnel set staff_member = %(good_pid)
 up_alignmentscores = '''update AlignmentScoresExtraInfo set pid = %(good_pid)s where pid = %(bad_pid)s'''
 up_altid = '''update AlternateId set pid = %(good_pid)s where pid = %(bad_pid)s'''
 up_alt_names = '''update AlternateNames set pid = %(good_pid)s where pid = %(bad_pid)s'''
+up_leg_success_rates = '''update LegislativeSuccessRates_analyt set pid = %(good_pid)s where pid = %(bad_pid)s'''
+up_success_rates_add = '''update LegislativeSuccessRates_analyt
+                          set num_authored = %(author)s, num_chaptered = %(chapter)s, num_vetoed = %(veto)s
+                          where pid = %(pid)s and session_year = %(year)s'''
 
 # SQL Deletes
 del_serves_on = '''delete from servesOn where pid = %(bad_pid)s'''
@@ -160,6 +167,8 @@ del_billsponsors = '''delete from BillSponsors
                       and vid = %(vid)s
                       and contribution = %(contribution)s'''
 del_alt_name = '''delete from AlternateNames where pid = %(pid)s and name = %(name)s'''
+del_success_rate = '''delete from LegislativeSuccessRates_analyt
+                      where pid = %(pid)s and session_year = %(year)s'''
 
 
 def check_terms(dddb, leg):
@@ -482,8 +491,30 @@ def update_legislator(dddb, leg):
         print("Updated " + str(dddb.rowcount) + " rows in Authors")
 
         dddb.execute(up_altid, leg)
+        print("Updated " + str(dddb.rowcount) + " rows in AlternateID")
 
         dddb.execute(up_alignmentscores, leg)
+        print("Updated " + str(dddb.rowcount) + " rows in AlignmentScores")
+
+        dddb.execute(sel_leg_success_rates, leg)
+        result = dddb.fetchall()
+        for row in result:
+            success_rate = {'pid': leg['good_pid'], 'year': row[1], 'author': row[2],
+                            'chapter': row[3], 'veto': row[4]}
+
+            dddb.execute(sel_unique_success_rate, success_rate)
+
+            if dddb.rowcount != 0:
+                new_result = dddb.fetchall()[0]
+                new_success = {'pid': leg['good_pid'], 'year': row[1], 'author': success_rate['author'] + new_result[2],
+                               'chapter': success_rate['chapter'] + new_result[3],
+                               'veto': success_rate['chapter'] + new_result[4]}
+
+                dddb.execute(up_success_rates_add, new_success)
+                dddb.execute(del_success_rate, success_rate)
+
+        dddb.execute(up_leg_success_rates, leg)
+        print("Updated " + str(dddb.rowcount) + " rows in LegislativeSuccessRates")
 
         dddb.execute(sel_alt_names, leg)
         result = dddb.fetchall()
@@ -569,7 +600,7 @@ def main():
 
     person = {'good_pid': args.good_pid, 'bad_pid': args.bad_pid}
 
-    with connect() as dddb:
+    with connect('live') as dddb:
         person_names = get_person_names(dddb, person)
 
         print_string = "About to merge person " + str(person['bad_pid'])+":"+person_names['bad_name'].encode('utf-8')
