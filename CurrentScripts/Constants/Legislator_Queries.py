@@ -5,6 +5,17 @@ INSERT_LEGISLATOR = '''
                 VALUES
                   (%(pid)s,%(state)s,%(capitol_phone)s,%(capitol_fax)s,%(website_url)s,%(room_number)s, %(email)s)
                 '''
+
+INSERT_PERSON_CLASSIFICATION = '''
+                                INSERT INTO PersonClassifications (pid, first, last, 
+                                                                   PersonType, specific_year, 
+                                                                   session_year,
+                                                                   state, is_current)
+                                VALUES (%(pid)s,  %(first)s, %(last)s, %(personType)s, 
+                                        %(specific_year)s, %(session_year)s, %(state)s, 
+                                        %(is_current)s)
+                                '''
+
 INSERT_PERSON = '''
             INSERT INTO Person
               (first,middle,last, source, image)
@@ -29,6 +40,13 @@ SELECT_ALTID = '''
                AND alt_id=%(current_alt_id)s
                 '''
 
+SELECT_PID_FROM_ALTID = '''
+                           SELECT pid
+                           FROM AlternateId
+                           WHERE alt_id=%(alt_id)s
+                        '''
+
+
 
 SELECT_ALT_NAMES = '''
                 SELECT pid
@@ -52,6 +70,15 @@ UPDATE_TERM_TO_NOT_CURRENT_PID = '''
                               UPDATE Term
                               SET current_term = 0
                               WHERE pid=%(pid)s
+                              AND current_term = 1
+                            '''
+
+GET_CURRENT_LEGISLATOR_FOR_DISTRICT = '''
+                              SELECT pid
+                              FROM Term
+                              WHERE district=%(district)s
+                              AND state = %(state)s
+                              AND house = %(house)s
                               AND current_term = 1
                             '''
 
@@ -81,6 +108,30 @@ SELECT_TERM = '''
                 AND state=%(state)s
                 AND year=%(year)s
                 AND house=%(house)s
+              '''
+
+SELECT_PID_WITH_CHAMBER = '''
+                SELECT pid
+                FROM Term t, House h, Person p
+                WHERE t.pid = p.pid
+                AND t.house = h.name
+                AND t.state = h.state
+                AND p.first = %(first)s
+                AND p.last = %(last)s
+                AND t.district = %(district)s
+                AND t.state = %(state)s
+                AND t.year = %(year)s
+                AND h.type = %(type)s
+              '''
+
+SELECT_PID_WITH_NAME = '''
+                SELECT an.pid
+                FROM Term t, AlternateNames an
+                WHERE t.pid = an.pid
+                AND an.name = %(name)s
+                AND t.state = %(state)s
+                AND t.year = %(year)s
+                AND t.current_term = 1
               '''
 
 UPDATE_TERM_NOT_CURRENT = '''
