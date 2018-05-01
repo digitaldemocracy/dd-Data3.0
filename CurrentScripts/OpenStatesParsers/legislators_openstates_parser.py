@@ -71,7 +71,7 @@ class LegislatorOpenStateParser(object):
         if "chamber" not in legislator or str(legislator["chamber"]) == "upper":
             return "Senate"
         elif "state" in legislator and str(legislator["state"]) == "ny" and \
-                "chamber" in legislator or (str(legislator["chamber"]) == "lower" and str(legislator["state"]) == "ny"):
+                ("chamber" in legislator or str(legislator["chamber"]) == "lower"):
             return "Assembly"
         return "House"
 
