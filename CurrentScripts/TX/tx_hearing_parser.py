@@ -184,7 +184,14 @@ class TxHearingParser(object):
         :param url: A URL to an HTML document with meeting minutes
         :return: A list of bills that were discussed at the meeting
         """
-        doc_text = requests.get(url).text
+        try:
+            site = requests.get(url)
+            site.raise_for_status()
+        except requests.exceptions.HTTPError as error:
+            self.logger.exception(error)
+            return []
+
+        doc_text = site.text
         meeting_html = BeautifulSoup(doc_text, 'lxml')
         doc_text = doc_text.replace('&nbsp;', ' ')
         doc_text = doc_text.replace('\r', '').replace('\n', '').replace('&amp;', '&')
@@ -234,7 +241,14 @@ class TxHearingParser(object):
         :param url: A URL to an HTML document with meeting minutes
         :return: A list of bills that were discussed at the meeting
         """
-        doc_text = requests.get(url).text
+        try:
+            site = requests.get(url)
+            site.raise_for_status()
+        except requests.exceptions.HTTPError as error:
+            self.logger.exception(error)
+            return []
+
+        doc_text = site.text
         meeting_html = BeautifulSoup(doc_text, 'lxml')
         doc_text = doc_text.replace('&nbsp;', ' ')
 
@@ -340,6 +354,7 @@ class TxHearingParser(object):
 
         for doc in doc_list:
             if house == 'House':
+                print(doc)
                 hearing_list += self.scrape_house_meeting_minutes(doc)
 
             if house == 'Senate':
