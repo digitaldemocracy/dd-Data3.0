@@ -7,12 +7,13 @@ Date: 12/14/2017
 '''
 import requests
 import datetime as dt
+
 class OpenStatesAPI(object):
     def __init__(self, state):
         self.state = state
         OPENSTATES_API_KEY = "3017b0ca-3d4f-482b-9865-1c575283754a"
         self.LEGISLATORS_SEARCH_URL = 'https://openstates.org/api/v1/legislators/?state={0}&active=true&apikey=' + OPENSTATES_API_KEY
-        self.LEGISLATORS_DETAIL_URL = 'https://openstates.org/api/v1/legislators/{0}&apikey=' + OPENSTATES_API_KEY
+        self.LEGISLATORS_DETAIL_URL = 'https://openstates.org/api/v1/legislators/{0}/?apikey=' + OPENSTATES_API_KEY
 
         self.COMMITTEE_SEARCH_URL = "https://openstates.org/api/v1/committees/?state={0}"
         self.COMMITTEE_SEARCH_URL += "&apikey=3017b0ca-3d4f-482b-9865-1c575283754a"
@@ -42,6 +43,15 @@ class OpenStatesAPI(object):
         api_url = self.LEGISLATORS_SEARCH_URL.format(self.state.lower())
         return requests.get(api_url).json()
 
+    def get_legislator_detail_json(self, alt_id):
+        '''
+        Calls the openstates api for legislator json data.
+        :return: a json list of openstates data.
+        '''
+        api_url = self.LEGISLATORS_DETAIL_URL.format(alt_id)
+        print(api_url)
+        return requests.get(api_url).json()
+
     def get_committee_membership_json(self, comm_alt_id):
         '''
         Calls the openstates api for committee information
@@ -62,6 +72,7 @@ class OpenStatesAPI(object):
         updated_date = dt.date.today() - dt.timedelta(weeks=1)
         updated_date = updated_date.strftime('%Y-%m-%d')
         api_url = self.BILL_SEARCH_URL.format(self.state.lower(), updated_date)
+        print(api_url)
         return requests.get(api_url).json()
 
 
