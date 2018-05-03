@@ -142,24 +142,25 @@ class NYHearingParser(object):
         page = requests.get(url)
         return BeautifulSoup(page.content, 'html.parser')
 
-    def parse_senate_hearing_detail_page(self, committee_name, hearing_date, unique_url, page=0):
+    def parse_senate_hearing_detail_page(self, committee_name, hearing_date_dt, unique_url, page=0):
         """
         Parses the senate hearing detail page into a list
         of hearing model.
         :param committee_name: The name of the committee.
-        :param hearing_date: The date of the hearing
+        :param hearing_date_dt: The date of the hearing
         :param unique_url: unique url of detail page
         :param page: page number of detail page
         :return: a list of hearing model objects.
         """
 
-        detail_page_content = self.get_senate_hearing_detail_page(unique_url + "&page=" + page)
+        detail_page_content = self.get_senate_hearing_detail_page(unique_url + "&page=" + str(page))
 
         hearings = list()
         regex = re.compile('[a-zA-Z]')
-        hearing_date = datetime.strptime(hearing_date, " %B %d, %Y ")
+        hearing_date = datetime.strptime(hearing_date_dt, " %B %d, %Y ")
 
-        for h4 in detail_page_content.find_all("h4", "c-listing--bill-num"):
+        listings = detail_page_content.find_all("h4", "c-listing--bill-num")
+        for h4 in listings:
             bill_num = regex.sub("", h4.a.text)
             bill_type = h4.a.text[0]
             hearings.append(Hearing(hearing_date=hearing_date,
@@ -172,8 +173,12 @@ class NYHearingParser(object):
                                     committee_name=committee_name.strip()))
 
         # If "Load More" button exists, call recursive on next page
-        if detail_page_content.find("div", {"class": "pager pager-load-more pager-load-more-empty"}) is not None:
-            hearings.extend(self.parse_senate_hearing_detail_page(committee_name, hearing_date, unique_url, page + 1))
+
+        if len(listings) > 0:
+            print(committee_name, page)
+            hearings.extend(self.parse_senate_hearing_detail_page(committee_name, hearing_date_dt, unique_url, page + 1))
+        else:
+            print("empty")
 
         return hearings
 
