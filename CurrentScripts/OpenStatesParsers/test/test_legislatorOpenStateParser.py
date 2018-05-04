@@ -57,7 +57,7 @@ class TestLegislatorOpenStateParser(TestCase):
                     "type": "district",
                     "email": None}]
 
-        expected = None
+        expected = {"capitol_phone": "N/A", "capitol_fax": "N/A", "room_number": "N/A"}
 
         result = self.parser.get_office_info(offices)
 

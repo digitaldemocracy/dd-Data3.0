@@ -61,6 +61,7 @@ class LegislatorOpenStateParser(object):
                 if office["type"] == "capitol":
                     return {"capitol_phone": str(office["phone"]) if office["phone"] != None else "N/A",
                             "capitol_fax": str(office["fax"]) if office["fax"] != None else "N/A"}
+        return {"capitol_phone": "N/A", "capitol_fax": "N/A", "room_number": "N/A"}
 
     def set_house(self, legislator):
         '''
