@@ -43,10 +43,6 @@ from Utils.Generic_Utils import *
 from Utils.Database_Connection import *
 from Utils.Bill_Insertion_Manager import *
 
-reload(sys)
-sys.setdefaultencoding('utf8')
-
-
 def main():
     with connect() as dd_cursor:
         with connect_to_capublic() as ca_connect:
