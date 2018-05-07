@@ -41,8 +41,6 @@ from Utils.Database_Connection import *
 from Utils.Bill_Insertion_Manager import *
 from Constants.Bills_Queries import *
 
-reload(sys)
-sys.setdefaultencoding('utf8')
 
 logger = None
 UPDATE = 0
