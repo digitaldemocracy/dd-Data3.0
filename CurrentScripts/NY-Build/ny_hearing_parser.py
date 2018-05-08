@@ -172,7 +172,7 @@ class NYHearingParser(object):
                                     bid="NY_201720180" + bill_type + bill_num,
                                     committee_name=committee_name.strip()))
 
-        # If "Load More" button exists, call recursive on next page
+        # If this page is not empty, call recursive on next page
 
         if len(listings) > 0:
             print(committee_name, page)
