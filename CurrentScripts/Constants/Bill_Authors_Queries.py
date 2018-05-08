@@ -132,6 +132,13 @@ SELECT_CID_COMMITTEE_LIKE_SHORT_NAME = '''SELECT cid
                                           AND session_year = %(session_year)s
                                           AND current_flag = 1'''
 
+SELECT_COMMITTEE_ALTERNATE_NAME = '''SELECT c.cid FROM Committee c
+                                     JOIN AlternateCommitteeNames acm ON acm.cid = c.cid
+                                     WHERE acm.name = %(name)s
+                                     AND c.state = %(state)s
+                                     AND c.session_year = %(session_year)s
+                                     AND c.house = %(house)s'''
+
 SELECT_CID_COMMITTEE_AUTHOR = '''SELECT cid
                                  FROM CommitteeAuthors
                                  WHERE cid = %(cid)s

@@ -204,13 +204,17 @@ def get_comm_cid(comm, house, date, dddb, subcomm=None):
     try:
         cid = get_entity_id(dddb, SELECT_COMMITTEE_SHORT_NAME, comm_name, 'Committee', logger)
         if not cid:
-            cid = get_entity_id(dddb, SELECT_COMMITTEE, comm_name, 'Committee', logger)
+            cid = get_entity_id(dddb, SELECT_COMMITTEE_ALTERNATE_NAME, comm_name, 'Committee', logger)
             if not cid:
-                cid = get_entity_id(dddb, SELECT_COMMITTEE, comm_name, 'Committee', logger)
+                cid = get_entity_id(dddb, SELECT_COMMITTEE_SHORT_NAME_NO_TYPE, comm_name, 'Committee', logger)
                 if not cid:
-                    logger.exception("ERROR: Committee not found")
-                    print(SELECT_COMMITTEE_SHORT_NAME % comm_name)
-                    return None
+                    cid = get_entity_id(dddb, SELECT_COMMITTEE, comm_name, 'Committee', logger)
+                    if not cid:
+                        logger.exception("ERROR: Committee not found")
+                        print(SELECT_COMMITTEE_SHORT_NAME % comm_name)
+                        return None
+                    else:
+                        return cid
                 else:
                     return cid
             else:

@@ -32,6 +32,13 @@ SELECT_COMMITTEE_LIKE_SHORT_NAME = '''SELECT cid, short_name FROM Committee
                       AND session_year = %(session_year)s
                       '''
 
+SELECT_COMMITTEE_ALTERNATE_NAME = '''SELECT acm.cid, c.short_name FROM Committee c
+                                     JOIN AlternateCommitteeNames acm ON acm.cid = c.cid
+                                     WHERE acm.name = %(name)s
+                                     AND c.state = %(state)s
+                                     AND c.session_year = %(session_year)s
+                                     AND c.house = %(house)s'''
+
 SELECT_PID = '''SELECT pid FROM AlternateId
                 WHERE alt_id = %(alt_id)s'''
 
