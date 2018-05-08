@@ -29,7 +29,7 @@ SELECT_PID_LEGISLATOR_LAST_NAME = '''SELECT p.pid
                                      AND t.year = %(session_year)s 
                                      AND t.state = %(state)s
                                      AND t.house = %(house)s
-                                     AND t.current_term = 1
+                                     AND t.current_term = %(current)s
                                      ORDER BY p.pid'''
 
 SELECT_PID_LEGISLATOR_LAST_NAME_NO_YEAR = '''SELECT p.pid

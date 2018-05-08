@@ -15,19 +15,19 @@ Tables affected:
  - Contribution
 """
 
-from Utils.Generic_Utils import *
-from Utils.Generic_MySQL import *
-from Utils.Database_Connection import *
-from Utils.Contribution_Insertion_Manager import ContributionInsertionManager
+from Utils.Generic_Utils import create_logger
+from Utils.Database_Connection import connect
+from OpenStatesParsers.OpenStatesApi import OpenStatesAPI
 from OpenStatesParsers.contributions_parser import ContributionParser
-from Constants.Contribution_Queries import *
+from Utils.Contribution_Insertion_Manager import ContributionInsertionManager
 
 logger = None
 
 
 def main():
     with connect() as dddb:
-        contribution_parser = ContributionParser('NY')
+        os = OpenStatesAPI("NY")
+        contribution_parser = ContributionParser('NY', os)
         contribution_manager = ContributionInsertionManager(dddb, logger, 'NY')
 
         contribution_list = contribution_parser.get_contribution_list(2016)

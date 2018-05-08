@@ -61,6 +61,7 @@ class LegislatorOpenStateParser(object):
                 if office["type"] == "capitol":
                     return {"capitol_phone": str(office["phone"]) if office["phone"] != None else "N/A",
                             "capitol_fax": str(office["fax"]) if office["fax"] != None else "N/A"}
+        return {"capitol_phone": "N/A", "capitol_fax": "N/A", "room_number": "N/A"}
 
     def set_house(self, legislator):
         '''
@@ -71,7 +72,7 @@ class LegislatorOpenStateParser(object):
         if "chamber" not in legislator or str(legislator["chamber"]) == "upper":
             return "Senate"
         elif "state" in legislator and str(legislator["state"]) == "ny" and \
-                "chamber" in legislator or str(legislator["chamber"]) == "lower":
+                ("chamber" in legislator or str(legislator["chamber"]) == "lower"):
             return "Assembly"
         return "House"
 
@@ -110,6 +111,41 @@ class LegislatorOpenStateParser(object):
             return legislator["first_name"] + "." + legislator["last_name"] + self.emails["ny_" + legislator["house"].lower()]
         return "N/A"
 
+    def parse_legislator(self, entry):
+        entry = self.clean_values(entry=entry)
+        entry["house"] = self.set_house(entry)
+        office_info = self.get_office_info(entry["offices"])
+        # Person table data
+        name_parts = [entry["first_name"],
+                      entry["middle_name"],
+                      entry["last_name"],
+                      entry["suffixes"]]
+
+        name_parts = [name_part for name_part in name_parts if name_part]
+
+        name = clean_name(" ".join(name_parts))
+        entry["first_name"] = name["first"]
+        entry["last_name"] = name["last"]
+
+        if "district" in entry:
+            legislator = Legislator(name=name,
+                                    image=entry["photo_url"],
+                                    source="openstates",
+                                    alt_ids=entry["all_ids"],
+                                    year=self.session_year,
+                                    house=entry["house"],
+                                    district=str(entry["district"]),
+                                    party=self.set_party(entry),
+                                    start=datetime.date.today(),
+                                    current_term=1,
+                                    state=self.state,
+                                    website_url=entry["url"],
+                                    capitol_phone=office_info["capitol_phone"],
+                                    capitol_fax=office_info["capitol_fax"],
+                                    room_number="N/A",
+                                    email=self.construct_email(entry))
+            return legislator
+
     def get_legislators_list(self, legislator_json):
         '''
         Parses the legislator json from the openstates api
@@ -120,40 +156,8 @@ class LegislatorOpenStateParser(object):
         '''
         legislators = list()
         for entry in legislator_json:
-            entry = self.clean_values(entry=entry)
-            entry["house"] = self.set_house(entry)
-            office_info = self.get_office_info(entry["offices"])
-            # Person table data
-            name_parts = [entry["first_name"],
-                          entry["middle_name"],
-                          entry["last_name"],
-                          entry["suffixes"]]
-
-
-            name_parts = [name_part for name_part in name_parts if name_part]
-
-            name = clean_name(" ".join(name_parts))
-            entry["first_name"] = name["first"]
-            entry["last_name"] = name["last"]
-
-            if "district" in entry:
-                legislator = Legislator(name = name,
-                                        image = entry["photo_url"],
-                                        source = "openstates",
-                                        alt_ids = entry["all_ids"],
-                                        year=self.session_year,
-                                        house=entry["house"],
-                                        district=str(entry["district"]),
-                                        party=self.set_party(entry),
-                                        start=datetime.date.today(),
-                                        current_term=1,
-                                        state = self.state,
-                                        website_url = entry["url"],
-                                        capitol_phone = office_info["capitol_phone"],
-                                        capitol_fax = office_info["capitol_fax"],
-                                        room_number = "N/A",
-                                        email = self.construct_email(entry))
-
+            legislator = self.parse_legislator(entry)
+            if legislator is not None:
                 legislators.append(legislator)
 
         return legislators

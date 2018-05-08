@@ -25,9 +25,9 @@ Sources:
   - cand_2015.csv
 """
 
-from Utils.Generic_Utils import *
-from Utils.Generic_MySQL import *
-from Utils.Database_Connection import *
+from Utils.Generic_Utils import create_logger
+from Utils.Generic_MySQL import get_session_year
+from Utils.Database_Connection import connect
 from Utils.Contribution_Insertion_Manager import ContributionInsertionManager
 from ca_contribution_parser import CaContributionParser
 
