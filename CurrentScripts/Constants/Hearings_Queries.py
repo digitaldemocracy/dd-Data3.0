@@ -18,6 +18,13 @@ SELECT_COMMITTEE_SHORT_NAME_NO_TYPE = '''SELECT cid FROM Committee
                       AND session_year = %(session_year)s
                       AND state = %(state)s'''
 
+SELECT_COMMITTEE_ALTERNATE_NAME = '''SELECT c.cid FROM Committee c
+                                     JOIN AlternateCommitteeNames acm ON acm.cid = c.cid
+                                     WHERE acm.name = %(name)s
+                                     AND c.state = %(state)s
+                                     AND c.session_year = %(session_year)s
+                                     AND c.house = %(house)s'''
+
 SELECT_BID = '''SELECT bid FROM Bill
                 WHERE type = %(bill_type)s
                 AND number = %(bill_number)s

@@ -140,6 +140,13 @@ class BillAuthorInsertionManager(object):
                                logger=self.logger)
 
         if not cid:
+            cid = get_entity_id(db_cursor=self.dddb,
+                               entity=bill_author.__dict__,
+                               query=SELECT_COMMITTEE_ALTERNATE_NAME,
+                               objType="Committee",
+                               logger=self.logger)
+
+        if not cid:
             bill_author.name = bill_author.committee_name.replace(' and ', ' & ').strip()
             cid = get_entity_id(db_cursor=self.dddb,
                                entity=bill_author.__dict__,
