@@ -20,7 +20,7 @@ Populates:
 
 import sys
 import json
-from Generic_MySQL import *
+from .Generic_MySQL import *
 from Constants.Contribution_Queries import *
 
 class ContributionInsertionManager(object):

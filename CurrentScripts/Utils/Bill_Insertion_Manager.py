@@ -23,7 +23,7 @@ Populates:
 
 import sys
 import json
-from Generic_MySQL import *
+from .Generic_MySQL import *
 from Constants.Bills_Queries import *
 
 # reload(sys)
