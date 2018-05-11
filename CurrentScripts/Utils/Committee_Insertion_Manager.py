@@ -20,8 +20,8 @@ Populates:
 import sys
 import json
 import datetime as dt
-from Generic_MySQL import *
-from Generic_Utils import *
+from .Generic_MySQL import *
+from .Generic_Utils import *
 from Models.CommitteeMember import *
 from Constants.Committee_Queries import *
 

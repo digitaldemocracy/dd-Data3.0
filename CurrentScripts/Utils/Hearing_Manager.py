@@ -2,8 +2,8 @@ import sys
 import json
 import MySQLdb
 from Constants.Hearings_Queries import *
-from Generic_MySQL import get_comm_cid
-from Generic_Utils import format_logger_message
+from .Generic_MySQL import get_comm_cid
+from .Generic_Utils import format_logger_message
 
 
 class Hearings_Manager(object):

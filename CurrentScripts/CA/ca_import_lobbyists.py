@@ -506,7 +506,7 @@ def main():
   with connect() as dd_cursor:
     # Turn off foreign key checks
     #dd_cursor.execute('SET foreign_key_checks = 0')
-    with open('/home/data_warehouse_common/dd-Data3.0/CurrentScripts/CA/CVR_REGISTRATION_CD.TSV', 'rb') as tsvin:
+    with open('/home/data_warehouse_common/dd-Data3.0/CurrentScripts/CA/CVR_REGISTRATION_CD.TSV', 'r') as tsvin:
       #dd_cursor = mysql_connection() 
       tsvin_reader = csv.reader(tsvin, delimiter='\t')
       
