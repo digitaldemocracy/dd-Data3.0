@@ -1,5 +1,4 @@
-#!/usr/bin/env python2.6
-#! -*- coding: utf-8 -*-
+#!/usr/bin/python3
 '''
 File: Person_Name_Fix.py
 Author: Daniel Mangin

@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.6
+#!/usr/bin/python3
 '''
 File: Lobbying_Firm_Name_Fix.py
 Author: Daniel Mangin

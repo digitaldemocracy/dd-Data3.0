@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python3
 '''
 File: Get_Districts.py
 Author: Daniel Mangin
@@ -22,7 +22,7 @@ import json
 import MySQLdb
 import datetime
 import traceback
-from urllib import urlopen
+from urllib.request import urlopen
 from Utils.Generic_Utils import *
 from Utils.Database_Connection import *
 

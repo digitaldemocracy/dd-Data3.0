@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python3
 '''
 File: TSV_extract.py
 Author: Matt Versaggi

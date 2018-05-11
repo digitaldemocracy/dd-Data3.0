@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*- 
+#!/usr/bin/python3
 '''
 File: Get_Committees_Web.py
 Author: Daniel Mangin
