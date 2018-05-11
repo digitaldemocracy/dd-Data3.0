@@ -3,20 +3,15 @@ ca_committee_parser
 Author: Nick Russo
 Purpose: Web scrapes assembly and senate websites to get committee names and committee website links.
          Then web scrapes each committee website for committee member information.
+Python3 conversion notes: urllib2 replaced with urllib
 '''
-import re
-import sys
-import urllib2
+
+from urllib.request import urlopen, HTTPError
 from bs4 import BeautifulSoup
 from Models.Committee import *
 from Utils.Generic_Utils import *
 from Models.CommitteeMember import *
 from Utils.Generic_Utils import format_committee_name
-
-reload(sys)
-
-sys.setdefaultencoding('utf-8')
-
 
 class CaCommitteeParser(object):
 
@@ -156,30 +151,30 @@ class CaCommitteeParser(object):
                 and "assembly.ca.gov" in committee_link:
             try:
                 host = committee_link + "/membersstaff"
-                return urllib2.urlopen(host).read().decode("utf-8")
-            except urllib2.HTTPError:
+                return urlopen(host).read().decode("utf-8")
+            except HTTPError:
                 pass
 
             try:
                 host = committee_link + "/content/members"
-                return urllib2.urlopen(host).read().decode("utf-8")
-            except urllib2.HTTPError:
+                return urlopen(host).read().decode("utf-8")
+            except HTTPError:
                 pass
 
             try:
                 host = committee_link + "/content/members-staff"
-                return urllib2.urlopen(host).read().decode("utf-8")
-            except urllib2.HTTPError:
+                return urlopen(host).read().decode("utf-8")
+            except HTTPError:
                 pass
         elif type == "Joint" and \
                 ("legislature.ca.gov" in committee_link or "assembly.ca.gov" in committee_link):
             try:
                 host = committee_link + "/members"
-                return urllib2.urlopen(host).read().decode("utf-8")
-            except urllib2.HTTPError:
+                return urlopen(host).read().decode("utf-8")
+            except HTTPError:
                 pass
 
-        return urllib2.urlopen(committee_link).read().decode("utf-8")
+        return urlopen(committee_link).read().decode("utf-8")
 
     def format_house(self, type, house):
         return "Joint" if type.lower() == "joint" else house.title()
@@ -199,7 +194,7 @@ class CaCommitteeParser(object):
         :return: A list of Committee objects with members.
         '''
         host = "http://%s.ca.gov/committees" % house.lower()
-        htmlSoup = BeautifulSoup(urllib2.urlopen(host).read(), "html.parser")
+        htmlSoup = BeautifulSoup(urlopen(host).read(), "html.parser")
         committee_type_section = None
         sub_committee_parent = ""
         committees_block = htmlSoup.find_all(["h2", "h3", "span"])

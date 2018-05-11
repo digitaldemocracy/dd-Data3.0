@@ -1,11 +1,10 @@
-#!/usr/bin/env python
-# -*- coding: utf8 -*-
+#!/usr/bin/python3
 
 '''
 File: Cal-Access-Accessor.py
 Author: Daniel Mangin
-Modified By: Mandy Chan, Freddy Hernandez, Matt Versaggi, Miguel Aguilar, James Ly
-Last Modified: 12/21/16
+Modified By: Mandy Chan, Freddy Hernandez, Matt Versaggi, Miguel Aguilar, James Ly, Thomas Gerrity
+Last Modified: 5/11/18
 
 Description:
 - Goes through the file CVR_REGISTRATION_CD.TSV and places the data into DDDB
@@ -25,6 +24,10 @@ Populates:
   - LobbyistEmployment (pid, sender_id, rpt_date, ls_beg_yr, ls_end_yr)
   - LobbyistDirectEmployment (pid, lobbyist_employer, rpt_date, ls_beg_yr, ls_end_yr)
   - LobbyingContracts (filer_id, lobbyist_employer, rpt_date, ls_beg_yr, ls_end_yr)
+
+Python 3 conversion Notes:
+  - replaced xrange() with range()
+  - added () around print statements
 '''
 import csv
 import json
@@ -155,9 +158,9 @@ QS_LOBBYING_CONTRACTS = '''SELECT filer_id, lobbyist_employer, rpt_date, state
                             AND rpt_date = %s 
                             AND state = %s'''
 # Currently a static table that is sized to 10,000
-Lobbyist= [[0 for x in xrange(7)] for x in xrange(10000)]
-Lobbyist_2= [[0 for x in xrange(6)] for x in xrange(50000)]
-Lobbyist_3= [[0 for x in xrange(9)] for x in xrange(50000)]
+Lobbyist= [[0 for x in range(7)] for x in range(10000)]
+Lobbyist_2= [[0 for x in range(6)] for x in range(50000)]
+Lobbyist_3= [[0 for x in range(9)] for x in range(50000)]
 
 
 # Changes the date into a linux format for the database
@@ -314,7 +317,7 @@ def insert_lobbying_firm(dd_cursor, filer_naml):
     try:
       dd_cursor.execute(QI_LOBBYING_FIRM, (filer_naml,))
       LF_INSERT += dd_cursor.rowcount
-      print LF_INSERT, filer_naml
+      print(LF_INSERT, filer_naml)
     except MySQLdb.Error:                                              
       logger.exception(format_logger_message('Insert Failed for LobbyingFirm',
             (QI_LOBBYING_FIRM % (filer_naml,))))

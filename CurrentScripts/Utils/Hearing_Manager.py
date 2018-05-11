@@ -5,9 +5,6 @@ from Constants.Hearings_Queries import *
 from Generic_MySQL import get_comm_cid
 from Generic_Utils import format_logger_message
 
-reload(sys)
-
-sys.setdefaultencoding('utf-8')
 
 class Hearings_Manager(object):
     def __init__(self, dddb, state, logger):
@@ -200,8 +197,8 @@ class Hearings_Manager(object):
             # in it. if it is not there, get all current bids.
             if hid not in hid_to_bids:
                 hid_to_bids[hid] = [bid[0] for bid in self.get_all_bids_in_agenda(hid)]
-                if len(hid_to_bids[hid]) == 0:
-                    print("damn")
+                # if len(hid_to_bids[hid]) == 0:
+                #     print("damn")
             bids_in_agenda =  hid_to_bids[hid]
 
             # if the cid is not None and the committee hearing is not in the db.

@@ -4,8 +4,6 @@ import json
 from Generic_MySQL import *
 from Constants.Bill_Authors_Queries import *
 
-reload(sys)
-sys.setdefaultencoding('utf8')
 
 class BillAuthorInsertionManager(object):
     def __init__(self, dddb, state, logger):

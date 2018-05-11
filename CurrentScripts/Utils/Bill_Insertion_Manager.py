@@ -26,8 +26,8 @@ import json
 from Generic_MySQL import *
 from Constants.Bills_Queries import *
 
-reload(sys)
-sys.setdefaultencoding('utf8')
+# reload(sys)
+# sys.setdefaultencoding('utf8')
 
 class BillInsertionManager(object):
     def __init__(self, dddb, logger, state):

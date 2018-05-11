@@ -1,6 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
+#!/usr/bin/python3
 """
 File: ca_import_authors
 Author: Daniel Mangin

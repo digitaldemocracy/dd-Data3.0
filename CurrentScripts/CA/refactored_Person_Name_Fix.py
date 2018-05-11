@@ -72,7 +72,7 @@ def clean_names():
                         (clean_first, clean_last, first, last))
       print('pid: %s, Orignal: %s %s, Clean: %s %s' %
             (pid, first, last, clean_first, clean_last))
-      print '%s row(s) updated' % str(dd_cursor.rowcount)
+      print ('%s row(s) updated' % str(dd_cursor.rowcount))
 
 if __name__ == "__main__":
   clean_names()

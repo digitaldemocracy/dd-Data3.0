@@ -1,5 +1,3 @@
-#!/usr/bin/env python2.7
-# -*- coding: utf8 -*-
 
 """
 File: Committee_Insertion_Manager
@@ -27,7 +25,7 @@ from Generic_Utils import *
 from Models.CommitteeMember import *
 from Constants.Committee_Queries import *
 
-sys.setdefaultencoding("utf-8")
+
 
 class CommitteeInsertionManager(object):
 

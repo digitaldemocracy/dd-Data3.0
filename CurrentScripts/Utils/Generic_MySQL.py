@@ -6,9 +6,9 @@ from Utils.Generic_Utils import format_logger_message
 from Utils.Generic_Utils import levenshteinDistance
 from Constants.Committee_Queries import *
 
-reload(sys)
+# //reload(sys)
 
-sys.setdefaultencoding('utf-8')
+# sys.setdefaultencoding('utf-8')
 
 '''
 Generic SQL insertion function

@@ -67,8 +67,9 @@ def create_logger():
     if not os.path.exists(os.environ["SCRIPTPATH"] + "/logs/" + state):
         os.makedirs(os.environ["SCRIPTPATH"] + "/logs/" + state)
 
+    # Note: due to the colons in the file name this script will NOT run in windows environments, BOOOOOOOO!
     log_loc = os.environ["SCRIPTPATH"] + "/logs/" + state + "/" + \
-              str(dt.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")) + \
+              str(dt.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")) + \
               "_" + file_name + ".log"
 
     # create logger

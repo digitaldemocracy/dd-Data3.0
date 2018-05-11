@@ -1,12 +1,10 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
+#!/usr/bin/python3
 """
 File: Action_Extract.py
 Author: Daniel Mangin
-Modified By: Mitch Lane, Mandy Chan, Eric Roh, Andrew Rose
+Modified By: Mitch Lane, Mandy Chan, Eric Roh, Andrew Rose, Thomas Gerrity
 Date: 6/11/2015
-Last Changed: 7/19/2017
+Last Changed: 5/11/2018
 
 Description:
 - Inserts Actions from the bill_history_tbl from capublic into DDDB.Action

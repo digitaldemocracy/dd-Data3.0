@@ -1,6 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf8 -*-
-
+#!/usr/bin/python3
 """
 File: Vote_Extract.py
 Authored By: Daniel Mangin
@@ -32,14 +30,12 @@ Populates:
   - BillVoteDetail (pid, voteId, result, state)
 """
 
-import sys
+
 from ca_bill_parser import CaBillParser
 from Utils.Generic_Utils import create_logger
 from Utils.Database_Connection import connect_to_capublic, connect
 from Utils.Bill_Insertion_Manager import BillInsertionManager
 
-reload(sys)
-sys.setdefaultencoding('utf8')
 
 
 def main():

@@ -1,5 +1,4 @@
-#!/usr/bin/env python2.7
-# -*- coding: utf-8 -*-
+#!/usr/bin/python3
 
 """
 File: billparse.py
@@ -173,7 +172,8 @@ def billparse(ca_cursor, dd_cursor):
     for vid, xml in get_bill_versions(ca_cursor):
         # This line will fail if |xml| is not valid XML.
         try:
-            xml = unicodedata.normalize('NFKD', xml).encode('ascii', 'ignore')
+            #python3 - added decode(utf8)
+            xml = unicodedata.normalize("NFKD", xml).encode("ascii", "ignore").decode("utf8")
             #root = etree.fromstring(xml)
         except:
             raise

@@ -29,9 +29,10 @@ import os
 import csv
 import sys
 import json
-import urllib
+from urllib.request import *
+
 import zipfile
-import requests
+
 import subprocess
 import contextlib
 from datetime import datetime
@@ -54,7 +55,7 @@ class CaContributionParser(object):
     def download_csv(self):
         self.remove_zip()
         try:
-            url = urllib.urlretrieve(self.zip_url, self.zip_name)
+            url = urlretrieve(self.zip_url, self.zip_name)
             print(url, self.zip_url)
         except:
             print(self.zip_url, 'download failed')
@@ -71,10 +72,10 @@ class CaContributionParser(object):
 
         contribution_list = list()
 
-        with open('cand_{0}.csv'.format(self.year), 'rb') as csv_file:
+        with open('cand_{0}.csv'.format(self.year), 'r') as csv_file:
             csv_reader = csv.DictReader(csv_file, delimiter=',')
 
-            csv_reader.next()
+            next(csv_reader)
 
             for row in csv_reader:
                 contribution_id = row['TransactionID']

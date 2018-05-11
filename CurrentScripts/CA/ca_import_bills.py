@@ -1,6 +1,4 @@
-#!/usr/bin/env python2.7
-# -*- coding: utf8 -*-
-
+#!/usr/bin/python3
 """
 File: Bill_Extract.py
 Author: Daniel Mangin
@@ -42,6 +40,8 @@ from Constants.Bills_Queries import *
 from Utils.Generic_Utils import *
 from Utils.Database_Connection import *
 from Utils.Bill_Insertion_Manager import *
+
+
 
 def main():
     with connect() as dd_cursor:
