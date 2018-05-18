@@ -22,7 +22,7 @@ Populates:
 import sys
 import json
 from Constants.Legislator_Queries import *
-from Generic_MySQL import is_entity_in_db, \
+from .Generic_MySQL import is_entity_in_db, \
                           get_entity_id, \
                           insert_entity, \
                           update_entity, \
