@@ -277,8 +277,9 @@ class TxHearingParser(object):
             for line in bold_text:
                 underlined_text = line.find('u')
                 if underlined_text is not None:
-                    bill_name = underlined_text.find('span').string
+                    bill_name = underlined_text.find('span')
                     if bill_name is not None:
+                        bill_name = str(bill_name.string)
                         if self.bill_search_regex.match(bill_name):
                             bill_list.append(str(bill_name))
 
