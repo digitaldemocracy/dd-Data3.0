@@ -225,7 +225,7 @@ class TxHearingParser(object):
                 if bill_tag is not None and isinstance(bill_tag.contents[0], six.string_types):
                     bill_name = bill_tag.contents[0] 
                     if self.bill_search_regex.match(bill_name):
-                        bill_list.append(unicode(bill_name)) 
+                        bill_list.append(str(bill_name))
         else:
             matches = self.bill_search_regex.findall(doc_text)
             for match in matches:

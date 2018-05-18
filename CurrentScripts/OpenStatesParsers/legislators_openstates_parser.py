@@ -1,5 +1,4 @@
-#!/usr/bin/python2.7
-# -*- coding: utf8 -*-
+#!/usr/bin/python3
 
 """
 File: legislator_API_helper.py
@@ -19,8 +18,6 @@ from Models.Legislator import Legislator
 from Utils.Generic_Utils import clean_name
 import datetime
 
-reload(sys)
-sys.setdefaultencoding('utf-8')
 
 class LegislatorOpenStateParser(object):
     def __init__(self, state, session_year):

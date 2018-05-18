@@ -1,5 +1,4 @@
-#!/usr/bin/env python2.7
-# -*- coding: utf8 -*-
+#!/usr/bin/python3
 
 """
 File: new_tx_import_committee.py
@@ -42,7 +41,6 @@ def main():
         committee_insertion_manager.import_committees(committees)
         #verify.check_db()
         committee_insertion_manager.log()
-
 
 
 if __name__ == '__main__':

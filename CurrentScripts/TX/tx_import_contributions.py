@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf8 -*-
+#!/usr/bin/python3
 
 """
 File: tx_import_contributions.py

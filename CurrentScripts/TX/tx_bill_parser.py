@@ -1,5 +1,4 @@
-#!/usr/bin/env python2.7
-# -*- coding: utf8 -*-
+#!/usr/bin/python3
 
 """
 File: tx_bill_parser.py

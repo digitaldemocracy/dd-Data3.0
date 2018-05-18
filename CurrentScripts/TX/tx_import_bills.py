@@ -1,5 +1,4 @@
-#!/usr/bin/env python2.7
-# -*- coding: utf8 -*-
+#!/usr/bin/python3
 
 """
 File: tx_import_bills.py
@@ -22,9 +21,9 @@ Populates:
     - BillVersion
 """
 
-import urllib2
+from urllib.request import urlopen, URLError
 import MySQLdb
-from tx_bill_parser import TxBillParser
+from .tx_bill_parser import TxBillParser
 from OpenStatesParsers.OpenStatesApi import OpenStatesAPI
 from Utils.Bill_Insertion_Manager import BillInsertionManager, SELECT_LEG_PID, SELECT_PID
 from Utils.Generic_Utils import create_logger, format_logger_message
@@ -86,14 +85,14 @@ def format_version(version_list):
 
     for version in version_list:
         try:
-            version_doc = urllib2.urlopen(version.url, timeout=15)
+            version_doc = urlopen(version.url, timeout=15)
             doc = ''
             while True:
                 read_text = version_doc.read(1024)
                 if not read_text:
                     break
                 doc += read_text
-        except urllib2.URLError:
+        except URLError:
             doc = None
             #print('URL error with version ' + version.vid)
 
