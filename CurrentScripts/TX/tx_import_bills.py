@@ -23,7 +23,7 @@ Populates:
 
 from urllib.request import urlopen, URLError
 import MySQLdb
-from .tx_bill_parser import TxBillParser
+from tx_bill_parser import TxBillParser
 from OpenStatesParsers.OpenStatesApi import OpenStatesAPI
 from Utils.Bill_Insertion_Manager import BillInsertionManager, SELECT_LEG_PID, SELECT_PID
 from Utils.Generic_Utils import create_logger, format_logger_message
