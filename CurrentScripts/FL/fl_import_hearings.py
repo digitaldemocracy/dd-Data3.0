@@ -1,5 +1,4 @@
-#!/usr/bin/env python2.7
-# -*- coding: utf8 -*-
+#!/usr/bin/python3
 
 """
 File: fl_import_hearings.py
@@ -26,10 +25,10 @@ Populates:
 
 import os
 import json
-import urllib2
 import requests
 import subprocess
 import traceback
+from urllib.request import urlopen
 from Models.Hearing import *
 from bs4 import BeautifulSoup
 from Utils.Generic_MySQL import *
@@ -509,7 +508,7 @@ def get_agenda_text(link):
 Gets all House agenda PDFs listed on the Florida website
 '''
 def get_house_agenda(dddb):
-    html_soup = BeautifulSoup(urllib2.urlopen(FL_HEARING_HOUSE_SOURCE).read(), "lxml")
+    html_soup = BeautifulSoup(urlopen(FL_HEARING_HOUSE_SOURCE).read(), "lxml")
 
     hearing_list = []
 
@@ -528,7 +527,7 @@ def get_house_agenda(dddb):
 Gets all Senate agenda PDFs listed on the Florida website
 '''
 def get_senate_agenda(dddb):
-    html_soup = BeautifulSoup(urllib2.urlopen(FL_HEARING_SENATE_SOURCE).read(), "lxml")
+    html_soup = BeautifulSoup(urlopen(FL_HEARING_SENATE_SOURCE).read(), "lxml")
 
     hearings_list = []
 

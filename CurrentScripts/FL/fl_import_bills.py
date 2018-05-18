@@ -1,5 +1,4 @@
-#!/usr/bin/env python2.7
-# -*- coding: utf8 -*-
+#!/usr/bin/python3
 
 """
 File: fl_import_bills.py
@@ -25,10 +24,10 @@ Populates:
 import os
 import sys
 import glob
-import urllib2
 import MySQLdb
 import requests
 import subprocess
+from urllib.request import urlopen
 from bs4 import BeautifulSoup
 from Constants.Bills_Queries import *
 from fl_bill_parser import FlBillParser
@@ -37,8 +36,6 @@ from OpenStatesParsers.OpenStatesApi import OpenStatesAPI
 from Utils.Bill_Insertion_Manager import BillInsertionManager
 from Utils.Generic_Utils import create_logger, format_absolute_path, format_logger_message
 
-reload(sys)
-sys.setdefaultencoding('utf8')
 
 logger = None
 
@@ -170,7 +167,7 @@ def scrape_version_date(url):
     url = '/'.join(url[:7])
 
     try:
-        html_soup = BeautifulSoup(urllib2.urlopen(url), 'lxml')
+        html_soup = BeautifulSoup(urlopen(url), 'lxml')
     except:
         #print("Error connecting to " + url)
         return dates
