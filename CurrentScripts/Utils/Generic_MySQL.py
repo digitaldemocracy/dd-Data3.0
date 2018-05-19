@@ -121,7 +121,7 @@ def get_comm_cid(dddb_cursor, comm_name, house, session_year, state, logger):
             return dddb_cursor.fetchone()[0]
 
         # Try alternate names match
-        dddb_cursor.execute(SELECT_COMMITTEE_ALTERNATE_NAME)
+        dddb_cursor.execute(SELECT_COMMITTEE_ALTERNATE_NAME, committee_info)
 
         if dddb_cursor.rowcount > 0:
             return min(dddb_cursor.fetchall(), key=lambda com: levenshteinDistance(com[1], comm_name))[0]
