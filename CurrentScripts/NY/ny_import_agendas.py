@@ -1,5 +1,4 @@
-#!/usr/bin/env python2.7
-# -*- coding: utf8 -*-
+#!/usr/bin/python3
 
 import sys
 from datetime import datetime
@@ -9,11 +8,9 @@ from Utils.Generic_MySQL import get_session_year
 from NY.ny_hearing_parser import NYHearingParser
 from Utils.Hearing_Manager import Hearings_Manager
 
-reload(sys)
-sys.setdefaultencoding('utf-8')
 
 def main():
-    with connect("live") as dddb:
+    with connect() as dddb:
         logger = create_logger()
         parser = NYHearingParser(get_session_year(dddb, "NY", logger))
         hearings = parser.get_hearings()

@@ -1,6 +1,4 @@
-#!/usr/bin/env python2.7
-# -*- coding: utf8 -*-
-
+#!/usr/bin/python3
 """
 File: ny_hearing_parser.py
 Author: Nick Russo
@@ -20,10 +18,6 @@ import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
 from Models.Hearing import Hearing
-
-reload(sys)
-
-sys.setdefaultencoding('utf-8')
 
 
 

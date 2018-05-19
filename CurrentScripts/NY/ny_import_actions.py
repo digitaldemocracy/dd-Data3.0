@@ -1,5 +1,4 @@
-#!/usr/bin/python
-# -*- coding: utf8 -*-
+#!/usr/bin/python3
 
 '''
     File: ny_import_actions.py

@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf8 -*-
+#!/usr/bin/python
 '''
 File: import_authors_ny.py
 Author: Min Eric Roh
@@ -82,7 +81,7 @@ def call_senate_api(restCall, year, house, offset):
         house = "/" + house
     url = URL % {'restCall': restCall, 'year': str(year), 'house': house, 'offset': str(offset)}
     r = requests.get(url)
-    print url
+    print(url)
     out = r.json()
     return (out["result"]["items"], out['total'])
 
@@ -106,7 +105,7 @@ def get_author_api(year):
                     b['type'] = bill['basePrintNo']
                     #print b['type']
                     b['session'] = '0'
-                    fullName = bill['sponsor']['member']['fullName'].encode('utf-8')
+                    fullName = bill['sponsor']['member']['fullName']
                     name = clean_name(fullName)
                     b['last'] = name[1]
                     b['first'] = name[0]
@@ -119,7 +118,7 @@ def get_author_api(year):
                         problem_names.append(name)
                         logger.exception('Problem with name ' + name)
         cur_offset += 1000
-    print len(ret_bills)
+    print(len(ret_bills))
     return ret_bills
 
 
@@ -139,7 +138,7 @@ def add_sponsor(dd_cursor, pid, bid, vid, contribution):
     dd_cursor.execute(QS_BILLSPONSORS_CHECK, (bid, pid, vid, contribution))
 
     if dd_cursor.rowcount == 0:
-        print pid, vid, contribution
+        print(pid, vid, contribution)
         try:
             dd_cursor.execute(QI_BILLSPONSORS, (pid, bid, vid, contribution))
             BS_INSERTED += dd_cursor.rowcount
@@ -176,7 +175,7 @@ def insert_authors_db(bill, dddb):
                     A_UPDATE += dddb.rowcount
                 except MySQLdb.Error:
                     logger.exception(format_logger_message('Update failed for authors', (QU_AUTHORS % a)))
-                print 'updated', a['pid']
+                print('updated', a['pid'])
             dddb.execute(QS_BILLSPONSORS_CHECK, (a['pid'], a['bid'], a['vid'], CONTRIBUTION))
             if dddb.rowcount == 0 and vid_check:
                 add_sponsor(dddb, a['pid'], a['bid'], a['vid'], CONTRIBUTION)

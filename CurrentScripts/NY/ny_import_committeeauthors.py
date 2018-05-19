@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python3
 """
 File: import_committeeauthors_ny.py
 Author: Min Eric Roh
@@ -57,7 +57,7 @@ def call_senate_api(restCall, year, house, offset):
         house = "/" + house
     url = URL % {'restCall': restCall, 'year': str(year), 'house': house, 'offset': str(offset)}
     r = requests.get(url)
-    print url
+    print(url)
     out = r.json()
     return out["result"]["items"]
 
@@ -73,7 +73,7 @@ def get_committeeauthors_api(year):
         b['versions'] = bill['result']['amendments']['items']
         b['bid'] = "NY_" + str(year) + str(year + 1) + b['session'] + b['type']
         ret_bills.append(b)
-    print len(ret_bills)
+    print(len(ret_bills))
     return ret_bills
 
 
@@ -108,12 +108,12 @@ def add_committeeauthors_db(year, dddb):
     bills = get_committeeauthors_api(year)
     cid = get_cid_db(dddb, year)
 
-    print "cid", cid
+    print("cid", cid)
     if cid is not None:
         for bill in bills:
             insert_committeeauthors_db(bill, cid, year, dddb)
     else:
-        print "Fill Committee table first"
+        print("Fill Committee table first")
 
 
 def get_cid_db(dddb, year):

@@ -1,5 +1,4 @@
-#!/usr/bin/env python2.7
-# -*- coding: utf8 -*-
+#!/usr/bin/python3
 
 """
 File: ny_import_legislators.py
@@ -137,7 +136,12 @@ def clean_name(name):
         "VANEL": ("Clyde", "Vanel"),
         "WALSH": ("Mary", "Walsh"),
         "MILLER": ("Brian", "Miller"),
-        "PELLEGRINO": ("Christine", "Pellegrino")
+        "PELLEGRINO": ("Christine", "Pellegrino"),
+        "ASHBY": ("Jake", "Ashby"),
+        "BOHEN": ("Erik", "Bohen"),
+        "MIKULIN": ("John", "Mikulin")
+
+
     }
 
     ending = {'Jr': ', Jr.', 'Sr': ', Sr.', 'II': ' II', 'III': ' III', 'IV': ' IV'}
@@ -145,6 +149,7 @@ def clean_name(name):
     name = name.replace('.', ' ')
     name = name.replace('  ', ' ')
     name_arr = name.split()
+
     suffix = ""
 
     if len(name_arr) == 1 and name_arr[0] in problem_names.keys():

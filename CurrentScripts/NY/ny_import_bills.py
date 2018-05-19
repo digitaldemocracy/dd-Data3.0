@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf8 -*-
+#!/usr/bin/python3
 '''
 File: ny_import_bills.py
 Author: John Alkire
@@ -94,7 +93,7 @@ def call_senate_api(restCall, house, offset, resolution):
         api_url = API_URL + "term=billType.resolution:false"
 
     url = api_url.format(restCall, API_YEAR, house, offset)
-    print url
+    print(url)
     r = requests.get(url)
     out = r.json()
 
@@ -147,7 +146,7 @@ def insert_bill_db(bill, dddb):
             'house': bill['house'], 'state': bill['state'], 'session': bill['session'],
             'sessionYear': bill['sessionYear'], 'billState': bill['status']}
 
-    lastVersion = str(bill['versions'].keys()[-1])
+    lastVersion = str(list(bill['versions'].keys())[-1])
     billVid = bill['bid'] + lastVersion
     if billVid[-1].isalpha():
         temp['billState'] = "Amended " + billVid[-1].upper();
