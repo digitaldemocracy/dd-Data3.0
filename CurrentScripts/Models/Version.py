@@ -3,7 +3,7 @@ class Version(object):
                  text=None, title=None, digest=None,
                  date=None, bid=None,
                  appropriation=None, substantive_changes=None,
-                 url=None, doctype=None):
+                 url=None, doctype=None, text_link=None, house = None):
         self.vid = vid
         self.bid = bid
 
@@ -16,10 +16,11 @@ class Version(object):
 
         self.digest = digest
         self.text = text
-        self.text_link = None
+        self.text_link = text_link
 
         self.appropriation = appropriation
         self.substantive_changes = substantive_changes
 
         self.doctype = doctype
         self.url = url
+        self.house = house
