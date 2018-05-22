@@ -156,6 +156,7 @@ class Hearings_Manager(object):
         agenda = {'hid': hid, 'bid': bid, 'date_created': date}
 
         if self.is_hearing_agenda_in_db(hid, bid, date) is None:
+            print("INSERTING " + str(hid) + "::" + str(bid) + "--" + str(date))
             try:
                 self.dddb.execute(INSERT_HEARING_AGENDA, agenda)
                 self.HA_INS += self.dddb.rowcount
@@ -202,7 +203,7 @@ class Hearings_Manager(object):
                 hid_to_bids[hid] = [bid[0] for bid in self.get_all_bids_in_agenda(hid)]
                 if len(hid_to_bids[hid]) == 0:
                     print("damn")
-            bids_in_agenda =  hid_to_bids[hid]
+            bids_in_agenda = hid_to_bids[hid]
 
             # if the cid is not None and the committee hearing is not in the db.
             if hearing.cid is not None and not self.is_comm_hearing_in_db(hearing.cid, hid):
