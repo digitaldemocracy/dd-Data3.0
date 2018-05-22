@@ -111,7 +111,7 @@ SELECT_TERM = '''
               '''
 
 SELECT_PID_WITH_CHAMBER = '''
-                SELECT pid
+                SELECT p.pid
                 FROM Term t, House h, Person p
                 WHERE t.pid = p.pid
                 AND t.house = h.name
