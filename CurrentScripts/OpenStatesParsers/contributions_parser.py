@@ -27,7 +27,6 @@ class ContributionParser(object):
         self.state = state
         self.api = api
 
-
     def clean_name(self, name):
         """
         Scrapes a candidate's name from their FollowTheMoney profile
@@ -155,9 +154,15 @@ class ContributionParser(object):
         #contribution_list = list()
 
         for eid in self.get_eid_list(year):
-            print(eid)
             for record in self.get_records(eid):
-                yield self.format_contribution_record(record)
+                print(type(record))
+                if type(record) is list:
+                    for subrecord in record:
+                        yield self.format_contribution_record(subrecord)
+                elif type(record) is not dict:
+                    continue
+                else:
+                    yield self.format_contribution_record(record)
 
     def parse_recent_contributions(self):
         """
@@ -174,7 +179,7 @@ class ContributionParser(object):
 
         return contribution_list
 
-    def get_contribution_list(self, year):
+    def get_contribution_list(self, years):
         """
         Builds a list of Contribution model objects.
         Gets either all contributions for a certain election year or
@@ -185,7 +190,8 @@ class ContributionParser(object):
         """
         if self.comprehensive_flag == 1:
             #print("Comprehensive")
-            return self.parse_all_contributions(year)
+            for year in years:
+                return self.parse_all_contributions(year)
         else:
             #print("Partial")
             return self.parse_recent_contributions()
