@@ -2098,7 +2098,7 @@ CREATE TABLE IF NOT EXISTS TT_BillDiscussion (
   type VARCHAR(5) DEFAULT NULL, 
   number VARCHAR(10) DEFAULT NULL,
   billName VARCHAR(23) DEFAULT NULL,
-  videoId INTEGER DEFAULT NULL, index(videoId),
+  videoId INTEGER NOT NULL, index(videoId),
   startTime INTEGER DEFAULT NULL, 
   endTime INTEGER DEFAULT NULL,
   PRIMARY KEY (id),
