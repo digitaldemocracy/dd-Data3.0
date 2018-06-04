@@ -127,8 +127,8 @@ class NYHearingParser(object):
         :return: bs4 content
         """
         url = self.base_senate_url + "/search/legislation" \
-                   "?sort=desc&searched=true&type=f_agenda&agenda_year="\
-                   + str(datetime.today().year) + "&page=" + str(page_number)
+                                     "?sort=desc&searched=true&type=f_agenda&agenda_year="\
+                                   + str(datetime.today().year) + "&page=" + str(page_number)
         page = requests.get(url)
         return BeautifulSoup(page.content, 'html.parser')
 
@@ -142,19 +142,25 @@ class NYHearingParser(object):
         page = requests.get(url)
         return BeautifulSoup(page.content, 'html.parser')
 
-    def parse_senate_hearing_detail_page(self, committee_name, hearing_date, detail_page_content):
+    def parse_senate_hearing_detail_page(self, committee_name, hearing_date_dt, unique_url, page=0):
         """
         Parses the senate hearing detail page into a list
         of hearing model.
         :param committee_name: The name of the committee.
-        :param hearing_date: The date of the hearing
-        :param detail_page_content: bs4 content of the detail page.
+        :param hearing_date_dt: The date of the hearing
+        :param unique_url: unique url of detail page
+        :param page: page number of detail page
         :return: a list of hearing model objects.
         """
+
+        detail_page_content = self.get_senate_hearing_detail_page(unique_url + "&page=" + str(page))
+
         hearings = list()
         regex = re.compile('[a-zA-Z]')
-        hearing_date = datetime.strptime(hearing_date, " %B %d, %Y ")
-        for h4 in detail_page_content.find_all("h4", "c-listing--bill-num"):
+        hearing_date = datetime.strptime(hearing_date_dt, " %B %d, %Y ")
+
+        listings = detail_page_content.find_all("h4", "c-listing--bill-num")
+        for h4 in listings:
             bill_num = regex.sub("", h4.a.text)
             bill_type = h4.a.text[0]
             hearings.append(Hearing(hearing_date=hearing_date,
@@ -165,6 +171,15 @@ class NYHearingParser(object):
                                     cid=None,
                                     bid="NY_201720180" + bill_type + bill_num,
                                     committee_name=committee_name.strip()))
+
+        # If this page is not empty, call recursive on next page
+
+        if len(listings) > 0:
+            print(committee_name, page)
+            hearings.extend(self.parse_senate_hearing_detail_page(committee_name, hearing_date_dt, unique_url, page + 1))
+        else:
+            print("empty")
+
         return hearings
 
     def get_senate_hearings_from_page(self, page_content):
@@ -180,10 +195,9 @@ class NYHearingParser(object):
             if len(committee_and_date) == 1:
                 committee_and_date = committee_and_date[0].replace("Annual Meeting of the", "").split("Meeting")
 
-            page_content = self.get_senate_hearing_detail_page(div.h3.a["href"])
             page_hearings += self.parse_senate_hearing_detail_page(committee_and_date[0],
-                                                                  committee_and_date[1],
-                                                                  page_content)
+                                                                   committee_and_date[1],
+                                                                   div.h3.a["href"])
         return page_hearings
 
     def get_senate_hearings(self):
