@@ -17,6 +17,7 @@ data_dir = 'BillAnalysisLobs/'
 output_dir = 'BillAnalysisOut/'
 zip_url = 'https://downloads.leginfo.legislature.ca.gov/pubinfo_2017.zip'
 
+logger = None
 
 """Cleans all the lob files out of the data directory and all csv files out of the output directory"""
 def clear_old_data():
@@ -75,6 +76,10 @@ def scrape_lob(doc_name, data):
     except IndexError as e:
         # counting the number of files with this specific error
         out = [0, 0, 0, 0, 0, 0, 1]
+    except zipfile.BadZipFile as e:
+        print("Bad zip file")
+        logger.warning("Bad zip file error with file " + data_dir + doc_name)
+        out = [0, 0, 0, 0, 0, 0, 1]
 
     return pd.Series(out, index=['case_1',
                                  'case_2',
@@ -85,8 +90,12 @@ def scrape_lob(doc_name, data):
                                  'no_tbl_info'])
 
 
-def main(logger):
+def main(log):
     # Apologies to future maintainer for the atrocious error handling here
+    global logger
+    
+    logger = log
+
     try:
         clear_old_data()
         get_zip()
@@ -127,5 +136,5 @@ def main(logger):
     logger.debug('Counts:\n', counts)
 
 if __name__ == '__main__':
-    logger = create_logger()
-    main(logger)
+    log = create_logger()
+    main(log)
