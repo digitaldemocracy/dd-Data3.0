@@ -13,7 +13,7 @@ reload(sys)
 sys.setdefaultencoding('utf-8')
 
 def main():
-    with connect("live") as dddb:
+    with connect() as dddb:
         logger = create_logger()
         parser = NYHearingParser(get_session_year(dddb, "NY", logger))
         hearings = parser.get_hearings()
