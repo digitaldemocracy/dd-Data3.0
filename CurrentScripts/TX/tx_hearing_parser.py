@@ -277,10 +277,12 @@ class TxHearingParser(object):
             for line in bold_text:
                 underlined_text = line.find('u')
                 if underlined_text is not None:
-                    bill_name = underlined_text.find('span').string
-                    if bill_name is not None:
-                        if self.bill_search_regex.match(bill_name):
-                            bill_list.append(unicode(bill_name))
+                    span = underlined_text.find('span')
+                    if span is not None:
+                        bill_name = span.string
+                        if bill_name is not None:
+                            if self.bill_search_regex.match(bill_name):
+                                bill_list.append(unicode(bill_name))
 
         matches = self.bill_search_regex.findall(doc_text)
         for match in matches:
