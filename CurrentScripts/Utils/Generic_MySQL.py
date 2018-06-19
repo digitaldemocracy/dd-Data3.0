@@ -150,7 +150,8 @@ def get_comm_cid(dddb_cursor, comm_name, house, session_year, state, logger):
             return min(dddb_cursor.fetchall(), key=lambda com: levenshteinDistance(com[1], comm_name))[0]
 
     except MySQLdb.Error:
-        logger.exception(format_logger_message("Committee selection failed for Committee ", (SELECT_COMMITTEE % comm_name)))
+        logger.exception(format_logger_message("Committee selection failed for Committee ",
+                                               (SELECT_COMMITTEE % committee_info)))
 
 
 def get_pid(dddb, logger, person, source_link=None, strict=False):
