@@ -2106,6 +2106,7 @@ CREATE TABLE IF NOT EXISTS TT_BillDiscussion (
   predicted TINYINT(1) DEFAULT 0,
   lastTouched TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
+  UNIQUE KEY (videoId, cutId, vid, type, number, startTime),
   FOREIGN KEY (videoId) REFERENCES TT_Videos(videoId),
   FOREIGN KEY (cutId) REFERENCES TT_Cuts(cutId),
   FOREIGN KEY (vid) REFERENCES Video(vid)
