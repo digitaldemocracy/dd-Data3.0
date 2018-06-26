@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 '''
 File: import_authors_ny.py
 Author: Min Eric Roh

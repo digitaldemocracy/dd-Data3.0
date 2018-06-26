@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/python3
 
 """
 File: ny_import_districts.py
@@ -20,12 +20,11 @@ Populates:
 
 """
 
-import sys
 import MySQLdb
 import traceback
 import datetime
 import json
-from urllib import urlopen
+from urllib.request import urlopen
 from Utils.Generic_Utils import *
 from Utils.Database_Connection import connect
 
@@ -83,7 +82,7 @@ Turns the geo_data JSON into a string
 def format_to_string(geo_data):
     geo_data = geo_data[0][0]
     data_str = '{'
-    for i in xrange(0, len(geo_data)):
+    for i in range(0, len(geo_data)):
         data_str = (data_str + '{' + str(geo_data[i][0]) + ',' +
                     str(geo_data[i][1]) + '}')
         if (i != len(geo_data) - 1):
@@ -124,7 +123,7 @@ def get_districts(dd_cursor):
     year = cur_year - (cur_year % 4)
 
     # Get lower chamber districts
-    for j in xrange(1, _NUM_LOWER_DISTRICTS):
+    for j in range(1, _NUM_LOWER_DISTRICTS):
         url = urlopen(url_string % {'chamber': 'l', 'district_num': j}).read()
         print(url_string % {'chamber': 'l', 'district_num': j})
         result = json.loads(url)
@@ -136,7 +135,7 @@ def get_districts(dd_cursor):
         insert_district(dd_cursor, house, did, note, year, region, geoData)
 
     # Get upper chamber districts
-    for j in xrange(1, _NUM_UPPER_DISTRICTS):
+    for j in range(1, _NUM_UPPER_DISTRICTS):
         url = urlopen(url_string % {'chamber': 'u', 'district_num': j}).read()
         result = json.loads(url)
         house = result['chamber']

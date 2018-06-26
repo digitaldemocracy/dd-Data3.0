@@ -141,6 +141,10 @@ class LegislatorOpenStateParser(object):
                                     capitol_fax=office_info["capitol_fax"],
                                     room_number="N/A",
                                     email=self.construct_email(entry))
+            if self.state == "CA":
+                legislator.email = entry["email"]
+                if legislator.house == 'House':
+                    legislator.house = 'Assembly'
             return legislator
 
     def get_legislators_list(self, legislator_json):

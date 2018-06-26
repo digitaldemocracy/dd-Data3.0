@@ -1,5 +1,5 @@
-#!/usr/bin/env python2.7
-# -*- coding: utf8 -*-
+#!/usr/bin/python3
+
 """
 File: import_authors_ny.py
 Author: Min Eric Roh
@@ -11,7 +11,7 @@ Description:
 - Currently configured to test DB
 """
 import json
-import sys
+
 import traceback
 import requests
 import MySQLdb
@@ -71,7 +71,7 @@ def call_senate_api(restCall, year, house, offset):
         house = "/" + house
     url = URL % {'restCall': restCall, 'year': str(year), 'house': house, 'offset': str(offset)}
     r = requests.get(url)
-    print url
+    print(url)
     out = r.json()
     return (out["result"]["items"], out['total'])
 
@@ -103,7 +103,7 @@ def get_author_api(year):
                 #             b['first'] = name[0]
                 ret_bills.append(b)
         cur_offset += 1000
-    print len(ret_bills)
+    print(len(ret_bills))
     return ret_bills
 
 
@@ -154,7 +154,7 @@ def insert_sponsors_db(bill, dddb, contribution):
                         a['bid'] = bill['bid']
                         #       print a['vid']
                         if counter % 1000 == 0 and counter != 0:
-                            print counter
+                            print(counter)
                         add_sponsor(dddb, a['pid'], a['bid'], a['vid'], contribution)
                 except IndexError:
                     full_name = sponsors['fullName'].encode('utf8')
@@ -212,28 +212,28 @@ def clean_name(name):
     name = name.replace('.', ' ')
     name = name.replace('  ', ' ')
     name_arr = name.split()
-    suffix = "";
+    suffix = ""
     if len(name_arr) == 1 and name_arr[0] in problem_names.keys():
         name_arr = list(problem_names[name_arr[0]])
 
     for word in name_arr:
-        #     print "word", word
+        #     print( "word", word)
         if word != name_arr[0] and (len(word) <= 1 or word in ending.keys()):
             name_arr.remove(word)
             if word in ending.keys():
                 suffix = ending[word]
-            #    print name_arr
+            #    print (name_arr)
     first = name_arr.pop(0)
     #    print "first", first
     while len(name_arr) > 1:
         first = first + ' ' + name_arr.pop(0)
     last = name_arr[0]
-    #    print "last", last
+    #    print ("last", last)
     last = last.replace(' ', '') + suffix
 
     if (first + ' ' + last) in problem_names.keys():
         return problem_names[(first + ' ' + last)]
-    #    print "return"
+    #    print ("return")
     return first, last
 
 

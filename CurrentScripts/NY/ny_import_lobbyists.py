@@ -1,5 +1,4 @@
-#!/usr/bin/env python2.7
-# -*- coding: utf8 -*-
+#!/usr/bin/python3
 
 """
 File: import_lobbyists_ny.py
@@ -40,9 +39,8 @@ Source:
 """
 
 import re
-import sys
 import traceback
-import urllib2
+from urllib.request import urlopen
 import json
 import MySQLdb
 from datetime import date
@@ -244,7 +242,7 @@ def get_names(names):
 
 def call_lobbyist_api():
     url = 'https://data.ny.gov/resource/mbmr-kxth.json?$limit=300000'
-    r = urllib2.urlopen(url)
+    r = urlopen(url)
     lobbyists_api = json.load(r)
 
     return lobbyists_api
@@ -479,7 +477,7 @@ def insert_additional_lobbyists_db(dddb, lobbyist):
             per['filer_id'] = person
             insert_lobbyist_db(dddb, per)
         except:
-            print traceback.format_exc()
+            print(traceback.format_exc())
 
 
 def insert_lobbying_contracts_db(dddb, lobbyist):

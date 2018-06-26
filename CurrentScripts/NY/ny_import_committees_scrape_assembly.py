@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python3
 """
 File: ny_import_committees.py
 Author: John Alkire
@@ -9,7 +9,6 @@ Description:
 """
 
 import json
-import sys
 import traceback
 import requests
 import MySQLdb
@@ -219,7 +218,7 @@ def get_committees_html():
             committee['state'] = STATE
             committee['members'] = list()
             committee['short_name'] = comm
-            print committee
+            print (committee)
 
             if len(link) > 0:
                 strip_link = link[0][0:len(link[0]) - 1]

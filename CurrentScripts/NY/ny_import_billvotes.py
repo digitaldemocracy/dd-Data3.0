@@ -1,5 +1,4 @@
-#!/usr/bin/env python2.7
-# -*- coding: utf8 -*-
+#!/usr/bin/python3
 
 """
 File: ny_import_billvotes.py
@@ -16,7 +15,6 @@ Description:
 import json
 import requests
 import MySQLdb
-import sys
 import traceback
 from datetime import datetime
 from bs4 import BeautifulSoup
@@ -207,7 +205,7 @@ def get_bills_api(dddb):
     ret_bills = list()
     
     while cur_offset < total:
-        print "Current Bill Offset: %d" % cur_offset
+        print ("Current Bill Offset: %d" % cur_offset)
         call = call_senate_api("bills", "", cur_offset)
         bills = call[0]
         total = call[1]
@@ -230,7 +228,7 @@ def get_bills_api(dddb):
         
         cur_offset += BILL_API_INCREMENT
     
-    print "Downloaded %d bills with votes..." % len(ret_bills)    
+    print ("Downloaded %d bills with votes..." % len(ret_bills))
     return ret_bills
 
     
@@ -529,7 +527,7 @@ def insert_billvotesums_db(dddb, bills):
             '''
 
     #print('Number of invalid inserts: ', none_count)
-    print "Number of billvote summary and details inserted: %d" % sum_count
+    print ("Number of billvote summary and details inserted: %d" % sum_count)
 
 
 speaker = get_speaker_name()

@@ -1,5 +1,4 @@
-#!/usr/bin/python2.7
-# -*- coding: utf8 -*-
+#!/usr/bin/python3
 
 """
 File: ny_import_spreadsheet_data.py
@@ -253,14 +252,14 @@ def get_spreadsheet():
     returncode = subprocess.call('wget -O spreadsheet.tsv "%s"' % (url), shell=True)
 
     if returncode != 0:
-        print 'Error'
+        print('Error')
 
 
 def delete_spreadsheet():
     returncode = subprocess.call('rm spreadsheet.tsv', shell=True)
 
     if returncode != 0:
-        print 'Error'
+        print('Error')
 
 
 def main():

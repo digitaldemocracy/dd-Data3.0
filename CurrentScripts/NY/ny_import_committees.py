@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 """
 File: ny_import_committees_openstates.py
 Author: Nathan Philliber

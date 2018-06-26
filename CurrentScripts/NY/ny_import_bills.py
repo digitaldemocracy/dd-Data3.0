@@ -250,7 +250,7 @@ def add_bills_db(dddb):
             bcount = bcount + 1
         insert_billversions_db(bill, dddb)
 
-        # print "Inserted %d bills" % bcount
+        # print ("Inserted %d bills" % bcount)
 
 
 def main():

@@ -1,5 +1,4 @@
-#!/usr/bin/env python2.7
-# -*- coding: utf8 -*-
+#!/usr/bin/python3
 
 """
 File: ny_import_legislators.py
@@ -14,7 +13,7 @@ Description:
 """
 
 import json
-import sys
+
 import traceback
 import requests
 import MySQLdb
