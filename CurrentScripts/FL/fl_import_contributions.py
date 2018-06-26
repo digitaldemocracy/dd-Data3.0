@@ -29,7 +29,7 @@ def main():
         contribution_parser = ContributionParser('FL', os)
         contribution_manager = ContributionInsertionManager(dddb, logger, 'FL')
 
-        contribution_list = contribution_parser.get_contribution_list(2016)
+        contribution_list = contribution_parser.get_contribution_list([2016, 2017, 2018])
         #contribution_list = contribution_parser.parse_all_contributions(2016)
 
         print("Inserting data")

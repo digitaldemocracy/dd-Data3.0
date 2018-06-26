@@ -1910,16 +1910,18 @@ CREATE TABLE IF NOT EXISTS TT_Cuts (
 
 CREATE TABLE IF NOT EXISTS TT_ServiceRequests (
   cutId INTEGER,
-  serviceProvider ENUM("cielo", "watson", "closed_captions", "rev", "youtube", "green_button", "other"),
+  serviceProvider ENUM('cielo','watson','closed_captions','rev','youtube','amazon','green_button','other'),
   turnaround INTEGER,
   fidelity VARCHAR(255),
   importance VARCHAR(255),
   transcript VARCHAR(255),
   job_id VARCHAR(255),
   status ENUM("in_progress", "completed") DEFAULT "in_progress",
+  diarization VARCHAR(255),
+  callback VARCHAR(255),
+  created DEFAULT CURRENT_TIMESTAMP,
   lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
   lastTouched_ts INT(11) AS (UNIX_TIMESTAMP(lastTouched)),
-  created DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (cutId),
   FOREIGN KEY (cutId) REFERENCES TT_Cuts(cutId)
 )
@@ -2086,6 +2088,28 @@ CREATE TABLE IF NOT EXISTS TT_ProtoUtterance (
   FOREIGN KEY (vid) REFERENCES Video(vid),
   FOREIGN KEY (did) REFERENCES BillDiscussion(did),
   FOREIGN KEY (state) REFERENCES State(abbrev)
+)
+  ENGINE = INNODB
+  DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS TT_BillDiscussion (
+  id INTEGER NOT NULL AUTO_INCREMENT, 
+  bid VARCHAR(23) DEFAULT NULL, index(bid), 
+  type VARCHAR(5) DEFAULT NULL, 
+  number VARCHAR(10) DEFAULT NULL,
+  billName VARCHAR(23) DEFAULT NULL,
+  videoId INTEGER NOT NULL, index(videoId),
+  cutId INTEGER DEFAULT NULL,
+  vid INTEGER DEFAULT NULL,
+  startTime INTEGER DEFAULT NULL, 
+  endTime INTEGER DEFAULT NULL,
+  predicted TINYINT(1) DEFAULT 0,
+  lastTouched TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY (videoId, cutId, vid, type, number, startTime),
+  FOREIGN KEY (videoId) REFERENCES TT_Videos(videoId),
+  FOREIGN KEY (cutId) REFERENCES TT_Cuts(cutId),
+  FOREIGN KEY (vid) REFERENCES Video(vid)
 )
   ENGINE = INNODB
   DEFAULT CHARSET=utf8;

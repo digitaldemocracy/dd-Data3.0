@@ -130,7 +130,7 @@ def main():
         add_committeeauthors_db(year, dddb)
 
     LOG = {'tables': [{'state': 'NY', 'name': 'CommitteeAuthors', 'inserted': INSERTED, 'updated': 0, 'deleted': 0}]}
-    sys.stderr.write(json.dumps(LOG))
+    sys.stdout.write(json.dumps(LOG))
     logger.info(LOG)
 
 
