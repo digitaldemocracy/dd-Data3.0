@@ -501,7 +501,7 @@ def get_agenda_text(link):
     f.close()
     # print(pdf_to_text_path())
     test = pdf_to_text_path()
-    subprocess.call([test, "calendar.pdf"])
+    subprocess.call([test, "-enc","UTF-8", "calendar.pdf"])
 
 
 '''
