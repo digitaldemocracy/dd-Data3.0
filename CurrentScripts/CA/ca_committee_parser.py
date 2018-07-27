@@ -40,6 +40,7 @@ class CaCommitteeParser(object):
         :return: The name without the position.
         '''
         return member_info.replace("(Co Chair)", "") \
+            .replace("Co-Chair", "") \
             .replace("(Vice Chair)", "") \
             .replace("(Chair)", "") \
             .replace(" (Dem. Alternate)", "") \
