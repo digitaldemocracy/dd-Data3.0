@@ -73,14 +73,14 @@ SELECT_BILL = '''SELECT bid FROM Bill
 
 SELECT_HEARING_AGENDA = '''SELECT current_flag FROM HearingAgenda
                            WHERE hid = %(hid)s
-                           AND bid = %(bid)s order by date_created desc limit 1'''
+                           AND bid = %(bid)s'''
 
-SELECT_HEARING_AGENDA_DATE = '''SELECT * FROM HearingAgenda
+SELECT_HEARING_AGENDA_DATE = '''SELECT date_created FROM HearingAgenda
                                 WHERE hid = %(hid)s
                                 AND bid = %(bid)s
-                                AND date_created = %(date)s'''
+                                order by date_created desc limit 1'''
 
-SELECT_CURRENT_BIDS_ON_AGENDA = '''SELECT DISTINCT(bid) FROM HearingAgenda
+SELECT_CURRENT_BIDS_ON_AGENDA = '''SELECT bid FROM HearingAgenda
                            WHERE hid = %(hid)s
                             AND current_flag = 1'''
 
@@ -103,6 +103,12 @@ UPDATE_HEARING_AGENDA_TO_NOT_CURRENT = '''UPDATE HearingAgenda
                            SET current_flag = 0
                            WHERE hid = %(hid)s
                            AND bid = %(bid)s'''
+
+UPDATE_HEARING_AGENDA_TO_CURRENT = '''UPDATE HearingAgenda
+                           SET current_flag = 1
+                           WHERE hid = %(hid)s
+                           AND bid = %(bid)s
+                           AND date_created = %(date_created)s'''
 
 #Select statement to get the proper information from the capublic database
 CA_PUB_SELECT_ALL_HEARINGS = '''SELECT DISTINCT(committee_hearing_tbl.bill_id), committee_type,

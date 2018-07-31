@@ -90,7 +90,7 @@ class NYHearingParser(object):
                                         state = self.state,
                                         session_year = self.session_year,
                                         cid = None,
-                                        bid = bid,
+                                        bid = bid.strip(),
                                         committee_name = committee_name.strip()))
 
         return hearings
@@ -154,7 +154,7 @@ class NYHearingParser(object):
 
         listings = detail_page_content.find_all("h4", "c-listing--bill-num")
         for h4 in listings:
-            bill_num = regex.sub("", h4.a.text)
+            bill_num = (regex.sub("", h4.a.text)).strip()
             bill_type = h4.a.text[0]
             hearings.append(Hearing(hearing_date=hearing_date,
                                     house="Senate",
