@@ -3,8 +3,10 @@ from CA.ca_committee_parser import *
 
 class TestCaCommitteeParser(TestCase):
     def setUp(self):
-        self.parser = CaCommitteeParser(2017)
-
+        self.parser = CaCommitteeParser(2017, 2017)
+    def test_get_members(self):
+        print(self.parser.get_members('http://focus.senate.ca.gov/wildfirecommittee', 'Other', 'Senate'))
+        self.assertEqual(1, 1)
     def test_format_link_incomplete_href(self):
         self.assertEqual(self.parser.format_link(" /supercom  ", "ca.senate.gov/committees"),
                          "ca.senate.gov/supercom")

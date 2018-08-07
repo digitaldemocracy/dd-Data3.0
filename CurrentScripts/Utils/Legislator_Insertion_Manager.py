@@ -249,6 +249,7 @@ class LegislatorInsertionManager(object):
         :return: pid or False
         '''
         pid = False
+
         if legislator.alt_ids:
             pid = get_entity_id(db_cursor=self.dddb,
                                  entity=legislator.__dict__,
@@ -304,14 +305,23 @@ class LegislatorInsertionManager(object):
             legislator.pid = self.find_legislator_pid(legislator)
             if legislator.pid:
                 # Insert any new names and alt ids
+                print('Inserting alternate names and ids')
                 self.insert_alternate_names(legislator)
                 self.insert_alt_id(legislator)
                 # if the legislator exist but
                 # does not have a current term
                 # for that house and district
                 if self.is_current_legislator_for_house_district(legislator) == False:
+                    print('updating terms/inserting term')
+                    print(legislator)
                     self.update_term(legislator, UPDATE_TERM_TO_NOT_CURRENT_DISTRICT)
                     self.insert_term(legislator)
             elif legislator.pid == False:
-                if self.insert_new_legislator(legislator) == False:
-                    self.logger.exception("Inserting new legislator failed.")
+                print("couldn't find person info for legislator, inserting as new person" )
+                print(legislator)
+                self.logger.exception("Pid not found for legislator. This could "+
+                                      "be because the legislator is new. Please verify"+ str(legislator.__dict__))
+
+                # ***********ONLY USE THIS IF YOU ARE SURE THE PERSON IS NOT IN THE DB ALREADY**********
+                # if self.insert_new_legislator(legislator) == False:
+                #     self.logger.exception("Inserting new legislator failed.")

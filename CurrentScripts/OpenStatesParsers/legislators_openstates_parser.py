@@ -71,6 +71,9 @@ class LegislatorOpenStateParser(object):
         elif "state" in legislator and str(legislator["state"]) == "ny" and \
                 ("chamber" in legislator or str(legislator["chamber"]) == "lower"):
             return "Assembly"
+        elif "state" in legislator and str(legislator["state"]) == "ca" and \
+                ("chamber" in legislator or str(legislator["chamber"]) == "lower"):
+            return "Assembly"
         return "House"
 
     def set_party(self, legislator):
@@ -106,6 +109,8 @@ class LegislatorOpenStateParser(object):
             return legislator["first_name"] + "." + legislator["last_name"] + self.emails["tx_" + legislator["house"].lower()]
         elif self.state == "NY":
             return legislator["first_name"] + "." + legislator["last_name"] + self.emails["ny_" + legislator["house"].lower()]
+        elif self.state == "CA":
+            return legislator['email']
         return "N/A"
 
     def parse_legislator(self, entry):
@@ -141,10 +146,6 @@ class LegislatorOpenStateParser(object):
                                     capitol_fax=office_info["capitol_fax"],
                                     room_number="N/A",
                                     email=self.construct_email(entry))
-            if self.state == "CA":
-                legislator.email = entry["email"]
-                if legislator.house == 'House':
-                    legislator.house = 'Assembly'
             return legislator
 
     def get_legislators_list(self, legislator_json):

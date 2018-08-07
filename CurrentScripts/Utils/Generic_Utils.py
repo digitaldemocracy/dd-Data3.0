@@ -108,7 +108,7 @@ Inputs:
                  This optional parameter should contain a dictionary mapping the incorrect names to the correct names
 '''
 def clean_name(name, problem_names={}):
-    suffixes = ['Jr.', 'Sr.', 'III', 'II', 'IV', "P.h.D.", "O.D.", "M.D.", "PhD.", "MD"]
+    suffixes = ['Jr.', 'Sr.', 'III', 'II', 'IV', "P.h.D.", "O.D.", "M.D.", "PhD.", "MD", "Ph.D."]
     titles = ['Dr.', 'Rev.', 'Mr.', 'Mrs.', 'Officer', 'Chief', 'Sheriff', 'Cpt.']
 
     person = dict()
