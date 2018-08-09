@@ -1,5 +1,5 @@
 
-SELECT_LEG_WITH_HOUSE = '''SELECT a.pid 
+SELECT_LEG_WITH_HOUSE = '''SELECT distinct a.pid 
                                 FROM Term t, AlternateNames a 
                                 WHERE a.pid = t.pid
                                 AND t.state = %(state)s
@@ -9,7 +9,7 @@ SELECT_LEG_WITH_HOUSE = '''SELECT a.pid
                                 AND t.year = %(leg_session_year)s
                     '''
 
-SELECT_LEG_WITH_HOUSE_DISTRICT= '''SELECT a.pid
+SELECT_LEG_WITH_HOUSE_DISTRICT= '''SELECT distinct a.pid
                                         FROM Term t, AlternateNames a 
                                         WHERE a.pid = t.pid
                                         AND t.state = %(state)s
@@ -20,7 +20,7 @@ SELECT_LEG_WITH_HOUSE_DISTRICT= '''SELECT a.pid
                                         AND t.year = %(leg_session_year)s
                     '''
 
-SELECT_LEG_WITH_HOUSE_DISTRICT_NO_NAME = '''SELECT t.pid
+SELECT_LEG_WITH_HOUSE_DISTRICT_NO_NAME = '''SELECT distinct t.pid
                                             FROM Term t
                                             WHERE t.state = %(state)s
                                             AND t.current_term = 1
@@ -30,7 +30,7 @@ SELECT_LEG_WITH_HOUSE_DISTRICT_NO_NAME = '''SELECT t.pid
                                         '''
 
 
-SELECT_LEG_FIRSTLAST = '''SELECT a.pid 
+SELECT_LEG_FIRSTLAST = '''SELECT distinct a.pid 
                             FROM Term t, AlternateNames a 
                             WHERE a.pid = t.pid
                             AND t.state = %(state)s
@@ -40,7 +40,7 @@ SELECT_LEG_FIRSTLAST = '''SELECT a.pid
                             GROUP BY a.pid
                             '''
 
-SELECT_LEG_WITH_HOUSE_LASTNAME = '''SELECT a.pid
+SELECT_LEG_WITH_HOUSE_LASTNAME = '''SELECT distinct a.pid
                                 FROM Term t, AlternateNames a 
                                 WHERE a.pid = t.pid
                                 AND t.state = %(state)s
@@ -50,7 +50,7 @@ SELECT_LEG_WITH_HOUSE_LASTNAME = '''SELECT a.pid
                                 AND t.year = %(leg_session_year)s
                               '''
 
-SELECT_LEG_WITH_HOUSE_DISTRICT_LASTNAME = '''SELECT a.pid  
+SELECT_LEG_WITH_HOUSE_DISTRICT_LASTNAME = '''SELECT distinct a.pid  
                                         FROM Term t, AlternateNames a 
                                         WHERE a.pid = t.pid
                                         AND t.state = %(state)s
@@ -61,7 +61,7 @@ SELECT_LEG_WITH_HOUSE_DISTRICT_LASTNAME = '''SELECT a.pid
                                         AND t.year = %(leg_session_year)s
                     '''
 
-SELECT_LEG_LASTNAME = '''SELECT a.pid 
+SELECT_LEG_LASTNAME = '''SELECT distinct a.pid 
                             FROM Term t, AlternateNames a 
                             WHERE a.pid = t.pid
                             AND t.state = %(state)s
@@ -71,7 +71,7 @@ SELECT_LEG_LASTNAME = '''SELECT a.pid
                             '''
 
 
-SELECT_LEG_WITH_HOUSE_FIRSTNAME = '''SELECT a.pid 
+SELECT_LEG_WITH_HOUSE_FIRSTNAME = '''SELECT distinct a.pid 
                                 FROM Term t, AlternateNames a 
                                 WHERE a.pid = t.pid
                                 AND t.state = %(state)s
@@ -81,7 +81,7 @@ SELECT_LEG_WITH_HOUSE_FIRSTNAME = '''SELECT a.pid
                                 AND t.year = %(leg_session_year)s
                     '''
 
-SELECT_LEG_WITH_HOUSE_DISTRICT_FIRSTNAME = '''SELECT a.pid
+SELECT_LEG_WITH_HOUSE_DISTRICT_FIRSTNAME = '''SELECT distinct a.pid
                                         FROM Term t, AlternateNames a 
                                         WHERE a.pid = t.pid
                                         AND t.state = %(state)s
@@ -92,7 +92,7 @@ SELECT_LEG_WITH_HOUSE_DISTRICT_FIRSTNAME = '''SELECT a.pid
                                         AND t.year = %(leg_session_year)s
                     '''
 
-SELECT_LEG_FIRSTNAME = '''SELECT a.pid  
+SELECT_LEG_FIRSTNAME = '''SELECT distinct a.pid  
                             FROM Term t, AlternateNames a 
                             WHERE a.pid = t.pid
                             AND t.state = %(state)s
