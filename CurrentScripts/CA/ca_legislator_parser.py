@@ -13,20 +13,20 @@ Sources:
     - legislator_tbl
 
 Populates:
-  Legislator(
+  Legislator
+  Term
+  AlternateID
+  AlternateNames
+  Person(*not yet*)
 """
 
-import datetime as dt
-from Utils.Generic_MySQL import get_all
-from Models.BillAuthor import BillAuthor
-from Utils.Generic_Utils import format_committee_name
-from Constants.Bill_Authors_Queries import *
 from OpenStatesParsers.legislators_openstates_parser import LegislatorOpenStateParser
+from CaPublicParsers.legislators_capublic_parser import LegislatorCaPublicParser
 import json
 
 
 QS_CPUB_LEGISLATORS = '''select L.first_name, L.last_name, L.house_type, 
-CONVERT(SUBSTRING(L.district, -2), UNSIGNED) as district
+CONVERT(SUBSTRING(L.district, -2), UNSIGNED) as district, L.party, L.middle_initial, L.name_suffix
 FROM
 (select district, house_type, max(trans_update) as max_d
 from legislator_tbl group by district, house_type) as t, legislator_tbl as L
@@ -40,25 +40,33 @@ class CaLegislatorParser(object):
         self.capublic = capublic
         self.openstatesAPI = openstatesAPI
         self.os_parser = LegislatorOpenStateParser("CA", session_year)
+        self.capublic_parser = LegislatorCaPublicParser("CA", session_year)
         self.session_year = session_year
         self.logger = logger
 
     def merge_openstateinfo_capublic(self, os_legislator_info, capublic_legislator_info):
         legislator_list = list()
         num_matches = 0
+        leftover_ca_info = list(capublic_legislator_info)
+
         for leg in os_legislator_info:
             # find openstates legislator in capublic list
             ca_info = self.in_capublic_list(capublic_legislator_info, leg)
             if ca_info is not None:
+                leftover_ca_info.remove(ca_info)
+                print("Loading legislator object")
                 legislator_list.append(self.fill_legislator_model(leg, ca_info))
                 num_matches+=1
-
-                print("Loading legislator object")
             else:
                 print('openstates old/invaid legislator data . . . skipping:')
                 print(leg)
+        if(len(leftover_ca_info)> 0):
+            print('Some capublic legislators are not matched')
+            print(leftover_ca_info)
+            legislator_list.extend(self.capublic_parser.get_legislators_list(leftover_ca_info))
 
-        print(num_matches)
+        print("Num_matches: " + str(num_matches))
+        print("Num leftover capublic records = " + str(len(leftover_ca_info)))
         return legislator_list
 
     def fill_legislator_model(self, os_leginfo, capub_leginfo):
@@ -87,6 +95,8 @@ class CaLegislatorParser(object):
         leg_data = []
         for result in rv:
             leg_data.append(dict(zip(row_headers, result)))
+
+        #change house type values to match capublic info
         for leg in leg_data:
             if(leg['house_type']) == "S":
                 leg['house_type'] = 'upper'
@@ -100,5 +110,4 @@ class CaLegislatorParser(object):
 
         os_legislatorjson = self.openstatesAPI.get_legislators_json()
         capublic_legislators_info = self.get_capublic_legislator_list()
-
         return self.merge_openstateinfo_capublic(os_legislatorjson, capublic_legislators_info)
