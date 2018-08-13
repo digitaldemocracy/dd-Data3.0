@@ -25,12 +25,14 @@ SELECT_COMMITTEE_ALTERNATE_NAME = '''SELECT c.cid FROM Committee c
                                      AND c.session_year = %(session_year)s
                                      AND c.house = %(house)s'''
 
-SELECT_BID = '''SELECT bid FROM Bill
+SELECT_BID = '''SELECT distinct bid FROM Bill
                 WHERE type = %(bill_type)s
                 AND number = %(bill_number)s
                 AND house = %(house)s
                 AND state = %(state)s
-                AND sessionYear = %(year)s'''
+                AND sessionYear = %(year)s
+                order by lastTouched_ts desc
+                limit 1'''
 
 SELECT_HEARING = '''SELECT hid FROM Hearing
                     WHERE date = %(date)s

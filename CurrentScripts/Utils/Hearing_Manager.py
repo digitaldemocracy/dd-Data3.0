@@ -172,8 +172,8 @@ class Hearings_Manager(object):
             self.set_hearing_agenda_current(agenda)
         else:
             print("hearing already current in db, skipping insertion")
-            print(hid)
-            print(bid)
+            # print(hid)
+            # print(bid)
             return
 
     def set_hearing_agenda_current(self, agenda):
@@ -257,9 +257,9 @@ class Hearings_Manager(object):
 
                 if hearing.bid not in bids_in_agenda:
                     # insert the new hearing agenda.
-                    print("inserting")
-                    print("new bid :'" + str(hearing.bid) + "' Current bids: " + str(bids_in_agenda))
-                    print(hearing.__dict__)
+                    # print("inserting")
+                    # print("new bid :'" + str(hearing.bid) + "' Current bids: " + str(bids_in_agenda))
+                    # print(hearing.__dict__)
                     self.insert_hearing_agenda(hid, hearing.bid, cur_date)
                     bids_in_agenda.append(hearing.bid)
                 else:
