@@ -35,6 +35,7 @@ from Utils.Database_Connection import connect
 from OpenStatesParsers.OpenStatesApi import OpenStatesAPI
 from Utils.Bill_Insertion_Manager import BillInsertionManager
 from Utils.Generic_Utils import create_logger, format_absolute_path, format_logger_message
+import pickle
 
 
 logger = None
@@ -93,9 +94,14 @@ def get_pid_name(dddb, person):
     """
     mem_name = person['name'].replace('President', '')
     mem_name = mem_name.replace('Speaker', '')
+    mem_name = mem_name.replace('EdwardsWalpole', 'Edwards-Walpole')
     mem_name = mem_name.rstrip('VA')
-
+    if 'Hardemon' in mem_name:
+        print(mem_name)
+    if 'vacant' in mem_name.lower():
+        print(mem_name)
     mem_name = mem_name.split(',')
+
 
     legislator = {'last': '%' + mem_name[0].strip() + '%', 'state': 'FL'}
 
@@ -284,6 +290,11 @@ def main():
         bill_manager = BillInsertionManager(dddb, logger, 'FL')
         #print("Getting bill list...")
         bill_list = format_bills(dddb)
+
+        #  . . . TESTING ONLY . . .
+        # pickle.dump(bill_list, open("fl_bill_modelObs.p", "wb"))
+        # bill_list = pickle.load(open("fl_bill_modelObs.p", "rb"))
+
         #print("Starting bill insertion...")
         bill_manager.add_bills_db(bill_list)
         #print("Finished bill insertion")

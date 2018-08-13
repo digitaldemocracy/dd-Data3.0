@@ -342,13 +342,17 @@ class BillInsertionManager(object):
         :param vote_detail_list: A list of a bill's vote details
         :return: True if all the inserts succeed, false otherwise
         """
+        ret_val = True
         for detail in vote_detail_list:
-            if not self.is_bill_vote_detail_in_db(detail.__dict__):
-                if not self.insert_bill_vote_detail(detail.__dict__):
-                    return False
-                self.BVD_INSERTED += 1
+            if detail.name.upper() != 'VACANT' and detail.name.split()[0].upper() != 'VACANT-':
+                if not self.is_bill_vote_detail_in_db(detail.__dict__):
+                    if not self.insert_bill_vote_detail(detail.__dict__):
+                        self.logger.exception(format_logger_message("Unable to insert vote record", detail.__dict__))
+                        ret_val = False
+                    else:
+                        self.BVD_INSERTED += 1
 
-        return True
+        return ret_val
 
     def add_versions_db(self, version_list):
         """
