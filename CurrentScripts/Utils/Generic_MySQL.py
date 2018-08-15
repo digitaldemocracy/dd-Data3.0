@@ -63,7 +63,7 @@ def get_entity_id(db_cursor, query, entity, objType, logger):
         if db_cursor.rowcount == 1:
             return db_cursor.fetchone()[0]
         elif db_cursor.rowcount > 1:
-            logger.exception(format_logger_message('id Retrival returned multiple rows' + objType, (query%entity)))
+            logger.exception(format_logger_message('ID Retrieval returned multiple rows' + objType, (query%entity)))
     except MySQLdb.Error:
         logger.exception(format_logger_message('ID Retrieval Failed for ' + objType, (query%entity)))
     return False

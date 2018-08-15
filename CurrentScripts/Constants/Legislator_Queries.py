@@ -53,6 +53,11 @@ SELECT_ALT_NAMES = '''
                 FROM AlternateNames
                 WHERE pid = %(pid)s AND name = %(alternate_name)s
                '''
+SELECT_PID_FROM_ALT_NAMES = '''
+                SELECT pid
+                FROM AlternateNames
+                WHERE name = %(alternate_name)s
+               '''
 INSERT_ALT_NAMES = '''
                   INSERT INTO AlternateNames (pid, name, source)
                     VALUES (%(pid)s, %(alternate_name)s, %(source)s)
@@ -97,7 +102,8 @@ UPDATE_PERSON = '''
           middle=%(middle)s,
           last=%(last)s,
           title=%(title)s,
-          suffix=%(suffix)s
+          suffix=%(suffix)s,
+          image=%(image)s
           WHERE pid=%(pid)s
           '''
 
@@ -132,6 +138,13 @@ SELECT_PID_WITH_NAME = '''
                 AND t.state = %(state)s
                 AND t.year = %(year)s
                 AND t.current_term = 1
+              '''
+
+SELECT_PID_BY_NAME_FROM_PERSON = '''
+                SELECT p.pid
+                FROM Person p
+                WHERE p.first = %(first)s
+                AND p.last = %(last)s
               '''
 
 UPDATE_TERM_NOT_CURRENT = '''

@@ -223,7 +223,24 @@ class LegislatorInsertionManager(object):
         :param legislator: Legislator
         :return:
         '''
-        legislator.pid = self.insert_person(legislator)
+
+        # if the person was already added to the person table through different means,
+        # aka Transcription tool, then we will have to link that pid to the new legislator.
+        # if there are multiple pids associated with the legislators first/last name combo
+        # a new entry is made. THIS IS NOT IDEAL!!!! However, there is currently no way for the
+        # script to identify which person to associate the new legislator info with.
+        pid = get_entity_id(self.dddb,
+                            SELECT_PID_BY_NAME_FROM_PERSON,
+                            legislator.__dict__,
+                            "Person Lookup",
+                            self.logger)
+        if not pid:
+            print('inserting new person')
+            legislator.pid = self.insert_person(legislator)
+        else:
+            print("updating person" + str(pid))
+            legislator.pid = pid
+            self.update_person(legislator)
         return legislator.pid and\
             self.update_term(legislator, UPDATE_TERM_TO_NOT_CURRENT_DISTRICT) and\
             self.insert_person_state(legislator) and\
@@ -317,11 +334,13 @@ class LegislatorInsertionManager(object):
                     self.update_term(legislator, UPDATE_TERM_TO_NOT_CURRENT_DISTRICT)
                     self.insert_term(legislator)
             elif legislator.pid == False:
-                print("couldn't find person info for legislator, inserting as new person" )
+                print("couldn't find person info for legislator, inserting as new legislator" )
                 print(legislator)
                 self.logger.exception("Pid not found for legislator. This could "+
                                       "be because the legislator is new. Please verify"+ str(legislator.__dict__))
 
                 # ***********ONLY USE THIS IF YOU ARE SURE THE PERSON IS NOT IN THE DB ALREADY**********
-                # if self.insert_new_legislator(legislator) == False:
-                #     self.logger.exception("Inserting new legislator failed.")
+                # THIS WILL ASSOCIATE LEGISLATOR TO A PERSON ALREADY IN THE DB IF NEW LEGISLATOR HAS THE SAME NAME AS
+                # PERSON ALREADY IN THE DB
+                if self.insert_new_legislator(legislator) == False:
+                    self.logger.exception("Inserting new legislator failed.")
