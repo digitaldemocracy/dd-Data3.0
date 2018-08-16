@@ -226,8 +226,8 @@ class LegislatorInsertionManager(object):
 
         # if the person was already added to the person table through different means,
         # aka Transcription tool, then we will have to link that pid to the new legislator.
-        # if there are multiple pids associated with the legislators first/last name combo
-        # a new entry is made. THIS IS NOT IDEAL!!!! However, there is currently no way for the
+        # if there are multiple pids associated with the legislators first/last name combo. The
+        # script logs an exception. There is currently no way for the
         # script to identify which person to associate the new legislator info with.
         pid = get_entity_id(self.dddb,
                             SELECT_PID_BY_NAME_FROM_PERSON,
@@ -235,19 +235,29 @@ class LegislatorInsertionManager(object):
                             "Person Lookup",
                             self.logger)
         if not pid:
-            print('inserting new person')
-            legislator.pid = self.insert_person(legislator)
+            print('no person found or multiple people found')
+            if self.dddb.rowcount == 0:
+                #no person found
+                legislator.pid = self.insert_person(legislator)
+            else:
+                # send admin message asking to clarify which pid to link to legislator
+                self.logger.exception("Legislator is new and I can't tell which pid " +
+                                      "should be associated with it . Please help!!!\n\n" + str(legislator.__dict__))
+                return pid
         else:
             print("updating person" + str(pid))
             legislator.pid = pid
-            self.update_person(legislator)
-        return legislator.pid and\
-            self.update_term(legislator, UPDATE_TERM_TO_NOT_CURRENT_DISTRICT) and\
-            self.insert_person_state(legislator) and\
-            self.insert_alt_id(legislator) and\
-            self.insert_alternate_names(legislator) and\
-            self.insert_legislator(legislator) and\
-            self.insert_term(legislator)
+
+        self.update_person(legislator)
+        self.update_term(legislator, UPDATE_TERM_TO_NOT_CURRENT_DISTRICT)
+        self.insert_person_state(legislator)
+        self.insert_alt_id(legislator)
+        self.insert_alternate_names(legislator)
+        self.insert_legislator(legislator)
+        self.insert_term(legislator)
+
+        return legislator.pid
+
 
 
 
@@ -334,13 +344,6 @@ class LegislatorInsertionManager(object):
                     self.update_term(legislator, UPDATE_TERM_TO_NOT_CURRENT_DISTRICT)
                     self.insert_term(legislator)
             elif legislator.pid == False:
-                print("couldn't find person info for legislator, inserting as new legislator" )
-                print(legislator)
-                self.logger.exception("Pid not found for legislator. This could "+
-                                      "be because the legislator is new. Please verify"+ str(legislator.__dict__))
-
-                # ***********ONLY USE THIS IF YOU ARE SURE THE PERSON IS NOT IN THE DB ALREADY**********
-                # THIS WILL ASSOCIATE LEGISLATOR TO A PERSON ALREADY IN THE DB IF NEW LEGISLATOR HAS THE SAME NAME AS
-                # PERSON ALREADY IN THE DB
+                # print("couldn't find person info for legislator, must be new legislator" )
                 if self.insert_new_legislator(legislator) == False:
                     self.logger.exception("Inserting new legislator failed.")
