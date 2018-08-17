@@ -348,13 +348,15 @@ class BillInsertionManager(object):
             if detail.pid is not None:
                 if not self.is_bill_vote_detail_in_db(detail.__dict__):
                     if not self.insert_bill_vote_detail(detail.__dict__):
-                        self.logger.exception(format_logger_message("Unable to insert vote record", detail.__dict__))
+                        self.logger.exception(format_logger_message("Unable to insert vote record", str(detail.__dict__)))
                         ret_val = False
                     else:
                         self.BVD_INSERTED += 1
-            else:
-                self.logger.exception(format_logger_message("PID missing from vote", detail.__dict__))
+            elif 'VACANT' not in str(detail.name).upper():
+                self.logger.exception(format_logger_message("PID missing from vote", str(detail.__dict__)))
                 ret_val = False
+            else:
+                print(str(detail.__dict__))
 
         return ret_val
 
