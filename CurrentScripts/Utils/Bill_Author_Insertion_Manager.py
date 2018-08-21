@@ -30,7 +30,7 @@ class BillAuthorInsertionManager(object):
 
     def get_person(self, bill_author):
         pid = None
-
+        # print(bill_author.__dict__)
         if bill_author.alt_id is not None:
             pid = get_entity_id(db_cursor=self.dddb,
                                 entity=bill_author.__dict__,
@@ -39,13 +39,16 @@ class BillAuthorInsertionManager(object):
                                 logger=self.logger)
 
         if not pid:
+            # print('trying last name, current')
             bill_author.current = 1
+            bill_author.last_name = bill_author.last_name.strip()
             pid = get_entity_id(db_cursor=self.dddb,
                                 entity=bill_author.__dict__,
                                 query=SELECT_PID_LEGISLATOR_LAST_NAME,
                                 objType="Person",
                                 logger=self.logger)
             if not pid:
+                # print('trying last not current')
                 bill_author.current = 0
                 pid = get_entity_id(db_cursor=self.dddb,
                                 entity=bill_author.__dict__,
@@ -53,12 +56,14 @@ class BillAuthorInsertionManager(object):
                                 objType="Person",
                                 logger=self.logger)
         if not pid:
+            # print('trying full name')
             pid = get_entity_id(db_cursor=self.dddb,
                                   entity=bill_author.__dict__,
                                   query=SELECT_PID_LEGISLATOR_FULL_NAME,
                                   objType="Person",
                                   logger=self.logger)
         if not pid:
+            # print('trying last name no house')
             pid = get_entity_id(db_cursor=self.dddb,
                                 entity=bill_author.__dict__,
                                 query=SELECT_PID_LEGISLATOR_LAST_NAME_NO_HOUSE,
@@ -66,6 +71,7 @@ class BillAuthorInsertionManager(object):
                                 logger=self.logger)
 
         if not pid:
+            # print('trying last name no year')
             pid = get_entity_id(db_cursor=self.dddb,
                                 entity=bill_author.__dict__,
                                 query=SELECT_PID_LEGISLATOR_LAST_NAME_NO_YEAR,
@@ -73,6 +79,7 @@ class BillAuthorInsertionManager(object):
                                 logger=self.logger)
 
         if not pid:
+            # print('trying fullname no house')
             pid = get_entity_id(db_cursor=self.dddb,
                                 entity=bill_author.__dict__,
                                 query=SELECT_PID_LEGISLATOR_FULL_NAME_NO_HOUSE,
@@ -80,11 +87,14 @@ class BillAuthorInsertionManager(object):
                                 logger=self.logger)
 
         if not pid:
+            # print('trying full name no house again')
             pid = get_entity_id(db_cursor=self.dddb,
                                 entity=bill_author.__dict__,
                                 query=SELECT_PID_LEGISLATOR_FULL_NAME_NO_HOUSE,
                                 objType="Person",
                                 logger=self.logger)
+        if not pid:
+            print("Could not identify person/author")
         return pid
 
     def get_bid(self, bill_author):

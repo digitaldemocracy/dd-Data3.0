@@ -142,11 +142,17 @@ class AuthorOpenStatesParser(object):
 
         for sponsor in sponsor_list:
             if 'committee_id' in sponsor and (sponsor['committee_id'] is not None
-                    or 'committee' in sponsor['name'].lower()):
+                    or 'committee' in sponsor['name'].lower()
+                    or 'oversight' in sponsor['name'].lower()\
+                    or 'local' in sponsor['name'].lower()):
+                # print('\ncommittee')
+                # print(sponsor)
                 author_type = 'Committee'
                 name = self.format_committee_name(sponsor['name'])
                 alt_id = None
             else:
+                # print('legislator')
+                # print(sponsor)
                 author_type = 'Legislator'
                 name = sponsor['name']
                 alt_id = sponsor['leg_id']
@@ -201,7 +207,7 @@ class AuthorOpenStatesParser(object):
         bill_author_list = list()
 
         bill_list = requests.get(self.UPDATED_BILL_SEARCH_URL.format(self.state, session_name, self.updated_date)).json()
-
+        #recent bills is the first 100 I guess? -Thomas Gerrity
         for bill in bill_list[:100]:
             session_code = self.get_session_code(bill['session'])
 
