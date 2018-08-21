@@ -52,23 +52,30 @@ class ContributionInsertionManager(object):
         :param last: The candidate's last name
         :return: A PID from our database
         """
-        person = {'first': '%' + first + '%', 'last': '%'+last+'%', 'state': self.state}
+        person = {'first': '%' + first.lower().title() + '%', 'last': '%'+last.lower().title()+'%', 'state': self.state}
+        print(person)
         pid = get_entity_id(self.dddb, SELECT_PERSON, person, 'Person', self.logger)
 
-        if not pid:
-            pid = get_entity_id(self.dddb, SELECT_PERSON_LASTNAME, person, 'Person', self.logger)
 
-        if not pid:
-            pid = get_entity_id(self.dddb, SELECT_PERSON_FIRSTNAME, person, 'Person', self.logger)
 
         if not pid:
             person['first'] = person['first'][:4] + '%'
             pid = get_entity_id(self.dddb, SELECT_PERSON, person, 'Person', self.logger)
 
         if not pid:
-            person['likename'] = '%' + '%'.join([name for name in first.split()]) + '%'
+            person['likename'] = '%'+ '%'.join([name for name in first.lower().title().split()]) + \
+                                  '%' + '%'.join([name for name in last.lower().title().split()]) + '%'
+            print(person['likename'])
             pid = get_entity_id(self.dddb, SELECT_PERSON_LIKENAME, person, 'Person', self.logger)
+        if not pid:
+            pid = get_entity_id(self.dddb, SELECT_PERSON_LASTNAME, person, 'Person', self.logger)
 
+        # if not pid:
+        #     pid = get_entity_id(self.dddb, SELECT_PERSON_FIRSTNAME, person, 'Person', self.logger)
+
+        if not pid:
+            self.logger.exception("Could not find pid for: " + first + " " + last)
+            # print(first + " " + last)
         return pid
 
     def get_house(self, pid, session_year):
