@@ -163,9 +163,8 @@ def clean_name(name, problem_names={}):
     # This branch gets taken if the name is formatted "First Last"
     else:
         space_split = name.split(' ')
-
         # Check if it's a name like Kevin De Leon; use De Leon as last if so
-        if space_split[-2].lower() == 'de':
+        if len(space_split) >= 2 and space_split[-2].lower() == 'de':
             person['last'] = ' '.join([word.strip() for word in space_split[-2:]])
             person['first'] = ' '.join([word.strip() for word in space_split[:-2]])
         # Otherwise, last name is the last word, first is everything else
