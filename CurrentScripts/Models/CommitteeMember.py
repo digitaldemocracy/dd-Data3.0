@@ -27,7 +27,7 @@ class CommitteeMember(object):
                          name["suffix"]]
                 parts = [part for part in parts if part]
                 self.alternate_name = (" ".join(parts)).strip()
-                self.first = name["first"] + (" \"" + name["nickname"] + "\"" if name["nickname"] else "")
+                self.first = str(name["first"]) + (" \"" + str(name["nickname"]) + "\"" if name["nickname"] else "")
                 self.middle = name["middle"]
                 self.last = name["last"]
                 self.like_name = name["like_name"]
