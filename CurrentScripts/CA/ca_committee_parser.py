@@ -15,10 +15,11 @@ from Utils.Generic_Utils import format_committee_name
 
 class CaCommitteeParser(object):
 
-    def __init__(self, session_year, leg_session_year):
+    def __init__(self, session_year, leg_session_year, logger):
         self.session_year = session_year
         self.leg_session_year = leg_session_year
         self.state = "CA"
+        self.logger = logger
 
     def format_link(self, link, house_link):
         '''
@@ -207,7 +208,7 @@ class CaCommitteeParser(object):
                 sub_committee_parent = row.text
             elif row.a is not None:
                 link = self.format_link(row.a["href"], host)
-                if ".gov" in link:
+                if ".gov" in link and link_valid(link, self.logger):
                     committee_type = self.format_committee_type(row.a.text, committee_type_section)
                     short_name = row.a.text.split(" on ")[1].strip() if "Joint Committee on" in row.a.text \
                                                                                           or "sub" in committee_type.lower() \

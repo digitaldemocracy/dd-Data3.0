@@ -1,13 +1,19 @@
-#!/usr/bin/env python2.7
-# -*- coding: utf8 -*-
+
 import os
 import re
 import sys
 import logging
 import datetime as dt
+from urllib.request import urlopen, HTTPError
 
-# reload(sys)
-# sys.setdefaultencoding('utf8')
+def link_valid(link, logger):
+    try:
+        urlopen(str(link))
+        # print('Valid link: ' + str(link))
+        return True
+    except HTTPError as error:
+        logger.exception('Invalid link: ' + str(link) + '\nProblem description: ' + str(error))
+        return False
 
 def format_committee_name(short_name, house, type, parent = None):
     house_formatted = "Assembly" if house == "CX" or house.lower() == "assembly" else "Senate"
