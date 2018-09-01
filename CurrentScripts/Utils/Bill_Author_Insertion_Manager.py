@@ -31,6 +31,19 @@ class BillAuthorInsertionManager(object):
     def get_person(self, bill_author):
         pid = None
         # print(bill_author.__dict__)
+        # There are two Cortes legislators in FL house and
+        # two Grant legislators FL in house. Since the names are
+        # identical Have to manually match there bills to there
+        # pid's, this is a bad solution. but since there is only
+        # two bills it works for now
+        if 'FL_20180HB523' in bill_author.bill_version_id:
+            print(bill_author.last_name + ' ' + bill_author.bill_version_id)
+            return 105070
+        if 'FL_20180HB1451' in bill_author.bill_version_id:
+            print(bill_author.last_name + ' ' + bill_author.bill_version_id)
+            return 105116
+
+
         if bill_author.alt_id is not None:
             pid = get_entity_id(db_cursor=self.dddb,
                                 entity=bill_author.__dict__,
@@ -80,14 +93,6 @@ class BillAuthorInsertionManager(object):
 
         if not pid:
             # print('trying fullname no house')
-            pid = get_entity_id(db_cursor=self.dddb,
-                                entity=bill_author.__dict__,
-                                query=SELECT_PID_LEGISLATOR_FULL_NAME_NO_HOUSE,
-                                objType="Person",
-                                logger=self.logger)
-
-        if not pid:
-            # print('trying full name no house again')
             pid = get_entity_id(db_cursor=self.dddb,
                                 entity=bill_author.__dict__,
                                 query=SELECT_PID_LEGISLATOR_FULL_NAME_NO_HOUSE,
