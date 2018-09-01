@@ -66,7 +66,9 @@ Takes the committee names listed in the agenda files
 and converts them to the format that commmittee names take in our database
 '''
 def format_committee(comm, house, date, subcomm=None):
-    print(comm)
+    if comm == 'and Economic Development':
+        comm = 'Appropriations Subcommittee on Transportation, Tourism, and Economic Development'
+    # print(comm)
     comm_name = dict()
 
     comm_name['house'] = house
@@ -199,7 +201,8 @@ Gets CID from our database using the committee names listed in the agendas
 '''
 def get_comm_cid(comm, house, date, dddb, subcomm=None):
     comm_name = format_committee(comm, house, date, subcomm)
-
+    if comm_name['name'] == "Noticed Meeting":
+        return None
     try:
         cid = get_entity_id(dddb, SELECT_COMMITTEE_SHORT_NAME, comm_name, 'Committee', logger)
         if not cid:
@@ -209,8 +212,7 @@ def get_comm_cid(comm, house, date, dddb, subcomm=None):
                 if not cid:
                     cid = get_entity_id(dddb, SELECT_COMMITTEE, comm_name, 'Committee', logger)
                     if not cid:
-                        logger.exception("ERROR: Committee not found")
-                        print(SELECT_COMMITTEE_SHORT_NAME % comm_name)
+                        logger.exception("ERROR: Committee not found: " + str(comm_name))
                         return None
                     else:
                         return cid
@@ -231,10 +233,12 @@ Gets BID using a bill's type and number
 def get_bill_bid(bill, date, dddb):
     session_year = get_session_year(dddb, 'FL', logger)
 
-    bill = bill.split(' ')
-
-    bill_type = bill[0]
-    bill_number = bill[1]
+    s_bill = bill.split(' ')
+    if len(s_bill) < 2:
+        logger.exception('bill code not formatted correctly: ' + str(bill))
+        return None
+    bill_type = s_bill[0]
+    bill_number = s_bill[1]
 
     bill_info = {'state': 'FL', 'session_year': session_year, 'type': bill_type, 'number': bill_number}
 
@@ -242,8 +246,8 @@ def get_bill_bid(bill, date, dddb):
         dddb.execute(SELECT_BILL, bill_info)
 
         if dddb.rowcount == 0:
-            logger.exception("ERROR: Bill not found")
-            print(SELECT_BILL%bill_info)
+            logger.exception("ERROR: Bill not found: " + str(bill_info))
+            print(str(bill) + " date: " + str(date) + " session_year: " + str(session_year))
 
         else:
             return dddb.fetchone()[0]
@@ -381,7 +385,12 @@ def import_house_agendas(f, dddb):
                 date = dt.datetime.strptime(date, '%Y-%m-%d')
                 print(date)
 
-            elif 'DAILY ORDER OF BUSINESS' in line or 'BILL INDEX' in line:
+            elif 'DAILY ORDER OF BUSINESS' in line \
+                    or 'BILL INDEX' in line \
+                    or 'IMPORTANT LEGISLATIVE DATES' in line \
+                    or 'BILLS FILED' in line\
+                    or 'COMMITTEES & SUBCOMMITTEES OF THE FLORIDA HOUSE OF REPRESENTATIVES' in line:
+                print('**********reached sentinel line for hearing schedule in text file*********\nLINE: ' + line)
                 break
 
             elif date is not None:
@@ -402,8 +411,8 @@ def import_house_agendas(f, dddb):
                         comm = re.search(r'^.*?Committee.*?(?=[0-9])', line)
                         if comm is not None:
                             if 'the' not in comm.group(0).lower():
-                                committee = get_comm_cid(comm.group(0), 'House', date, dddb, subcomm.group(0))
-                                print(committee)
+                                committee = get_comm_cid(comm.group(0), 'House', datetime.strptime(str(session_year),"%Y"), dddb, subcomm.group(0))
+                                # print(committee)
 
                                 hearing = Hearing(date, 'House', 'Regular', 'FL', session_year,
                                                   committee, None)
@@ -416,13 +425,14 @@ def import_house_agendas(f, dddb):
                         subcomm = re.search(r'^.*?Subcommittee$', line)
                         if subcomm is not None:
                             is_subcomm = True
-                            print(subcomm)
+                            # print(subcomm)
 
                         comm = re.search(r'^.*?Committee.*?(?=[0-9])', line)
                         if comm is not None:
                             if 'the' not in comm.group(0).lower():
-                                committee = get_comm_cid(comm.group(0), 'House', date, dddb)
-                                print(committee)
+                                cleaned = re.sub(r'^[0-9]:[0-9]{2}\s[APM]{2}\s-\s[0-9]:[0-9]{2}\s[APM]{2}\s', '', comm.group(0))
+                                committee = get_comm_cid(cleaned, 'House', datetime.strptime(str(session_year),"%Y"), dddb)
+                                # print(committee)
                                 hearing = Hearing(date, 'House', 'Regular', 'FL', session_year,
                                                   committee, None)
 
@@ -466,7 +476,7 @@ def import_senate_agendas(f, dddb):
                 if re.search(r'.*?(?=(:\s([a-zA-Z]+),\s([a-zA-Z]+)\s([0-9]{1,2}),\s([0-9]{4})))', line) is not None:
                     # Should check to make sure we're still parsing senate committee names correctly
                     comm = re.search(r'.*?(?=(:\s([a-zA-Z]+),\s([a-zA-Z]+)\s([0-9]{1,2}),\s([0-9]{4})))', line)
-
+                    # print(comm)
                     if "Special Order" not in comm.group(0):
 
                         committee = get_comm_cid(comm.group(0), 'Senate', date, dddb)
@@ -479,6 +489,13 @@ def import_senate_agendas(f, dddb):
                 elif re.findall(r'(SB\s[0-9]+|SCR\s[0-9]+|SJR\s[0-9]+|SR\s[0-9]+|SM\s[0-9]+|SPB\s[0-9]+)', line) is not None:
                     match = re.findall(r'(SB\s[0-9]+|SCR\s[0-9]+|SJR\s[0-9]+|SR\s[0-9]+|SM\s[0-9]+|SPB\s[0-9]+)', line)
                     for item in match:
+                        # there is no SB 10 or SB 12 for the 2018 session however 2017 and 2016 bills
+                        # which already passed are mentioned in hearing agenda pdfs,
+                        # Currently only including in agendas current bills making
+                        # there way through the legislature.
+                        if session_year == 2018 and (item == 'SB 10' or item == 'SB 12'):
+                            # print('****************************SKIPPING ' + item + '*************************')
+                            continue
                         bid = get_bill_bid(item, date, dddb)
 
                         hearing = Hearing(date, 'Senate', 'Regular', 'FL', session_year,
