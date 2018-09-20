@@ -581,7 +581,7 @@ def write_score_table(df, grp_cols, cnxn=None, tbl_name=None):
     df = summed_cols_df.merge(score_df, on=grp_cols)
 
     if tbl_name:
-        df.to_sql(tbl_name, cnxn, if_exists='replace', index=False)
+        df.to_sql(tbl_name, cnxn, if_exists='replace', index=False, chunksize=20000)
 
     return df
 
@@ -660,15 +660,56 @@ def add_term_info(df, term_df):
     return df
 
 
+# Credit to Josh Devlin's blog post "Using pandas with large data" for
+# the memory optimizations used in optimize_df().
+# https://www.dataquest.io/blog/pandas-big-data/
+def optimize_df(df):
+    print("\nBefore optimization:\n")
+    print(df.info(memory_usage='deep'))
+    df_optimized = df.copy()
+
+    df_int = df.select_dtypes(include=['int'])
+    converted_int = df_int.apply(pd.to_numeric, downcast='signed')
+    df_optimized[converted_int.columns] = converted_int
+
+    df_float = df.select_dtypes(include=['float'])
+    converted_float = df_float.apply(pd.to_numeric, downcast='float')
+    df_optimized[converted_float.columns] = converted_float
+
+    df_obj = df.select_dtypes(include=['object']).copy()
+    converted_obj = pd.DataFrame()
+    for col in df_obj.columns:
+        num_unique_values = len(df_obj[col].unique())
+        num_total_values = len(df_obj[col])
+        if num_unique_values / num_total_values < 0.5:
+            converted_obj.loc[:, col] = df_obj[col].astype('category')
+        else:
+            converted_obj.loc[:, col] = df_obj[col]
+
+    df_optimized[converted_obj.columns] = converted_obj
+    print("\nAfter optimization:\n")
+    print(df_optimized.info(memory_usage='deep'))
+    return df_optimized
+
 def write_to_db(df, org_alignments_df, leg_votes_all_df, cnxn, engine):
     """Pretty obvious. Writes these tables to the db"""
-    data_df = make_data_table(org_alignments_df, leg_votes_all_df)
-    data_df.to_sql('AlignmentScoresData', engine, if_exists='replace', index=False)
-    df.to_sql('BillAlignmentScores', engine, if_exists='replace', index=False)
 
-    df_cpy = df.copy()
+    df_optimized = optimize_df(df)
+    org_alignments_df_optimized = optimize_df(org_alignments_df)
+    leg_votes_all_df_optimized = optimize_df(leg_votes_all_df)
+
+    data_df = make_data_table(org_alignments_df_optimized, leg_votes_all_df_optimized)
+    data_df = optimize_df(data_df)
+
+    data_df.to_sql('AlignmentScoresData', engine, if_exists='replace', index=False, chunksize=20000)
+
+    df_optimized.to_sql('BillAlignmentScores', engine, if_exists='replace', index=False, chunksize=20000)
+
+    df_cpy = df_optimized.copy()
     df_cpy['session_year'] = 'All'
-    df = pd.concat([df, df_cpy])
+    df_cpy = optimize_df(df_cpy)
+
+    df = pd.concat([df_optimized, df_cpy])
 
     leg_grp_cols = ['pid',
                     'oid',
@@ -680,6 +721,7 @@ def write_to_db(df, org_alignments_df, leg_votes_all_df, cnxn, engine):
                     'no_unanimous'
                     ]
     leg_df = write_score_table(df, leg_grp_cols, engine, 'LegAlignmentScores')
+    leg_df = optimize_df(leg_df)
 
     chamber_grp_cols = ['oid',
                         'house',
@@ -689,10 +731,11 @@ def write_to_db(df, org_alignments_df, leg_votes_all_df, cnxn, engine):
                         'no_resolutions',
                         'no_unanimous']
     chamber_df = write_score_table(df, chamber_grp_cols, engine, 'ChamberAlignmentScores')
+    chamber_df = optimize_df(chamber_df)
 
     org_grp_cols = ['oid', 'session_year', 'no_abstain_votes', 'no_resolutions', 'no_unanimous']
     org_df = write_score_table(df, org_grp_cols, engine, 'OrgAlignmentScores')
-
+    org_df = optimize_df(org_df)
     # Combines them together for the CombinedAlignment table
     df = pd.concat([leg_df, chamber_df, org_df])
     df['pid_house_party'] = df.apply(lambda row: '{}_{}_{}'.format(str(row['pid']),
@@ -707,8 +750,7 @@ def write_to_db(df, org_alignments_df, leg_votes_all_df, cnxn, engine):
     cnxn = pymysql.connect(**CONN_INFO)
     create_combined_scores_tbl(cnxn)
     cnxn.close()
-    
-    df.to_sql('CombinedAlignmentScores', engine, if_exists='append', index=False)
+    df.to_sql('CombinedAlignmentScores', engine, if_exists='append', index=False, chunksize=20000)
 
 
 def create_combined_scores_tbl(cnxn):
