@@ -1916,7 +1916,7 @@ CREATE TABLE IF NOT EXISTS TT_ServiceRequests (
   importance VARCHAR(255),
   transcript VARCHAR(255),
   job_id VARCHAR(255),
-  status ENUM("in_progress", "completed") DEFAULT "in_progress",
+  status ENUM("in_progress", "completed", "callback_failed", "failed") DEFAULT "in_progress",
   diarization VARCHAR(255),
   callback VARCHAR(255),
   created DEFAULT CURRENT_TIMESTAMP,
