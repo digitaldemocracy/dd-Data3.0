@@ -241,7 +241,7 @@ CREATE TABLE CombinedRepresentations (
   oid INT,
   state VARCHAR(2),
 
-  INDEX state_idx (state)
+  INDEX combined_rep_idx (pid,hid,did,oid,state)
 );
 
 /* Used by site on lobbyist pages */
