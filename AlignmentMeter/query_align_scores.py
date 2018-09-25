@@ -1,6 +1,7 @@
 import os
 import pymysql
 import csv
+from Utils.Generic_Utils import *
 
 def connect_db(stmt):
 
@@ -40,7 +41,7 @@ def get_oids():
 
     return oids
 
-def get_align_data(pid, oid):
+def get_align_data(pid, oid, logger):
     stmt = """ 
            SELECT abstain_vote, resolution, unanimous,
                   leg_last, leg_first, organization, bill, 
@@ -68,8 +69,12 @@ def get_align_data(pid, oid):
     results = cur.fetchall()
     for row in results:
         if row[0] is not None and row[1] is not None and row[2] is not None:
-            key = "{0:1.0f}{1:1.0f}{2:1.0f}".format(row[0], row[1], row[2])
-            criteria[key].append(row)
+            try:
+                key = "{0:1.0f}{1:1.0f}{2:1.0f}".format(float(row[0]), float(row[1]), float(row[2]))
+                criteria[key].append(row)
+
+            except ValueError:
+                logger.exception("Error formatting query results from row: " + str(row))
 
     for vote in votes:
         flags = list(vote)
@@ -84,7 +89,7 @@ def get_align_data(pid, oid):
                     for v in value:
                         w.writerow(v)
 
-def main():
+def main(logger):
     pids = get_pids()
     oids = get_oids()
 
@@ -101,9 +106,10 @@ def main():
     #bar = Bar('Processing', max=len(pids) * len(oids))
     for pid in pids:
         for oid in oids:
-            get_align_data(pid, oid)
+            get_align_data(pid, oid, logger)
             #bar.next()
     #bar.finish()
 
 if __name__ == "__main__":
-    main()
+    logger = create_logger()
+    main(logger)
