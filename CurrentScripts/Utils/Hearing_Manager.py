@@ -3,7 +3,7 @@ import json
 import MySQLdb
 from Constants.Hearings_Queries import *
 from .Generic_MySQL import get_comm_cid
-from .Generic_Utils import format_logger_message
+from .Generic_Utils import format_logger_message, move_to_error_folder
 
 
 class Hearings_Manager(object):
@@ -17,7 +17,7 @@ class Hearings_Manager(object):
         self.logger = logger
 
 
-    def is_hearing_agenda_in_db(self, hid, bid, date):
+    def is_hearing_agenda_in_db(self, hid, bid, date, source_file=None):
         ha = {'hid': hid, 'bid': bid, 'date': date}
 
         try:
@@ -32,9 +32,10 @@ class Hearings_Manager(object):
 
         except MySQLdb.Error:
             self.logger.exception(format_logger_message("HearingAgenda selection failed.", (SELECT_HEARING_AGENDA % ha)))
+            if source_file is not None:
+                move_to_error_folder(source_file)
 
-
-    def is_comm_hearing_in_db(self,  cid, hid):
+    def is_comm_hearing_in_db(self,  cid, hid, source_file=None):
         comm_hearing = {'cid': cid, 'hid': hid}
 
         try:
@@ -47,14 +48,15 @@ class Hearings_Manager(object):
 
         except MySQLdb.Error:
             self.logger.exception(format_logger_message("CommitteeHearing selection failed.", (SELECT_COMMITTEE_HEARING % comm_hearing)))
-
+            if source_file is not None:
+                move_to_error_folder(source_file)
 
     '''
     Gets a specific Hearing's HID from the database
     '''
 
 
-    def get_hearing_hid(self,  date, session_year, house, cid):
+    def get_hearing_hid(self,  date, session_year, house, cid, source_file=None):
         hearing = {'date': date, 'year': session_year, 'state': self.state, 'house': house, 'cid': cid}
 
         try:
@@ -71,10 +73,13 @@ class Hearings_Manager(object):
 
         except MySQLdb.Error:
             self.logger.exception(format_logger_message("Hearing selection failed", (SELECT_CHAMBER_HEARING % hearing)))
+            if source_file is not None:
+                move_to_error_folder(source_file)
 
 
 
-    def update_hearing_agendas_to_not_current(self, hid, bid):
+
+    def update_hearing_agendas_to_not_current(self, hid, bid, source_file=None):
 
         ha = {'hid': hid, 'bid': bid}
 
@@ -83,7 +88,8 @@ class Hearings_Manager(object):
             self.HA_UPD += self.dddb.rowcount
         except MySQLdb.Error:
             self.logger.exception(format_logger_message("HearingAgenda update failed", (UPDATE_HEARING_AGENDA_TO_NOT_CURRENT % ha)))
-
+            if source_file is not None:
+                move_to_error_folder(source_file)
 
     '''
     Check if a HearingAgenda is current
@@ -93,7 +99,7 @@ class Hearings_Manager(object):
     '''
 
 
-    def get_all_bids_in_agenda(self, hid):
+    def get_all_bids_in_agenda(self, hid, source_file=None):
         ha = {'hid': hid}
         # print(hid)
         try:
@@ -110,6 +116,8 @@ class Hearings_Manager(object):
 
         except MySQLdb.Error:
             self.logger.exception(format_logger_message("HearingAgenda selection failed", (SELECT_CURRENT_BIDS_ON_AGENDA % ha)))
+            if source_file is not None:
+                move_to_error_folder(source_file)
         return None
 
     '''
@@ -117,7 +125,7 @@ class Hearings_Manager(object):
     '''
 
 
-    def insert_hearing(self, date, state, session_year):
+    def insert_hearing(self, date, state, session_year, source_file=None):
 
         hearing = dict()
 
@@ -133,14 +141,15 @@ class Hearings_Manager(object):
 
         except MySQLdb.Error:
             self.logger.exception(format_logger_message("Hearing insert failed", (INSERT_HEARING % hearing)))
-
+            if source_file is not None:
+                move_to_error_folder(source_file)
 
     '''
     Inserts CommitteeHearings into the DB
     '''
 
 
-    def insert_committee_hearing(self,  cid, hid):
+    def insert_committee_hearing(self,  cid, hid, source_file=None):
 
         comm_hearing = {'cid': cid, 'hid': hid}
 
@@ -150,13 +159,14 @@ class Hearings_Manager(object):
 
         except MySQLdb.Error:
             self.logger.exception(format_logger_message("CommitteeHearing insert failed", (INSERT_COMMITTEE_HEARING % comm_hearing)))
-
+            if source_file is not None:
+                move_to_error_folder()
 
 
     '''
     Inserts HearingAgendas into the DB
     '''
-    def insert_hearing_agenda(self, hid, bid, date):
+    def insert_hearing_agenda(self, hid, bid, date, source_file=None):
         agenda = {'hid': hid, 'bid': bid, 'date_created': date}
         agenda_current_flag = self.is_hearing_agenda_in_db(hid, bid, date)
         if agenda_current_flag is None:
@@ -167,22 +177,26 @@ class Hearings_Manager(object):
 
             except MySQLdb.Error:
                 self.logger.exception(format_logger_message("HearingAgenda insert failed", (INSERT_HEARING_AGENDA % agenda)))
+                if source_file is not None:
+                    move_to_error_folder(source_file)
         elif agenda_current_flag == 0:
             # print("in table but not current")
-            self.set_hearing_agenda_current(agenda)
+            self.set_hearing_agenda_current(agenda, source_file)
         else:
             print("hearing already current in db, skipping insertion")
             # print(hid)
             # print(bid)
             return
 
-    def set_hearing_agenda_current(self, agenda):
+    def set_hearing_agenda_current(self, agenda, source_file=None):
         try:
             # print('Setting ' + str(agenda['bid']) + ' back to current for hearing ' + str(agenda['hid']))
             self.dddb.execute(SELECT_HEARING_AGENDA_DATE, agenda)
 
             if self.dddb.rowcount <= 0:
                 self.logger.exception(format_logger_message("HearingAgenda update to current failed.", (SELECT_HEARING_AGENDA_DATE % agenda)))
+                if source_file is not None:
+                    move_to_error_folder(source_file)
                 return
             else:
                 dc = self.dddb.fetchone()[0]
@@ -192,14 +206,17 @@ class Hearings_Manager(object):
             if self.dddb.rowcount <= 0:
                 self.logger.exception(format_logger_message("HearingAgenda Update Failed",
                                                             UPDATE_HEARING_AGENDA_TO_CURRENT % agenda))
+                if source_file is not None:
+                    move_to_error_folder(source_file)
                 # print("update failed :(")
             else:
                 # print(self.dddb.rowcount)
                 self.HA_UPD += self.dddb.rowcount
         except MySQLdb.Error:
             self.logger.exception(
-                format_logger_message("HearingAgenda update to current failed.", (SELECT_HEARING_AGENDA % ha)))
-
+                format_logger_message("HearingAgenda update to current failed.", (SELECT_HEARING_AGENDA % agenda)))
+            if source_file is not None:
+                move_to_error_folder(source_file)
 
 
 
@@ -225,30 +242,34 @@ class Hearings_Manager(object):
                                            hearing.house,
                                            hearing.session_year,
                                            hearing.state,
-                                           self.logger)
+                                           self.logger,
+                                           source_file=hearing.source)
 
             # try to find the hearing in the db
-            hid = self.get_hearing_hid(hearing.hearing_date.date(), hearing.session_year, hearing.house, hearing.cid)
+            hid = self.get_hearing_hid(hearing.hearing_date.date(), hearing.session_year, hearing.house,
+                                       hearing.cid, source_file=hearing.source)
 
             # if the hearing is missing in the db
             if hid is None:
                 # create a new hearing
                 # print("hid not found. inserting new hearing")
-                hid = self.insert_hearing(hearing.hearing_date.date(), hearing.state, hearing.session_year)
+                hid = self.insert_hearing(hearing.hearing_date.date(), hearing.state,
+                                          hearing.session_year, source_file=hearing.source)
 
             # Check if the hid_to_bids dict has the hearing
             # in it. if it is not there, get all current bids.
             if hid not in hid_to_bids:
                 # print("loading bills . . . .")
-                hid_to_bids[hid] = self.get_all_bids_in_agenda(hid)
+                hid_to_bids[hid] = self.get_all_bids_in_agenda(hid, source_file=hearing.source)
                 # if len(hid_to_bids[hid]) == 0:
                 #     print("damn")
             bids_in_agenda = []
             bids_in_agenda.extend(hid_to_bids[hid])
             # print(bids_in_agenda)
             # if the cid is not None and the committee hearing is not in the db.
-            if hearing.cid is not None and not self.is_comm_hearing_in_db(hearing.cid, hid):
-                self.insert_committee_hearing(hearing.cid, hid)
+            if hearing.cid is not None and not self.is_comm_hearing_in_db(hearing.cid,
+                                                                          hid, source_file= hearing.source):
+                self.insert_committee_hearing(hearing.cid, hid, source_file=hearing.source)
 
             # If we have a bid
             if hearing.bid is not None:
@@ -260,7 +281,7 @@ class Hearings_Manager(object):
                     # print("inserting")
                     # print("new bid :'" + str(hearing.bid) + "' Current bids: " + str(bids_in_agenda))
                     # print(hearing.__dict__)
-                    self.insert_hearing_agenda(hid, hearing.bid, cur_date)
+                    self.insert_hearing_agenda(hid, hearing.bid, cur_date, source_file=hearing.source)
                     bids_in_agenda.append(hearing.bid)
                 else:
                     # print('skipping')

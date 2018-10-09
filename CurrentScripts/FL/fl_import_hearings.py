@@ -35,6 +35,7 @@ from Utils.Generic_MySQL import *
 from Utils.Generic_Utils import *
 from Utils.Database_Connection import *
 from Utils.Hearing_Manager import *
+from Utils.File_Comparator import *
 from Constants.General_Constants import *
 from Constants.Hearings_Queries import *
 
@@ -47,6 +48,8 @@ CH_INS = 0  # CommitteeHearings inserted
 HA_INS = 0  # HearingAgenda inserted
 HA_UPD = 0  # HearingAgenda updated
 
+CURRENT_TXT = "" # Name of the Current hearing text converted from pdf
+NO_PARSING_ERROR = 1 # Flag used to indicate whether an error occurred during the import of the current text's hearing info
 
 '''
 Formats the dates found in the agenda PDFs
@@ -66,8 +69,8 @@ Takes the committee names listed in the agenda files
 and converts them to the format that commmittee names take in our database
 '''
 def format_committee(comm, house, date, subcomm=None):
-    if comm == 'and Economic Development':
-        comm = 'Appropriations Subcommittee on Transportation, Tourism, and Economic Development'
+    # if comm == 'and Economic Development':
+    #     comm = 'Appropriations Subcommittee on Transportation, Tourism, and Economic Development'
     # print(comm)
     comm_name = dict()
 
@@ -147,6 +150,7 @@ def format_committee(comm, house, date, subcomm=None):
 
 
 def is_hearing_agenda_in_db(hid, bid, date, dddb):
+    global NO_PARSING_ERROR
     ha = {'hid': hid, 'bid': bid, 'date': date}
 
     try:
@@ -159,9 +163,11 @@ def is_hearing_agenda_in_db(hid, bid, date, dddb):
 
     except MySQLdb.Error:
         logger.exception(format_logger_message("Selection failed for HearingAgenda", (SELECT_HEARING_AGENDA % ha)))
-
+        NO_PARSING_ERROR = 0
+        move_to_error_folder(CURRENT_TXT)
 
 def is_comm_hearing_in_db(cid, hid, dddb):
+    global NO_PARSING_ERROR
     comm_hearing = {'cid': cid, 'hid': hid}
 
     try:
@@ -174,12 +180,14 @@ def is_comm_hearing_in_db(cid, hid, dddb):
 
     except MySQLdb.Error:
         logger.exception(format_logger_message("Selection failed for CommitteeHearing", (SELECT_COMMITTEE_HEARING % comm_hearing)))
-
+        NO_PARSING_ERROR = 0
+        move_to_error_folder(CURRENT_TXT)
 
 '''
 Gets a specific Hearing's HID from the database
 '''
 def get_hearing_hid(date, house, dddb):
+    global NO_PARSING_ERROR
     session_year = date[:4]
 
     hearing = {'date': date, 'year': session_year, 'state': 'FL', 'house': house}
@@ -194,12 +202,15 @@ def get_hearing_hid(date, house, dddb):
 
     except MySQLdb.Error:
         logger.exception(format_logger_message("Selection failed for Hearing", (SELECT_CHAMBER_HEARING % hearing)))
+        NO_PARSING_ERROR = 0
+        move_to_error_folder(CURRENT_TXT)
 
 
 '''
 Gets CID from our database using the committee names listed in the agendas
 '''
 def get_comm_cid(comm, house, date, dddb, subcomm=None):
+    global NO_PARSING_ERROR
     comm_name = format_committee(comm, house, date, subcomm)
     if comm_name['name'] == "Noticed Meeting":
         return None
@@ -213,6 +224,8 @@ def get_comm_cid(comm, house, date, dddb, subcomm=None):
                     cid = get_entity_id(dddb, SELECT_COMMITTEE, comm_name, 'Committee', logger)
                     if not cid:
                         logger.exception("ERROR: Committee not found: " + str(comm_name))
+                        NO_PARSING_ERROR = 0
+                        move_to_error_folder(CURRENT_TXT)
                         return None
                     else:
                         return cid
@@ -225,17 +238,22 @@ def get_comm_cid(comm, house, date, dddb, subcomm=None):
 
     except MySQLdb.Error:
         logger.exception(format_logger_message("Selection failed for Committee", (SELECT_COMMITTEE % comm_name)))
+        NO_PARSING_ERROR = 0
+        move_to_error_folder(CURRENT_TXT)
 
 
 '''
 Gets BID using a bill's type and number
 '''
 def get_bill_bid(bill, date, dddb):
+    global NO_PARSING_ERROR
     session_year = get_session_year(dddb, 'FL', logger)
 
     s_bill = bill.split(' ')
     if len(s_bill) < 2:
         logger.exception('bill code not formatted correctly: ' + str(bill))
+        NO_PARSING_ERROR = 0
+        move_to_error_folder(CURRENT_TXT)
         return None
     bill_type = s_bill[0]
     bill_number = s_bill[1]
@@ -248,15 +266,18 @@ def get_bill_bid(bill, date, dddb):
         if dddb.rowcount == 0:
             logger.exception("ERROR: Bill not found: " + str(bill_info))
             print(str(bill) + " date: " + str(date) + " session_year: " + str(session_year))
-
+            NO_PARSING_ERROR = 0
+            move_to_error_folder(CURRENT_TXT)
         else:
             return dddb.fetchone()[0]
     except MySQLdb.Error:
         logger.exception(format_logger_message("Selection failed for Bill", (SELECT_BILL % bill_info)))
+        NO_PARSING_ERROR = 0
+        move_to_error_folder(CURRENT_TXT)
 
 
 def update_hearing_agendas(hid, bid, dddb):
-    global HA_UPD
+    global HA_UPD, NO_PARSING_ERROR
 
     ha = {'hid': hid, 'bid': bid}
 
@@ -265,7 +286,8 @@ def update_hearing_agendas(hid, bid, dddb):
         HA_UPD += dddb.rowcount
     except MySQLdb.Error:
         logger.exception(format_logger_message("Update failed for HearingAgenda", (UPDATE_HEARING_AGENDA % ha)))
-
+        NO_PARSING_ERROR = 0
+        move_to_error_folder(CURRENT_TXT)
 
 '''
 Check if a HearingAgenda is current
@@ -274,6 +296,7 @@ the most recent one is marked as current, and the others
 are marked as not current.
 '''
 def check_current_agenda(hid, bid, date, dddb):
+    global NO_PARSING_ERROR
     ha = {'hid': hid, 'bid': bid}
 
     try:
@@ -297,13 +320,14 @@ def check_current_agenda(hid, bid, date, dddb):
 
     except MySQLdb.Error:
         logger.exception(format_logger_message("Selection failed for HearingAgenda", (SELECT_CURRENT_AGENDA % ha)))
-
+        NO_PARSING_ERROR = 0
+        move_to_error_folder(CURRENT_TXT)
 
 '''
 Inserts Hearings into the DB
 '''
 def insert_hearing(date, dddb):
-    global H_INS
+    global H_INS, NO_PARSING_ERROR
 
     hearing = dict()
 
@@ -320,13 +344,14 @@ def insert_hearing(date, dddb):
 
     except MySQLdb.Error:
         logger.exception(format_logger_message("Insert failed for Hearing", (INSERT_HEARING % hearing)))
-
+        NO_PARSING_ERROR = 0
+        move_to_error_folder(CURRENT_TXT)
 
 '''
 Inserts CommitteeHearings into the DB
 '''
 def insert_committee_hearing(cid, hid, dddb):
-    global CH_INS
+    global CH_INS, NO_PARSING_ERROR
 
     comm_hearing = {'cid': cid, 'hid': hid}
 
@@ -339,13 +364,14 @@ def insert_committee_hearing(cid, hid, dddb):
 
     except MySQLdb.Error:
         logger.exception(format_logger_message("Insert failed for CommitteeHearing", (INSERT_COMMITTEE_HEARING % comm_hearing)))
-
+        NO_PARSING_ERROR = 0
+        move_to_error_folder(CURRENT_TXT)
 
 '''
 Inserts HearingAgendas into the DB
 '''
 def insert_hearing_agenda(hid, bid, date, dddb):
-    global HA_INS
+    global HA_INS, NO_PARSING_ERROR
     current_flag = check_current_agenda(hid, bid, date, dddb)
     if hid is None:
         exit()
@@ -358,7 +384,8 @@ def insert_hearing_agenda(hid, bid, date, dddb):
 
         except MySQLdb.Error:
             logger.exception(format_logger_message("Insert failed for HearingAgenda", (INSERT_HEARING_AGENDA % agenda)))
-
+            NO_PARSING_ERROR = 0
+            move_to_error_folder(CURRENT_TXT)
 
 '''
 Scrapes agenda information on House hearings from the converted text
@@ -402,7 +429,7 @@ def import_house_agendas(f, dddb):
                             bid = get_bill_bid(item, date, dddb)
                             #print(bid)
                             hearing = Hearing(date, 'House', 'Regular', 'FL', session_year,
-                                              committee, bid)
+                                              committee, bid, source=CURRENT_TXT)
 
                             hearing_list.append(hearing)
 
@@ -415,7 +442,7 @@ def import_house_agendas(f, dddb):
                                 # print(committee)
 
                                 hearing = Hearing(date, 'House', 'Regular', 'FL', session_year,
-                                                  committee, None)
+                                                  committee, None, source=CURRENT_TXT)
 
                                 hearing_list.append(hearing)
                         is_subcomm = False
@@ -434,7 +461,7 @@ def import_house_agendas(f, dddb):
                                 committee = get_comm_cid(cleaned, 'House', datetime.strptime(str(session_year),"%Y"), dddb)
                                 # print(committee)
                                 hearing = Hearing(date, 'House', 'Regular', 'FL', session_year,
-                                                  committee, None)
+                                                  committee, None, source=CURRENT_TXT)
 
                                 hearing_list.append(hearing)
 
@@ -482,7 +509,7 @@ def import_senate_agendas(f, dddb):
                         committee = get_comm_cid(comm.group(0), 'Senate', date, dddb)
 
                         hearing = Hearing(date, 'Senate', 'Regular', 'FL', session_year,
-                                          committee, None)
+                                          committee, None, source=CURRENT_TXT)
 
                         hearings_list.append(hearing)
 
@@ -493,13 +520,13 @@ def import_senate_agendas(f, dddb):
                         # which already passed are mentioned in hearing agenda pdfs,
                         # Currently only including in agendas current bills making
                         # there way through the legislature.
-                        if session_year == 2018 and (item == 'SB 10' or item == 'SB 12'):
+                        # if session_year == 2018 and (item == 'SB 10' or item == 'SB 12'):
                             # print('****************************SKIPPING ' + item + '*************************')
-                            continue
+                            # continue
                         bid = get_bill_bid(item, date, dddb)
 
                         hearing = Hearing(date, 'Senate', 'Regular', 'FL', session_year,
-                                          committee, bid)
+                                          committee, bid, source=CURRENT_TXT)
                         hearings_list.append(hearing)
 
         else:
@@ -511,39 +538,72 @@ def import_senate_agendas(f, dddb):
 '''
 Uses XPDF's pdftotext utility to convert the agenda PDFs to text
 '''
-def get_agenda_text(link):
+def get_agenda_text(link, file_comparator):
     response = requests.get(link)
     f = open("calendar.pdf", "wb")
     f.write(response.content)
     f.close()
     # print(pdf_to_text_path())
+    global CURRENT_TXT
+    CURRENT_TXT = "calendar_txt/" + (link[-37:-4]).strip() + ".txt"
+    print(CURRENT_TXT)
     test = pdf_to_text_path()
-    subprocess.call([test, "-enc","UTF-8", "calendar.pdf"])
+    subprocess.call([test, "-enc","UTF-8", "calendar.pdf", CURRENT_TXT])
+
+    if file_comparator.is_new('FL_Hearings', CURRENT_TXT):
+        return;
+    else:
+        os.remove(CURRENT_TXT)
+        CURRENT_TXT = ""
 
 
 '''
 Gets all House agenda PDFs listed on the Florida website
 '''
-def get_house_agenda(dddb):
-    html_soup = BeautifulSoup(urlopen(FL_HEARING_HOUSE_SOURCE).read(), "lxml")
+def get_house_agenda(dddb, file_comparator):
+    global NO_PARSING_ERROR
+    #get interim session hearing agendas:
+    # source_url = FL_HEARING_HOUSE_INTERIM_SOURCE + "?calendarListType=Session&date=" + dt.datetime.now().strftime('%m-%d-%Y')
+
+    html_soup = BeautifulSoup(urlopen(FL_HEARING_HOUSE_INTERIM_SOURCE).read(), "lxml")
 
     hearing_list = []
 
     for link in html_soup.find_all('li', class_='calendarlist'):
         doc_link = 'http://www.myfloridahouse.gov' + link.find('a').get('href').strip()
         print(doc_link)
-        get_agenda_text(doc_link)
+        get_agenda_text(doc_link, file_comparator)
 
-        with open("calendar.txt", "r") as f:
-            hearing_list += import_house_agendas(f, dddb)
+        if CURRENT_TXT != "":
+            with open(CURRENT_TXT, "r") as f:
+                hearing_list += import_house_agendas(f, dddb)
+                if NO_PARSING_ERROR == 1:
+                    file_comparator.add_file_hash('FL_Hearings', CURRENT_TXT)
+                else:
+                    NO_PARSING_ERROR = 1
+    #get Regular session hearing agendas
+    html_soup = BeautifulSoup(urlopen(FL_HEARING_HOUSE_SESSION_SOURCE).read(), "lxml")
 
+    for link in html_soup.find_all('div', class_='doc_listing'):
+        doc_link = 'http://www.myfloridahouse.gov' + link.find('a').get('href').strip()
+        print(doc_link)
+        get_agenda_text(doc_link, file_comparator)
+
+        if CURRENT_TXT != "":
+            with open(CURRENT_TXT, "r") as f:
+                hearing_list += import_house_agendas(f, dddb)
+                if NO_PARSING_ERROR == 1:
+                    file_comparator.add_file_hash('FL_Hearings', CURRENT_TXT)
+                else:
+                    NO_PARSING_ERROR = 1
     return hearing_list
 
 
 '''
 Gets all Senate agenda PDFs listed on the Florida website
 '''
-def get_senate_agenda(dddb):
+def get_senate_agenda(dddb, file_comparator):
+    global NO_PARSING_ERROR
     html_soup = BeautifulSoup(urlopen(FL_HEARING_SENATE_SOURCE).read(), "lxml")
 
     hearings_list = []
@@ -552,27 +612,57 @@ def get_senate_agenda(dddb):
         doc_link = 'https://www.flsenate.gov' + link.find('a').get('href').strip()
         print(doc_link)
 
-        get_agenda_text(doc_link)
-
-        with open("calendar.txt", "r") as f:
-            hearings_list += import_senate_agendas(f, dddb)
+        get_agenda_text(doc_link, file_comparator)
+        if CURRENT_TXT != "":
+            with open(CURRENT_TXT, "r") as f:
+                hearings_list += import_senate_agendas(f, dddb)
+                if NO_PARSING_ERROR == 1:
+                    print('adding file')
+                    file_comparator.add_file_hash('FL_Hearings', CURRENT_TXT)
+                else:
+                    print("parsing error")
+                    NO_PARSING_ERROR = 1
 
     return hearings_list
 
 
+def remove_error_file_hashes(file_comparator, logger):
+    path = os.getcwd() + '/ErrorFiles'
+    if os.path.exists(path):
+        for f_name in os.listdir(path):
+            if '.txt' in f_name:
+                file_comparator.remove_file_hash('FL_Hearings', f_name)
+    else:
+        logger.exception('No error file directory at: ' + path)
+
+
+def remove_imported_txt_files(cwd):
+    path = cwd + '/calendar_txt/'
+    if os.path.exists(path):
+        for f_name in os.listdir(path):
+            if '.txt' in f_name:
+                os.remove(path+f_name)
+            else:
+                print(f_name + " is not a .txt file")
+    else:
+        logger.exception('Could not find txt file directory using path: ' + path)
+
+
 def main():
     with connect() as dddb:
-        cur_date = dt.datetime.now().strftime('%Y-%m-%d')
+        with connect_to_hashDB() as hashDB:
+            cur_date = dt.datetime.now().strftime('%Y-%m-%d')
 
-        hearing_manager = Hearings_Manager(dddb, 'FL', logger)
+            hearing_manager = Hearings_Manager(dddb, 'FL', logger)
+            file_comparator = KnownFileComparator(hashDB, logger)
+            # senate_hearings = list(set(get_senate_agenda(dddb, file_comparator)))
+            house_hearings = list(set(get_house_agenda(dddb, file_comparator)))
 
-        senate_hearings = list(set(get_senate_agenda(dddb)))
-        house_hearings = list(set(get_house_agenda(dddb)))
-
-        hearing_manager.import_hearings(senate_hearings, cur_date)
-        hearing_manager.import_hearings(house_hearings, cur_date)
-
-        hearing_manager.log()
+            # hearing_manager.import_hearings(senate_hearings, cur_date)
+            hearing_manager.import_hearings(house_hearings, cur_date)
+            remove_error_file_hashes(file_comparator, logger)
+            remove_imported_txt_files(os.getcwd())
+            hearing_manager.log()
 
 
 if __name__ == '__main__':

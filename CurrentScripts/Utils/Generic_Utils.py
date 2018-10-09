@@ -1,5 +1,6 @@
 
 import os
+import shutil
 import re
 import sys
 import logging
@@ -178,7 +179,6 @@ def clean_name(name, problem_names={}):
             person['last'] = space_split[-1]
             person['first'] = ' '.join([word.strip() for word in space_split[:-1]])
 
-
     person['first'] = person['first'].strip()
 
     # Finally, check to see if the person has middle names
@@ -214,3 +214,22 @@ def levenshteinDistance(string1, string2):
                 distances_.append(1 + min((distances[i1], distances[i1 + 1], distances_[-1])))
         distances = distances_
     return distances[-1]
+
+
+def move_to_error_folder(errorFile):
+    cwd = os.getcwd()
+    if not os.path.exists(cwd + "/ErrorFiles"):
+        os.makedirs(cwd + "/ErrorFiles")
+    destination = "ErrorFiles/" + errorFile
+    if not os.path.exists(destination):
+        directory_list = errorFile.split('/')[:-1]
+
+        if len(directory_list) > 0:
+            path = cwd + "/ErrorFiles"
+            for directory in directory_list:
+                path = path + "/" + directory
+                if not os.path.exists(path):
+                    os.makedirs(path)
+        shutil.move(errorFile, destination)
+    else:
+        print("Already moved " + errorFile + " to ErrorFiles folder")

@@ -3,7 +3,7 @@ import MySQLdb
 import re
 from Constants.Find_Person_Queries import *
 from Utils.Generic_Utils import format_logger_message
-from Utils.Generic_Utils import levenshteinDistance
+from Utils.Generic_Utils import levenshteinDistance, move_to_error_folder
 from Constants.Committee_Queries import *
 
 # //reload(sys)
@@ -56,6 +56,13 @@ def insert_entity(db_cursor, entity, insert_query, objType, logger):
 
     return False
 
+def remove_entity(db_cursor, entity, remove_query, objType, logger):
+    try:
+        db_cursor.execute(remove_query, entity)
+        return True
+    except MySQLdb.Error:
+        logger.exception(format_logger_message('Removal Failed for ' + objType, (remove_query % entity)))
+    return False
 
 def get_entity_id(db_cursor, query, entity, objType, logger):
     try:
@@ -112,7 +119,7 @@ def get_session_year(db_cursor, state, logger, legislator = False):
 '''
 Gets CID from our database using the committee names listed in the agendas
 '''
-def get_comm_cid(dddb_cursor, comm_name, house, session_year, state, logger):
+def get_comm_cid(dddb_cursor, comm_name, house, session_year, state, logger, source_file=None):
     committee_info = {"name": comm_name, "house": house,
                       "session_year": session_year, "state": state}
 
@@ -155,6 +162,9 @@ def get_comm_cid(dddb_cursor, comm_name, house, session_year, state, logger):
     except MySQLdb.Error:
         logger.exception(format_logger_message("Committee selection failed for Committee ",
                                                (SELECT_COMMITTEE % committee_info)))
+        if source_file is not None:
+            move_to_error_folder(source_file)
+
 
 
 def get_pid(dddb, logger, person, source_link=None, strict=False):
