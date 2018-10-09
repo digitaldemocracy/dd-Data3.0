@@ -655,10 +655,10 @@ def main():
 
             hearing_manager = Hearings_Manager(dddb, 'FL', logger)
             file_comparator = KnownFileComparator(hashDB, logger)
-            # senate_hearings = list(set(get_senate_agenda(dddb, file_comparator)))
+            senate_hearings = list(set(get_senate_agenda(dddb, file_comparator)))
             house_hearings = list(set(get_house_agenda(dddb, file_comparator)))
 
-            # hearing_manager.import_hearings(senate_hearings, cur_date)
+            hearing_manager.import_hearings(senate_hearings, cur_date)
             hearing_manager.import_hearings(house_hearings, cur_date)
             remove_error_file_hashes(file_comparator, logger)
             remove_imported_txt_files(os.getcwd())
