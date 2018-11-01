@@ -7,6 +7,7 @@ CREATE EVENT CombinedRepresentations_event
     EVERY 1 DAY STARTS '2017-1-1 07:00:00'
 DO
   BEGIN
+    DROP TABLE CombinedRepresentations;
 
     CREATE TABLE IF NOT EXISTS CombinedRepresentations (
       pid INT,
@@ -15,7 +16,7 @@ DO
       oid INT,
       state VARCHAR(2),
       year YEAR,
-      lastTouched TIMESTAMP DEFAULT NOW() ON UPDATE NOW(),
+      lastTouched TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       dr_id INT AUTO_INCREMENT,
 
       UNIQUE (dr_id),
@@ -70,7 +71,8 @@ DO
         AND v.oid = t.oid
     WHERE t.pid IS NULL
       AND t.did IS NULL
-      AND t.oid IS NULL;
+      AND t.oid IS NULL
+      AND v.oid IS NOT NULL;
 
     delete t from CombinedRepresentations t
       left join CombinedRepresentationsView v

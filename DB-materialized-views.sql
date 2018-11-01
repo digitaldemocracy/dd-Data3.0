@@ -240,8 +240,24 @@ CREATE TABLE CombinedRepresentations (
   did INT,
   oid INT,
   state VARCHAR(2),
+  year YEAR,
+  lastTouched TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  dr_id INT AUTO_INCREMENT,
 
-  INDEX combined_rep_idx (pid,hid,did,oid,state)
+  UNIQUE (dr_id),
+
+  FOREIGN KEY (pid) REFERENCES Person(pid),
+  FOREIGN KEY (hid) REFERENCES Hearing(hid),
+  FOREIGN KEY (did) REFERENCES BillDiscussion(did),
+  FOREIGN KEY (oid) REFERENCES Organizations(oid),
+  FOREIGN KEY (state) REFERENCES State(abbrev),
+
+  INDEX year_idx (year),
+  INDEX pid_idx (pid),
+  INDEX hid_idx (hid),
+  INDEX did_idx (did),
+  INDEX oid_idx (oid),
+  INDEX state_idx (state)
 );
 
 /* Used by site on lobbyist pages */
