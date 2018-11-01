@@ -79,6 +79,17 @@ def connect_to_capublic():
                            db='capublic',
                            passwd=os.environ["DBMASTERPASSWORD"],
                            charset='utf8')
+def connect_to_hashDB():
+    '''
+    Returns a MySQLdb connection to capublic on the transcription server.
+    :return: a MySQLdb connection
+    '''
+    return MySQLdb.connect(host='dw.digitaldemocracy.org',
+                           port=3306,
+                           user='dbMaster',
+                           db='hashDB',
+                           passwd=os.environ["DBMASTERPASSWORD"],
+                           charset='utf8')
 
 
 

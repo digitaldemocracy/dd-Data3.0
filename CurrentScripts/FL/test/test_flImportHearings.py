@@ -95,6 +95,10 @@ class TestFLImportHearings(unittest.TestCase):
                     'house': 'House', 'session_year': '2018', 'state': 'FL'}
         self.assertEqual(result, expected)
 
+    def test_remove_imported_txt_files(self):
+        remove_imported_txt_files('..')
+
+
 
 if __name__ == '__main__':
     unittest.main()
