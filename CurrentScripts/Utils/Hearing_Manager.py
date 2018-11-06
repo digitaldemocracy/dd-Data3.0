@@ -189,6 +189,15 @@ class Hearings_Manager(object):
             return
 
     def set_hearing_agenda_current(self, agenda, source_file=None):
+        """
+                :param adgenda: A model object mapping a certain
+                hearing to a bill, indicating that the bill was
+                relevant/discussed in that hearing agenda
+                :param source_file: An optional parameter containing
+                the file path to the text file that originally
+                contained the hearing information. Florida Hearings
+                agendas are obtained from PDFs converted to text
+                """
         try:
             # print('Setting ' + str(agenda['bid']) + ' back to current for hearing ' + str(agenda['hid']))
             self.dddb.execute(SELECT_HEARING_AGENDA_DATE, agenda)
