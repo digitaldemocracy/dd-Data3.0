@@ -91,7 +91,7 @@ def format_version(version_list):
                 read_text = version_doc.read(1024)
                 if not read_text:
                     break
-                doc += read_text
+                doc += str(read_text)
         except URLError:
             doc = None
             #print('URL error with version ' + version.vid)
