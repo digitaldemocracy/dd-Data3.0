@@ -121,7 +121,7 @@ class LegislatorOpenStateParser(object):
         name_parts = [entry["first_name"],
                       entry["middle_name"],
                       entry["last_name"],
-                      entry["suffix"]]
+                      entry["suffixes"]]
 
         name_parts = [name_part for name_part in name_parts if name_part]
 
