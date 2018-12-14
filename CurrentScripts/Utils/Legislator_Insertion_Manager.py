@@ -241,9 +241,15 @@ class LegislatorInsertionManager(object):
                 legislator.pid = self.insert_person(legislator)
             else:
                 # send admin message asking to clarify which pid to link to legislator
-                self.logger.exception("Legislator is new and I can't tell which pid " +
-                                      "should be associated with it . Please help!!!\n\n" + str(legislator.__dict__))
-                return pid
+                print(legislator.state, type(legislator.year), type(legislator.district), legislator.house, legislator.alternate_name)
+                if legislator.state == "CA" and legislator.year == 2019 and legislator.district == '38' and legislator.house == "Senate" and legislator.alternate_name == 'Brian W Jones':
+                    #pid verified by db admin manually
+                    pid = 42
+                else:
+                    self.logger.exception("Legislator is new and I can't tell which pid " +
+                                          "should be associated with it . Please help!!!\n\n" + str(
+                        legislator.__dict__))
+                    return pid
         else:
             print("updating person" + str(pid))
             legislator.pid = pid
