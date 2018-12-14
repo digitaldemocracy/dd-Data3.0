@@ -244,7 +244,7 @@ class LegislatorInsertionManager(object):
                 print(legislator.state, type(legislator.year), type(legislator.district), legislator.house, legislator.alternate_name)
                 if legislator.state == "CA" and legislator.year == 2019 and legislator.district == '38' and legislator.house == "Senate" and legislator.alternate_name == 'Brian W Jones':
                     #pid verified by db admin manually
-                    pid = 42
+                    legislator.pid = 42
                 else:
                     self.logger.exception("Legislator is new and I can't tell which pid " +
                                           "should be associated with it . Please help!!!\n\n" + str(
