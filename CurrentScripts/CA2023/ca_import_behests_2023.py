@@ -97,14 +97,16 @@ NAME_EXCEPTIONS = {
     "Wiener,Scott": "Wiener, Scott"
 }
 
+
 def match_name(name):
     if name in NAME_EXCEPTIONS.keys():
         return NAME_EXCEPTIONS[name]
     return name
 
+
 behests['Official'] = behests['Official'].str.strip()
 behests['Official'] = behests['Official'].apply(match_name)
-behests[['last','first']] = behests['Official'].str.split(', ', expand=True)
+behests[['last', 'first']] = behests['Official'].str.split(', ', expand=True)
 behests = behests.drop(columns='Official')
 
 # Connect to the database
@@ -116,24 +118,26 @@ connection = pymysql.connect(host=DB_CONFIG['host'],
 
 with connection:
     with connection.cursor() as cursor:
-            sql = "SELECT pid, `last`, `first` FROM Person;"
-            cursor.execute(sql)
-            pids = pd.DataFrame(cursor.fetchall())
-            
-            sql = "SELECT pid, `year` FROM Term WHERE `state` = 'CA';"
-            cursor.execute(sql)
-            terms = pd.DataFrame(cursor.fetchall())
-            
-            sql = "SELECT max(datePaid) AS lastDate FROM Behests;"
-            cursor.execute(sql)
-            lastDate = cursor.fetchall()[0]['lastDate']
-            
+        sql = "SELECT pid, `last`, `first` FROM Person;"
+        cursor.execute(sql)
+        pids = pd.DataFrame(cursor.fetchall())
+
+        sql = "SELECT pid, `year` FROM Term WHERE `state` = 'CA';"
+        cursor.execute(sql)
+        terms = pd.DataFrame(cursor.fetchall())
+
+        sql = "SELECT max(datePaid) AS lastDate FROM Behests;"
+        cursor.execute(sql)
+        lastDate = cursor.fetchall()[0]['lastDate']
+
 pids = terms.merge(pids, how='left', on='pid')
+
 
 def get_session_year(year):
     if year % 2 == 0:
-        return year-1
+        return year - 1
     return year
+
 
 behests['year'] = behests['PaymentYear'].apply(get_session_year)
 
@@ -153,3 +157,5 @@ new_records = missing[missing['DateOFPayment'] > lastDate]
 # Missing information (missing pid or term)
 # NOTE: some names may be crossed out due to normalization issues
 # missing[missing['DateOFPayment'] <= lastDate][['last', 'first']].drop_duplicates()
+
+# SQL insertion. Wait to do it because database
