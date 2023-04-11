@@ -34,12 +34,12 @@ import json
 import traceback
 import datetime as dt
 from ca_bill_parser import *
-from Models.Bill import *
-from Models.Version import *
-from Constants.Bills_Queries import *
-from Utils.Generic_Utils import *
-from Utils.Database_Connection import *
-from Utils.Bill_Insertion_Manager import *
+from CurrentScripts.Models.Bill import *
+from CurrentScripts.Models.Version import *
+from CurrentScripts.Constants.Bills_Queries import *
+from CurrentScripts.Utils.Generic_Utils import *
+from CurrentScripts.Utils.Database_Connection import *
+from CurrentScripts.Utils.Bill_Insertion_Manager import *
 
 
 

@@ -1,10 +1,12 @@
 import sys
-import MySQLdb
+# import MySQLdb
+import pymysql
 import re
-from Constants.Find_Person_Queries import *
-from Utils.Generic_Utils import format_logger_message
-from Utils.Generic_Utils import levenshteinDistance, move_to_error_folder
-from Constants.Committee_Queries import *
+
+from CurrentScripts.Constants.Find_Person_Queries import *
+from CurrentScripts.Utils.Generic_Utils import format_logger_message
+from CurrentScripts.Utils.Generic_Utils import levenshteinDistance, move_to_error_folder
+from CurrentScripts.Constants.Committee_Queries import *
 
 # //reload(sys)
 
@@ -21,7 +23,7 @@ def insert_row(db_cursor, query, entity, objType, logger):
         db_cursor.execute(query)
         num_inserted = db_cursor.rowcount
         row_id = db_cursor.lastrowid
-    except MySQLdb.Error:
+    except pymysql.Error:
         logger.exception(format_logger_message('Insert Failed for ' + objType, (query%entity)))
 
     return num_inserted, row_id
@@ -36,7 +38,7 @@ def is_entity_in_db(db_cursor, query, entity, objType, logger):
         query = db_cursor.fetchone()
         if query is not None:
             return query[0]
-    except MySQLdb.Error:
+    except pymysql.Error:
         logger.exception(format_logger_message('Check Failed for ' + objType, (query%entity)))
 
     return False
@@ -51,7 +53,7 @@ def insert_entity(db_cursor, entity, insert_query, objType, logger):
     try:
         db_cursor.execute(insert_query, entity)
         return int(db_cursor.lastrowid)
-    except MySQLdb.Error:
+    except pymysql.Error:
         logger.exception(format_logger_message('Insert Failed for ' + objType, (insert_query % entity)))
 
     return False
@@ -60,7 +62,7 @@ def remove_entity(db_cursor, entity, remove_query, objType, logger):
     try:
         db_cursor.execute(remove_query, entity)
         return True
-    except MySQLdb.Error:
+    except pymysql.Error:
         logger.exception(format_logger_message('Removal Failed for ' + objType, (remove_query % entity)))
     return False
 
@@ -72,7 +74,7 @@ def get_entity_id(db_cursor, query, entity, objType, logger):
         elif db_cursor.rowcount > 1:
             logger.exception(format_logger_message('ID Retrieval returned multiple rows ' +
                                                    objType + " " + str(entity), (query%entity)))
-    except MySQLdb.Error:
+    except pymysql.Error:
         logger.exception(format_logger_message('ID Retrieval Failed for ' + objType, (query%entity)))
     return False
 
@@ -82,7 +84,7 @@ def get_entity(db_cursor, query, entity, objType, logger):
         db_cursor.execute(query, entity)
         if db_cursor.rowcount == 1:
             return db_cursor.fetchone()
-    except MySQLdb.Error:
+    except pymysql.Error:
         logger.exception(format_logger_message('ID Retrieval Failed for ' + objType, (query % entity)))
     return False
 
@@ -90,7 +92,7 @@ def get_all(db_cursor, query, entity, objType, logger):
     try:
         db_cursor.execute(query, entity)
         return db_cursor.fetchall()
-    except MySQLdb.Error:
+    except pymysql.Error:
         logger.exception(format_logger_message('Failed Selecting All for ' + objType, (query%entity)))
     return False
 '''
@@ -159,7 +161,7 @@ def get_comm_cid(dddb_cursor, comm_name, house, session_year, state, logger, sou
         if dddb_cursor.rowcount > 0:
             return min(dddb_cursor.fetchall(), key=lambda com: levenshteinDistance(com[1], comm_name))[0]
 
-    except MySQLdb.Error:
+    except pymysql.Error:
         logger.exception(format_logger_message("Committee selection failed for Committee ",
                                                (SELECT_COMMITTEE % committee_info)))
         if source_file is not None:

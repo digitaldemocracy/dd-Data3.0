@@ -1,14 +1,14 @@
 #!/usr/bin/python3
 
-import MySQLdb
+# import MySQLdb
 import datetime as dt
-from Models.Bill import *
-from Models.Version import *
-from Models.Action import *
-from Models.Vote import *
-from Utils.Generic_MySQL import *
-from Utils.Database_Connection import *
-from Constants.Bills_Queries import *
+from CurrentScripts.Models.Bill import *
+from CurrentScripts.Models.Version import *
+from CurrentScripts.Models.Action import *
+from CurrentScripts.Models.Vote import *
+from CurrentScripts.Utils.Generic_MySQL import *
+from CurrentScripts.Utils.Database_Connection import *
+from CurrentScripts.Constants.Bills_Queries import *
 
 STATE = 'CA'
 

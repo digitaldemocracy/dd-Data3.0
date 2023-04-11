@@ -15,7 +15,7 @@ import os
 import sys
 import time
 import socket
-import MySQLdb
+import pymysql
 
 def countdown(db):
     '''
@@ -44,7 +44,7 @@ def connect(db = None):
                 "Are you sure you want this script on the live database? (y/n) ").lower() == "y"):
         if len(sys.argv) == 1:
             countdown("live")
-        return MySQLdb.connect(host='dddb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
+        return pymysql.connect(host='dddb.chzg5zpujwmo.us-west-2.rds.amazonaws.com',
                                    port=3306,
                                    db='DDDB2016Aug',
                                    user='dbMaster',
@@ -52,7 +52,7 @@ def connect(db = None):
                                    charset='utf8')
     elif db == "local":
         countdown("local")
-        return MySQLdb.connect(host='localhost',
+        return pymysql.connect(host='localhost',
                            port=3306,
                            db='DDDB2016Aug',
                            user='root',
@@ -60,12 +60,12 @@ def connect(db = None):
                            charset='utf8')
     else:
         print("Running on Dev DB")
-        return MySQLdb.connect(host='dev.digitaldemocracy.org',
+        return pymysql.connect(host=os.environ["DDDEVSERVER"],
                                port=3306,
-                               db='DDDB2016Aug',
-                               user='dbMaster',
+                               db=os.environ['DDDBNAME'],
+                               user=os.environ["DDDBUSER"],
                                passwd=os.environ["DBMASTERPASSWORD"],
-                               charset='utf8')
+                               charset='utf8').cursor()
 
 
 def connect_to_capublic():
@@ -73,23 +73,23 @@ def connect_to_capublic():
     Returns a MySQLdb connection to capublic on the transcription server.
     :return: a MySQLdb connection
     '''
-    return MySQLdb.connect(host='dw.digitaldemocracy.org',
+    return pymysql.connect(host=os.environ['CAPUBLICSERVER'],
                            port=3306,
-                           user='dbMaster',
-                           db='capublic',
-                           passwd=os.environ["DBMASTERPASSWORD"],
-                           charset='utf8')
+                           user=os.environ['CAPUBLICUSER'],
+                           db=os.environ['CAPUBLICDBNAME'],
+                           passwd=os.environ["CAPUBLICPASSWORD"],
+                           charset='utf8').cursor()
 def connect_to_hashDB():
     '''
     Returns a MySQLdb connection to capublic on the transcription server.
     :return: a MySQLdb connection
     '''
-    return MySQLdb.connect(host='dw.digitaldemocracy.org',
+    return pymysql.connect(host='dw.digitaldemocracy.org',
                            port=3306,
                            user='dbMaster',
                            db='hashDB',
                            passwd=os.environ["DBMASTERPASSWORD"],
-                           charset='utf8')
+                           charset='utf8').cursor()
 
 
 
